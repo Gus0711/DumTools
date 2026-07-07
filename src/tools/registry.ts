@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { ListChecks, CircuitBoard } from "lucide-react";
+import { CircuitBoard } from "lucide-react";
 
 /* =============================================================================
  * REGISTRE D'OUTILS
@@ -31,19 +31,10 @@ export interface Tool {
 
 export const TOOLS: Tool[] = [
   {
-    id: "liste-points",
-    nom: "Liste de Points GTB",
-    description:
-      "Éditeur de listes de points par chantier : sections, modèles, totaux E/S en direct et export A4.",
-    icon: ListChecks,
-    href: "/outils/liste-points",
-    status: "disponible",
-  },
-  {
     id: "affectation-es",
-    nom: "Affectation E/S depuis GFX",
+    nom: "Projet GTB",
     description:
-      "Génère le document d'affectation E/S Distech à partir d'un programme .gfx ou d'un schéma PDF, avec suivi de mise en service.",
+      "Projet chantier de bout en bout : liste de points, choix automate & modules, affectation E/S Distech (import .gfx/PDF ou génération GFX), impressions A4 et rapport de mise en service.",
     icon: CircuitBoard,
     href: "/outils/affectation-es",
     status: "disponible",

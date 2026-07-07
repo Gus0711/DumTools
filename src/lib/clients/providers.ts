@@ -1,6 +1,5 @@
 import "server-only";
 import { TOOLS } from "@/tools/registry";
-import { listerPourClient as listePointsPourClient } from "@/tools/liste-points/queries";
 import { listerPourClient as affectationPourClient } from "@/tools/affectation-es/queries";
 import type { ClientArtefact, ClientRealisation } from "./types";
 
@@ -22,7 +21,6 @@ import type { ClientArtefact, ClientRealisation } from "./types";
 type ClientProvider = (clientId: string) => Promise<ClientArtefact[]>;
 
 const PROVIDERS: Record<string, ClientProvider> = {
-  "liste-points": listePointsPourClient,
   "affectation-es": affectationPourClient,
 };
 
