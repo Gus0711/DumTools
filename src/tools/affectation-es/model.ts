@@ -1,6 +1,7 @@
 // Modèle de données de l'outil « Affectation E/S depuis GFX » (partagé client/serveur).
 // Porté de l'ancien outil : le projet complet est un objet JSON unique.
 import { CONTROLLER_CATALOG, MODULE_TYPE_DEFS, type ControllerInfo } from "./catalog";
+import type { PointRow } from "@/tools/liste-points/model";
 
 export interface Point {
   uid: string;
@@ -54,6 +55,9 @@ export interface Project {
   gfx_header_3: string;
   gfx_include_generalities: boolean;
   gfx_include_standard_blocks: boolean;
+  /** Saisie « liste de points » (source) — 1 ligne = 1 type d'E/S exclusif. */
+  rows: PointRow[];
+  /** E/S physiques dérivées des `rows` (affectées aux bornes). Voir derivation.ts. */
   points: Point[];
   modules: Module[];
 }
@@ -79,6 +83,7 @@ export function defaultProject(dateLabel: string): Project {
     gfx_header_3: "Affectation des entrées / sorties",
     gfx_include_generalities: true,
     gfx_include_standard_blocks: false,
+    rows: [],
     points: [],
     modules: [],
   };
