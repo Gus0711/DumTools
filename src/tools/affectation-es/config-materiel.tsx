@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Check, FileText, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { AutomateRow, MaterielAdmin, ModuleRow } from "./catalogue-queries";
@@ -34,6 +34,9 @@ function automateVide(ordre: number): AutomatePayload {
     sortieCodes: [],
     extensible: false,
     modulesCompat: [],
+    maxModules: 0,
+    maxPoints: 0,
+    docUrl: "",
     actif: true,
     ordre,
   };
@@ -48,6 +51,7 @@ function moduleVide(ordre: number): ModulePayload {
     entreeCount: 0,
     sortieKind: "UO",
     sortieCount: 0,
+    docUrl: "",
     actif: true,
     ordre,
   };
@@ -150,7 +154,12 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
                   </tr>
                 ) : (
                   <tr key={a.id} className={cn("border-b border-border-soft last:border-0", !a.actif && "opacity-50")}>
-                    <td className="px-4 py-2 font-medium text-fg">{a.reference}</td>
+                    <td className="px-4 py-2 font-medium text-fg">
+                      <span className="inline-flex items-center gap-2">
+                        {a.reference}
+                        <DocLink url={a.docUrl} />
+                      </span>
+                    </td>
                     <td className="px-4 py-2 text-center tabular-nums text-muted">
                       {a.entreeCount} {a.entreeKind} / {a.sortieCount} {a.sortieKind}
                     </td>
@@ -225,7 +234,12 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
                   </tr>
                 ) : (
                   <tr key={m.id} className={cn("border-b border-border-soft last:border-0", !m.actif && "opacity-50")}>
-                    <td className="px-4 py-2 font-medium text-fg">{m.type}</td>
+                    <td className="px-4 py-2 font-medium text-fg">
+                      <span className="inline-flex items-center gap-2">
+                        {m.type}
+                        <DocLink url={m.docUrl} />
+                      </span>
+                    </td>
                     <td className="px-4 py-2 text-muted">{m.categorie}</td>
                     <td className="px-4 py-2 text-center tabular-nums text-muted">
                       {m.entreeCount} {m.entreeKind}
@@ -299,6 +313,22 @@ function LigneActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =
         <Trash2 className="h-4 w-4" />
       </button>
     </div>
+  );
+}
+
+function DocLink({ url }: { url: string }) {
+  if (!url) return null;
+  return (
+    <a
+      href={encodeURI(url)}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Fiche technique"
+      onClick={(e) => e.stopPropagation()}
+      className="inline-flex text-muted transition-colors hover:text-brand"
+    >
+      <FileText className="h-3.5 w-3.5" />
+    </a>
   );
 }
 
@@ -397,6 +427,23 @@ function AutomateForm({
           </>
         )}
       </Champ>
+      {draft.extensible && (
+        <>
+          <Champ label="Max modules d'extension">
+            <NumInput value={draft.maxModules} onChange={(v) => up({ maxModules: v })} />
+          </Champ>
+          <Champ label="Capacité max (points E/S)">
+            <NumInput value={draft.maxPoints} onChange={(v) => up({ maxPoints: v })} />
+          </Champ>
+        </>
+      )}
+      <Champ label="Fiche technique (URL / chemin public)" className="sm:col-span-2 lg:col-span-3">
+        <TextInput
+          value={draft.docUrl}
+          onChange={(v) => up({ docUrl: v })}
+          placeholder="/materiel/Documentations_Distech/ECY-600-Series_SP.pdf"
+        />
+      </Champ>
       <Champ label="Actif">
         <Coche label="Disponible dans l'outil" checked={draft.actif} onChange={(v) => up({ actif: v })} />
       </Champ>
@@ -443,6 +490,13 @@ function ModuleForm({
       </Champ>
       <Champ label="Image (chemin public)">
         <TextInput value={draft.image} onChange={(v) => up({ image: v })} placeholder="/materiel/mod-8UI6UO.png" />
+      </Champ>
+      <Champ label="Fiche technique (URL / chemin public)">
+        <TextInput
+          value={draft.docUrl}
+          onChange={(v) => up({ docUrl: v })}
+          placeholder="/materiel/Documentations_Distech/ECY IO Modules_SP.pdf"
+        />
       </Champ>
       <Champ label="Actif">
         <Coche label="Disponible dans l'outil" checked={draft.actif} onChange={(v) => up({ actif: v })} />
@@ -551,6 +605,9 @@ function rowToAutoDraft(a: AutomateRow): AutomatePayload {
     sortieCodes: a.sortieCodes,
     extensible: a.extensible,
     modulesCompat: a.modulesCompat,
+    maxModules: a.maxModules,
+    maxPoints: a.maxPoints,
+    docUrl: a.docUrl,
     actif: a.actif,
     ordre: a.ordre,
   };
@@ -566,6 +623,7 @@ function rowToModDraft(m: ModuleRow): ModulePayload {
     entreeCount: m.entreeCount,
     sortieKind: m.sortieKind,
     sortieCount: m.sortieCount,
+    docUrl: m.docUrl,
     actif: m.actif,
     ordre: m.ordre,
   };

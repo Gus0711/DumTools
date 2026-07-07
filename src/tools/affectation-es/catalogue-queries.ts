@@ -26,6 +26,9 @@ type AutomateRowDb = {
   sortieCodes: unknown;
   extensible: boolean;
   modulesCompat: unknown;
+  maxModules: number;
+  maxPoints: number;
+  docUrl: string;
 };
 
 type ModuleRowDb = {
@@ -39,6 +42,7 @@ type ModuleRowDb = {
   entreeCount: number;
   sortieKind: string;
   sortieCount: number;
+  docUrl: string;
 };
 
 function toAutomateDef(r: AutomateRowDb): AutomateDef {
@@ -55,6 +59,9 @@ function toAutomateDef(r: AutomateRowDb): AutomateDef {
     sortieCodes: asStringArray(r.sortieCodes),
     extensible: r.extensible,
     modulesCompat: asStringArray(r.modulesCompat),
+    maxModules: r.maxModules ?? 0,
+    maxPoints: r.maxPoints ?? 0,
+    docUrl: r.docUrl ?? "",
   };
 }
 
@@ -67,6 +74,7 @@ function toModuleDef(r: ModuleRowDb): ModuleDef {
     entreeCount: r.entreeCount,
     sortieKind: r.sortieKind,
     sortieCount: r.sortieCount,
+    docUrl: r.docUrl ?? "",
   };
 }
 

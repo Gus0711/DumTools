@@ -103,6 +103,8 @@ export function proposerAutomates(besoin: Besoin, catalogue: Catalogue): Proposi
 
     // Ne couvre pas seul : nécessite des modules → uniquement si extensible.
     if (!a.extensible) continue;
+    // Capacité max en points d'E/S dépassée → automate écarté.
+    if (a.maxPoints > 0 && entrees + sorties > a.maxPoints) continue;
     const mod = choisirModuleExtension(catalogue, a);
     if (!mod) continue;
 
@@ -111,6 +113,8 @@ export function proposerAutomates(besoin: Besoin, catalogue: Catalogue): Proposi
       resteOut > 0 ? Math.ceil(resteOut / mod.sortieCount) : 0,
       1,
     );
+    // Nombre de modules d'extension supporté dépassé → automate écarté.
+    if (a.maxModules > 0 && count > a.maxModules) continue;
     const entreesDispo = ui + count * mod.entreeCount;
     const sortiesDispo = uo + count * mod.sortieCount;
     propositions.push({

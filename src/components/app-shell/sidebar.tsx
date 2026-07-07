@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Home, SlidersHorizontal, Tags, type LucideIcon } from "lucide-react";
+import { BookOpen, Building2, Home, SlidersHorizontal, Tags, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TOOLS } from "@/tools/registry";
 
@@ -19,6 +19,7 @@ export function Sidebar() {
     { href: "/clients", nom: "Clients", icon: Building2 },
     { href: "/configuration/points", nom: "Catalogue & modèles", icon: Tags },
     { href: "/configuration/materiel", nom: "Base matériel", icon: SlidersHorizontal },
+    { href: "/documentation", nom: "Documentation", icon: BookOpen },
   ];
 
   return (

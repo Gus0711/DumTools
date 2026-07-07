@@ -131,6 +131,12 @@ model AutomateModele {
   extensible    Boolean  @default(false)
   /// Types de modules compatibles (référence ModuleModele.type) — [] = aucun.
   modulesCompat Json     @default("[]")
+  /// Nombre max de modules d'extension (0 = non extensible / non spécifié).
+  maxModules    Int      @default(0)
+  /// Capacité max en points d'E/S totale (0 = non spécifiée).
+  maxPoints     Int      @default(0)
+  /// Lien vers la fiche technique (PDF public, ex. /materiel/Documentations_Distech/...).
+  docUrl        String   @default("")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -148,6 +154,8 @@ model ModuleModele {
   entreeCount Int      @default(0)
   sortieKind  String   @default("UO")
   sortieCount Int      @default(0)
+  /// Lien vers la fiche technique (PDF public).
+  docUrl      String   @default("")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

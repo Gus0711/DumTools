@@ -39,6 +39,9 @@ export interface AutomatePayload {
   sortieCodes: string[];
   extensible: boolean;
   modulesCompat: string[];
+  maxModules: number;
+  maxPoints: number;
+  docUrl: string;
   actif: boolean;
   ordre: number;
 }
@@ -59,6 +62,9 @@ export async function enregistrerAutomate(p: AutomatePayload) {
     sortieCodes: json(p.sortieCodes ?? []),
     extensible: p.extensible,
     modulesCompat: json(p.extensible ? (p.modulesCompat ?? []) : []),
+    maxModules: entier(p.maxModules),
+    maxPoints: entier(p.maxPoints),
+    docUrl: p.docUrl.trim(),
     actif: p.actif,
     ordre: Math.trunc(Number(p.ordre) || 0),
   };
@@ -84,6 +90,7 @@ export interface ModulePayload {
   entreeCount: number;
   sortieKind: string;
   sortieCount: number;
+  docUrl: string;
   actif: boolean;
   ordre: number;
 }
@@ -99,6 +106,7 @@ export async function enregistrerModule(p: ModulePayload) {
     entreeCount: entier(p.entreeCount),
     sortieKind: p.sortieKind.trim(),
     sortieCount: entier(p.sortieCount),
+    docUrl: p.docUrl.trim(),
     actif: p.actif,
     ordre: Math.trunc(Number(p.ordre) || 0),
   };
@@ -131,6 +139,9 @@ function createAutomate(a: AutomateDef, ordre: number) {
     sortieCodes: json(a.sortieCodes),
     extensible: a.extensible,
     modulesCompat: json(a.modulesCompat),
+    maxModules: a.maxModules,
+    maxPoints: a.maxPoints,
+    docUrl: a.docUrl,
   };
 }
 
@@ -145,6 +156,7 @@ function createModule(m: ModuleDef, ordre: number) {
     entreeCount: m.entreeCount,
     sortieKind: m.sortieKind,
     sortieCount: m.sortieCount,
+    docUrl: m.docUrl,
   };
 }
 

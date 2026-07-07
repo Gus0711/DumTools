@@ -44,6 +44,9 @@ function infoAutomate(catalogue: Catalogue, reference: string): AutomateDef {
     sortieCodes: [],
     extensible: false,
     modulesCompat: [],
+    maxModules: 0,
+    maxPoints: 0,
+    docUrl: "",
   };
 }
 
