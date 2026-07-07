@@ -1,7 +1,17 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import type { Project } from "./model";
+import { pointsToRows } from "./derivation";
 import type { ClientArtefact } from "@/lib/clients/types";
+
+/** Rétro-compat : dérive `rows` (liste) depuis `points` pour les anciens projets. */
+function normaliserProjet(project: Project): Project {
+  if ((!project.rows || project.rows.length === 0) && (project.points?.length ?? 0) > 0) {
+    return { ...project, rows: pointsToRows(project.points) };
+  }
+  if (!project.rows) return { ...project, rows: [] };
+  return project;
+}
 
 const nbPoints = (data: Project | null) =>
   Array.isArray(data?.points) ? data.points.filter((pt) => pt.active).length : 0;
@@ -75,7 +85,7 @@ export async function getProjet(id: string): Promise<ProjetComplet | null> {
     nom: p.nom,
     clientNom: p.clientNom,
     numeroWhy: p.numeroWhy ?? "",
-    project: p.data as unknown as Project,
+    project: normaliserProjet(p.data as unknown as Project),
   };
 }
 

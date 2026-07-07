@@ -34,17 +34,21 @@ import {
   type Besoin,
   type Proposition,
 } from "./reco-automate";
-import { PointsTab } from "./points-tab";
+import { pointsToRows, syncPoints } from "./derivation";
+import { ListeTab } from "./liste-tab";
+import { AffectationTab } from "./affectation-tab";
 import { TestsTab } from "./tests-tab";
 import { Apercu } from "./apercu";
 import { importGfx } from "./gfx-import";
 import { importPdf } from "./pdf-import";
+import type { CatalogItem } from "@/tools/liste-points/rows-editor";
+import type { ModeleDef, PointRow } from "@/tools/liste-points/model";
 
 const TABS = [
   { id: "projet", label: "Projet" },
+  { id: "liste", label: "Liste de points" },
   { id: "modules", label: "Modules" },
-  { id: "entrees", label: "Entrées" },
-  { id: "sorties", label: "Sorties" },
+  { id: "affectation", label: "Affectation" },
   { id: "tests", label: "Mise en service" },
   { id: "apercu", label: "Aperçu" },
 ] as const;
@@ -55,11 +59,15 @@ export function Editeur({
   initial,
   clients,
   catalogue,
+  cataloguePoints,
+  modeles,
 }: {
   id: string;
   initial: { nom: string; clientNom: string; numeroWhy: string; project: Project };
   clients: string[];
   catalogue: Catalogue;
+  cataloguePoints: CatalogItem[];
+  modeles: ModeleDef[];
 }) {
   const [nom, setNom] = useState(initial.nom);
   const [clientNom, setClientNom] = useState(initial.clientNom);
@@ -74,6 +82,16 @@ export function Editeur({
   const patch = (fn: (p: Project) => Project) => setProject((p) => fn(p));
   const set = <K extends keyof Project>(key: K, value: Project[K]) =>
     patch((p) => ({ ...p, [key]: value }));
+
+  // Édition des lignes de la liste → resynchronise les points dérivés (bornes).
+  const setListeRows: React.Dispatch<React.SetStateAction<PointRow[]>> = (updater) =>
+    setProject((p) => {
+      const rows =
+        typeof updater === "function"
+          ? (updater as (r: PointRow[]) => PointRow[])(p.rows ?? [])
+          : updater;
+      return { ...p, rows, points: syncPoints(rows, p.points ?? []) };
+    });
 
   // Applique une proposition d'automate : définit le contrôleur et, si la solution
   // requiert des modules d'extension, les ajoute — sauf si des modules d'E/S existent déjà.
@@ -130,12 +148,13 @@ export function Editeur({
         controller: res.controller,
         modules: res.modules,
         points: res.points,
+        rows: pointsToRows(res.points),
       }));
       setImportState({
         kind: "done",
         msg: `${res.meta.controller} · ${res.meta.inputs} entrées / ${res.meta.outputs} sorties · ${res.meta.extensions} extension(s)`,
       });
-      setTab("modules");
+      setTab("liste");
     } catch (e) {
       setImportState({
         kind: "error",
@@ -155,12 +174,13 @@ export function Editeur({
         controller: res.controller,
         modules: res.modules,
         points: res.points,
+        rows: pointsToRows(res.points),
       }));
       setImportState({
         kind: "done",
         msg: `${res.meta.controller} · ${res.meta.pages} page(s) · ${res.meta.inputs} entrées / ${res.meta.outputs} sorties`,
       });
-      setTab(res.modules.length ? "modules" : "projet");
+      setTab("liste");
     } catch (e) {
       setImportState({
         kind: "error",
@@ -267,12 +287,19 @@ export function Editeur({
         <ModulesTab modules={modules} patch={patch} catalogue={catalogue} />
       )}
 
-      {tab === "entrees" && (
-        <PointsTab direction="input" project={project} patch={patch} modules={modules} />
+      {tab === "liste" && (
+        <ListeTab
+          project={project}
+          nom={nom}
+          clientNom={clientNom}
+          setRows={setListeRows}
+          cataloguePoints={cataloguePoints}
+          modeles={modeles}
+        />
       )}
 
-      {tab === "sorties" && (
-        <PointsTab direction="output" project={project} patch={patch} modules={modules} />
+      {tab === "affectation" && (
+        <AffectationTab project={project} patch={patch} modules={modules} />
       )}
 
       {tab === "tests" && <TestsTab project={project} patch={patch} modules={modules} />}
