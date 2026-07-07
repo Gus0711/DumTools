@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Check,
+  FileText,
   Loader2,
   Plus,
   Trash2,
@@ -15,6 +16,7 @@ import {
 import { Button, Combobox } from "@/ui";
 import { cn } from "@/lib/cn";
 import {
+  automateDef,
   moduleDef,
   moduleFieldsFromDef,
   type Catalogue,
@@ -559,6 +561,19 @@ function AutomateModulesTab({
               labels={{ "": "— à choisir —" }}
             />
           </Field>
+          {(() => {
+            const doc = automateDef(catalogue, project.controller)?.docUrl;
+            return doc ? (
+              <a
+                href={encodeURI(doc)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline"
+              >
+                <FileText className="h-3.5 w-3.5" /> Fiche technique {project.controller}
+              </a>
+            ) : null;
+          })()}
           <div>
             <button
               type="button"
