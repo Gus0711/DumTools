@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
 /* Les polices sont exposées sous les noms de variables attendus par globals.css
- * (--font-sans-app / --font-mono-app), pas en dur dans le CSS. */
+ * (--font-sans-app / --font-mono-app / --font-display-app), pas en dur dans le CSS.
+ * Sans/mono : Geist (UI & données). Affichage : Space Grotesk (titres — caractère
+ * « technique / dessin industriel », employé avec retenue). */
 const sans = Geist({ variable: "--font-sans-app", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono-app", subsets: ["latin"] });
+const display = Space_Grotesk({
+  variable: "--font-display-app",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: {
@@ -23,7 +30,7 @@ export default function RootLayout({
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${sans.variable} ${mono.variable} h-full`}
+      className={`${sans.variable} ${mono.variable} ${display.variable} h-full`}
     >
       <head>
         {/* Applique le thème mémorisé avant le premier rendu (anti-flash). */}

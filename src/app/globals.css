@@ -87,11 +87,164 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Les titres portent la police d'affichage (Space Grotesk) — caractère
+     « technique » ; réglages resserrés pour un rendu net et posé. */
+  :where(h1, h2, h3, .font-display) {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  /* Chiffres alignés partout (données techniques : compteurs, E/S, dates). */
+  table :where(td, th) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--accent) 32%, transparent);
+    color: var(--fg);
+  }
+
+  /* Barres de défilement discrètes, accordées au thème. */
+  * {
+    scrollbar-color: color-mix(in oklab, var(--muted) 45%, transparent) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--muted) 40%, transparent);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in oklab, var(--muted) 62%, transparent);
+    background-clip: content-box;
+  }
+
   /* Focus visible cohérent dans toute l'appli */
   :where(a, button, input, select, textarea, [tabindex]):focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* --- Signatures visuelles (utilitaires : aucun hex dans les composants) ---- *
+ * On centralise ici les dégradés de marque et la trame « plan d'architecte ».
+ * ========================================================================== */
+@layer components {
+  /* Dégradé marine de marque (sidebar, en-têtes héros…). */
+  .bg-brand-gradient {
+    background-image: var(--grad-brand);
+  }
+  .bg-accent-gradient {
+    background-image: var(--grad-accent);
+  }
+
+  /* Trame fine « blueprint » — se superpose à un fond marine.
+     Couleur des traits pilotée par --grid-line (thème). */
+  .blueprint-grid {
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 26px 26px;
+    background-position: -1px -1px;
+  }
+
+  /* Filet d'accent laiton — liseré de signature (haut de carte, entête). */
+  .rule-accent {
+    background-image: var(--grad-accent);
+  }
+
+  /* --- Tables « qualité instrument » ------------------------------------- *
+   * Conteneur + table cohérents pour toutes les listes de l'appli.
+   * Entête collante teintée, lignes aérées, survol net, filet fin. */
+  .data-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+    box-shadow: var(--elev-sm);
+    overflow: hidden;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+  }
+
+  .data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    text-align: left;
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .data-table tbody td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--muted);
+    vertical-align: middle;
+    /* Par défaut, pas de retour à la ligne : les colonnes courtes (dates,
+       compteurs, n° Why) ne se chevauchent jamais quand la table se resserre. */
+    white-space: nowrap;
+  }
+  /* Colonnes longues (titre, chantier) : retour à la ligne autorisé. */
+  .data-table .cell-wrap {
+    white-space: normal;
+    min-width: 12rem;
+  }
+
+  .data-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* Survol de ligne : léger voile + liseré marine à gauche (repère de scan). */
+  .data-table tbody tr {
+    transition: background-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .data-table tbody tr:hover {
+    background-color: color-mix(in oklab, var(--brand-soft) 55%, var(--surface));
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  /* Cellule « titre » — lien de première colonne, plus affirmé. */
+  .data-table .cell-title {
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .data-table .cell-num {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Variante « formulaire » — lignes plus denses car les cellules portent
+     des contrôles (selects / inputs) qui apportent déjà de la hauteur. */
+  .data-table--form tbody td {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
   }
 }
 

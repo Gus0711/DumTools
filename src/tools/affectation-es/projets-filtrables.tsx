@@ -49,7 +49,7 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
         <select
           value={client}
           onChange={(e) => setClient(e.target.value)}
-          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2.5 text-sm text-fg shadow-sm transition-[border-color,box-shadow] duration-150 hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         >
           <option value="">Tous les clients</option>
           {clients.map((c) => (
@@ -66,43 +66,45 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
           <p className="mt-3 text-muted">Aucun projet ne correspond à la recherche.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
+        <div className="data-card overflow-x-auto">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                <th className="px-4 py-2.5 font-medium">Projet</th>
-                <th className="px-4 py-2.5 font-medium">Client</th>
-                <th className="px-4 py-2.5 font-medium">N° Why</th>
-                <th className="px-4 py-2.5 text-center font-medium">Modules</th>
-                <th className="px-4 py-2.5 text-center font-medium">Points</th>
-                <th className="px-4 py-2.5 font-medium">Auteur</th>
+              <tr>
+                <th>Projet</th>
+                <th>Client</th>
+                <th>N° Why</th>
+                <th className="cell-num">Modules</th>
+                <th className="cell-num">Points</th>
+                <th>Auteur</th>
                 <th className="w-12" />
               </tr>
             </thead>
             <tbody>
               {filtres.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                >
-                  <td className="px-4 py-2.5">
+                <tr key={p.id}>
+                  <td className="cell-wrap">
                     <Link
                       href={`/outils/affectation-es/${p.id}`}
-                      className="font-medium text-fg hover:text-brand"
+                      className="cell-title inline-flex items-center gap-2 hover:text-brand"
                     >
+                      <CircuitBoard className="h-4 w-4 shrink-0 text-subtle" />
                       {p.nom}
                     </Link>
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{p.clientNom || "—"}</td>
-                  <td className="px-4 py-2.5 text-muted">{p.numeroWhy || "—"}</td>
-                  <td className="px-4 py-2.5 text-center tabular-nums text-muted">
-                    {p.nbModules}
+                  <td className="cell-wrap">{p.clientNom || "—"}</td>
+                  <td>
+                    {p.numeroWhy ? (
+                      <span className="rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-fg">
+                        {p.numeroWhy}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
-                  <td className="px-4 py-2.5 text-center tabular-nums text-muted">
-                    {p.nbPoints}
-                  </td>
-                  <td className="px-4 py-2.5 text-muted">{p.auteur ?? "—"}</td>
-                  <td className="px-2 py-2 text-right">
+                  <td className="cell-num">{p.nbModules}</td>
+                  <td className="cell-num">{p.nbPoints}</td>
+                  <td>{p.auteur ?? "—"}</td>
+                  <td className="text-right">
                     <SupprimerProjet id={p.id} />
                   </td>
                 </tr>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Printer } from "lucide-react";
+import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Cpu, Printer } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import { moduleDisplayTitle, type Module, type Point, type Project } from "./model";
@@ -119,7 +119,7 @@ export function TestsTab({
           const gReste = pts.length - gOk - gDefaut;
           const open = isOpen(num);
           return (
-            <div key={num} className="overflow-hidden rounded-lg border border-border bg-surface">
+            <div key={num} className="data-card overflow-hidden">
               <button
                 type="button"
                 onClick={() => toggle(num)}
@@ -129,7 +129,8 @@ export function TestsTab({
                 <ChevronRight
                   className={cn("h-4 w-4 shrink-0 text-muted transition-transform", open && "rotate-90")}
                 />
-                <span className="font-semibold text-brand">{label}</span>
+                <Cpu className="h-4 w-4 shrink-0 text-subtle" />
+                <span className="font-display font-semibold tracking-tight text-fg">{label}</span>
                 <span className="ml-auto flex items-center gap-1.5 text-xs tabular-nums">
                   <Pastille tone="text-success" bg="bg-success/12" label={`${gOk} OK`} on={gOk > 0} />
                   <Pastille tone="text-danger" bg="bg-danger/12" label={`${gDefaut} défaut`} on={gDefaut > 0} />
@@ -139,28 +140,32 @@ export function TestsTab({
 
               {open && (
                 <div className="overflow-x-auto border-t border-border">
-                  <table className="w-full border-collapse text-sm">
+                  <table className="data-table data-table--form">
                     <thead>
-                      <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                        <th className="w-16 px-3 py-2 font-medium">Borne</th>
-                        <th className="px-3 py-2 font-medium">Désignation</th>
-                        <th className="w-32 px-3 py-2 font-medium">Statut</th>
-                        <th className="px-3 py-2 font-medium">Commentaire</th>
+                      <tr>
+                        <th className="w-16">Borne</th>
+                        <th>Désignation</th>
+                        <th className="w-32">Statut</th>
+                        <th>Commentaire</th>
                       </tr>
                     </thead>
                     <tbody>
                       {pts.map((p) => {
                         const status = p.testStatus ?? "non-teste";
                         return (
-                          <tr key={p.uid} className="border-b border-border-soft last:border-0 align-top">
-                            <td className="px-3 py-2 font-mono text-xs text-muted">{p.repere}</td>
-                            <td className="px-3 py-2 text-fg">{p.designation}</td>
-                            <td className="px-3 py-2">
+                          <tr key={p.uid} className="align-top">
+                            <td>
+                              <span className="rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-xs font-medium text-fg">
+                                {p.repere}
+                              </span>
+                            </td>
+                            <td className="cell-wrap cell-title !font-normal">{p.designation}</td>
+                            <td>
                               <select
                                 value={status}
                                 onChange={(e) => update(p.uid, { testStatus: e.target.value })}
                                 className={cn(
-                                  "h-8 rounded border px-1.5 text-sm font-semibold",
+                                  "h-8 rounded-md border px-1.5 text-sm font-semibold shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-brand/20",
                                   STATUSES.find((s) => s.value === status)?.sel,
                                 )}
                               >
@@ -171,13 +176,13 @@ export function TestsTab({
                                 ))}
                               </select>
                             </td>
-                            <td className="px-3 py-2">
+                            <td>
                               <textarea
                                 value={p.testComment ?? ""}
                                 onChange={(e) => update(p.uid, { testComment: e.target.value })}
                                 rows={1}
                                 placeholder="—"
-                                className="h-8 min-h-8 w-full resize-y rounded border border-border bg-surface px-2 py-1.5 text-sm leading-snug text-fg placeholder:text-subtle"
+                                className="h-8 min-h-8 w-full resize-y rounded-md border border-border bg-surface px-2 py-1.5 text-sm leading-snug text-fg shadow-sm transition-[border-color,box-shadow] duration-150 placeholder:text-subtle hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                               />
                             </td>
                           </tr>
@@ -200,9 +205,11 @@ export function TestsTab({
 
 function Stat({ label, value, tone = "text-fg" }: { label: string; value: number; tone?: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5">
-      <span className="text-muted">{label}</span>
-      <span className={cn("font-semibold tabular-nums", tone)}>{value}</span>
+    <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 shadow-sm">
+      <span className="text-xs text-muted">{label}</span>
+      <span className={cn("font-display text-base font-semibold leading-none tabular-nums", tone)}>
+        {value}
+      </span>
     </span>
   );
 }

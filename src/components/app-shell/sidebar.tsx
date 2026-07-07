@@ -23,10 +23,13 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-fg">
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
+    <aside className="bg-brand-gradient text-sidebar-fg relative flex w-64 shrink-0 flex-col">
+      {/* Trame « plan d'architecte » — signature discrète sur le fond marine. */}
+      <div aria-hidden className="blueprint-grid pointer-events-none absolute inset-0" />
+
+      <div className="relative flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
         {/* Logo sur pastille blanche : le lockup contient du texte marine. */}
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
           <Image
             src="/logo-dumortier.png"
             alt="Dumortier — Groupe Fareneït"
@@ -37,27 +40,28 @@ export function Sidebar() {
           />
         </div>
         <div className="leading-tight">
-          <div className="text-sm font-bold tracking-tight text-sidebar-fg">
+          <div className="font-display text-[15px] font-bold tracking-tight text-sidebar-fg">
             DumTools
           </div>
           <div className="text-xs text-sidebar-muted">Outils internes</div>
         </div>
       </div>
 
-      <nav className="flex-1 space-y-0.5 p-3">
+      <nav className="relative flex-1 space-y-0.5 p-3">
         {items.map((item) => (
           <NavLink key={item.href} {...item} pathname={pathname} />
         ))}
 
-        <div className="mt-4 px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted">
-          Configuration
+        <div className="mt-5 mb-1 flex items-center gap-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-muted">
+          <span>Configuration</span>
+          <span className="h-px flex-1 bg-sidebar-border" />
         </div>
         {configItems.map((item) => (
           <NavLink key={item.href} {...item} pathname={pathname} />
         ))}
       </nav>
 
-      <div className="border-t border-sidebar-border px-5 py-3 text-xs text-sidebar-muted">
+      <div className="relative border-t border-sidebar-border px-5 py-3 text-xs text-sidebar-muted">
         Groupe Fareneït · Dumortier
       </div>
     </aside>

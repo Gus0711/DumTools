@@ -9,6 +9,8 @@ export const Input = forwardRef<
     ref={ref}
     className={cn(
       "h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg",
+      "shadow-sm transition-[border-color,box-shadow] duration-150",
+      "hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
       "placeholder:text-subtle disabled:opacity-50",
       className,
     )}

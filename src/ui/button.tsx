@@ -5,11 +5,13 @@ type Variant = "primary" | "accent" | "outline" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg" | "icon";
 
 const VARIANT: Record<Variant, string> = {
-  primary: "bg-brand text-brand-fg hover:bg-brand-strong",
-  accent: "bg-accent text-accent-fg hover:bg-accent-strong",
-  outline: "border border-border bg-surface text-fg hover:bg-surface-2",
+  primary:
+    "bg-brand text-brand-fg shadow-sm hover:bg-brand-strong active:translate-y-px",
+  accent:
+    "bg-accent text-accent-fg shadow-sm hover:bg-accent-strong active:translate-y-px",
+  outline: "border border-border bg-surface text-fg hover:bg-surface-2 hover:border-brand/40",
   ghost: "text-fg hover:bg-surface-2",
-  danger: "bg-danger text-white hover:opacity-90",
+  danger: "bg-danger text-white shadow-sm hover:opacity-90 active:translate-y-px",
 };
 
 const SIZE: Record<Size, string> = {
@@ -32,7 +34,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       className={cn(
         "inline-flex items-center justify-center rounded-md font-medium",
-        "transition-colors disabled:pointer-events-none disabled:opacity-50",
+        "transition-[background-color,border-color,transform,box-shadow,opacity] duration-150",
+        "disabled:pointer-events-none disabled:opacity-50",
         VARIANT[variant],
         SIZE[size],
         className,

@@ -11,7 +11,7 @@ export default async function Page() {
   const docs = await listerDocuments();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
       <header className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-fg">

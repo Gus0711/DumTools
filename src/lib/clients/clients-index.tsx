@@ -44,33 +44,29 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
+        <div className="data-card overflow-x-auto">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                <th className="px-4 py-2.5 font-medium">Client</th>
-                <th className="px-4 py-2.5 text-center font-medium">Réalisations</th>
-                <th className="px-4 py-2.5 font-medium">Modifié</th>
+              <tr>
+                <th>Client</th>
+                <th className="cell-num">Réalisations</th>
+                <th>Modifié</th>
               </tr>
             </thead>
             <tbody>
               {filtres.map((c) => (
-                <tr
-                  key={c.id}
-                  className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                >
-                  <td className="px-4 py-2.5">
+                <tr key={c.id}>
+                  <td className="cell-wrap">
                     <Link
                       href={`/clients/${c.id}`}
-                      className="font-medium text-fg hover:text-brand"
+                      className="cell-title inline-flex items-center gap-2 hover:text-brand"
                     >
+                      <Building2 className="h-4 w-4 shrink-0 text-subtle" />
                       {c.nom}
                     </Link>
                   </td>
-                  <td className="px-4 py-2.5 text-center tabular-nums text-muted">
-                    {c.nbRealisations}
-                  </td>
-                  <td className="px-4 py-2.5 text-muted">{fmtDate(c.updatedAt)}</td>
+                  <td className="cell-num">{c.nbRealisations}</td>
+                  <td>{fmtDate(c.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

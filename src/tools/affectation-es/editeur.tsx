@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
+  Cpu,
   FileText,
   Loader2,
   Plus,
@@ -29,7 +31,7 @@ import {
   type Module,
   type Project,
 } from "./model";
-import { sauverProjet } from "./actions";
+import { sauverProjet, supprimerProjet } from "./actions";
 import {
   calculerBesoin,
   proposerAutomates,
@@ -95,6 +97,20 @@ export function Editeur({
   const [importState, setImportState] = useState<
     { kind: "idle" } | { kind: "loading" } | { kind: "error"; msg: string } | { kind: "done"; msg: string }
   >({ kind: "idle" });
+
+  const router = useRouter();
+  const [deleting, startDelete] = useTransition();
+  function handleDelete() {
+    if (!confirm("Supprimer définitivement ce projet ?")) return;
+    startDelete(async () => {
+      try {
+        await supprimerProjet(id);
+        router.push("/outils/affectation-es");
+      } catch {
+        alert("La suppression a échoué.");
+      }
+    });
+  }
 
   const patch = (fn: (p: Project) => Project) => setProject((p) => fn(p));
   const set = <K extends keyof Project>(key: K, value: Project[K]) =>
@@ -262,6 +278,15 @@ export function Editeur({
             />
           </label>
           <SaveState state={save} />
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="inline-flex items-center gap-1.5 rounded-md border border-danger/30 px-3 py-1.5 text-sm font-medium text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+          >
+            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Supprimer
+          </button>
         </div>
       </div>
 
@@ -645,14 +670,14 @@ function AutomateModulesTab({
             <Plus className="h-4 w-4" /> Ajouter un module
           </Button>
         </div>
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-        <table className="w-full border-collapse text-sm">
+        <div className="data-card overflow-x-auto">
+        <table className="data-table">
           <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-              <th className="px-4 py-2.5 font-medium">Module</th>
-              <th className="px-4 py-2.5 font-medium">Type</th>
-              <th className="px-4 py-2.5 text-center font-medium">Entrées</th>
-              <th className="px-4 py-2.5 text-center font-medium">Sorties</th>
+            <tr>
+              <th>Module</th>
+              <th>Type</th>
+              <th className="cell-num">Entrées</th>
+              <th className="cell-num">Sorties</th>
               <th className="w-12" />
             </tr>
           </thead>
@@ -669,11 +694,12 @@ function AutomateModulesTab({
               // seuls les automates à E/S intégrées restent verrouillés.
               const editable = !isIntegratedControllerType(m);
               return (
-                <tr key={m.number} className="border-b border-border-soft last:border-0">
-                  <td className="px-4 py-2 font-medium text-fg">
+                <tr key={m.number}>
+                  <td className="cell-title inline-flex items-center gap-2">
+                    <Cpu className="h-4 w-4 shrink-0 text-subtle" />
                     {moduleDisplayTitle(m, modules)}
                   </td>
-                  <td className="px-4 py-2">
+                  <td>
                     {editable ? (
                       <Select
                         value={m.type}
@@ -684,13 +710,19 @@ function AutomateModulesTab({
                       <span className="text-muted">{m.type}</span>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-center tabular-nums text-muted">
-                    {m.inputCount || 0} {m.inputKind}
+                  <td className="cell-num">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-io-ai/12 px-1.5 py-0.5 font-semibold text-io-ai">
+                      {m.inputCount || 0}
+                      <span className="opacity-70">{m.inputKind}</span>
+                    </span>
                   </td>
-                  <td className="px-4 py-2 text-center tabular-nums text-muted">
-                    {m.outputCount || 0} {m.outputKind}
+                  <td className="cell-num">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-io-do/12 px-1.5 py-0.5 font-semibold text-io-do">
+                      {m.outputCount || 0}
+                      <span className="opacity-70">{m.outputKind}</span>
+                    </span>
                   </td>
-                  <td className="px-2 py-2 text-right">
+                  <td className="text-right">
                     <button
                       type="button"
                       aria-label="Supprimer le module"
@@ -715,9 +747,15 @@ function AutomateModulesTab({
 
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-5">
-      <h2 className="mb-4 text-sm font-semibold text-fg">{titre}</h2>
-      <div className="space-y-3">{children}</div>
+    <div className="flex flex-col rounded-xl border border-border bg-surface shadow-sm">
+      <div className="flex items-center gap-2.5 border-b border-border-soft px-5 py-3.5">
+        {/* Filet laiton de signature. */}
+        <span className="rule-accent h-4 w-1 rounded-full" />
+        <h2 className="font-display text-sm font-semibold tracking-tight text-fg">
+          {titre}
+        </h2>
+      </div>
+      <div className="space-y-3 p-5">{children}</div>
     </div>
   );
 }
@@ -736,7 +774,7 @@ function TextInput({ value, onChange }: { value: string; onChange: (v: string) =
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle"
+      className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg shadow-sm transition-[border-color,box-shadow] duration-150 placeholder:text-subtle hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
     />
   );
 }
@@ -756,7 +794,7 @@ function Select({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+      className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg shadow-sm transition-[border-color,box-shadow] duration-150 hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
     >
       {options.map((o) => (
         <option key={o} value={o}>

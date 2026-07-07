@@ -54,7 +54,7 @@ export function ListeFiltrable({ docs }: { docs: ListeResume[] }) {
         <select
           value={client}
           onChange={(e) => setClient(e.target.value)}
-          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2.5 text-sm text-fg shadow-sm transition-[border-color,box-shadow] duration-150 hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         >
           <option value="">Tous les clients</option>
           {clients.map((c) => (
@@ -71,43 +71,47 @@ export function ListeFiltrable({ docs }: { docs: ListeResume[] }) {
           <p className="mt-3 text-muted">Aucune liste ne correspond à la recherche.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
+        <div className="data-card overflow-x-auto">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                <th className="px-4 py-2.5 font-medium">Client</th>
-                <th className="px-4 py-2.5 font-medium">Chantier</th>
-                <th className="px-4 py-2.5 font-medium">N° Why</th>
-                <th className="px-4 py-2.5 text-center font-medium">Points</th>
-                <th className="px-4 py-2.5 font-medium">Date</th>
-                <th className="px-4 py-2.5 font-medium">Auteur</th>
-                <th className="px-4 py-2.5 font-medium">Modifié</th>
+              <tr>
+                <th>Titre</th>
+                <th>Chantier</th>
+                <th>N° Why</th>
+                <th className="cell-num">Points</th>
+                <th>Date</th>
+                <th>Auteur</th>
+                <th>Modifié</th>
                 <th className="w-12" />
               </tr>
             </thead>
             <tbody>
               {filtres.map((d) => (
-                <tr
-                  key={d.id}
-                  className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                >
-                  <td className="px-4 py-2.5">
+                <tr key={d.id}>
+                  <td className="cell-wrap">
                     <Link
                       href={`/outils/liste-points/${d.id}`}
-                      className="font-medium text-fg hover:text-brand"
+                      className="cell-title inline-flex items-center gap-2 hover:text-brand"
                     >
+                      <FileText className="h-4 w-4 shrink-0 text-subtle" />
                       {d.titre}
                     </Link>
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{d.chantierNom || "—"}</td>
-                  <td className="px-4 py-2.5 text-muted">{d.numeroWhy || "—"}</td>
-                  <td className="px-4 py-2.5 text-center tabular-nums text-muted">
-                    {d.nbPoints}
+                  <td className="cell-wrap">{d.chantierNom || "—"}</td>
+                  <td>
+                    {d.numeroWhy ? (
+                      <span className="rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-fg">
+                        {d.numeroWhy}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{fmtDate(d.date)}</td>
-                  <td className="px-4 py-2.5 text-muted">{d.auteur ?? "—"}</td>
-                  <td className="px-4 py-2.5 text-muted">{fmtDate(d.updatedAt)}</td>
-                  <td className="px-2 py-2 text-right">
+                  <td className="cell-num">{d.nbPoints}</td>
+                  <td>{fmtDate(d.date)}</td>
+                  <td>{d.auteur ?? "—"}</td>
+                  <td>{fmtDate(d.updatedAt)}</td>
+                  <td className="text-right">
                     <SupprimerListe id={d.id} />
                   </td>
                 </tr>
