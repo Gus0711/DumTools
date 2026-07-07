@@ -1,9 +1,9 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient, Prisma } from "../src/generated/prisma/client";
 import { Role } from "../src/generated/prisma/enums";
-import { CLIENTS, CATALOG } from "../src/tools/liste-points/catalog";
+import { CLIENTS, CATALOG, modelesParDefaut } from "../src/tools/liste-points/catalog";
 import { catalogueParDefaut } from "../src/tools/affectation-es/catalogue";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -41,6 +41,18 @@ async function main() {
   console.log(
     `✔ Référentiel : +${clients.count} clients, +${catalog.count} points au catalogue`,
   );
+
+  // Modèles de saisie (sections pré-remplies) de l'outil Liste de points.
+  const defs = modelesParDefaut();
+  const modeles = await prisma.modele.createMany({
+    data: defs.map((m, i) => ({
+      nom: m.nom,
+      ordre: i,
+      points: m.points as unknown as Prisma.InputJsonValue,
+    })),
+    skipDuplicates: true,
+  });
+  console.log(`✔ Modèles de saisie : +${modeles.count}`);
 
   // Base matériel de l'outil Affectation E/S (automates + modules Distech).
   const cat = catalogueParDefaut();

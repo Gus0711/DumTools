@@ -21,9 +21,9 @@ import {
   emptyIo,
   IO_TYPES,
   type IoType,
+  type ModeleDef,
   type PointRow,
 } from "./model";
-import { TEMPLATES } from "./catalog";
 import { ajouterPointCatalogue, sauverDocument } from "./actions";
 import { Impression } from "./impression";
 import { GenererGfx } from "./generer-gfx";
@@ -48,6 +48,7 @@ export function Editeur({
   initial,
   clients,
   catalogue,
+  modeles,
 }: {
   id: string;
   initial: {
@@ -59,6 +60,7 @@ export function Editeur({
   };
   clients: string[];
   catalogue: CatalogItem[];
+  modeles: ModeleDef[];
 }) {
   const [rows, setRows] = useState<PointRow[]>(initial.rows);
   const [clientNom, setClientNom] = useState(initial.clientNom);
@@ -117,11 +119,14 @@ export function Editeur({
   const addSection = () =>
     setRows((r) => [...r, { id: newId(), kind: "section", nom: "" }]);
   const delRow = (rid: string) => setRows((r) => r.filter((x) => x.id !== rid));
+  // Type d'E/S EXCLUSIF : une ligne = un seul type. Cliquer un type le
+  // sélectionne et efface les autres ; re-cliquer le type actif le désélectionne.
   const toggleIo = (rid: string, t: IoType) =>
-    patch(rid, (x) => ({
-      ...x,
-      io: { ...(x.io ?? emptyIo()), [t]: x.io?.[t] ? 0 : 1 },
-    }));
+    patch(rid, (x) => {
+      const io = emptyIo();
+      if (!x.io?.[t]) io[t] = 1;
+      return { ...x, io };
+    });
 
   function pickPoint(rid: string, opt: ComboOption) {
     if (opt.special) {
@@ -139,15 +144,13 @@ export function Editeur({
   }
 
   function insertTemplate(name: string) {
-    const pts = TEMPLATES[name] ?? [];
+    const modele = modeles.find((m) => m.nom === name);
+    if (!modele) return;
     const add: PointRow[] = [{ id: newId(), kind: "section", nom: name }];
-    for (const pn of pts) {
-      const type = catalog.find((p) => p.nom === pn)?.type as
-        | IoType
-        | undefined;
+    for (const pt of modele.points) {
       const io = emptyIo();
-      if (type) io[type] = 1;
-      add.push({ id: newId(), kind: "point", nom: pn, note: "", io });
+      io[pt.type] = 1;
+      add.push({ id: newId(), kind: "point", nom: pt.nom, note: "", io });
     }
     setRows((r) => [...r, ...add]);
     setTplOpen(false);
@@ -267,14 +270,17 @@ export function Editeur({
           </Button>
           {tplOpen && (
             <div className="absolute z-20 mt-1 w-48 rounded-md border border-border bg-surface py-1 shadow-lg">
-              {Object.keys(TEMPLATES).map((name) => (
+              {modeles.length === 0 && (
+                <span className="block px-3 py-1.5 text-sm text-subtle">Aucun modèle.</span>
+              )}
+              {modeles.map((m) => (
                 <button
-                  key={name}
+                  key={m.nom}
                   type="button"
-                  onClick={() => insertTemplate(name)}
+                  onClick={() => insertTemplate(m.nom)}
                   className="block w-full px-3 py-1.5 text-left text-sm text-fg hover:bg-surface-2"
                 >
-                  {name}
+                  {m.nom}
                 </button>
               ))}
             </div>
@@ -405,6 +411,7 @@ export function Editeur({
                         type="button"
                         onClick={() => toggleIo(r.id, t)}
                         title={t}
+                        aria-pressed={!!r.io?.[t]}
                         className={cn(
                           "h-6 w-9 rounded text-xs font-semibold transition-colors",
                           r.io?.[t]

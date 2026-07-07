@@ -4,6 +4,7 @@ import {
   getCatalogue,
   getClients,
   getDocument,
+  getModeles,
 } from "@/tools/liste-points/queries";
 
 export default async function Page({
@@ -12,10 +13,11 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [doc, clients, catalogue] = await Promise.all([
+  const [doc, clients, catalogue, modeles] = await Promise.all([
     getDocument(id),
     getClients(),
     getCatalogue(),
+    getModeles(),
   ]);
   if (!doc) notFound();
 
@@ -31,6 +33,7 @@ export default async function Page({
       }}
       clients={clients}
       catalogue={catalogue}
+      modeles={modeles}
     />
   );
 }

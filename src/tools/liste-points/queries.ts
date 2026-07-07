@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import type { PointRow } from "./model";
+import type { IoType, ModeleDef, ModelePoint, PointRow } from "./model";
 import type { ClientArtefact } from "@/lib/clients/types";
 
 const nbPoints = (rows: PointRow[]) => rows.filter((r) => r.kind === "point").length;
@@ -97,4 +97,41 @@ export async function getCatalogue(): Promise<{ nom: string; type: string }[]> {
     orderBy: { nom: "asc" },
     select: { nom: true, type: true },
   });
+}
+
+const asPoints = (v: unknown): ModelePoint[] =>
+  Array.isArray(v)
+    ? v
+        .filter((p): p is { nom: string; type: string } => !!p && typeof p === "object")
+        .map((p) => ({ nom: String(p.nom ?? ""), type: (p.type as IoType) ?? "DI" }))
+    : [];
+
+/** Modèles de saisie (sections pré-remplies) pour l'éditeur. */
+export async function getModeles(): Promise<ModeleDef[]> {
+  const rows = await prisma.modele.findMany({ orderBy: [{ ordre: "asc" }, { nom: "asc" }] });
+  return rows.map((m) => ({ nom: m.nom, points: asPoints(m.points) }));
+}
+
+// --- Lecture pour l'écran de configuration ---------------------------------
+
+export interface PointCatalogueRow {
+  id: string;
+  nom: string;
+  type: string;
+}
+export interface ModeleRow {
+  id: string;
+  nom: string;
+  ordre: number;
+  points: ModelePoint[];
+}
+
+export async function getCataloguePointsAdmin(): Promise<PointCatalogueRow[]> {
+  const rows = await prisma.pointCatalog.findMany({ orderBy: { nom: "asc" } });
+  return rows.map((r) => ({ id: r.id, nom: r.nom, type: r.type }));
+}
+
+export async function getModelesAdmin(): Promise<ModeleRow[]> {
+  const rows = await prisma.modele.findMany({ orderBy: [{ ordre: "asc" }, { nom: "asc" }] });
+  return rows.map((m) => ({ id: m.id, nom: m.nom, ordre: m.ordre, points: asPoints(m.points) }));
 }

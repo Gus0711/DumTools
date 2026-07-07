@@ -23,6 +23,18 @@ export function emptyIo(): Io {
   return { AI: 0, DI: 0, AO: 0, DO: 0, COM: 0 };
 }
 
+/** Un point d'un modèle (nom + type d'E/S). */
+export interface ModelePoint {
+  nom: string;
+  type: IoType;
+}
+
+/** Un modèle : section pré-remplie de points, insérable en un clic. */
+export interface ModeleDef {
+  nom: string;
+  points: ModelePoint[];
+}
+
 export interface Totals extends Io {
   /** Nombre de points ayant au moins une E/S physique. */
   points: number;

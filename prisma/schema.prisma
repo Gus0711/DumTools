@@ -93,6 +93,18 @@ model PointCatalog {
   createdAt DateTime @default(now())
 }
 
+/// Modèle de saisie : une section pré-remplie de points (Chaudière, CTA…),
+/// insérable en un clic dans une liste. Éditable via /configuration/points.
+/// `points` = JSON ordonné de { nom, type }. Seedé depuis TEMPLATES (catalog.ts).
+model Modele {
+  id        String   @id @default(cuid())
+  nom       String   @unique
+  ordre     Int      @default(0)
+  points    Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ---- Outil « Affectation E/S depuis GFX » ----------------------------------
 
 /// Base matériel éditable — modèle d'automate Distech (partagé entre tous).

@@ -78,3 +78,14 @@ export const TEMPLATES: Record<string, string[]> = {
     "Commande registre Air Regeté"
   ]
 };
+
+/** Modèles par défaut au format { nom, points:[{nom,type}] }, résolus depuis le
+ *  catalogue (repli type "DI" si un nom n'y figure pas). Sert de seed BDD. */
+export function modelesParDefaut(): { nom: string; points: CatalogPoint[] }[] {
+  const typeDe = (nom: string): IoType =>
+    CATALOG.find((p) => p.nom === nom)?.type ?? "DI";
+  return Object.entries(TEMPLATES).map(([nom, noms]) => ({
+    nom,
+    points: noms.map((n) => ({ nom: n, type: typeDe(n) })),
+  }));
+}
