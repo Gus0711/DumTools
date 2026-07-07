@@ -35,6 +35,7 @@ import {
   type Proposition,
 } from "./reco-automate";
 import { pointsToRows, syncPoints } from "./derivation";
+import { affecterAuto, moduleIntegre, reconcilierModules } from "./affectation-auto";
 import { ListeTab } from "./liste-tab";
 import { AffectationTab } from "./affectation-tab";
 import { TestsTab } from "./tests-tab";
@@ -47,12 +48,26 @@ import type { ModeleDef, PointRow } from "@/tools/liste-points/model";
 const TABS = [
   { id: "projet", label: "Projet" },
   { id: "liste", label: "Liste de points" },
-  { id: "modules", label: "Modules" },
+  { id: "modules", label: "Automate & modules" },
   { id: "affectation", label: "Affectation" },
   { id: "tests", label: "Mise en service" },
   { id: "apercu", label: "Aperçu" },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
+
+/** Rétro-compat : projet avec automate à E/S intégrées mais sans « module
+ *  intégré » (anciens projets) → crée le module intégré et affecte. */
+function reconcileInitial(p: Project, catalogue: Catalogue): Project {
+  if (
+    p.controller &&
+    moduleIntegre(catalogue, p.controller) &&
+    !(p.modules ?? []).some(isIntegratedControllerType)
+  ) {
+    const base = { ...p, modules: reconcilierModules(catalogue, p.controller, p.modules ?? []) };
+    return { ...base, points: affecterAuto(base) };
+  }
+  return p;
+}
 
 export function Editeur({
   id,
@@ -72,7 +87,7 @@ export function Editeur({
   const [nom, setNom] = useState(initial.nom);
   const [clientNom, setClientNom] = useState(initial.clientNom);
   const [numeroWhy, setNumeroWhy] = useState(initial.numeroWhy);
-  const [project, setProject] = useState<Project>(initial.project);
+  const [project, setProject] = useState<Project>(() => reconcileInitial(initial.project, catalogue));
   const [tab, setTab] = useState<TabId>("projet");
   const [save, setSave] = useState<"saved" | "saving" | "error">("saved");
   const [importState, setImportState] = useState<
@@ -83,25 +98,35 @@ export function Editeur({
   const set = <K extends keyof Project>(key: K, value: Project[K]) =>
     patch((p) => ({ ...p, [key]: value }));
 
-  // Édition des lignes de la liste → resynchronise les points dérivés (bornes).
+  // Édition des lignes de la liste → resynchronise les points dérivés, puis
+  // réaffecte automatiquement aux bornes (les bornes suivent l'ordre de la liste).
   const setListeRows: React.Dispatch<React.SetStateAction<PointRow[]>> = (updater) =>
     setProject((p) => {
       const rows =
         typeof updater === "function"
           ? (updater as (r: PointRow[]) => PointRow[])(p.rows ?? [])
           : updater;
-      return { ...p, rows, points: syncPoints(rows, p.points ?? []) };
+      const points = syncPoints(rows, p.points ?? []);
+      return { ...p, rows, points: affecterAuto({ ...p, points }) };
     });
 
-  // Applique une proposition d'automate : définit le contrôleur et, si la solution
-  // requiert des modules d'extension, les ajoute — sauf si des modules d'E/S existent déjà.
+  // Choix d'un automate : crée le module intégré au besoin et affecte auto.
+  const choisirAutomate = (reference: string) =>
+    setProject((p) => {
+      const modules = reconcilierModules(catalogue, reference, p.modules ?? []);
+      const base = { ...p, controller: reference, modules };
+      return { ...base, points: affecterAuto(base) };
+    });
+
+  // Applique une proposition d'automate : contrôleur + module intégré éventuel +
+  // modules d'extension calculés, puis affectation automatique aux bornes.
   function appliquerProposition(prop: Proposition) {
     patch((p) => {
-      let mods = p.modules ?? [];
-      const aDejaModulesIo = mods.some(
+      let mods = reconcilierModules(catalogue, prop.reference, p.modules ?? []);
+      const aDejaExtension = mods.some(
         (m) => !isCommunicationType(m) && !isIntegratedControllerType(m),
       );
-      if (prop.modules > 0 && prop.moduleType && !aDejaModulesIo) {
+      if (prop.modules > 0 && prop.moduleType && !aDejaExtension) {
         let num = nextIoModuleNumber(mods);
         const nouveaux: Module[] = Array.from({ length: prop.modules }, () => {
           const mod = buildModule(catalogue, prop.moduleType!, num);
@@ -110,7 +135,8 @@ export function Editeur({
         });
         mods = [...mods, ...nouveaux];
       }
-      return { ...p, controller: prop.reference, modules: mods };
+      const base = { ...p, controller: prop.reference, modules: mods };
+      return { ...base, points: affecterAuto(base) };
     });
   }
 
@@ -278,13 +304,19 @@ export function Editeur({
           clients={clients}
           project={project}
           set={set}
-          catalogue={catalogue}
-          onPickAutomate={appliquerProposition}
         />
       )}
 
       {tab === "modules" && (
-        <ModulesTab modules={modules} patch={patch} catalogue={catalogue} />
+        <AutomateModulesTab
+          project={project}
+          set={set}
+          patch={patch}
+          catalogue={catalogue}
+          modules={modules}
+          onPickAutomate={appliquerProposition}
+          onChooseController={choisirAutomate}
+        />
       )}
 
       {tab === "liste" && (
@@ -321,8 +353,6 @@ function ProjetTab({
   clients,
   project,
   set,
-  catalogue,
-  onPickAutomate,
 }: {
   nom: string;
   setNom: (v: string) => void;
@@ -333,17 +363,10 @@ function ProjetTab({
   clients: string[];
   project: Project;
   set: <K extends keyof Project>(key: K, value: Project[K]) => void;
-  catalogue: Catalogue;
-  onPickAutomate: (prop: Proposition) => void;
 }) {
   const clientOptions = useMemo(() => clients.map((c) => ({ value: c })), [clients]);
-  const automateOptions = useMemo(
-    () => ["", ...catalogue.automates.map((a) => a.reference)],
-    [catalogue.automates],
-  );
-  const [showReco, setShowReco] = useState(false);
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="max-w-2xl">
       <Section titre="Identification">
         <Field label="Nom du projet">
           <TextInput value={nom} onChange={setNom} />
@@ -364,10 +387,7 @@ function ProjetTab({
           <TextInput value={project.header} onChange={(v) => set("header", v)} />
         </Field>
         <Field label="Titre du document">
-          <TextInput
-            value={project.document_title}
-            onChange={(v) => set("document_title", v)}
-          />
+          <TextInput value={project.document_title} onChange={(v) => set("document_title", v)} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Version">
@@ -377,84 +397,6 @@ function ProjetTab({
             <TextInput value={project.date} onChange={(v) => set("date", v)} />
           </Field>
         </div>
-      </Section>
-
-      <Section titre="Automate & alimentation">
-        <Field label="Automate">
-          <Select
-            value={project.controller}
-            onChange={(v) => set("controller", v)}
-            options={automateOptions}
-            labels={{ "": "— à choisir —" }}
-          />
-        </Field>
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowReco((v) => !v)}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
-          >
-            <Wand2 className="h-3.5 w-3.5" />
-            Proposer un automate selon les E/S
-          </button>
-          {showReco && (
-            <RecoAutomate
-              project={project}
-              catalogue={catalogue}
-              onPick={(p) => {
-                onPickAutomate(p);
-                setShowReco(false);
-              }}
-            />
-          )}
-        </div>
-        <Field label="Alimentation">
-          <Select
-            value={project.power_supply}
-            onChange={(v) => set("power_supply", v)}
-            options={["none", "integrated", "230V"]}
-            labels={{
-              none: "Aucune",
-              integrated: "24 VAC/DC intégrée (ECY-PS24)",
-              "230V": "100–240 VAC (ECY-PS100-240)",
-            }}
-          />
-        </Field>
-        <label className="flex items-center gap-2 text-sm text-fg">
-          <input
-            type="checkbox"
-            checked={project.include_references}
-            onChange={(e) => set("include_references", e.target.checked)}
-          />
-          Afficher les repères dans les libellés de points
-        </label>
-      </Section>
-
-      <Section titre="Réseaux">
-        <Field label="Réseau 1">
-          <TextInput value={project.network_1} onChange={(v) => set("network_1", v)} />
-        </Field>
-        <Field label="Réseau 2">
-          <TextInput value={project.network_2} onChange={(v) => set("network_2", v)} />
-        </Field>
-        <Field label="Adresse IP automate">
-          <TextInput
-            value={project.controller_ip}
-            onChange={(v) => set("controller_ip", v)}
-          />
-        </Field>
-      </Section>
-
-      <Section titre="Wi-Fi de mise en service">
-        <Field label="SSID">
-          <TextInput value={project.wifi_ssid} onChange={(v) => set("wifi_ssid", v)} />
-        </Field>
-        <Field label="Mot de passe">
-          <TextInput
-            value={project.wifi_password}
-            onChange={(v) => set("wifi_password", v)}
-          />
-        </Field>
       </Section>
     </div>
   );
@@ -556,15 +498,28 @@ function nextIoModuleNumber(modules: Module[]): number {
   return nums.length ? Math.max(...nums) + 1 : 1;
 }
 
-function ModulesTab({
-  modules,
+function AutomateModulesTab({
+  project,
+  set,
   patch,
   catalogue,
+  modules,
+  onPickAutomate,
+  onChooseController,
 }: {
-  modules: Module[];
+  project: Project;
+  set: <K extends keyof Project>(key: K, value: Project[K]) => void;
   patch: (fn: (p: Project) => Project) => void;
   catalogue: Catalogue;
+  modules: Module[];
+  onPickAutomate: (prop: Proposition) => void;
+  onChooseController: (reference: string) => void;
 }) {
+  const automateOptions = useMemo(
+    () => ["", ...catalogue.automates.map((a) => a.reference)],
+    [catalogue.automates],
+  );
+  const [showReco, setShowReco] = useState(false);
   const typeOptions = useMemo(
     () => catalogue.modules.filter((m) => m.categorie !== "accessoire").map((m) => m.type),
     [catalogue.modules],
@@ -593,13 +548,89 @@ function ModulesTab({
   }
 
   return (
-    <div>
-      <div className="mb-3">
-        <Button size="sm" onClick={addModule}>
-          <Plus className="h-4 w-4" /> Ajouter un module
-        </Button>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <Section titre="Automate & alimentation">
+          <Field label="Automate">
+            <Select
+              value={project.controller}
+              onChange={onChooseController}
+              options={automateOptions}
+              labels={{ "": "— à choisir —" }}
+            />
+          </Field>
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowReco((v) => !v)}
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
+            >
+              <Wand2 className="h-3.5 w-3.5" />
+              Proposer un automate selon les E/S
+            </button>
+            {showReco && (
+              <RecoAutomate
+                project={project}
+                catalogue={catalogue}
+                onPick={(p) => {
+                  onPickAutomate(p);
+                  setShowReco(false);
+                }}
+              />
+            )}
+          </div>
+          <Field label="Alimentation">
+            <Select
+              value={project.power_supply}
+              onChange={(v) => set("power_supply", v)}
+              options={["none", "integrated", "230V"]}
+              labels={{
+                none: "Aucune",
+                integrated: "24 VAC/DC intégrée (ECY-PS24)",
+                "230V": "100–240 VAC (ECY-PS100-240)",
+              }}
+            />
+          </Field>
+          <label className="flex items-center gap-2 text-sm text-fg">
+            <input
+              type="checkbox"
+              checked={project.include_references}
+              onChange={(e) => set("include_references", e.target.checked)}
+            />
+            Afficher les repères dans les libellés de points
+          </label>
+        </Section>
+
+        <Section titre="Réseaux">
+          <Field label="Réseau 1">
+            <TextInput value={project.network_1} onChange={(v) => set("network_1", v)} />
+          </Field>
+          <Field label="Réseau 2">
+            <TextInput value={project.network_2} onChange={(v) => set("network_2", v)} />
+          </Field>
+          <Field label="Adresse IP automate">
+            <TextInput value={project.controller_ip} onChange={(v) => set("controller_ip", v)} />
+          </Field>
+        </Section>
+
+        <Section titre="Wi-Fi de mise en service">
+          <Field label="SSID">
+            <TextInput value={project.wifi_ssid} onChange={(v) => set("wifi_ssid", v)} />
+          </Field>
+          <Field label="Mot de passe">
+            <TextInput value={project.wifi_password} onChange={(v) => set("wifi_password", v)} />
+          </Field>
+        </Section>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-fg">Modules d&apos;extension</h2>
+          <Button size="sm" onClick={addModule}>
+            <Plus className="h-4 w-4" /> Ajouter un module
+          </Button>
+        </div>
+        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
@@ -659,6 +690,7 @@ function ModulesTab({
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
