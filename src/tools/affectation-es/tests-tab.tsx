@@ -175,9 +175,9 @@ export function TestsTab({
                               <textarea
                                 value={p.testComment ?? ""}
                                 onChange={(e) => update(p.uid, { testComment: e.target.value })}
-                                rows={2}
+                                rows={1}
                                 placeholder="—"
-                                className="min-h-16 w-full resize-y rounded border border-border bg-surface px-2 py-1.5 text-sm leading-snug text-fg placeholder:text-subtle"
+                                className="h-8 min-h-8 w-full resize-y rounded border border-border bg-surface px-2 py-1.5 text-sm leading-snug text-fg placeholder:text-subtle"
                               />
                             </td>
                           </tr>
