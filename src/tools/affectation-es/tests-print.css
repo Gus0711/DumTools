@@ -1,0 +1,244 @@
+/* Rapport de mise en service imprimable — A4 portrait, orienté client.
+   Réutilise le mécanisme .print-root (globals.css) ; tout est scopé .tests-report. */
+
+.tests-report .print-page {
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  color: #111;
+  position: relative;
+  overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 12mm 12mm 11mm;
+  box-sizing: border-box;
+}
+
+/* En-tête / pied / pastille (repris de l'aperçu affectation) */
+.tests-report .doc-header {
+  height: 12mm;
+  border-bottom: 1.4px solid #2c638b;
+  background: linear-gradient(180deg, #f4f8fc, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #214866;
+  padding: 0 20mm;
+  position: relative;
+}
+.tests-report .doc-header .header-distech-logo {
+  position: absolute;
+  left: 3mm;
+  top: 2.1mm;
+  width: 24mm;
+  height: 6.4mm;
+  object-fit: contain;
+}
+.tests-report .doc-footer {
+  position: absolute;
+  left: 12mm;
+  right: 12mm;
+  bottom: 5mm;
+  height: 8mm;
+  border-top: 1px solid #90a7ba;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  font-size: 7pt;
+  color: #2f475e;
+}
+.tests-report .doc-footer div:nth-child(2) { text-align: center; }
+.tests-report .doc-footer div:nth-child(3) { text-align: right; }
+.tests-report .side-page {
+  position: absolute;
+  right: 0;
+  top: 120mm;
+  background: #f3a23b;
+  color: #fff;
+  width: 8mm;
+  height: 20mm;
+  border-radius: 2mm 0 0 2mm;
+  display: grid;
+  place-items: center;
+  font-size: 13pt;
+  font-weight: 700;
+  box-shadow: 0 0 0 0.6mm #f7d1a0 inset;
+}
+.tests-report .logo-dumortier {
+  position: absolute;
+  left: 12mm;
+  bottom: 14mm;
+  width: 30mm;
+  height: 8mm;
+  display: flex;
+  align-items: flex-end;
+}
+.tests-report .logo-dumortier img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left bottom;
+}
+
+/* Couverture */
+.tests-report .cover-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.tests-report .cover-page .doc-header { width: 100%; }
+.tests-report .cover-logo {
+  width: 46mm;
+  height: 50mm;
+  object-fit: contain;
+  margin-top: 22mm;
+}
+.tests-report .cover-sub { font-size: 9pt; color: #666; margin-top: 1mm; }
+.tests-report .cover-title {
+  margin-top: 14mm;
+  font-size: 22pt;
+  line-height: 1.3;
+  font-weight: 700;
+  white-space: pre-line;
+  max-width: 165mm;
+  color: #214866;
+}
+.tests-report .cover-project { margin-top: 12mm; font-size: 13pt; color: #2e5574; }
+.tests-report .company-block {
+  margin-top: auto;
+  margin-bottom: 20mm;
+  border: 1px solid #8aa5ba;
+  background: #f8fbfe;
+  width: 150mm;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  font-size: 8pt;
+  text-align: left;
+}
+.tests-report .company-block div { padding: 4mm; }
+.tests-report .company-block div + div { border-left: 1px solid #b6c7d6; }
+
+/* Titre de page + synthèse */
+.tests-report .module-title {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #214866;
+  margin: 4mm 0 3mm;
+}
+.tests-report .report-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4mm;
+  margin: 3mm 0 5mm;
+}
+.tests-report .summary-box {
+  border: 1px solid #d9e4ef;
+  border-radius: 2mm;
+  padding: 3mm;
+  background: #f7fbff;
+  text-align: center;
+}
+.tests-report .summary-box b { display: block; font-size: 15pt; color: #14365c; }
+.tests-report .summary-box span { font-size: 8pt; color: #587089; font-weight: 700; }
+.tests-report .summary-box.ok b { color: #177245; }
+.tests-report .summary-box.defaut b { color: #b23030; }
+
+/* Bandeau de module */
+.tests-report .test-module-banner {
+  border: 1px solid #cfdcea;
+  border-left: 4px solid #5d94bb;
+  border-radius: 2mm;
+  padding: 2.5mm 3.5mm;
+  margin-bottom: 3mm;
+  background: #f4f8fc;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6mm;
+}
+.tests-report .test-module-banner h3 { margin: 0; font-size: 11pt; color: #245f88; }
+.tests-report .test-module-banner p { margin: 0.5mm 0 0; font-size: 8pt; color: #5b6e84; }
+.tests-report .test-module-meta { font-size: 7.5pt; color: #78889a; white-space: nowrap; }
+
+/* Tableau du rapport */
+.tests-report .rep-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  table-layout: fixed;
+}
+.tests-report .rep-table th,
+.tests-report .rep-table td {
+  border: 1px solid #d7e4ef;
+  padding: 2mm 2.4mm;
+  vertical-align: top;
+  text-align: left;
+  word-break: break-word;
+}
+.tests-report .rep-table th {
+  background: #eef4fa;
+  color: #294967;
+  font-size: 7.5pt;
+  letter-spacing: 0.02em;
+}
+.tests-report .rep-table .mono { font-family: "Courier New", monospace; font-size: 8pt; }
+.tests-report .rep-table .comment-cell { white-space: pre-line; color: #33465a; }
+.tests-report .rep-table tr.st-ok td { background: #f3fbf6; }
+.tests-report .rep-table tr.st-defaut td { background: #fff5f5; }
+
+/* Badge de résultat */
+.tests-report .badge {
+  display: inline-block;
+  padding: 0.6mm 2mm;
+  border-radius: 1.4mm;
+  font-weight: 700;
+  font-size: 7.6pt;
+  border: 1px solid;
+}
+.tests-report .badge.st-ok { background: #e8f6ec; color: #177245; border-color: #b7e0c4; }
+.tests-report .badge.st-defaut { background: #fdeaea; color: #b23030; border-color: #efb0b0; }
+.tests-report .badge.st-todo { background: #edf3f8; color: #5a7188; border-color: #cdd9e6; }
+
+/* Légende */
+.tests-report .rep-legend {
+  display: flex;
+  gap: 8mm;
+  flex-wrap: wrap;
+  margin-top: 4mm;
+  font-size: 8pt;
+  color: #50657b;
+}
+.tests-report .rep-legend span { display: inline-flex; align-items: center; gap: 2mm; }
+.tests-report .rep-legend i {
+  width: 3mm;
+  height: 3mm;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  display: inline-block;
+}
+.tests-report .rep-legend i.ok { background: #e8f6ec; }
+.tests-report .rep-legend i.defaut { background: #fdeaea; }
+.tests-report .rep-legend i.todo { background: #edf3f8; }
+
+/* Impression : A4 portrait plein cadre */
+@media print {
+  @page tests-portrait { size: A4 portrait; margin: 0; }
+  .tests-report.print-root .print-page {
+    page: tests-portrait;
+    margin: 0;
+    box-shadow: none;
+    break-after: page;
+    page-break-after: always;
+  }
+  .tests-report.print-root .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .tests-report * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

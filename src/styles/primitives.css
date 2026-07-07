@@ -1,0 +1,46 @@
+/* =============================================================================
+ * ÉTAGE 1 — PRIMITIVES
+ * Palette brute Dumortier / Groupe Fareneït (extraite de existant/ListePts_GTB.html).
+ * C'est le SEUL fichier où l'on écrit des valeurs de couleur en dur.
+ * On ne consomme jamais ces variables directement dans les composants :
+ * elles ne sont référencées que par l'étage sémantique (semantic.css).
+ * ========================================================================== */
+
+:root {
+  /* --- Bleu marine (marque) — teintes exactes du logo (#003765) ------------ */
+  --navy-050: #e3ebf2;
+  --navy-100: #c2d0de;
+  --navy-300: #4d7398;
+  --navy-700: #003765; /* couleur de marque principale (logo) */
+  --navy-900: #002845;
+
+  /* --- Or / moutarde (accent) — teintes exactes du logo (#c79213) ---------- */
+  --gold-050: #f7ecd3;
+  --gold-100: #ecd39a;
+  --gold-500: #c79213; /* accent principal (logo) */
+  --gold-600: #a97d0d;
+
+  /* --- Neutres (encre, surfaces, traits) ---------------------------------- */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #fafbfc;
+  --neutral-100: #f4f6f8;
+  --neutral-200: #eceef1;
+  --neutral-300: #dfe3e8;
+  --neutral-400: #c3cad3;
+  --neutral-500: #8b94a3;
+  --neutral-600: #7c8896;
+  --neutral-700: #3b4654;
+  --neutral-800: #26313d;
+  --neutral-900: #16202b;
+
+  /* --- États -------------------------------------------------------------- */
+  --red-600:   #c0392b;
+  --green-600: #1a8a4a;
+
+  /* --- Couleurs métier E/S (une teinte stable par type d'entrée/sortie) ---- */
+  --es-ai:  #1f6feb; /* entrée analogique */
+  --es-di:  #b4690e; /* entrée logique    */
+  --es-ao:  #7b41c9; /* sortie analogique */
+  --es-do:  #1a8a4a; /* sortie logique    */
+  --es-com: #0d8c97; /* bus / communication */
+}

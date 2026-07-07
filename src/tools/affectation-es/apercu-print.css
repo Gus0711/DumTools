@@ -1,0 +1,430 @@
+/* Document imprimable « Affectation E/S » — porté fidèlement de l'outil legacy
+   (existant/Affectation_ES_depuis_GFX.html). A4 paysage, schéma à bornes + tableaux.
+   Tout est scopé sous .affectation-doc pour ne pas percuter les autres outils. */
+
+/* --- Page & structure ---------------------------------------------------- */
+.affectation-doc .print-page {
+  width: 297mm;
+  height: 210mm;
+  background: #fff;
+  color: #111;
+  position: relative;
+  overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 12mm 13mm 11mm;
+  box-sizing: border-box;
+}
+
+.affectation-doc .doc-header {
+  height: 12mm;
+  border-bottom: 1.4px solid #2c638b;
+  background: linear-gradient(180deg, #f4f8fc, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 10pt;
+  font-weight: 700;
+  color: #214866;
+  padding: 0 20mm;
+  position: relative;
+}
+.affectation-doc .doc-header .header-distech-logo {
+  position: absolute;
+  left: 4mm;
+  top: 2.1mm;
+  width: 24mm;
+  height: 6.4mm;
+  object-fit: contain;
+  display: block;
+}
+.affectation-doc .doc-header .header-title { display: block; }
+
+.affectation-doc .doc-footer {
+  position: absolute;
+  left: 13mm;
+  right: 13mm;
+  bottom: 5mm;
+  height: 8mm;
+  border-top: 1px solid #90a7ba;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  font-size: 7pt;
+  color: #2f475e;
+}
+.affectation-doc .doc-footer div:nth-child(2) { text-align: center; }
+.affectation-doc .doc-footer div:nth-child(3) { text-align: right; }
+
+.affectation-doc .side-page {
+  position: absolute;
+  right: 2.5mm;
+  top: 91mm;
+  background: #f3a23b;
+  color: #fff;
+  width: 10mm;
+  height: 24mm;
+  border-radius: 2mm 0 0 2mm;
+  display: grid;
+  place-items: center;
+  font-size: 16pt;
+  font-weight: 700;
+  box-shadow: 0 0 0 0.6mm #f7d1a0 inset;
+}
+
+.affectation-doc .logo-dumortier {
+  position: absolute;
+  left: 14mm;
+  bottom: 14.5mm;
+  width: 34mm;
+  height: 8.7mm;
+  display: flex;
+  align-items: flex-end;
+  z-index: 2;
+}
+.affectation-doc .logo-dumortier img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left bottom;
+}
+
+/* --- Couverture ---------------------------------------------------------- */
+.affectation-doc .cover-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.affectation-doc .cover-page .doc-header { width: 100%; }
+.affectation-doc .cover-logo {
+  width: 56mm;
+  height: 61mm;
+  object-fit: contain;
+  display: block;
+  margin-top: 10mm;
+}
+.affectation-doc .cover-sub { font-size: 9pt; color: #666; margin-top: 1mm; }
+.affectation-doc .cover-title {
+  margin-top: 10mm;
+  font-size: 24pt;
+  line-height: 1.3;
+  font-weight: 700;
+  white-space: pre-line;
+  max-width: 230mm;
+  color: #214866;
+}
+.affectation-doc .cover-project { margin-top: 14mm; font-size: 14pt; color: #2e5574; }
+.affectation-doc .company-block {
+  margin-top: auto;
+  margin-bottom: 17mm;
+  border: 1px solid #8aa5ba;
+  background: #f8fbfe;
+  width: 175mm;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  font-size: 8pt;
+  text-align: left;
+}
+.affectation-doc .company-block div { padding: 4mm; }
+.affectation-doc .company-block div + div { border-left: 1px solid #b6c7d6; }
+
+/* --- Page automate principal --------------------------------------------- */
+.affectation-doc .module-title {
+  font-size: 15pt;
+  font-weight: 700;
+  color: #214866;
+  margin: 4mm 0 4mm 7mm;
+}
+.affectation-doc .controller-content {
+  height: 161mm;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 15mm;
+  align-items: center;
+}
+.affectation-doc .controller-content.with-photo {
+  grid-template-columns: minmax(0, 1fr) 76mm;
+  gap: 12mm;
+  height: 150mm;
+}
+.affectation-doc .controller-box {
+  border: 2px solid #2c638b;
+  border-radius: 4mm;
+  padding: 7mm;
+  background: linear-gradient(180deg, #f7fbff, #eef5fb);
+}
+.affectation-doc .controller-box h2 { margin: 0 0 5mm; font-size: 18pt; color: #214866; }
+.affectation-doc .network-list { display: grid; gap: 4mm; }
+.affectation-doc .network-item {
+  display: grid;
+  grid-template-columns: 42mm 1fr;
+  gap: 5mm;
+  border-bottom: 1px solid #c8d7e4;
+  padding-bottom: 2.5mm;
+  font-size: 10pt;
+}
+.affectation-doc .network-item b { color: #214866; }
+.affectation-doc .controller-photo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3mm;
+  min-height: 0;
+}
+.affectation-doc .controller-photo img { object-fit: contain; }
+.affectation-doc .controller-photo .controller-main { max-width: 70mm; max-height: 76mm; }
+.affectation-doc .controller-photo .power-main { max-width: 65mm; max-height: 54mm; }
+.affectation-doc .controller-photo .hardware-caption {
+  font-size: 7pt;
+  font-weight: 700;
+  color: #405268;
+  text-align: center;
+  margin-top: -1mm;
+}
+
+/* --- Page module (schéma à bornes + tableaux) ---------------------------- */
+.affectation-doc .module-plan {
+  height: 153mm;
+  display: grid;
+  grid-template-columns: 98mm minmax(0, 1fr);
+  gap: 7mm;
+  align-items: start;
+}
+.affectation-doc .module-plan.with-photo { grid-template-columns: 98mm minmax(0, 1fr); }
+.affectation-doc .module-figure {
+  height: 149mm;
+  display: grid;
+  grid-template-rows: auto 84mm auto;
+  align-items: start;
+  padding: 2mm 2mm 1mm;
+  border: 1px solid #d8e5f0;
+  border-radius: 3mm;
+  background: linear-gradient(180deg, #fbfdff, #f3f8fc);
+  margin-top: -3mm;
+}
+.affectation-doc .module-figure.module-16di { grid-template-rows: auto 68mm auto; }
+.affectation-doc .module-zone { width: 100%; padding: 0 1mm; }
+.affectation-doc .module-zone.top { margin-bottom: 1mm; }
+.affectation-doc .module-zone.bottom { margin-top: 0.2mm; }
+.affectation-doc .module-zone.bottom.split-ui8 { margin-top: 0; }
+.affectation-doc .dual-input-stack { display: grid; grid-template-rows: auto auto; gap: 1.5mm; }
+
+.affectation-doc .module-info-bank { display: grid; gap: 1.5mm; align-items: end; }
+.affectation-doc .module-info-bank.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.affectation-doc .module-info-bank.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.affectation-doc .module-info-bank.cols-6 { grid-template-columns: repeat(6, 1fr); }
+.affectation-doc .module-info-bank.cols-8 { grid-template-columns: repeat(8, 1fr); }
+.affectation-doc .module-info-bank.cols-16 { grid-template-columns: repeat(16, 1fr); }
+.affectation-doc .terminal { min-width: 0; text-align: center; }
+.affectation-doc .terminal .wire-label {
+  min-height: 12mm;
+  font-size: 5.8pt;
+  line-height: 1.08;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  word-break: break-word;
+  color: #294d68;
+}
+.affectation-doc .module-zone.bottom .wire-label { align-items: flex-end; min-height: 8mm; }
+.affectation-doc .terminal-pin {
+  height: 6mm;
+  border: 1px solid #596775;
+  background: #fff;
+  border-radius: 0.8mm;
+  display: grid;
+  place-items: center;
+  font-size: 6pt;
+  font-weight: 700;
+}
+.affectation-doc .module-info-bank.output .terminal-pin { background: #fff0dd; border-color: #d0893d; }
+.affectation-doc .module-info-bank.input .terminal-pin { background: #eaf4fb; border-color: #5d94bb; }
+
+.affectation-doc .print-module-photo {
+  height: 84mm;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: -2mm 0 0 0;
+  overflow: hidden;
+}
+.affectation-doc .print-module-photo img { max-height: 82mm; max-width: 80mm; object-fit: contain; }
+.affectation-doc .module-figure.module-16di .print-module-photo { height: 68mm; margin: -1mm 0 0 0; }
+.affectation-doc .module-figure.module-16di .print-module-photo img { max-height: 66mm; max-width: 72mm; }
+
+.affectation-doc .module-table-area {
+  height: 153mm;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+  overflow: hidden;
+}
+.affectation-doc .io-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 7.3pt;
+  table-layout: fixed;
+  border: 1px solid #7f99ad;
+  border-radius: 2mm;
+  overflow: hidden;
+  background: #fff;
+}
+.affectation-doc .io-table caption {
+  text-align: left;
+  font-size: 9pt;
+  font-weight: 700;
+  margin-bottom: 0;
+  padding: 1.7mm 3mm;
+  border-radius: 2mm 2mm 0 0;
+  color: #fff;
+  display: table-caption;
+  caption-side: top;
+  width: 100%;
+  box-sizing: border-box;
+}
+.affectation-doc .io-table.io-table-input caption { background: #5d94bb; }
+.affectation-doc .io-table.io-table-output caption { background: #d0893d; }
+.affectation-doc .io-table th,
+.affectation-doc .io-table td {
+  border: 1px solid #7f99ad;
+  padding: 1.4mm 1.5mm;
+  vertical-align: middle;
+}
+.affectation-doc .io-table th { background: #dfeaf3; color: #214866; font-weight: 700; }
+.affectation-doc .io-table.io-table-input th { background: #eaf4fb; }
+.affectation-doc .io-table.io-table-output th { background: #fff0dd; }
+.affectation-doc .io-table td:first-child,
+.affectation-doc .io-table th:first-child { background: #f8fbfe; font-weight: 700; }
+.affectation-doc .io-table th:first-child,
+.affectation-doc .io-table td:first-child { width: 12mm; text-align: center; }
+.affectation-doc .io-table th:last-child,
+.affectation-doc .io-table td:last-child { width: 23mm; text-align: center; }
+.affectation-doc .io-table td:nth-child(2) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.affectation-doc .free-cell { color: #999; font-style: italic; }
+.affectation-doc .legend { font-size: 6.5pt; color: #4d6071; margin-top: auto; }
+
+/* --- Pages automate à E/S intégrées -------------------------------------- */
+.affectation-doc .integrated-table-page .integrated-table-grid {
+  height: 150mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7mm;
+  align-items: start;
+}
+.affectation-doc .integrated-table-page .integrated-table-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
+}
+.affectation-doc .integrated-table-page .integrated-table-column .io-table { font-size: 7.5pt; }
+.affectation-doc .integrated-table-page .integrated-summary {
+  font-size: 8pt;
+  color: #405268;
+  background: #f3f7fb;
+  border: 1px solid #cbd9e5;
+  border-radius: 2mm;
+  padding: 2.5mm 3mm;
+}
+.affectation-doc .integrated-diagram-page .integrated-controller-plan {
+  height: 151mm;
+  display: grid;
+  grid-template-rows: auto minmax(78mm, 1fr) auto;
+  gap: 2mm;
+  border: 1px solid #d8e5f0;
+  border-radius: 3mm;
+  background: linear-gradient(180deg, #fbfdff, #f3f8fc);
+  padding: 3mm 5mm;
+}
+.affectation-doc .integrated-diagram-page .integrated-controller-photo {
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.affectation-doc .integrated-diagram-page .integrated-controller-photo img {
+  max-width: 245mm;
+  max-height: 105mm;
+  object-fit: contain;
+}
+.affectation-doc .integrated-diagram-page .module-info-bank { width: 100%; gap: 1.2mm; }
+.affectation-doc .integrated-diagram-page .terminal .wire-label { min-height: 11mm; font-size: 5.5pt; }
+.affectation-doc .integrated-diagram-page .terminal-pin { height: 6mm; font-size: 6pt; }
+.affectation-doc .integrated-controller-note {
+  font-size: 7pt;
+  color: #405268;
+  text-align: center;
+  margin-top: 1.5mm;
+}
+
+/* --- Page module de communication (MBUS / RS485) ------------------------- */
+.affectation-doc .comm-plan {
+  height: 153mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8mm;
+  border: 1px solid #d8e5f0;
+  border-radius: 3mm;
+  background: linear-gradient(180deg, #fbfdff, #f3f8fc);
+}
+.affectation-doc .comm-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.affectation-doc .comm-photo img {
+  max-height: 90mm;
+  max-width: 120mm;
+  object-fit: contain;
+}
+.affectation-doc .comm-note {
+  max-width: 165mm;
+  text-align: center;
+  font-size: 9pt;
+  color: #405268;
+}
+
+/* --- Aperçu à l'écran : pages mises à l'échelle -------------------------- */
+@media screen {
+  .affectation-doc.print-root {
+    display: block;
+    background: #eef1f5;
+    padding: 16px;
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+  .affectation-doc.print-root .print-page {
+    margin: 0 auto 16px;
+    box-shadow: 0 2px 12px rgba(16, 32, 43, 0.18);
+    zoom: 0.62;
+  }
+}
+
+/* --- Impression : A4 paysage plein cadre --------------------------------- */
+@media print {
+  @page affectation-landscape { size: A4 landscape; margin: 0; }
+  .affectation-doc.print-root .print-page {
+    page: affectation-landscape;
+    margin: 0;
+    box-shadow: none;
+    zoom: 1;
+    break-after: page;
+    page-break-after: always;
+  }
+  .affectation-doc.print-root .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .affectation-doc * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

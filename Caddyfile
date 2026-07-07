@@ -1,0 +1,9 @@
+# Reverse proxy HTTPS pour DumTools.
+# {$DOMAIN} vient de docker-compose (.env.prod).
+# `tls internal` = certificat auto-signé par Caddy, adapté à un réseau interne.
+# Pour un vrai certificat public, remplacer par : tls votre-email@dumortier02.fr
+{$DOMAIN} {
+	encode gzip
+	tls internal
+	reverse_proxy app:3000
+}

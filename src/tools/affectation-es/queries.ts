@@ -1,0 +1,89 @@
+import "server-only";
+import { prisma } from "@/lib/db";
+import type { Project } from "./model";
+import type { ClientArtefact } from "@/lib/clients/types";
+
+const nbPoints = (data: Project | null) =>
+  Array.isArray(data?.points) ? data.points.filter((pt) => pt.active).length : 0;
+const nbModules = (data: Project | null) =>
+  Array.isArray(data?.modules) ? data.modules.length : 0;
+
+export interface ProjetResume {
+  id: string;
+  nom: string;
+  clientNom: string;
+  numeroWhy: string | null;
+  updatedAt: Date;
+  auteur: string | null;
+  nbPoints: number;
+  nbModules: number;
+}
+
+export async function listerProjets(): Promise<ProjetResume[]> {
+  const projets = await prisma.affectationProjet.findMany({
+    orderBy: { updatedAt: "desc" },
+    include: { createdBy: { select: { nom: true } } },
+  });
+  return projets.map((p) => {
+    const data = (p.data as unknown as Project) ?? null;
+    return {
+      id: p.id,
+      nom: p.nom,
+      clientNom: p.clientNom,
+      numeroWhy: p.numeroWhy,
+      updatedAt: p.updatedAt,
+      auteur: p.createdBy?.nom ?? null,
+      nbPoints: nbPoints(data),
+      nbModules: nbModules(data),
+    };
+  });
+}
+
+/** Provider de fiche client : projets d'affectation rattachés à ce client. */
+export async function listerPourClient(clientId: string): Promise<ClientArtefact[]> {
+  const projets = await prisma.affectationProjet.findMany({
+    where: { clientId },
+    orderBy: { updatedAt: "desc" },
+  });
+  return projets.map((p) => {
+    const data = (p.data as unknown as Project) ?? null;
+    const m = nbModules(data);
+    return {
+      id: p.id,
+      titre: p.nom,
+      href: `/outils/affectation-es/${p.id}`,
+      numeroWhy: p.numeroWhy,
+      updatedAt: p.updatedAt,
+      resume: `${m} module${m > 1 ? "s" : ""} · ${nbPoints(data)} E/S`,
+    };
+  });
+}
+
+export interface ProjetComplet {
+  id: string;
+  nom: string;
+  clientNom: string;
+  numeroWhy: string;
+  project: Project;
+}
+
+export async function getProjet(id: string): Promise<ProjetComplet | null> {
+  const p = await prisma.affectationProjet.findUnique({ where: { id } });
+  if (!p) return null;
+  return {
+    id: p.id,
+    nom: p.nom,
+    clientNom: p.clientNom,
+    numeroWhy: p.numeroWhy ?? "",
+    project: p.data as unknown as Project,
+  };
+}
+
+/** Référentiel client partagé (réutilise la table Client). */
+export async function getClients(): Promise<string[]> {
+  const clients = await prisma.client.findMany({
+    orderBy: { nom: "asc" },
+    select: { nom: true },
+  });
+  return clients.map((c) => c.nom);
+}

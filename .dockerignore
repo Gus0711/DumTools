@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env
+.env.*
+!.env.example
+npm-debug.log
+existant
+logo
+*.md
+docker-compose*.yml
+Dockerfile
+.dockerignore
+src/generated

@@ -1,0 +1,163 @@
+// Schéma de base de la plateforme DumTools.
+// Entités partagées entre tous les outils (User, Client, Chantier).
+// Les données propres à chaque outil seront ajoutées dans des modèles dédiés
+// au moment de la réécriture de l'outil concerné.
+// Doc : https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MEMBRE
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  nom          String
+  passwordHash String
+  role         Role         @default(MEMBRE)
+  actif        Boolean      @default(true)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  pointsLists  PointsList[]
+  affectations AffectationProjet[]
+}
+
+/// Référentiel client partagé, central à la plateforme. Chaque outil relie sa
+/// production à un Client via `clientId` : la fiche client agrège alors tout ce
+/// qui a été fait pour lui, à travers tous les outils (voir
+/// src/lib/clients/providers.ts).
+model Client {
+  id           String              @id @default(cuid())
+  nom          String              @unique
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  chantiers    Chantier[]
+  pointsLists  PointsList[]
+  affectations AffectationProjet[]
+}
+
+/// Chantier (worksite) rattaché à un client. Point d'ancrage des outils.
+model Chantier {
+  id        String   @id @default(cuid())
+  nom       String
+  reference String?
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+}
+
+// ---- Outil « Liste de Points GTB » -----------------------------------------
+
+/// Un document « liste de points » (partagé entre tous les utilisateurs).
+/// Les lignes (points/sections) sont stockées en JSON : voir le type PointRow
+/// dans src/tools/liste-points/model.ts.
+model PointsList {
+  id          String    @id @default(cuid())
+  titre       String?
+  clientNom   String    @default("")
+  /// Lien vers le référentiel Client (null = client libre non rattaché).
+  clientId    String?
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  /// Référence de l'affaire / du chantier dans WhySoft (CRM).
+  numeroWhy   String?
+  chantierNom String    @default("")
+  date        DateTime?
+  rows        Json      @default("[]")
+  createdById String?
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([createdById])
+  @@index([clientId])
+}
+
+/// Catalogue de points partagé (nom → type d'E/S). Alimente le combobox de
+/// point et s'enrichit quand un utilisateur ajoute un point personnalisé.
+model PointCatalog {
+  id        String   @id @default(cuid())
+  nom       String   @unique
+  type      String // AI | DI | AO | DO | COM
+  createdAt DateTime @default(now())
+}
+
+// ---- Outil « Affectation E/S depuis GFX » ----------------------------------
+
+/// Base matériel éditable — modèle d'automate Distech (partagé entre tous).
+/// Pilote le sélecteur d'automate, le moteur de recommandation et l'aperçu.
+/// Seedé depuis src/tools/affectation-es/catalogue.ts (valeurs par défaut).
+model AutomateModele {
+  id            String   @id @default(cuid())
+  reference     String   @unique
+  ordre         Int      @default(0)
+  actif         Boolean  @default(true)
+  image         String   @default("")
+  /// Alimentation intégrée au boîtier (sinon module d'alim externe).
+  alimIntegree  Boolean  @default(false)
+  alimLabel     String   @default("")
+  /// E/S intégrées à l'automate (0 pour les bases modulaires type S1000E).
+  entreeKind    String   @default("UI")
+  entreeCount   Int      @default(0)
+  sortieKind    String   @default("UO")
+  sortieCount   Int      @default(0)
+  /// Codes de bornes explicites pour les E/S mixtes (ex. PTU-207) — [] sinon.
+  entreeCodes   Json     @default("[]")
+  sortieCodes   Json     @default("[]")
+  /// Accepte des modules d'extension.
+  extensible    Boolean  @default(false)
+  /// Types de modules compatibles (référence ModuleModele.type) — [] = aucun.
+  modulesCompat Json     @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/// Base matériel éditable — modèle de module d'extension / communication.
+model ModuleModele {
+  id          String   @id @default(cuid())
+  type        String   @unique
+  ordre       Int      @default(0)
+  actif       Boolean  @default(true)
+  image       String   @default("")
+  /// extension | communication | accessoire
+  categorie   String   @default("extension")
+  entreeKind  String   @default("UI")
+  entreeCount Int      @default(0)
+  sortieKind  String   @default("UO")
+  sortieCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// Un projet d'affectation E/S (partagé). Le projet complet (infos chantier,
+/// automate, réseaux, modules, points, suivi tests) est stocké en JSON —
+/// voir le type Project dans src/tools/affectation-es/model.ts.
+model AffectationProjet {
+  id          String    @id @default(cuid())
+  nom         String    @default("Nouveau projet")
+  clientNom   String    @default("")
+  /// Lien vers le référentiel Client (null = client libre non rattaché).
+  clientId    String?
+  client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  /// Référence de l'affaire / du chantier dans WhySoft (CRM).
+  numeroWhy   String?
+  data        Json      @default("{}")
+  createdById String?
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([createdById])
+  @@index([clientId])
+}

@@ -1,0 +1,38 @@
+# Postgres pour le développement local uniquement.
+# Prod : voir docker-compose.yml (app + postgres + caddy).
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: dumtools-pg-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dumtools
+      POSTGRES_PASSWORD: dumtools
+      POSTGRES_DB: dumtools
+    ports:
+      - "5433:5432" # 5433 côté hôte pour ne pas heurter un Postgres local
+    volumes:
+      - dumtools_pg_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dumtools -d dumtools"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Visualiseur web de la base (dev uniquement) : http://localhost:8081
+  # Serveur pré-rempli = service "postgres" ; identifiants dumtools/dumtools, base dumtools.
+  adminer:
+    image: adminer:5
+    container_name: dumtools-adminer-dev
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: dracula
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  dumtools_pg_dev:
