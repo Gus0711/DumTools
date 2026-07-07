@@ -40,13 +40,19 @@ export function syncPoints(rows: PointRow[], existants: Point[]): Point[] {
     const dir = IO_TO_DIR[t] as "input" | "output";
     const prev = parId.get(r.id);
     const memeSens = prev?.direction === dir;
+    // On ne garde l'ancien signal que s'il est cohérent avec la FAMILLE du
+    // nouveau type (TOR = "D" ; analogique = tout sauf "D"). Sinon on repart du
+    // défaut : ainsi DI→AI repasse bien en 0-10V au lieu de rester en "D".
+    const tor = t === "DI" || t === "DO";
+    const signalCoherent =
+      !!prev?.signal && (tor ? prev.signal === "D" : prev.signal !== "D");
     out.push({
       uid: r.id,
       direction: dir,
       active: prev?.active ?? true,
       designation: r.nom,
       repere: memeSens ? prev?.repere ?? "" : "",
-      signal: memeSens && prev?.signal ? prev.signal : signalParDefaut(t),
+      signal: memeSens && signalCoherent ? prev!.signal : signalParDefaut(t),
       source: r.note ?? prev?.source ?? "",
       relay: memeSens ? prev?.relay ?? "" : "",
       module: memeSens ? prev?.module ?? null : null,
