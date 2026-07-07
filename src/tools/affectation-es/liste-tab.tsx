@@ -1,5 +1,7 @@
 "use client";
 
+import { Printer } from "lucide-react";
+import { Button } from "@/ui";
 import { RowsEditor, type CatalogItem } from "@/tools/liste-points/rows-editor";
 import { Impression } from "@/tools/liste-points/impression";
 import { GenererGfx } from "@/tools/liste-points/generer-gfx";
@@ -37,13 +39,18 @@ export function ListeTab({
         catalogue={cataloguePoints}
         modeles={modeles}
         toolbarExtra={
-          <GenererGfx
-            rows={rows}
-            projectName={projectName}
-            chantier={project.header}
-            client={clientNom}
-            date={project.date}
-          />
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()}>
+              <Printer className="h-4 w-4" /> Imprimer la liste
+            </Button>
+            <GenererGfx
+              rows={rows}
+              projectName={projectName}
+              chantier={project.header}
+              client={clientNom}
+              date={project.date}
+            />
+          </div>
         }
       />
       <Impression clientNom={clientNom} chantierNom={project.header} date={project.date || null} rows={rows} />

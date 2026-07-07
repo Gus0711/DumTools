@@ -17,6 +17,8 @@ async function requireUser() {
 function revalidate() {
   revalidatePath(CONFIG);
   revalidatePath(EDITOR, "layout");
+  // L'éditeur unifié (Projet GTB) charge aussi catalogue de points + modèles.
+  revalidatePath("/outils/affectation-es", "layout");
 }
 
 // --- Catalogue de points ----------------------------------------------------

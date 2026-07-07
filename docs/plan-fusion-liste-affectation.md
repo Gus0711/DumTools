@@ -1,7 +1,44 @@
 # Plan — Fusion « Liste de points » dans « Affectation E/S »
 
-> Statut : **plan validé, non implémenté**. Aucune ligne de code écrite tant que ce
-> document n'est pas approuvé pour exécution.
+> Statut : **IMPLÉMENTÉ** sur la branche `fusion-liste-affectation` (build de prod OK).
+> Reste uniquement le retrait définitif destructif (Phase 5.2), tenu en attente de
+> validation. Voir « RÉALISÉ » en bas.
+
+---
+
+## RÉALISÉ (branche `fusion-liste-affectation`)
+
+**Choix d'architecture** : approche **dérivation** (Option A) et non renommage du
+modèle. Le projet stocke `rows` (saisie liste, source) ; `points` (bornes) en est
+**dérivé** (`derivation.ts` : `syncPoints`, préserve borne/test par id). Aperçu,
+tests et reco lisent `points` **inchangés** → risque isolé.
+
+- ✅ **0.1** Type d'E/S exclusif (liste) — commit précédent.
+- ✅ **0.2** `affectation-auto.ts` : `affecterAuto` (remplit module/canal/repère).
+- ✅ **1** `derivation.ts` (`syncPoints`, `pointsToRows`, `ioTypeOf`,
+  `signalParDefaut`) ; `Project.rows` ajouté ; imports GFX/PDF posent `rows`.
+- ✅ **2** `RowsEditor` extrait (réutilisé par la liste standalone ET l'onglet).
+  Onglets projet : Projet · **Liste de points** · Modules · **Affectation** ·
+  Mise en service · Aperçu. `points-tab.tsx` supprimé.
+- ✅ **3** Impression A4 liste + **Générer GFX** dans l'onglet Liste (réutilise
+  les composants de liste-points).
+- ✅ **4** Registre → 1 carte « **Projet GTB** » ; provider client unifié.
+- ✅ **5.1** Migration `PointsList → AffectationProjet`
+  (`scripts/migrate-listes-vers-projets.mts`, idempotente, non destructive) —
+  **14 listes migrées**. `getProjet` dérive `rows` des anciens projets (rétro-compat).
+
+**Reste (à valider avant exécution) — Phase 5.2 destructive :**
+- Retrait des routes `/outils/liste-points/*` (aujourd'hui conservées, non surfacées).
+- Suppression du dossier standalone (garder `rows-editor`, `impression`,
+  `generer-gfx`, `gfx-export`, `catalog`, `config-*`, `queries`, `actions`,
+  `model` : réutilisés par le projet unifié — déplacer sous `affectation-es/` ou
+  `src/lib/` plutôt que supprimer).
+- Migration Prisma de suppression de la table `PointsList` (après confirmation que
+  toutes les listes sont bien migrées en prod).
+
+---
+
+## Plan initial (référence)
 
 ## 1. Objectif
 
