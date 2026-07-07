@@ -10,6 +10,9 @@ DumTools is a collection of internal browser tools for **Dumortier (Groupe Faren
 
 Passage des outils HTML autonomes vers une plateforme unique, auto-hébergée sur une **VM Proxmox** interne, données **partagées entre tous** les collègues.
 
+> 📐 **État courant détaillé : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)** (à lire en premier).
+> Les deux outils historiques ont **fusionné** en un seul, **« Projet GTB »** (route `/outils/affectation-es`) : la « Liste de points » est devenue un **onglet** du projet, qui dérive les E/S affectées aux bornes (`Project.rows` → `Project.points`, voir `derivation.ts`). Écrans de config ajoutés : base matériel, catalogue de points & modèles, documentation Distech. Travail sur la branche `fusion-liste-affectation` ; l'outil autonome « liste-points » reste comme bibliothèque + code déprécié (retrait Phase 5.2 à valider).
+
 - **Stack** : Next.js 16 (App Router, React 19, TypeScript) · PostgreSQL + Prisma · Auth.js (Credentials) · Tailwind v4 (CSS-first `@theme`) · déploiement Docker Compose (app + postgres + caddy).
 - **Principe « ultra flexible »** : un **registre d'outils** (`src/tools/registry.ts`). Ajouter un outil = déposer un module + une entrée de registre → carte auto sur l'écran d'accueil.
 - **Design system** : tokens en 3 étages (primitives → sémantique → Tailwind `@theme`). Aucun `#hex` en dur dans les composants ; on n'utilise que des utilitaires dérivés des tokens sémantiques. Reskin complet = éditer l'étage sémantique.

@@ -42,6 +42,8 @@
   --color-io-do:  var(--io-do);
   --color-io-com: var(--io-com);
 
+  --color-surface-3: var(--surface-3);
+
   --color-sidebar:           var(--sidebar);
   --color-sidebar-fg:        var(--sidebar-fg);
   --color-sidebar-muted:     var(--sidebar-muted);
@@ -51,13 +53,19 @@
   --color-sidebar-hover:     var(--sidebar-hover);
   --color-sidebar-border:    var(--sidebar-border);
 
+  /* Ombres douces teintées (pilotées par les tokens sémantiques). */
+  --shadow-sm: var(--elev-sm);
+  --shadow-md: var(--elev-md);
+  --shadow-lg: var(--elev-lg);
+
   /* Rayons & typo */
-  --radius-sm: 5px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 13px;
+  --radius-xl: 18px;
 
   --font-sans: var(--font-sans-app), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-app), var(--font-sans-app), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-app), ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 

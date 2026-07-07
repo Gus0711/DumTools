@@ -14,6 +14,7 @@
   --page:       var(--neutral-100);
   --surface:    var(--neutral-0);
   --surface-2:  var(--neutral-50);
+  --surface-3:  var(--neutral-100);
 
   /* Texte */
   --fg:         var(--neutral-900);
@@ -30,11 +31,11 @@
   --brand-soft:   var(--navy-050);
   --brand-fg:     var(--neutral-0);
 
-  /* Accent (or) */
+  /* Accent (or / laiton) */
   --accent:        var(--gold-500);
   --accent-strong: var(--gold-600);
   --accent-soft:   var(--gold-050);
-  --accent-fg:     var(--neutral-0);
+  --accent-fg:     var(--neutral-900);
 
   /* États */
   --danger:  var(--red-600);
@@ -48,12 +49,23 @@
   --io-do:  var(--es-do);
   --io-com: var(--es-com);
 
+  /* --- Signatures : dégradés, ombres & texture « plan » ------------------- *
+   * Consommés via des utilitaires dédiés (globals.css), jamais en hex direct. */
+  --grad-brand:  linear-gradient(150deg, var(--navy-700) 0%, var(--navy-900) 78%);
+  --grad-accent: linear-gradient(120deg, var(--gold-500) 0%, var(--gold-600) 100%);
+  --grid-line:   rgb(255 255 255 / 0.05); /* trait de la trame blueprint */
+
+  /* Ombres douces, teintées marine (plus « posées » que le gris neutre). */
+  --elev-sm:   0 1px 2px rgb(20 29 40 / 0.06), 0 1px 1px rgb(20 29 40 / 0.04);
+  --elev-md:   0 4px 12px -2px rgb(20 29 40 / 0.10), 0 2px 6px -2px rgb(20 29 40 / 0.06);
+  --elev-lg:   0 18px 40px -12px rgb(20 29 40 / 0.22), 0 6px 16px -8px rgb(20 29 40 / 0.10);
+
   /* Sidebar : contexte marine plein (texte clair sur fond de marque).
      Identique en thème clair et sombre. */
   --sidebar:           var(--navy-900);
-  --sidebar-fg:        #dbe4ee;
+  --sidebar-fg:        #e2e9f2;
   --sidebar-muted:     #8ba3bd;
-  --sidebar-active-bg: rgb(255 255 255 / 0.08);
+  --sidebar-active-bg: rgb(255 255 255 / 0.09);
   --sidebar-active-fg: #ffffff;
   --sidebar-accent:    var(--gold-500);
   --sidebar-hover:     rgb(255 255 255 / 0.06);
@@ -63,11 +75,12 @@
 /* --- Thème sombre : préférence système par défaut... --------------------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --page:       #0e1620;
-    --surface:    #14202c;
-    --surface-2:  #1a2836;
+    --page:       #0b131c;
+    --surface:    #121e29;
+    --surface-2:  #182534;
+    --surface-3:  #1e2d3d;
 
-    --fg:         #e7ebf0;
+    --fg:         #e8edf3;
     --muted:      #9aa7b5;
     --subtle:     #6b7a8a;
 
@@ -76,25 +89,34 @@
 
     --brand:        #6f9dce;
     --brand-strong: #93bce4;
-    --brand-soft:   #10263a;
-    --brand-fg:     #0e1620;
+    --brand-soft:   #12283c;
+    --brand-fg:     #071019;
 
     --accent:        #d9a326;
     --accent-strong: #e6b743;
-    --accent-soft:   #3a2c0d;
-    --accent-fg:     #0e1620;
+    --accent-soft:   #362a10;
+    --accent-fg:     #120d02;
 
     --ring: #6f9dce;
+
+    --grad-brand:  linear-gradient(150deg, #10314f 0%, #081521 82%);
+    --grad-accent: linear-gradient(120deg, #d9a326 0%, #b7871a 100%);
+    --grid-line:   rgb(255 255 255 / 0.04);
+
+    --elev-sm:   0 1px 2px rgb(0 0 0 / 0.4);
+    --elev-md:   0 4px 14px -2px rgb(0 0 0 / 0.5);
+    --elev-lg:   0 20px 44px -14px rgb(0 0 0 / 0.7);
   }
 }
 
 /* --- ...et override explicite quand l'utilisateur force le thème sombre --- */
 :root[data-theme="dark"] {
-  --page:       #0e1620;
-  --surface:    #14202c;
-  --surface-2:  #1a2836;
+  --page:       #0b131c;
+  --surface:    #121e29;
+  --surface-2:  #182534;
+  --surface-3:  #1e2d3d;
 
-  --fg:         #e7ebf0;
+  --fg:         #e8edf3;
   --muted:      #9aa7b5;
   --subtle:     #6b7a8a;
 
@@ -103,13 +125,21 @@
 
   --brand:        #6f9dce;
   --brand-strong: #93bce4;
-  --brand-soft:   #10263a;
-  --brand-fg:     #0e1620;
+  --brand-soft:   #12283c;
+  --brand-fg:     #071019;
 
   --accent:        #d9a326;
   --accent-strong: #e6b743;
-  --accent-soft:   #3a2c0d;
-  --accent-fg:     #0e1620;
+  --accent-soft:   #362a10;
+  --accent-fg:     #120d02;
 
   --ring: #6f9dce;
+
+  --grad-brand:  linear-gradient(150deg, #10314f 0%, #081521 82%);
+  --grad-accent: linear-gradient(120deg, #d9a326 0%, #b7871a 100%);
+  --grid-line:   rgb(255 255 255 / 0.04);
+
+  --elev-sm:   0 1px 2px rgb(0 0 0 / 0.4);
+  --elev-md:   0 4px 14px -2px rgb(0 0 0 / 0.5);
+  --elev-lg:   0 20px 44px -14px rgb(0 0 0 / 0.7);
 }

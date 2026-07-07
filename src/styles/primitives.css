@@ -8,30 +8,33 @@
 
 :root {
   /* --- Bleu marine (marque) — teintes exactes du logo (#003765) ------------ */
-  --navy-050: #e3ebf2;
+  --navy-050: #e6edf4;
   --navy-100: #c2d0de;
   --navy-300: #4d7398;
+  --navy-500: #17466f; /* palier intermédiaire (dégradés de marque) */
   --navy-700: #003765; /* couleur de marque principale (logo) */
-  --navy-900: #002845;
+  --navy-800: #002f54;
+  --navy-900: #002138;
 
-  /* --- Or / moutarde (accent) — teintes exactes du logo (#c79213) ---------- */
-  --gold-050: #f7ecd3;
+  /* --- Or / laiton (accent) — teintes exactes du logo (#c79213) ------------ */
+  --gold-050: #f8efd6;
   --gold-100: #ecd39a;
+  --gold-300: #dcb254;
   --gold-500: #c79213; /* accent principal (logo) */
   --gold-600: #a97d0d;
 
-  /* --- Neutres (encre, surfaces, traits) ---------------------------------- */
+  /* --- Neutres (encre, surfaces, traits) — sous-ton froid « plan » --------- */
   --neutral-0:   #ffffff;
-  --neutral-50:  #fafbfc;
-  --neutral-100: #f4f6f8;
-  --neutral-200: #eceef1;
-  --neutral-300: #dfe3e8;
-  --neutral-400: #c3cad3;
-  --neutral-500: #8b94a3;
-  --neutral-600: #7c8896;
+  --neutral-50:  #f6f8fb;
+  --neutral-100: #eef1f6;
+  --neutral-200: #e6eaf1;
+  --neutral-300: #d7dde7;
+  --neutral-400: #bcc5d2;
+  --neutral-500: #8a94a3;
+  --neutral-600: #66717f;
   --neutral-700: #3b4654;
-  --neutral-800: #26313d;
-  --neutral-900: #16202b;
+  --neutral-800: #232d3a;
+  --neutral-900: #141d28;
 
   /* --- États -------------------------------------------------------------- */
   --red-600:   #c0392b;
