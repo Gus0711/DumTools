@@ -61,7 +61,7 @@ export function RapportTests({
   modules: Module[];
 }) {
   const points = (project.points ?? [])
-    .filter((p) => p.active && p.module && p.channel)
+    .filter((p) => p.active && p.module != null && p.channel != null)
     .sort((a, b) => {
       const am = Number(a.module) - Number(b.module);
       if (am !== 0) return am;

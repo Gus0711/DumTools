@@ -25,7 +25,7 @@ export function TestsTab({
   const points = useMemo(
     () =>
       (project.points ?? [])
-        .filter((p) => p.active && p.module && p.channel)
+        .filter((p) => p.active && p.module != null && p.channel != null)
         .sort((a, b) => {
           const am = Number(a.module) - Number(b.module);
           if (am !== 0) return am;
@@ -76,7 +76,8 @@ export function TestsTab({
   if (points.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-muted">
-        Aucun point affecté à tester. Affectez des points à un module/canal (onglets Entrées / Sorties).
+        Aucun point affecté à tester. Choisis un automate (onglet <b>Automate &amp; modules</b>) : les
+        points de la <b>Liste de points</b> sont alors affectés aux bornes.
       </div>
     );
   }

@@ -30,7 +30,7 @@ export function AffectationTab({
   );
   const inputs = points.filter((p) => p.direction === "input");
   const outputs = points.filter((p) => p.direction === "output");
-  const nonAffectes = points.filter((p) => !p.module || !p.channel).length;
+  const nonAffectes = points.filter((p) => p.module == null || p.channel == null).length;
 
   const update = (uid: string, patchPoint: Partial<Point>) =>
     patch((p) => ({
@@ -158,7 +158,7 @@ function BorneTable({
                 )}
                 <td className="px-3 py-1.5">
                   <select
-                    value={p.module ?? ""}
+                    value={p.module == null ? "" : p.module}
                     onChange={(e) => {
                       const v = e.target.value;
                       update(p.uid, { module: v ? Number(v) : null, channel: null, repere: "" });
@@ -176,7 +176,7 @@ function BorneTable({
                 <td className="px-3 py-1.5">
                   <select
                     value={p.channel ?? ""}
-                    disabled={!p.module}
+                    disabled={p.module == null}
                     onChange={(e) => update(p.uid, { channel: e.target.value ? Number(e.target.value) : null })}
                     className="h-8 w-full rounded border border-border bg-surface px-1.5 text-sm text-fg disabled:opacity-50"
                   >
