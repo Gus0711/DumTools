@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Briefcase, Hash } from "lucide-react";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { listerClients } from "@/lib/clients/queries";
-import { EtatBadge } from "@/lib/chantiers/etat-badge";
 import { NouvelleAffaire } from "@/lib/chantiers/nouvelle-affaire";
+import { AffairesListe } from "@/lib/chantiers/affaires-liste";
 
 export const metadata: Metadata = { title: "Affaires" };
-
-function fmtDate(d: Date) {
-  return new Date(d).toLocaleDateString("fr-FR");
-}
 
 export default async function Page() {
   const [affaires, clients] = await Promise.all([listerAffaires(), listerClients()]);
@@ -35,54 +29,7 @@ export default async function Page() {
           outil (ex. Projet GTB) : l&apos;affaire est créée automatiquement.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                <th className="px-4 py-2.5 font-medium">Affaire</th>
-                <th className="px-4 py-2.5 font-medium">Client</th>
-                <th className="px-4 py-2.5 font-medium">N° Why</th>
-                <th className="px-4 py-2.5 font-medium">État</th>
-                <th className="px-4 py-2.5 font-medium">Réalisations</th>
-                <th className="px-4 py-2.5 font-medium">Modifié</th>
-              </tr>
-            </thead>
-            <tbody>
-              {affaires.map((a) => (
-                <tr
-                  key={a.id}
-                  className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                >
-                  <td className="px-4 py-2.5">
-                    <Link
-                      href={`/affaires/${a.id}`}
-                      className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
-                    >
-                      <Briefcase className="h-4 w-4 text-subtle" />
-                      {a.nom}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 text-muted">{a.clientNom}</td>
-                  <td className="px-4 py-2.5 text-muted">
-                    {a.numeroWhy ? (
-                      <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg">
-                        <Hash className="h-3 w-3 text-subtle" />
-                        {a.numeroWhy}
-                      </span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <EtatBadge etat={a.etat} />
-                  </td>
-                  <td className="px-4 py-2.5 tabular-nums text-muted">{a.nbRealisations}</td>
-                  <td className="px-4 py-2.5 text-muted">{fmtDate(a.updatedAt)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <AffairesListe affaires={affaires} />
       )}
     </div>
   );
