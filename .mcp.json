@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "dumtools": {
+      "command": "npx",
+      "args": ["tsx", "mcp/server.mts"],
+      "env": {
+        "MCP_USER_EMAIL": "augustin.duhant@fareneit.fr"
+      }
+    }
+  }
+}

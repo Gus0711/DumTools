@@ -25,6 +25,9 @@ model User {
   passwordHash String
   role         Role         @default(MEMBRE)
   actif        Boolean      @default(true)
+  /// SHA-256 (hex) du jeton d'accès MCP de l'utilisateur (jamais le jeton en
+  /// clair). Null = aucun jeton actif. Voir scripts/mcp-token.mts.
+  mcpTokenHash String?      @unique
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   pointsLists  PointsList[]

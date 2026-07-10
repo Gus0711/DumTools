@@ -1,0 +1,49 @@
+<evaluation>
+  <!-- Questions ancrées sur la base matériel Distech (données de spec seedées) et
+       la logique de recommandation, déterministes et stables dans le temps.
+       Chaque réponse est vérifiable par comparaison de chaîne. -->
+  <qa_pair>
+    <question>Dans la base matériel DumTools, combien de modèles d'automate sont marqués comme extensibles (acceptant des modules d'extension) ?</question>
+    <answer>7</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Quelles références d'automate ont une capacité maximale (maxPoints) de 320 points d'E/S ? Réponds par les références en ordre alphabétique, séparées par une virgule sans espace.</question>
+    <answer>ECY-APEX,ECY-S1000E-320</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Pour le module d'extension de type 8UI6UO, quel est son nombre d'entrées puis son nombre de sorties ? Réponds sous la forme entrées/sorties.</question>
+    <answer>8/6</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Quelle est la capacité maximale en points d'E/S (maxPoints) de l'automate ECY-303 ?</question>
+    <answer>16</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Pour un besoin de 10 entrées analogiques, 4 entrées logiques, 2 sorties analogiques et 6 sorties logiques, quel automate la recommandation propose-t-elle en premier (le plus efficace) ?</question>
+    <answer>ECY-600</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Quels sont les types de modules de catégorie « communication » dans la base matériel ? Réponds en ordre alphabétique, séparés par une virgule sans espace.</question>
+    <answer>MBUS,RS485</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Combien de modèles d'automate au total figurent dans la base matériel DumTools ?</question>
+    <answer>16</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Combien de modules d'extension supplémentaires au maximum (maxModules) l'automate ECY-600 accepte-t-il ?</question>
+    <answer>20</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Pour un petit besoin de 2 entrées analogiques, 2 entrées logiques, 1 sortie analogique et 1 sortie logique, quel automate est proposé en premier par la recommandation ?</question>
+    <answer>ECY-PTU-107</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>Combien de types de modules (extension, communication et accessoire confondus) figurent au total dans la base matériel ?</question>
+    <answer>15</answer>
+  </qa_pair>
+  <qa_pair>
+    <question>L'automate ECY-400 accepte-t-il des modules d'extension ? Réponds par oui ou non.</question>
+    <answer>non</answer>
+  </qa_pair>
+</evaluation>

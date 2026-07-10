@@ -1,0 +1,16 @@
+{
+  "name": "dumtools-mcp-server",
+  "version": "1.0.0",
+  "description": "Serveur MCP (stdio) exposant les données DumTools (projets GTB, clients, catalogue, base matériel) à un client Claude.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "tsx server.mts",
+    "inspect": "npx @modelcontextprotocol/inspector npx tsx server.mts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^5.1.0",
+    "zod": "^3.25.0"
+  }
+}
