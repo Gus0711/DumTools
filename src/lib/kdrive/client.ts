@@ -339,3 +339,11 @@ export async function downloadFile(fileId: string): Promise<Response> {
   const url = `${c.base}/2/drive/${c.driveId}/files/${fileId}/download`;
   return fetch(url, { headers: { Authorization: `Bearer ${c.token}` } });
 }
+
+/** Vignette (JPEG) générée par kDrive pour un fichier. Endpoint v2 uniquement
+ *  (comme le download). Renvoie un 404 pour les types sans aperçu. */
+export async function downloadThumbnail(fileId: string, width = 96): Promise<Response> {
+  const c = config();
+  const url = `${c.base}/2/drive/${c.driveId}/files/${fileId}/thumbnail?width=${width}`;
+  return fetch(url, { headers: { Authorization: `Bearer ${c.token}` } });
+}

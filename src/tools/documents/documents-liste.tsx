@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Download, FileText, Loader2, RefreshCw, RotateCw, Trash2 } from "lucide-react";
+import { Download, FileText, Image as ImageIcon, Loader2, RefreshCw, RotateCw, Trash2 } from "lucide-react";
 import { Button } from "@/ui";
 import {
   formatTaille,
@@ -15,6 +15,29 @@ import { relancerSync, supprimerDocument, synchroniserMaintenant } from "./actio
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("fr-FR");
+}
+
+/** Vignette kDrive (si le document est synchronisé), sinon icône selon le type. */
+function Vignette({ doc }: { doc: DocResume }) {
+  const [echec, setEchec] = useState(false);
+  const dispo = doc.statutSync === "SYNC" && Boolean(doc.kdriveFileId) && !echec;
+  if (dispo) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- flux kDrive proxifié, pas d'optimisation Next
+      <img
+        src={`/api/documents/${doc.id}/thumbnail?w=96`}
+        alt=""
+        onError={() => setEchec(true)}
+        className="h-10 w-10 shrink-0 rounded border border-border-soft bg-surface-2 object-cover"
+      />
+    );
+  }
+  const Icon = doc.mimeType?.startsWith("image/") ? ImageIcon : FileText;
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-border-soft bg-surface-2">
+      <Icon className="h-5 w-5 text-subtle" />
+    </div>
+  );
 }
 
 function StatutBadge({ statut, erreur }: { statut: StatutSync; erreur: string | null }) {
@@ -106,14 +129,17 @@ export function DocumentsListe({
                   className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                 >
                   <td className="px-4 py-2.5">
-                    <a
-                      href={`/api/documents/${d.id}/download`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-fg hover:text-brand"
-                    >
-                      {d.nom}
-                    </a>
+                    <div className="flex items-center gap-3">
+                      <Vignette doc={d} />
+                      <a
+                        href={`/api/documents/${d.id}/download`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-fg hover:text-brand"
+                      >
+                        {d.nom}
+                      </a>
+                    </div>
                   </td>
                   <td className="px-4 py-2.5 text-muted">{d.categorie}</td>
                   <td className="px-4 py-2.5 tabular-nums text-muted">{formatTaille(d.taille)}</td>
