@@ -1,6 +1,7 @@
 import "server-only";
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { open, stat } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { Readable } from "node:stream";
 
 /* =============================================================================
@@ -17,10 +18,12 @@ import { Readable } from "node:stream";
  *   - download      : GET  /3/drive/{drive}/files/{id}/download
  *   `account_id` NON requis. conflict = version | rename | error.
  *
+ * Upload : direct (≤ SEUIL_CHUNK) ou par SESSION CHUNKÉE au-delà —
+ *   start /3/…/upload/session/start → N × /chunk (sha256 par chunk) → /finish,
+ *   annulation sur échec (DELETE /2/…/upload/session/{token}).
+ *
  * ⚠️ RESTE (non bloquant) :
- *   1. Upload par SESSION CHUNKÉE pour les très gros fichiers (500 Mo) — le POST
- *      /upload direct est validé sur petit fichier ; à durcir pour le streaming.
- *   2. Thumbnail natif (has_thumbnail existe) — exposer l'URL de vignette.
+ *   - Thumbnail natif (has_thumbnail existe) — exposer l'URL de vignette.
  * ========================================================================== */
 
 export interface KdriveEntry {
@@ -146,18 +149,32 @@ export async function createDir(parentId: string, name: string): Promise<KdriveE
 
 export type Conflict = "version" | "rename" | "error";
 
-/** Téléverse un fichier depuis un chemin local (spool) vers un dossier kDrive.
- *  Renvoie l'entrée créée (dont l'id = kdriveFileId).
- *  SPIKE : pour >1 Mo, basculer sur l'upload par session chunkée. */
-export async function uploadFile(opts: {
+export interface UploadOpts {
   dirId: string;
   fileName: string;
   filePath: string;
   conflict: Conflict;
   mimeType?: string;
-}): Promise<KdriveEntry> {
-  const c = config();
+}
+
+/** Taille d'un chunk (50 Mo — borne haute kDrive). */
+const CHUNK_SIZE = 50 * 1024 * 1024;
+/** Au-delà de ce seuil, on passe par une session chunkée plutôt que l'upload
+ *  direct (plus robuste sur les gros fichiers / connexions instables). */
+export const SEUIL_CHUNK = 100 * 1024 * 1024;
+
+/** Téléverse un fichier (spool) vers un dossier kDrive. Bascule automatiquement
+ *  sur l'upload par SESSION CHUNKÉE au-delà de SEUIL_CHUNK. Renvoie l'entrée
+ *  créée (dont l'id = kdriveFileId). */
+export async function uploadFile(opts: UploadOpts): Promise<KdriveEntry> {
   const { size } = await stat(opts.filePath);
+  if (size > SEUIL_CHUNK) return uploadFileChunked(opts);
+  return uploadFileDirect(opts, size);
+}
+
+/** Upload direct (un seul POST /upload) — pour les fichiers ≤ SEUIL_CHUNK. */
+async function uploadFileDirect(opts: UploadOpts, size: number): Promise<KdriveEntry> {
+  const c = config();
   const params = new URLSearchParams({
     directory_id: opts.dirId,
     file_name: opts.fileName,
@@ -184,6 +201,129 @@ export async function uploadFile(opts: {
   const json = (await res.json()) as { data?: RawEntry };
   if (!json.data) throw new Error("kDrive upload : réponse sans data");
   return toEntry(json.data);
+}
+
+const sha256hex = (b: Buffer) => createHash("sha256").update(b).digest("hex");
+
+/** Upload par SESSION CHUNKÉE (gros fichiers). Protocole kDrive :
+ *  start (annonce taille + total_chunks + total_chunk_hash) → N chunks (chacun
+ *  avec son sha256) → finish (re-vérifie le total_chunk_hash). En cas d'échec,
+ *  la session est annulée (rien de partiel ne subsiste).
+ *  total_chunk_hash = sha256(concat des hex-sha256 de chaque chunk).
+ *  `chunkSize` overridable (tests). */
+export async function uploadFileChunked(
+  opts: UploadOpts & { chunkSize?: number },
+): Promise<KdriveEntry> {
+  const c = config();
+  const taille = CHUNK_SIZE;
+  const chunkSize = opts.chunkSize ?? taille;
+  const { size: totalSize } = await stat(opts.filePath);
+
+  // Passe 1 : calcul des hachages (par chunk + total) sans tout charger en mémoire.
+  const hashes: string[] = [];
+  const fh1 = await open(opts.filePath, "r");
+  try {
+    let pos = 0;
+    while (pos < totalSize) {
+      const len = Math.min(chunkSize, totalSize - pos);
+      const buf = Buffer.allocUnsafe(len);
+      const { bytesRead } = await fh1.read(buf, 0, len, pos);
+      if (bytesRead <= 0) break;
+      hashes.push(sha256hex(buf.subarray(0, bytesRead)));
+      pos += bytesRead;
+    }
+  } finally {
+    await fh1.close();
+  }
+  const totalChunks = hashes.length;
+  const totalChunkHash =
+    totalChunks > 1 ? sha256hex(Buffer.from(hashes.join(""), "utf8")) : hashes[0];
+
+  // start
+  const start = await fetch(`${c.base}/${c.version}/drive/${c.driveId}/upload/session/start`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${c.token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      file_name: opts.fileName,
+      total_size: totalSize,
+      total_chunks: totalChunks,
+      conflict: opts.conflict,
+      directory_id: Number(opts.dirId),
+      total_chunk_hash: `sha256:${totalChunkHash}`,
+    }),
+  });
+  if (!start.ok) {
+    throw new Error(`kDrive session/start ${start.status} — ${(await start.text()).slice(0, 300)}`);
+  }
+  const sj = (await start.json()) as { data?: { token?: string; upload_url?: string } };
+  const token = sj.data?.token;
+  const uploadUrl = sj.data?.upload_url;
+  if (!token || !uploadUrl) throw new Error("kDrive session/start : token/upload_url manquant");
+
+  try {
+    // Passe 2 : envoi séquentiel des chunks (chunk_number est 1-based).
+    const fh2 = await open(opts.filePath, "r");
+    try {
+      let pos = 0;
+      for (let n = 0; n < totalChunks; n++) {
+        const len = Math.min(chunkSize, totalSize - pos);
+        const buf = Buffer.allocUnsafe(len);
+        const { bytesRead } = await fh2.read(buf, 0, len, pos);
+        const chunk = buf.subarray(0, bytesRead);
+        const qs = new URLSearchParams({
+          chunk_number: String(n + 1),
+          chunk_size: String(bytesRead),
+          chunk_hash: `sha256:${hashes[n]}`,
+        });
+        const res = await fetch(
+          `${uploadUrl}/${c.version}/drive/${c.driveId}/upload/session/${token}/chunk?${qs}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${c.token}`,
+              "Content-Type": "application/octet-stream",
+            },
+            body: chunk,
+          },
+        );
+        if (!res.ok) {
+          throw new Error(`kDrive chunk ${n + 1}/${totalChunks} → ${res.status} — ${(await res.text()).slice(0, 200)}`);
+        }
+        pos += bytesRead;
+      }
+    } finally {
+      await fh2.close();
+    }
+
+    // finish
+    const fin = await fetch(`${c.base}/${c.version}/drive/${c.driveId}/upload/session/${token}/finish`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${c.token}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({ total_chunk_hash: `sha256:${totalChunkHash}` }),
+    });
+    if (!fin.ok) {
+      throw new Error(`kDrive session/finish ${fin.status} — ${(await fin.text()).slice(0, 300)}`);
+    }
+    const fj = (await fin.json()) as { data?: RawEntry | { file?: RawEntry } };
+    const raw = (fj.data as { file?: RawEntry })?.file ?? (fj.data as RawEntry);
+    if (!raw?.id) throw new Error("kDrive session/finish : réponse sans fichier");
+    return toEntry(raw);
+  } catch (e) {
+    // Annule la session pour ne laisser aucun résidu partiel.
+    await fetch(`${c.base}/2/drive/${c.driveId}/upload/session/${token}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${c.token}` },
+    }).catch(() => {});
+    throw e;
+  }
 }
 
 /** Métadonnées d'un fichier (dont `size` — sert au contrôle d'intégrité). */
