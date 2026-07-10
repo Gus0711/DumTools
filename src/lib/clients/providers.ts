@@ -1,6 +1,7 @@
 import "server-only";
 import { TOOLS } from "@/tools/registry";
 import { listerPourClient as affectationPourClient } from "@/tools/affectation-es/queries";
+import { listerPourClient as documentsPourClient } from "@/tools/documents/queries";
 import type { ClientArtefact, ClientRealisation } from "./types";
 
 /* =============================================================================
@@ -22,6 +23,7 @@ type ClientProvider = (clientId: string) => Promise<ClientArtefact[]>;
 
 const PROVIDERS: Record<string, ClientProvider> = {
   "affectation-es": affectationPourClient,
+  documents: documentsPourClient,
 };
 
 /** Réalisations d'un client, tous outils confondus, triées du + récent au + ancien. */

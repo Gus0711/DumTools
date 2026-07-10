@@ -40,6 +40,16 @@ services:
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: ${AUTH_URL}
       AUTH_TRUST_HOST: "true"
+      # Outil « Documents » (GED) / kDrive. Le spool est un volume persistant :
+      # les dépôts en attente survivent à un redéploiement (kDrive maître seul).
+      DOCUMENTS_SPOOL_DIR: /data/spool
+      DOCUMENTS_DRAIN_SECRET: ${DOCUMENTS_DRAIN_SECRET}
+      KDRIVE_TOKEN: ${KDRIVE_TOKEN:-}
+      KDRIVE_DRIVE_ID: ${KDRIVE_DRIVE_ID:-}
+      KDRIVE_ROOT_DIR_ID: ${KDRIVE_ROOT_DIR_ID:-}
+      KDRIVE_API_VERSION: ${KDRIVE_API_VERSION:-3}
+    volumes:
+      - spool_data:/data/spool
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,6 +57,25 @@ services:
         condition: service_completed_successfully
     expose:
       - "3000"
+
+  # Worker de synchro kDrive : draine la file toutes les 2 min (asynchrone + retry).
+  # La route /api/documents/drain est protégée par DOCUMENTS_DRAIN_SECRET et exclue
+  # de l'auth du proxy. Le claim atomique côté app évite tout double-push.
+  documents-sync:
+    image: alpine:3.20
+    restart: unless-stopped
+    environment:
+      DOCUMENTS_DRAIN_SECRET: ${DOCUMENTS_DRAIN_SECRET}
+    depends_on:
+      - app
+    command: >
+      sh -c 'apk add --no-cache curl >/dev/null 2>&1;
+             while true; do
+               sleep 120;
+               curl -fsS -X POST
+                 -H "Authorization: Bearer $$DOCUMENTS_DRAIN_SECRET"
+                 http://app:3000/api/documents/drain >/dev/null 2>&1 || true;
+             done'
 
   caddy:
     image: caddy:2-alpine
@@ -67,3 +96,4 @@ volumes:
   pg_data:
   caddy_data:
   caddy_config:
+  spool_data:

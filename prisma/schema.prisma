@@ -32,6 +32,7 @@ model User {
   updatedAt    DateTime            @updatedAt
   pointsLists  PointsList[]
   affectations AffectationProjet[]
+  documents    Document[]
 }
 
 /// Référentiel client partagé, central à la plateforme. Chaque outil relie sa
@@ -46,6 +47,11 @@ model Client {
   chantiers    Chantier[]
   pointsLists  PointsList[]
   affectations AffectationProjet[]
+  documents    Document[]
+  /// Nom EXACT du dossier de ce client sur kDrive, s'il diffère de `nom` (accents,
+  /// casse, suffixe juridique…). Null = on utilise `nom` (après normalisation).
+  /// Sert à la résolution du chemin kDrive (voir src/lib/kdrive).
+  kdriveDossier String?
 }
 
 /// État commercial d'une affaire (le financier — prix, coûts — reste dans WhySoft).
@@ -55,6 +61,26 @@ enum EtatAffaire {
   EN_COURS
   LIVRE
   CLOTURE
+}
+
+/// État de synchronisation d'un document vers kDrive.
+/// EN_ATTENTE : déposé (spool présent), pas encore poussé.
+/// EN_COURS   : pris par un worker (claim atomique, anti double-push).
+/// SYNC       : poussé sur kDrive (kdriveFileId présent, spool purgé).
+/// ERREUR     : échec de push (voir syncError) — re-tenté avec backoff.
+enum StatutSync {
+  EN_ATTENTE
+  EN_COURS
+  SYNC
+  ERREUR
+}
+
+/// Politique appliquée au push si un fichier de même nom existe dans le dossier
+/// kDrive cible. VERSION = nouvelle version kDrive (défaut, non destructif) ;
+/// RENAME = dépose à côté avec suffixe.
+enum PolitiqueConflit {
+  VERSION
+  RENAME
 }
 
 /// Chantier = « Affaire » : pivot de la plateforme. Rattaché à un client, il
@@ -68,12 +94,20 @@ model Chantier {
   /// Référence de l'affaire dans WhySoft (CRM) — clé naturelle de résolution.
   numeroWhy String?     @unique
   etat      EtatAffaire @default(DEVIS)
+  /// Année de rangement kDrive (racine `chantier/{année}/…`). Null pour les
+  /// affaires antérieures à la GED → on retombe sur l'année de `createdAt`
+  /// (le chemin kDrive ne casse jamais). Éditable sur la fiche affaire.
+  annee     Int?
+  /// Cache de l'`id` du dossier d'affaire résolu sur kDrive (évite de re-naviguer
+  /// l'arbo à chaque dépôt). Voir src/lib/kdrive/resolution.
+  kdriveDirId String?
   clientId  String
   client    Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
   affectations AffectationProjet[]
+  documents    Document[]
 
   @@index([clientId])
 }
@@ -208,4 +242,56 @@ model AffectationProjet {
   @@index([createdById])
   @@index([clientId])
   @@index([chantierId])
+}
+
+// ---- Outil « Documents » (GED) ---------------------------------------------
+
+/// Un document téléversé, rattaché à une Affaire, et miroité sur kDrive.
+/// Architecture : kDrive est le stockage MAÎTRE (le binaire n'est PAS conservé
+/// durablement sur la VM). `spoolPath` est un tampon transitoire, effacé dès que
+/// le push kDrive est confirmé (statutSync=SYNC). Une fois poussé, `kdriveFileId`
+/// est l'ANCRE : renommer l'affaire ne déplace rien, l'id continue de pointer.
+/// Voir src/lib/kdrive et la note mémoire ged-documents-kdrive.
+model Document {
+  id           String   @id @default(cuid())
+  /// Nom de fichier d'origine (avec extension).
+  nom          String
+  /// Catégorie = sous-dossier kDrive (liste fermée, voir CATEGORIES dans model.ts).
+  categorie    String
+  mimeType     String   @default("application/octet-stream")
+  /// Taille en octets (max applicatif : 500 Mo).
+  taille       Int      @default(0)
+
+  // --- rattachement (Affaire obligatoire) ---
+  chantierId   String
+  chantier     Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  /// Client dénormalisé (dérivé de l'affaire) pour la fiche client.
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  numeroWhy    String?
+
+  // --- localisation ---
+  /// Chemin du tampon transitoire sur la VM (présent tant que non SYNC, sinon null).
+  spoolPath    String?
+  /// Id du fichier sur kDrive une fois poussé (ancre de référence). Null avant push.
+  kdriveFileId String?
+  /// Chemin logique kDrive calculé au dépôt (info / reconstruction), ex.
+  /// « chantier/2026/Client A/2026-0142 - Réf/Prog/fichier.gfx ».
+  kdrivePath   String   @default("")
+
+  // --- synchronisation ---
+  statutSync       StatutSync       @default(EN_ATTENTE)
+  politiqueConflit PolitiqueConflit @default(VERSION)
+  /// Nombre de tentatives de push (pour le backoff / plafond du worker).
+  tentatives       Int              @default(0)
+  syncError        String?
+
+  createdById  String?
+  createdBy    User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([chantierId])
+  @@index([clientId])
+  @@index([statutSync])
 }

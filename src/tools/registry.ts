@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CircuitBoard } from "lucide-react";
+import { CircuitBoard, FolderOpen } from "lucide-react";
 
 /* =============================================================================
  * REGISTRE D'OUTILS
@@ -37,6 +37,15 @@ export const TOOLS: Tool[] = [
       "Projet chantier de bout en bout : liste de points, choix automate & modules, affectation E/S Distech (import .gfx/PDF ou génération GFX), impressions A4 et rapport de mise en service.",
     icon: CircuitBoard,
     href: "/outils/affectation-es",
+    status: "disponible",
+  },
+  {
+    id: "documents",
+    nom: "Documents",
+    description:
+      "GED d'affaire : téléversez les pièces d'un chantier (plans, devis, PV, prog…). Elles sont miroitées sur kDrive et restent accessibles ici, rattachées à l'affaire et au client.",
+    icon: FolderOpen,
+    href: "/outils/documents",
     status: "disponible",
   },
 ];

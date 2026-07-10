@@ -1,6 +1,7 @@
 import "server-only";
 import { TOOLS } from "@/tools/registry";
 import { listerPourChantier as affectationPourChantier } from "@/tools/affectation-es/queries";
+import { listerPourChantier as documentsPourChantier } from "@/tools/documents/queries";
 import type { ClientArtefact, ClientRealisation } from "@/lib/clients/types";
 
 /* =============================================================================
@@ -23,6 +24,7 @@ type ChantierProvider = (chantierId: string) => Promise<ClientArtefact[]>;
 
 const PROVIDERS: Record<string, ChantierProvider> = {
   "affectation-es": affectationPourChantier,
+  documents: documentsPourChantier,
 };
 
 /** Artefacts d'une affaire, tous outils confondus, du + récent au + ancien. */

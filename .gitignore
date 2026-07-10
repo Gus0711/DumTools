@@ -49,3 +49,6 @@ next-env.d.ts
 # Garder les modèles d'environnement
 !.env.example
 !.env.prod.example
+
+# Spool transitoire de l'outil Documents (GED) — jamais committé
+.spool/
