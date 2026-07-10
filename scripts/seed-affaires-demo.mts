@@ -8,7 +8,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
-import type { EtatAffaire } from "../src/generated/prisma/enums";
+import type { EtatAffaire, BesoinArmoire } from "../src/generated/prisma/enums";
 import { defaultProject } from "../src/tools/affectation-es/model";
 import { catalogueParDefaut } from "../src/tools/affectation-es/catalogue";
 import { moduleIntegre } from "../src/tools/affectation-es/affectation-auto";
@@ -55,11 +55,18 @@ async function affaire(a: {
   clientNom: string;
   numeroWhy: string | null;
   etat: EtatAffaire;
+  besoinArmoire?: BesoinArmoire | null;
   automates: { nom: string; controller: string }[];
 }) {
   const clId = await clientId(a.clientNom);
   const ch = await prisma.chantier.create({
-    data: { nom: a.nom, numeroWhy: a.numeroWhy, etat: a.etat, clientId: clId },
+    data: {
+      nom: a.nom,
+      numeroWhy: a.numeroWhy,
+      etat: a.etat,
+      besoinArmoire: a.besoinArmoire ?? null,
+      clientId: clId,
+    },
     select: { id: true },
   });
   for (const auto of a.automates) {
@@ -80,6 +87,7 @@ async function main() {
     clientNom: "Région Hauts-de-France",
     numeroWhy: "W-2026-0210",
     etat: "EN_COURS",
+    besoinArmoire: "NOUVELLE",
     automates: [
       { nom: "CTA Toiture", controller: "ECY-400" },
       { nom: "Chaufferie", controller: "ECY-303" },
@@ -93,6 +101,7 @@ async function main() {
     clientNom: "Ville de Laon",
     numeroWhy: "W-2026-0211",
     etat: "COMMANDE",
+    besoinArmoire: "INTEGRATION",
     automates: [
       { nom: "Production ECS", controller: "ECY-303" },
       { nom: "Éclairage & CVC", controller: "ECY-600" },
@@ -105,6 +114,7 @@ async function main() {
     clientNom: "DALKIA France",
     numeroWhy: "W-2026-0212",
     etat: "DEVIS",
+    besoinArmoire: "NOUVELLE", // démo : schéma d'armoire encore absent → flag rouge
     automates: [{ nom: "Chaufferie gaz", controller: "ECY-450" }],
   });
 
@@ -114,6 +124,7 @@ async function main() {
     clientNom: "Département de l'Aisne",
     numeroWhy: "W-2026-0213",
     etat: "LIVRE",
+    besoinArmoire: "INTEGRATION",
     automates: [{ nom: "Bâtiment C", controller: "ECY-PTU-207" }],
   });
 
@@ -123,6 +134,7 @@ async function main() {
     clientNom: "Ville de Soissons",
     numeroWhy: "W-2026-0214",
     etat: "CLOTURE",
+    besoinArmoire: "NOUVELLE", // démo : schéma d'armoire présent → flag vert
     automates: [
       { nom: "Traitement d'eau", controller: "ECY-600" },
       { nom: "Ventilation halls", controller: "ECY-400" },

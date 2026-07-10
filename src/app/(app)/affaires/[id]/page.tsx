@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Cpu, FileStack, FolderOpen, Hash, Layers, Plus } from "lucide-react";
+import { CircleCheck, Cpu, FileStack, FolderOpen, Hash, Layers, Plus, TriangleAlert } from "lucide-react";
 import { Button } from "@/ui";
 import { getAffaire } from "@/lib/chantiers/queries";
 import { listerClients } from "@/lib/clients/queries";
 import { listerRealisationsAffaire } from "@/lib/chantiers/providers";
 import { AffaireFicheHeader } from "@/lib/chantiers/affaire-fiche-header";
+import { DOSSIER_SCHEMA_ARMOIRE } from "@/lib/chantiers/armoire";
 import { creerProjetPourAffaire } from "@/tools/affectation-es/actions";
 import { listerProjetsAffaire, type AvancementTests } from "@/tools/affectation-es/queries";
 import { listerDocuments, type DocResume } from "@/tools/documents/queries";
@@ -88,16 +89,44 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     fichiers: documents.filter((d) => d.categorie === cat),
   })).filter((g) => g.fichiers.length > 0);
 
+  // Contrôle armoire : si une nouvelle armoire est à fabriquer, un schéma
+  // d'armoire (document du dossier « Armoire ») doit être présent.
+  const besoinNouvelleArmoire = affaire.besoinArmoire === "NOUVELLE";
+  const nbSchemasArmoire = documents.filter((d) => d.categorie === DOSSIER_SCHEMA_ARMOIRE).length;
+  const schemaArmoireOk = nbSchemasArmoire > 0;
+
   return (
     <div className="mx-auto max-w-5xl space-y-10 px-6 py-8 md:px-10">
       <AffaireFicheHeader
         id={affaire.id}
         nom={affaire.nom}
         etat={affaire.etat}
+        besoinArmoire={affaire.besoinArmoire}
         clientNom={affaire.clientNom}
         numeroWhy={affaire.numeroWhy}
         clients={clients.map((c) => c.nom)}
       />
+
+      {/* ---- Contrôle « schéma d'armoire » (si nouvelle armoire à fabriquer) */}
+      {besoinNouvelleArmoire &&
+        (schemaArmoireOk ? (
+          <div className="-mt-4 flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 px-4 py-2.5 text-sm text-success">
+            <CircleCheck className="h-4 w-4 shrink-0" />
+            <span>
+              Nouvelle armoire à fabriquer — schéma d&apos;armoire présent
+              {nbSchemasArmoire > 1 ? ` (${nbSchemasArmoire} fichiers)` : ""} dans le
+              dossier « {DOSSIER_SCHEMA_ARMOIRE} ».
+            </span>
+          </div>
+        ) : (
+          <div className="-mt-4 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+            <TriangleAlert className="h-4 w-4 shrink-0" />
+            <span>
+              Nouvelle armoire à fabriquer — <strong>schéma d&apos;armoire manquant</strong> :
+              déposez-le dans le dossier « {DOSSIER_SCHEMA_ARMOIRE} » des documents.
+            </span>
+          </div>
+        ))}
 
       {/* ---- Projet GTB (automates de l'affaire) --------------------------- */}
       <section>

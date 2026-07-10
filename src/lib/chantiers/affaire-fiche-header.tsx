@@ -6,14 +6,16 @@ import Link from "next/link";
 import { ArrowLeft, Check, Hash, Loader2, TriangleAlert } from "lucide-react";
 import { Button, Combobox, Input, Label, type ComboOption } from "@/ui";
 import { cn } from "@/lib/cn";
-import type { EtatAffaire } from "@/generated/prisma/enums";
+import type { BesoinArmoire, EtatAffaire } from "@/generated/prisma/enums";
 import { ETATS_AFFAIRE } from "./etats";
-import { changerEtatAffaire, modifierAffaire } from "./actions";
+import { BESOINS_ARMOIRE } from "./armoire";
+import { changerBesoinArmoire, changerEtatAffaire, modifierAffaire } from "./actions";
 
 export function AffaireFicheHeader({
   id,
   nom,
   etat,
+  besoinArmoire,
   clientNom,
   numeroWhy,
   clients,
@@ -21,6 +23,7 @@ export function AffaireFicheHeader({
   id: string;
   nom: string;
   etat: EtatAffaire;
+  besoinArmoire: BesoinArmoire | null;
   clientNom: string;
   numeroWhy: string | null;
   clients: string[];
@@ -54,6 +57,18 @@ export function AffaireFicheHeader({
     start(async () => {
       try {
         await changerEtatAffaire(id, nouvel);
+        router.refresh();
+      } catch (e) {
+        setErreur(e instanceof Error ? e.message : "Erreur");
+      }
+    });
+  }
+
+  function changerArmoire(valeur: string) {
+    setErreur("");
+    start(async () => {
+      try {
+        await changerBesoinArmoire(id, valeur ? (valeur as BesoinArmoire) : null);
         router.refresh();
       } catch (e) {
         setErreur(e instanceof Error ? e.message : "Erreur");
@@ -106,24 +121,46 @@ export function AffaireFicheHeader({
         </div>
 
         <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-          <label className="space-y-1">
-            <span className="text-xs font-medium text-muted">État</span>
-            <select
-              value={etat}
-              onChange={(e) => changerEtat(e.target.value as EtatAffaire)}
-              disabled={pending}
-              className={cn(
-                "block h-9 w-40 rounded-md border border-border bg-surface px-2.5 text-sm text-fg",
-                "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
-              )}
-            >
-              {ETATS_AFFAIRE.map((e) => (
-                <option key={e.value} value={e.value}>
-                  {e.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="space-y-1">
+              <span className="text-xs font-medium text-muted">État</span>
+              <select
+                value={etat}
+                onChange={(e) => changerEtat(e.target.value as EtatAffaire)}
+                disabled={pending}
+                className={cn(
+                  "block h-9 w-40 rounded-md border border-border bg-surface px-2.5 text-sm text-fg",
+                  "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
+                )}
+              >
+                {ETATS_AFFAIRE.map((e) => (
+                  <option key={e.value} value={e.value}>
+                    {e.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-xs font-medium text-muted">Besoin armoire</span>
+              <select
+                value={besoinArmoire ?? ""}
+                onChange={(e) => changerArmoire(e.target.value)}
+                disabled={pending}
+                className={cn(
+                  "block h-9 w-44 rounded-md border border-border bg-surface px-2.5 text-sm text-fg",
+                  "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
+                )}
+              >
+                <option value="">Non défini</option>
+                {BESOINS_ARMOIRE.map((b) => (
+                  <option key={b.value} value={b.value}>
+                    {b.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           {modifie && (
             <Button size="sm" onClick={enregistrer} disabled={pending || !valide}>

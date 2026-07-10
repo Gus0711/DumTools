@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
-import { EtatAffaire } from "@/generated/prisma/enums";
+import { EtatAffaire, BesoinArmoire } from "@/generated/prisma/enums";
 import { resoudreClientId } from "@/lib/clients/queries";
 
 async function requireUser(): Promise<void> {
@@ -84,5 +84,15 @@ export async function modifierAffaire(
 export async function changerEtatAffaire(id: string, etat: EtatAffaire): Promise<void> {
   await requireUser();
   await prisma.chantier.update({ where: { id }, data: { etat } });
+  revalidate(id);
+}
+
+/** Définit le besoin en armoire de l'affaire (null = non défini). */
+export async function changerBesoinArmoire(
+  id: string,
+  besoinArmoire: BesoinArmoire | null,
+): Promise<void> {
+  await requireUser();
+  await prisma.chantier.update({ where: { id }, data: { besoinArmoire } });
   revalidate(id);
 }

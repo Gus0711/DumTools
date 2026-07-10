@@ -63,6 +63,14 @@ enum EtatAffaire {
   CLOTURE
 }
 
+/// Besoin en armoire électrique d'une affaire.
+enum BesoinArmoire {
+  /// Intégration dans une armoire / infrastructure existante (rien à fabriquer).
+  INTEGRATION
+  /// Fabrication d'une nouvelle armoire électrique (schéma d'armoire attendu).
+  NOUVELLE
+}
+
 /// État de synchronisation d'un document vers kDrive.
 /// EN_ATTENTE : déposé (spool présent), pas encore poussé.
 /// EN_COURS   : pris par un worker (claim atomique, anti double-push).
@@ -94,6 +102,10 @@ model Chantier {
   /// Référence de l'affaire dans WhySoft (CRM) — clé naturelle de résolution.
   numeroWhy String?     @unique
   etat      EtatAffaire @default(DEVIS)
+  /// Besoin en armoire électrique : intégration dans l'existant vs fabrication
+  /// d'une nouvelle armoire. Null = non défini. Si NOUVELLE, la fiche vérifie
+  /// la présence d'un schéma d'armoire dans les documents (dossier « Armoire »).
+  besoinArmoire BesoinArmoire?
   /// Année de rangement kDrive (racine `chantier/{année}/…`). Null pour les
   /// affaires antérieures à la GED → on retombe sur l'année de `createdAt`
   /// (le chemin kDrive ne casse jamais). Éditable sur la fiche affaire.

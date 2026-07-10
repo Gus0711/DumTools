@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import { EtatAffaire } from "@/generated/prisma/enums";
+import { EtatAffaire, BesoinArmoire } from "@/generated/prisma/enums";
 
 export { ETATS_AFFAIRE, etatLabel } from "./etats";
 
@@ -67,6 +67,7 @@ export interface AffaireDetail {
   nom: string;
   numeroWhy: string | null;
   etat: EtatAffaire;
+  besoinArmoire: BesoinArmoire | null;
   clientId: string;
   clientNom: string;
 }
@@ -79,6 +80,7 @@ export async function getAffaire(id: string): Promise<AffaireDetail | null> {
       nom: true,
       numeroWhy: true,
       etat: true,
+      besoinArmoire: true,
       clientId: true,
       client: { select: { nom: true } },
     },
@@ -89,6 +91,7 @@ export async function getAffaire(id: string): Promise<AffaireDetail | null> {
     nom: a.nom,
     numeroWhy: a.numeroWhy,
     etat: a.etat,
+    besoinArmoire: a.besoinArmoire,
     clientId: a.clientId,
     clientNom: a.client.nom,
   };
