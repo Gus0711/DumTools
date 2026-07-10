@@ -85,6 +85,54 @@ export async function listerPourChantier(chantierId: string): Promise<ClientArte
   return projetsToArtefacts(projets);
 }
 
+/** Avancement de mise en service d'un projet (comptage des statuts de test). */
+export interface AvancementTests {
+  ok: number;
+  defaut: number;
+  nonTeste: number;
+  total: number;
+}
+
+/** Résumé riche d'un projet GTB pour le tableau dédié de la fiche affaire. */
+export interface ProjetAffaireResume {
+  id: string;
+  nom: string;
+  controller: string;
+  nbPoints: number;
+  nbModules: number;
+  tests: AvancementTests;
+  updatedAt: Date;
+  href: string;
+}
+
+/** Projets GTB (automates) d'une affaire, vue détaillée (E/S + mise en service). */
+export async function listerProjetsAffaire(chantierId: string): Promise<ProjetAffaireResume[]> {
+  const projets = await prisma.affectationProjet.findMany({
+    where: { chantierId },
+    orderBy: { updatedAt: "desc" },
+  });
+  return projets.map((p) => {
+    const data = (p.data as unknown as Project) ?? null;
+    const pts = Array.isArray(data?.points) ? data.points.filter((x) => x.active) : [];
+    const tests: AvancementTests = { ok: 0, defaut: 0, nonTeste: 0, total: pts.length };
+    for (const pt of pts) {
+      if (pt.testStatus === "ok") tests.ok += 1;
+      else if (pt.testStatus === "defaut") tests.defaut += 1;
+      else tests.nonTeste += 1;
+    }
+    return {
+      id: p.id,
+      nom: p.nom,
+      controller: data?.controller ?? "",
+      nbPoints: pts.length,
+      nbModules: nbModules(data),
+      tests,
+      updatedAt: p.updatedAt,
+      href: `/outils/affectation-es/${p.id}`,
+    };
+  });
+}
+
 export interface ProjetComplet {
   id: string;
   nom: string;
