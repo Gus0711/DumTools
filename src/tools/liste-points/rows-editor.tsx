@@ -5,16 +5,19 @@ import { ChevronDown, GripVertical, Plus, Rows3, TriangleAlert, X } from "lucide
 import { Button, Combobox, type ComboOption } from "@/ui";
 import { cn } from "@/lib/cn";
 import {
+  COM_SIGNALS,
   computeTotals,
   emptyIo,
   IO_TYPES,
+  signalLabel,
+  signalsForType,
   type IoType,
   type ModeleDef,
   type PointRow,
 } from "./model";
 import { ajouterPointCatalogue } from "./actions";
 
-export type CatalogItem = { nom: string; type: string };
+export type CatalogItem = { nom: string; type: string; signal?: string | null };
 
 const IO_ON: Record<IoType, string> = {
   AI: "bg-io-ai text-white",
@@ -50,8 +53,11 @@ export function RowsEditor({
 }) {
   const [catalog, setCatalog] = useState<CatalogItem[]>(catalogue);
   const [tplOpen, setTplOpen] = useState(false);
-  const [np, setNp] = useState<{ nom: string; type: IoType } | null>(null);
+  const [np, setNp] = useState<{ nom: string; type: IoType; signal: string } | null>(null);
   const [npErr, setNpErr] = useState("");
+  // Id de la ligne dont le champ « nom » doit prendre le focus (nouveau point
+  // créé au clavier / au bouton) — le Combobox correspondant s'auto-focalise.
+  const [focusId, setFocusId] = useState<string | null>(null);
 
   const totals = useMemo(() => computeTotals(rows), [rows]);
   const pointOptions = useMemo<ComboOption[]>(
@@ -64,16 +70,35 @@ export function RowsEditor({
 
   const patch = (rid: string, fn: (r: PointRow) => PointRow) =>
     setRows((r) => r.map((x) => (x.id === rid ? fn(x) : x)));
-  const addPoint = () =>
-    setRows((r) => [...r, { id: newId(), kind: "point", nom: "", note: "", io: emptyIo() }]);
+  const addPoint = () => {
+    const id = newId();
+    setRows((r) => [...r, { id, kind: "point", nom: "", note: "", io: emptyIo() }]);
+    setFocusId(id);
+  };
+  // Insère un point juste après la ligne `rid` et lui donne le focus. Utilisé
+  // par Tab en fin de ligne : saisie enchaînée des points au clavier.
+  const insertPointAfter = (rid: string) => {
+    const id = newId();
+    setRows((r) => {
+      const i = r.findIndex((x) => x.id === rid);
+      const copy = [...r];
+      copy.splice(i + 1, 0, { id, kind: "point", nom: "", note: "", io: emptyIo() });
+      return copy;
+    });
+    setFocusId(id);
+  };
   const addSection = () => setRows((r) => [...r, { id: newId(), kind: "section", nom: "" }]);
   const delRow = (rid: string) => setRows((r) => r.filter((x) => x.id !== rid));
   // Type d'E/S EXCLUSIF : une ligne = un seul type. Re-clic = désélection.
+  // On purge le signal/protocole s'il n'est plus cohérent avec le nouveau type
+  // (ex. un protocole COM ne doit pas rester sur une entrée analogique).
   const toggleIo = (rid: string, t: IoType) =>
     patch(rid, (x) => {
       const io = emptyIo();
-      if (!x.io?.[t]) io[t] = 1;
-      return { ...x, io };
+      const on = !x.io?.[t];
+      if (on) io[t] = 1;
+      const signal = on && x.signal && signalsForType(t).includes(x.signal) ? x.signal : undefined;
+      return { ...x, io, signal };
     });
 
   function pickPoint(rid: string, opt: ComboOption) {
@@ -81,11 +106,13 @@ export function RowsEditor({
       patch(rid, (x) => ({ ...x, nom: "Divers", io: emptyIo() }));
       return;
     }
-    const type = catalog.find((p) => p.nom === opt.value)?.type as IoType | undefined;
+    const item = catalog.find((p) => p.nom === opt.value);
+    const type = item?.type as IoType | undefined;
     patch(rid, (x) => {
       const io = emptyIo();
       if (type) io[type] = 1;
-      return { ...x, nom: opt.value, io };
+      // Signal du catalogue → graine d'affectation (voir syncPoints).
+      return { ...x, nom: opt.value, io, signal: item?.signal ?? undefined };
     });
   }
 
@@ -96,7 +123,7 @@ export function RowsEditor({
     for (const pt of modele.points) {
       const io = emptyIo();
       io[pt.type] = 1;
-      add.push({ id: newId(), kind: "point", nom: pt.nom, note: "", io });
+      add.push({ id: newId(), kind: "point", nom: pt.nom, note: "", io, signal: pt.signal });
     }
     setRows((r) => [...r, ...add]);
     setTplOpen(false);
@@ -120,13 +147,17 @@ export function RowsEditor({
 
   async function saveNewPoint() {
     if (!np) return;
-    const res = await ajouterPointCatalogue(np.nom, np.type);
+    // COM porte désormais un protocole (Modbus, BACnet…) dans le champ signal.
+    const signal = np.signal;
+    const res = await ajouterPointCatalogue(np.nom, np.type, signal || null);
     if (!res.ok) {
       setNpErr(res.error ?? "Erreur");
       return;
     }
     setCatalog((c) =>
-      [...c, { nom: np.nom.trim(), type: np.type }].sort((a, b) => a.nom.localeCompare(b.nom, "fr")),
+      [...c, { nom: np.nom.trim(), type: np.type, signal: signal || null }].sort((a, b) =>
+        a.nom.localeCompare(b.nom, "fr"),
+      ),
     );
     setNp(null);
     setNpErr("");
@@ -164,7 +195,7 @@ export function RowsEditor({
             </div>
           )}
         </div>
-        <Button size="sm" variant="ghost" onClick={() => setNp({ nom: "", type: "AI" })}>
+        <Button size="sm" variant="ghost" onClick={() => setNp({ nom: "", type: "AI", signal: "0-10V" })}>
           <Plus className="h-4 w-4" /> Nouveau point au catalogue
         </Button>
         {toolbarExtra && <div className="ml-auto">{toolbarExtra}</div>}
@@ -242,15 +273,41 @@ export function RowsEditor({
                       onPick={(o) => pickPoint(r.id, o)}
                       options={pointOptions}
                       placeholder="Choisir un point…"
+                      autoFocus={focusId === r.id}
                     />
                   </td>
                   <td className="px-2 py-1.5">
-                    <input
-                      value={r.note ?? ""}
-                      onChange={(e) => patch(r.id, (x) => ({ ...x, note: e.target.value }))}
-                      placeholder="—"
-                      className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle"
-                    />
+                    <div className="flex gap-1.5">
+                      {r.io?.COM && (
+                        <select
+                          value={r.signal ?? ""}
+                          onChange={(e) => patch(r.id, (x) => ({ ...x, signal: e.target.value || undefined }))}
+                          title="Protocole de communication"
+                          className="h-9 w-36 shrink-0 rounded-md border border-io-com/50 bg-surface px-2 text-sm text-fg"
+                        >
+                          <option value="">— protocole —</option>
+                          {COM_SIGNALS.map((s) => (
+                            <option key={s} value={s}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <input
+                        value={r.note ?? ""}
+                        onChange={(e) => patch(r.id, (x) => ({ ...x, note: e.target.value }))}
+                        onKeyDown={(e) => {
+                          // Tab (avant) en bout de ligne → crée un nouveau point
+                          // et enchaîne la saisie sur son nom.
+                          if (e.key === "Tab" && !e.shiftKey) {
+                            e.preventDefault();
+                            insertPointAfter(r.id);
+                          }
+                        }}
+                        placeholder="—"
+                        className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle"
+                      />
+                    </div>
                   </td>
                   {IO_TYPES.map((t) => (
                     <td key={t} className="px-1 py-1.5 text-center">
@@ -314,17 +371,37 @@ export function RowsEditor({
                 placeholder="Nom du point"
                 className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle"
               />
-              <select
-                value={np.type}
-                onChange={(e) => setNp({ ...np, type: e.target.value as IoType })}
-                className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
-              >
-                {IO_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
+              <div className="flex gap-2">
+                <select
+                  value={np.type}
+                  onChange={(e) => {
+                    const type = e.target.value as IoType;
+                    // Réaligne le signal sur un défaut cohérent avec le nouveau type.
+                    const sigs = signalsForType(type);
+                    const signal = sigs.includes(np.signal) ? np.signal : sigs[0] ?? "";
+                    setNp({ ...np, type, signal });
+                  }}
+                  className="h-9 w-24 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+                >
+                  {IO_TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={np.signal}
+                  onChange={(e) => setNp({ ...np, signal: e.target.value })}
+                  className="h-9 flex-1 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+                  title={np.type === "COM" ? "Protocole de communication" : "Signal électrique par défaut"}
+                >
+                  {signalsForType(np.type).map((s) => (
+                    <option key={s} value={s}>
+                      {signalLabel(s)}
+                    </option>
+                  ))}
+                </select>
+              </div>
               {npErr && (
                 <p className="flex items-center gap-1.5 text-sm text-danger">
                   <TriangleAlert className="h-4 w-4" /> {npErr}

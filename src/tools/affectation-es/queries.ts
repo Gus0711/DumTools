@@ -49,12 +49,10 @@ export async function listerProjets(): Promise<ProjetResume[]> {
   });
 }
 
-/** Provider de fiche client : projets d'affectation rattachés à ce client. */
-export async function listerPourClient(clientId: string): Promise<ClientArtefact[]> {
-  const projets = await prisma.affectationProjet.findMany({
-    where: { clientId },
-    orderBy: { updatedAt: "desc" },
-  });
+/** Transforme des projets d'affectation en artefacts (fiche client / affaire). */
+function projetsToArtefacts(
+  projets: { id: string; nom: string; numeroWhy: string | null; updatedAt: Date; data: unknown }[],
+): ClientArtefact[] {
   return projets.map((p) => {
     const data = (p.data as unknown as Project) ?? null;
     const m = nbModules(data);
@@ -69,22 +67,48 @@ export async function listerPourClient(clientId: string): Promise<ClientArtefact
   });
 }
 
+/** Provider de fiche client : projets d'affectation rattachés à ce client. */
+export async function listerPourClient(clientId: string): Promise<ClientArtefact[]> {
+  const projets = await prisma.affectationProjet.findMany({
+    where: { clientId },
+    orderBy: { updatedAt: "desc" },
+  });
+  return projetsToArtefacts(projets);
+}
+
+/** Provider de fiche affaire : projets d'affectation rattachés à ce chantier. */
+export async function listerPourChantier(chantierId: string): Promise<ClientArtefact[]> {
+  const projets = await prisma.affectationProjet.findMany({
+    where: { chantierId },
+    orderBy: { updatedAt: "desc" },
+  });
+  return projetsToArtefacts(projets);
+}
+
 export interface ProjetComplet {
   id: string;
   nom: string;
   clientNom: string;
   numeroWhy: string;
+  /** Affaire de rattachement (identification) — null si automate non rattaché. */
+  chantierId: string | null;
+  affaireNom: string | null;
   project: Project;
 }
 
 export async function getProjet(id: string): Promise<ProjetComplet | null> {
-  const p = await prisma.affectationProjet.findUnique({ where: { id } });
+  const p = await prisma.affectationProjet.findUnique({
+    where: { id },
+    include: { chantier: { select: { nom: true } } },
+  });
   if (!p) return null;
   return {
     id: p.id,
     nom: p.nom,
     clientNom: p.clientNom,
     numeroWhy: p.numeroWhy ?? "",
+    chantierId: p.chantierId,
+    affaireNom: p.chantier?.nom ?? null,
     project: normaliserProjet(p.data as unknown as Project),
   };
 }

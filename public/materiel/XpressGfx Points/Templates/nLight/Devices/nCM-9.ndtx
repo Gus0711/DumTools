@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NLightDeviceTemplate name="nCM-9-ADC">
+  <Features>
+    <Feature id="LightLevel" />
+    <Feature id="DimInLevel" />
+  </Features>
+  <Poles>
+    <Pole number="1">
+      <Features>
+        <Feature id="Occupied" />
+        <Feature id="PCellInhibit" />
+        <Feature id="DimLevel" />
+        <Feature id="RelayState" />
+      </Features>
+    </Pole>
+  </Poles>
+</NLightDeviceTemplate>

@@ -306,6 +306,9 @@
 .affectation-doc .io-table td:last-child { width: 23mm; text-align: center; }
 .affectation-doc .io-table td:nth-child(2) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .affectation-doc .free-cell { color: #999; font-style: italic; }
+/* Borne dont le signal est incompatible (ex. sortie 0-10V sur borne triac DO). */
+.affectation-doc .io-row-incompatible td { background: #fdeaea; }
+.affectation-doc .io-incompatible-flag { color: #b23030; font-weight: 700; white-space: nowrap; }
 .affectation-doc .legend { font-size: 6.5pt; color: #4d6071; margin-top: auto; }
 
 /* --- Pages automate à E/S intégrées -------------------------------------- */

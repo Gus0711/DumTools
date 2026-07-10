@@ -1,0 +1,174 @@
+﻿// Lexicon contains key/value entries. The key appears to the left of the first equal sign
+// on each line. The value appears after the first equal sign on each line.
+// DO NOT MODIFY THE KEYS. You can modify the values.
+// Blank lines are ignored.
+// Any text on a line after double right-slashes ( // ) is a comment and is ignored.
+// Leading an trailing spaces in the keys or values are removed.
+// use \n in values to add a line break. 
+
+// Controller Sheet Values
+Controller_Name = Nom du contrôleur:
+Controller_Description = Description du contrôleur:
+Controller_Address = Addresse:
+Address = Addresse:
+Model_Number = Numéro de modèle:
+Module_Model_Number = Numéro de modèle du Module:
+Module_Description = Description du module:
+Io_Module = Module ES
+Use_Units = Unités:
+
+// Controller Sheet Values (IO Table Headers - General)
+Point_Index = Indice\ndes\npoints
+Point_Name = Nom\ndu\npoint
+Point_DisplayName=Nom\nd'affichage
+Description = Description
+Point_Type = Type\nde\nPoint
+AI_Type = EA
+DI_Type = ED
+AO_Type = SA
+DO_Type = SD
+Signal_Type = Type\nde\nSignal
+
+Part_Number = No de pièce
+Wiring_Detail = Détail
+Revision = Rev
+Comments = Commentaires
+Commissioning = Mise en marche
+Field_Verification = Chantier
+Field_Install = Install
+Field_Termination = Term
+Field_PTP = P.à.P.
+Software_Verification = Software
+Software_Test = Test
+Software_Calibrated = Calib
+Software_Program = Prog
+SignOff_Verification = Signature
+SignOff_Graphic = Graphique
+SignOff_Client = Client
+SignOff_Date = Date
+
+
+Equipment_Name = Nom\nde\nl'équipement
+Range = L'échelle
+Signal_Min = Signal\nMin
+Signal_Max = Signal\nMax
+Output_Min = Sortie\nMin
+Output_Max = Sortie\nMax
+Reverse_Acting = Action\nInverse
+Units = Unités
+True_False_Text = Texte\nVrai/Faux
+Use_Filter = Use\nFilter
+
+// Controller Sheet Values (IO Table Headers - Options)
+Options	= Options
+Use_Override = Use\nOverride
+Smooth_Curve = Smooth\nCurve
+
+// Controller Sheet Values (IO Table Headers - Output Configuration)
+Analog_Output_Configuration = Configuration Analogue
+Binary_Output_Configuration = Configuration Binaire
+Default_Value = Default\nValue
+Offset = Offset
+Default_State = Default\nState
+
+// Controller Sheet Values (IO Table Headers - Pulse Configuration)
+Pulse_Configuration	= Pulse Configuration
+Falling_Increment = Falling\nIncrement
+Rising_Increment = Rising\nIncrement
+
+// Controller Sheet Values (IO Table Headers - Out of Range Management)
+Out_of_Range = Out of Range Management
+Check = Check
+Min = Min
+Max = Max
+
+// Controller Sheet Values (IO Table Headers - Electrical Fault)
+Electrical_Fault = Electrical Fault Management
+Signal_Low = Signal\nLow
+Signal_High = Signal\nHigh
+
+// Controller Sheet Values (IO Table Headers - PWM Configuration)
+PWM_Configuration = PWM Configuration
+Default = Default
+Period = Period
+Warm_Up = Warm\nUp
+Cool_Down = Cool\nDown
+
+// Controller Sheet Values (IO Table Headers - BACnet Alarms Enable)
+BACnet_Alarm_Enable = BACnet\nAlarm\nEnable
+
+// Controller Sheet Values (IO Table Headers - BACnet Alarms Analog)
+BACnet_Alarms_Analog = Alarmes BACnet (Analogique)
+High_Enable = High\nEnable
+Low_Enable = Low\nEnable
+High_Limit = High\nLimit
+Low_Limit = Low\nLimit
+Deadband = Deadband
+
+// Controller Sheet Values (IO Table Headers - BACnet Alarms Digital)
+BACnet_Alarms_Digital = Alarmes BACnet (Digitales)
+Alarm_Value = Alarm\nValue
+
+// Controller Sheet Values (IO Table Headers - BACnet Alarms Common)
+BACnet_Alarms_Common = Alarmes BACnet (Communes)
+Time_Delay = Time\nDelay
+Normal_Delay = Normal\nDelay
+Notify_Type = Notify\nType
+To_Offnormal = To\nOffnormal
+To_Fault = To\nFault
+To_Normal = To\nNormal
+Notification_Class = Notification\nClass
+
+// IO Module Header
+Module_Number = Numéro du module:
+Module_Name = Nom du module:
+Module_Desciption = Description du module:
+Module_Address = Addresse du module:
+
+// Subnet Header
+Subnet_Number = Subnet:
+SubnetExt_Name = Nom de la Sonde Subnet Ext.:
+SubnetExt_Description = Description de la Sonde Subnet Ext.:
+SubnetExt_Model_Number = Numéro de Modèle de la Sonde Subnet Ext.:
+SubnetExt_Address = Addresse de la Subnet Ext.:
+
+// Com Sensor Header
+SmartVue_Name = Nom de la Sonde Comm:
+SmartVue_Description = Description de la Sonde Comm:
+SmartVue_Model_Number = Numéro de Modèle de la Sonde Comm:
+SmartVue_Address = Addresse de la Sonde Comm:
+
+// Multisensor Header
+MultiSensor_Name = Nom du EC-Multi-Sensor:
+MultiSensor_Description = Description du EC-Multi-Sensor:
+MultiSensor_Model_Number = Numéro de Modèle du EC-Multi-Sensor:
+MultiSensor_Address = Addresse du EC-Multi-Sensor:
+
+// BLE Headers
+Ble_Name =  Nom de la Sonde BLE:
+Ble_Description = Description de la Sonde BLE:
+Ble_Model_Number = Numéro de Modèle de la Sonde BLE:
+Ble_Address = Addresse de la Sonde BLE:
+Ble_Subnet = ID de la Sonde BLE:
+
+// Notes footers
+Notes_Caption = Notes:
+
+// Miscellaneous
+YES = Oui
+NO = Non
+TRUE = Vrai
+FALSE = Faux
+REVERSE = Reverse
+DIRECT = Direct
+CTRLR_COL_B = 6,29 // Width of column B. MUST BE LOCALIZED using appropriate decimal seperator if necessary.
+
+// Project Sheet Values
+Project_Name = Nom du projet:
+Project_Number = Numéro de project:
+Project_Version = Version du fichier:
+
+// Added starting with IP Controllers
+MAC_Address = Addresse MAC:
+Neuron_Id = Neuron Id:
+IP_Address = Addresse IP:

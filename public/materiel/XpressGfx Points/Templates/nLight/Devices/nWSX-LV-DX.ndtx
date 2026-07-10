@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NLightDeviceTemplate name="nWSX-LV-DX">
+  <Features>
+    <Feature id="LightLevel" />
+  </Features>
+  <Poles>
+    <Pole number="1">
+      <Features>
+        <Feature id="Occupied" />
+        <Feature id="PCellInhibit" />
+      </Features>
+    </Pole>
+  </Poles>
+</NLightDeviceTemplate>

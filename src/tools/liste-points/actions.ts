@@ -83,6 +83,7 @@ export async function supprimerDocument(id: string): Promise<void> {
 export async function ajouterPointCatalogue(
   nom: string,
   type: string,
+  signal?: string | null,
 ): Promise<{ ok: boolean; error?: string }> {
   await requireUserId();
   const nomClean = nom.trim();
@@ -95,7 +96,9 @@ export async function ajouterPointCatalogue(
   });
   if (existe) return { ok: false, error: "Ce point existe déjà" };
 
-  await prisma.pointCatalog.create({ data: { nom: nomClean, type } });
+  // Signal électrique (AI/DI/AO/DO) ou protocole de communication (COM).
+  const signalClean = signal?.trim() || null;
+  await prisma.pointCatalog.create({ data: { nom: nomClean, type, signal: signalClean } });
   revalidatePath(BASE);
   return { ok: true };
 }

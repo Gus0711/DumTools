@@ -1,0 +1,290 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Language key="nl" name="Dutch" displayName="Netherlands">
+  <Element type="WEEKDAYS" id="1">
+    <Text value="maandag" />
+    <Text value="dinsdag" />
+    <Text value="woensdag" />
+    <Text value="donderdag" />
+    <Text value="vrijdag" />
+    <Text value="zaterdag" />
+    <Text value="zondag" />
+  </Element>
+  <Element type="SHRT WEEKDAYS" id="2">
+    <Text value="ma" />
+    <Text value="di" />
+    <Text value="wo" />
+    <Text value="do" />
+    <Text value="vr" />
+    <Text value="za" />
+    <Text value="zo" />
+  </Element>
+  <Element type="MONTHS" id="3">
+    <Text value="januari" />
+    <Text value="februari" />
+    <Text value="maart" />
+    <Text value="april" />
+    <Text value="mei" />
+    <Text value="juni" />
+    <Text value="juli" />
+    <Text value="augustus" />
+    <Text value="september" />
+    <Text value="oktober" />
+    <Text value="november" />
+    <Text value="december" />
+  </Element>
+  <Element type="SHRT MONTHS" id="4">
+    <Text value="jan" />
+    <Text value="feb" />
+    <Text value="maa" />
+    <Text value="apr" />
+    <Text value="mei" />
+    <Text value="jun" />
+    <Text value="jul" />
+    <Text value="aug" />
+    <Text value="sep" />
+    <Text value="okt" />
+    <Text value="nov" />
+    <Text value="dec" />
+  </Element>
+  <Element type="NULL VALUE" id="5">
+    <Text value="Onge." />
+  </Element>
+  <Element type="DAYOFWEEKRANK" id="6">
+    <Text value="Eerste" />
+    <Text value="Tweede" />
+    <Text value="Derde" />
+    <Text value="Vierde" />
+    <Text value="Laatste" />
+  </Element>
+  <Element type="ANY VALUE" id="7">
+    <Text value="Willekeurig" />
+  </Element>
+  <Element type="BOOLEAN" id="11">
+    <Text value="Onwaar" />
+    <Text value="Waar" />
+  </Element>
+  <Element type="SPEC EVENT TYPE" id="13">
+    <Text value="Datum" />
+    <Text value="Datumber." />
+    <Text value="Week dag" />
+    <Text value="Referentie" />
+  </Element>
+  <Element type="WIFI MODE" id="14">
+    <Text value="Uitgeschakeld" />
+    <Text value="Client" />
+    <Text value="Hotspot" />
+    <Text value="Toegangspunt" />
+  </Element>
+  <Element type="LONG DATE FMT" id="15">
+    <Text value="%W, %t %d, %j" />
+  </Element>
+  <Element type="LONG TIME FMT" id="16">
+    <Text value="%h:%m:%s %A" />
+  </Element>
+  <Element type="MED DATE FMT" id="17">
+    <Text value="%w, %t %d, %j" />
+  </Element>
+  <Element type="SHRT DATE FMT" id="18">
+    <Text value="%t %d, %j" />
+  </Element>
+  <Element type="SHRT TIME FMT" id="19">
+    <Text value="%h:%m %A" />
+  </Element>
+  <Element type="SPEC EVENT DAY" id="21">
+    <Text value="Laatste dag" />
+    <Text value="Oneven dagen" />
+    <Text value="Even dagen" />
+  </Element>
+  <Element type="SPEC EVENT WEEK" id="22">
+    <Text value="1e week" />
+    <Text value="2e week" />
+    <Text value="3e week" />
+    <Text value="4e week" />
+    <Text value="5e week" />
+    <Text value="Vorige week" />
+  </Element>
+  <Element type="SPEC EVENT MONTH" id="23">
+    <Text value="Oneven maanden" />
+    <Text value="Even maanden" />
+  </Element>
+  <Element type="WEATHERSTATE" id="28">
+    <Text value="Helder" />
+    <Text value="Zonnig" />
+    <Text value="Overweg.zon." />
+    <Text value="Gedeeltel.zon." />
+    <Text value="Mooi" />
+    <Text value="Enkele wolken" />
+    <Text value="Gedeel.bewol." />
+    <Text value="Overw.bewol." />
+    <Text value="Bewolkt" />
+    <Text value="Betrokken" />
+    <Text value="Lichte regen" />
+    <Text value="Regen" />
+    <Text value="Zware regen" />
+    <Text value="Thunderstorms" />
+    <Text value="Aanvriez.regen" />
+    <Text value="Mist" />
+    <Text value="Nelvel" />
+    <Text value="Snow" />
+    <Text value="Winderig" />
+    <Text value="Misterig" />
+    <Text value="Stof" />
+    <Text value="Onbekend" />
+    <Text value="Tsunami" />
+    <Text value="Tornado" />
+    <Text value="Overstroming" />
+    <Text value="Brand" />
+    <Text value="Hurricane" />
+    <Text value="Aardbeving" />
+    <Text value="Vulkaan" />
+  </Element>
+  <Element type="WINDDIRECTION" id="29">
+    <Text value="N" />
+    <Text value="NO" />
+    <Text value="O" />
+    <Text value="ZO" />
+    <Text value="Z" />
+    <Text value="ZW" />
+    <Text value="W" />
+    <Text value="NW" />
+    <Text value="Variabel" />
+  </Element>
+  <Element type="BINARY STATES" id="30">
+    <Text value="inactief" />
+    <Text value="actief" />
+  </Element>
+  <Element type="AUTO STATE" id="31">
+    <Text value="Auto" />
+  </Element>
+  <Element type="SHRT AUTO STATE" id="32">
+    <Text value="A" />
+  </Element>
+  <Element type="HOURS" id="33">
+    <Text value="%h" />
+  </Element>
+  <Element type="MINUTES" id="34">
+    <Text value="%m" />
+  </Element>
+  <Element type="AMPM" id="35">
+    <Text value="%A" />
+  </Element>
+  <Element type="OCCUPANCY" id="36">
+    <Text value="" />
+    <Text value="Actief" />
+    <Text value="Inactief" />
+    <Text value="Bypass" />
+    <Text value="Stand-by" />
+  </Element>
+  <Element type="OCCUPANCY SETPOINTS" id="37">
+    <Text value="" />
+    <Text value="Actief instelpunt" />
+    <Text value="Inactief instelpunt" />
+    <Text value="Bypass-instelpunt" />
+    <Text value="Stand-by-instelpunt" />
+  </Element>
+  <Element type="SHORT SPEC EVENT" id="38">
+    <Text value="Oneven" />
+    <Text value="Even" />
+    <Text value="Laatste" />
+  </Element>
+  <Element type="MAIN MENU" id="100">
+    <Text value="my PERSONIFY" />
+    <Text value="Instellingen" />
+    <Text value="Technicusmodus" />
+    <Text value="Uitloggen" />
+    <Text value="Over onze app" />
+    <Text value="Planner" />
+    <Text value="Weather" />
+    <Text value="Change Units" />
+  </Element>
+  <Element type="PCA SCN" id="101">
+    <Text value="Download de my PERSONIFY-app" />
+    <Text value="Toon PINcode" />
+  </Element>
+  <Element type="SETTINGS SCN" id="102">
+    <Text value="Taal" />
+    <Text value="Eenheden" />
+    <Text value="Geavanceerde instellingen" />
+  </Element>
+  <Element type="TECHNICIAN SCN" id="103">
+    <Text value="Subnet ID-instellingen" />
+    <Text value="Subnet ID" />
+  </Element>
+  <Element type="ADV SETTINGS SCN" id="104">
+    <Text value="Kleurthema" />
+    <Text value="Screensaver time-out" />
+    <Text value="Wake-upsensor" />
+    <Text value="Bluetooth" />
+    <Text value="Bluetooth-instellingen" />
+  </Element>
+  <Element type="PRODUCT INFO SCN" id="105">
+    <Text value="Firmware" />
+    <Text value="Bootloader" />
+    <Text value="Master" />
+    <Text value="Firmwareversie" />
+    <Text value="GUI-versie" />
+    <Text value="Hostnaam" />
+    <Text value="Ethernet IP-adr." />
+    <Text value="Ethernet MAC-adr." />
+    <Text value="Wifimodus" />
+    <Text value="Wifi IP-adr." />
+    <Text value="Wifi MAC-adr." />
+    <Text value="SSID" />
+  </Element>
+  <Element type="SCHEDULES SCN" id="106">
+    <Text value="Planning" />
+    <Text value="Dagelijks" />
+    <Text value="Gedeeld" />
+    <Text value="Bijzonderheden" />
+    <Text value="Standaardw." />
+    <Text value="Kop. naar andere dag" />
+    <Text value="Temperatuur instellen" />
+    <Text value="Begintijd" />
+    <Text value="Eindtijd" />
+    <Text value="Kopiëren naar ..." />
+    <Text value="Weekdagen" />
+    <Text value="Elke dag" />
+    <Text value="Kopiëren" />
+    <Text value="Standaardwaarde instellen" />
+    <Text value="Uw wijzigingen zijn opgeslagen!" />
+    <Text value="Maandag t/m vrijdag" />
+    <Text value="Weekend" />
+    <Text value="Prioriteit bewerken" />
+    <Text value="Items" />
+    <Text value="Eigenschappen" />
+    <Text value="Datum selecteren" />
+    <Text value="Naam item" />
+    <Text value="Type" />
+    <Text value="Type instellen" />
+    <Text value="Begin" />
+    <Text value="Einde" />
+    <Text value="Dag" />
+    <Text value="Dag van de week" />
+    <Text value="Week" />
+    <Text value="Maand" />
+    <Text value="Jaar" />
+    <Text value="Planning bewerken" />
+    <Text value="Nieuwe planning" />
+    <Text value="Activiteitsinstelpunten" />
+    <Text value="Dag selecteren" />
+    <Text value="Week selecteren" />
+    <Text value="Maand selecteren" />
+    <Text value="Jaar selecteren" />
+    <Text value="Weekdag selecteren" />
+    <Text value="Gebeurtenis" />
+    <Text value="Kalender referentie" />
+  </Element>
+  <Element type="WEATHER SCN" id="107">
+    <Text value="Weather" />
+    <Text value="Today" />
+    <Text value="High" />
+    <Text value="Low" />
+    <Text value="RH" />
+    <Text value="POP" />
+  </Element>
+  <Element type="WIFI CONFIGURATION SCN" id="108">
+    <Text value="Wifi-configuratie" />
+    <Text value="Opnieuw initialiseren van wifi" />
+    <Text value="Wificonfiguratie resetten..." />
+  </Element>
+</Language>

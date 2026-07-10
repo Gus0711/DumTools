@@ -1,0 +1,665 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file contains information about supported generic subnet extensions.
+-->
+<GenericExtensions fileVersion="1.19.0">
+  <!--<GenericExtension id="0" name="{IRRemoteName:IR9 Gateway}">
+    <Registers>
+      <Register name="Group1" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1" default="0">
+        <BitFields>
+          <BitField name="Zone"         offset="0"  length="4"/>
+          <BitField name="GreenLED"     isEnum="true" offset="4"  length="2"/>
+          <BitField name="YellowLED"    isEnum="true" offset="6"  length="2"/>
+          <BitField name="RedLED"       isEnum="true" offset="8"  length="2"/>
+          <BitField name="BuzzerEnable" offset="10" length="1"/>
+        </BitFields>
+      </Register>
+      <Register name="UserSetpoint" siUnit="62" registerType="3" dataType="Float" address="1"  endianness="1" readWrite="0" direction="2" default="0"/>
+      <Register name="Group2" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="0"	direction="2" default="16">
+        <BitFields>
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy"  isEnum="true" enumOffsetShortStack="-1" offset="0"    length="4"/>
+          <BitField name="Occupancy" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed" isEnum="true" offset="4"    length="1"/>
+          <BitField name="LouverPos"      isEnum="true" offset="5"    length="4"/>
+          <BitField name="Metric"         offset="9"    length="1"/>
+          <BitField name="Standalone"     offset="10"   length="1"/>
+          <BitField name="ConfiguredZone" offset="11"   length="4"/>
+        </BitFields>
+      </Register>
+      <Register name="UserOffsetPosition" registerType="3" dataType="Float" address="4"  endianness="1" readWrite="0" direction="2" default="0"/>
+      <Register name="Group3" registerType="3" dataType="Bit" address="6" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="LightOn1"      offset="0"   length="1"/>
+          <BitField name="LightOff1"     offset="1"   length="1"/>
+          <BitField name="SunBlindUp1"   offset="2"   length="1"/>
+          <BitField name="SunBlindDown1" offset="3"   length="1"/>
+          <BitField name="LightOn2"      offset="4"   length="1"/>
+          <BitField name="LightOff2"     offset="5"   length="1"/>
+          <BitField name="SunBlindUp2"   offset="6"   length="1"/>
+          <BitField name="SunBlindDown2" offset="7"   length="1"/>
+          <BitField name="LightOn3"      offset="8"   length="1"/>
+          <BitField name="LightOff3"     offset="9"   length="1"/>
+          <BitField name="SunBlindUp3"   offset="10"  length="1"/>
+          <BitField name="SunBlindDown3" offset="11"  length="1"/>
+          <BitField name="LightOn4"      offset="12"  length="1"/>
+          <BitField name="LightOff4"     offset="13"  length="1"/>
+          <BitField name="SunBlindUp4"   offset="14"  length="1"/>
+          <BitField name="SunBlindDown4" offset="15"  length="1"/>
+        </BitFields>
+      </Register>
+      <Register name="Update" registerType="3" dataType="Update" address="7" endianness="1" readWrite="0" direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointUpdate"  offset="0" length="1"/>
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  offset="1" length="1"/>
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" offset="2" length="1"/>
+          <BitField name="LouverUpdate"    offset="3" length="1"/>
+          <BitField name="GroupUpdate1"    offset="4" length="1"/>
+          <BitField name="GroupUpdate2"    offset="5" length="1"/>
+          <BitField name="GroupUpdate3"    offset="6" length="1"/>
+          <BitField name="GroupUpdate4"    offset="7" length="1"/>
+        </BitFields>
+      </Register>
+    </Registers>
+  </GenericExtension>-->
+  <GenericExtension id="1" name="{ECSmartComfortTSName:EC-Smart-Comfort-S}">
+    <Registers>
+      <Register name="EffectSetpointOffset"  	 registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" useDefault="true" default="NaN"/>
+      <!--NaN 0x7FC00000 means not connected input-->
+      <Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1">
+        <!--default value 0b0000111 00111111(1855) => Occ = 7(means not connected input) , FanSpeed = 7(means not connected input), Intensity = 14 -->
+        <BitFields>
+          <!--<BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/>  -->
+          <!--<BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/>  -->
+          <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/>
+          <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5" useDefault="true" default="14"/>
+        </BitFields>
+      </Register>
+      <Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>
+      <!--<Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>-->
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <!--<Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN/> -->
+      <!--<Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <!--<BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />-->
+          <!--<BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />-->
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <!--<BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />-->
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="2" name="{ECSmartComfortTSOName:EC-Smart-Comfort-SO}">
+    <Registers>
+      <Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" useDefault="true" default="NaN"/>
+      <!--NaN 0x7FC00000 means not connected input-->
+      <Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1">
+        <!--default value 0b0000111 00111111(1855) => Occ = 7(means not connected input) , FanSpeed = 7(means not connected input), Intensity = 14 -->
+        <BitFields>
+          <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/>
+          <!--<BitField name="FanSpeedStatus" isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/>  -->
+          <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/>
+          <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5" useDefault="true" default="14"/>
+        </BitFields>
+      </Register>
+      <Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>
+      <!--<Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>-->
+      <Register name="SpaceTemp" siUnit="62" 	 registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <!--<Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <!--<Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="OutputStatus" registerType="3" dataType="Bit"	address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3"/>
+          <!--<BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />-->
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="UpdateFlags" registerType="3" dataType="Update"	address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <!--<BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />-->
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit"	address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="3" name="{ECSmartComfortTSFName:EC-Smart-Comfort-SF}">
+    <Registers>
+      <Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" useDefault="true" default="NaN"/>
+      <!--NaN 0x7FC00000 means not connected input-->
+      <Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1">
+        <!--default value 0b0000111 00111111(1855) => Occ = 7(means not connected input) , FanSpeed = 7(means not connected input), Intensity = 14 -->
+        <BitFields>
+          <!--<BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/>  -->
+          <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/>
+          <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/>
+          <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5" useDefault="true" default="14"/>
+        </BitFields>
+      </Register>
+      <Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>
+      <!--<Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>-->
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <!-- <Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <!-- <Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <!--<BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />-->
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <!--<BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />-->
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>
+   </Registers>
+  </GenericExtension>
+  <GenericExtension id="4" name="{ECSmartComfortTSOFName:EC-Smart-Comfort-SOF}">
+    <Registers>
+      <Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" useDefault="true" default="NaN"/>
+      <!--NaN 0x7FC00000 means not connected input-->
+      <Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1">
+        <!--default value 0b0000111 00111111(1855) => Occ = 7(means not connected input) , FanSpeed = 7(means not connected input), Intensity = 14 -->
+        <BitFields>
+          <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/>
+          <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/>
+          <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/>
+          <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5" useDefault="true" default="14"/>
+        </BitFields>
+      </Register>
+      <Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>
+      <!--<Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>-->
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <!-- <Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <!-- <Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/> -->
+      <Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="5" name="{ECSmartAirTName:EC-Smart-Air}">
+    <Registers>
+       <!--<Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" default="0"/>--> 
+       <!--<Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>--> 
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1" default="0">
+        <BitFields>
+          <!-- <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3"/> -->
+          <!-- <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/> -->
+          <!-- <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/> -->
+          <!-- <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5"/> -->
+        </BitFields>
+      </Register>
+       <!--<Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>-->
+       <!--<Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>-->
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+       <!--<Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/>--> 
+       <!--<Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/>--> 
+       <!--<Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>-->
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <!--<BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />-->
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <!--<Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>-->
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="6" name="{ECSmartAirTHName:EC-Smart-Air-H}">
+    <Registers>
+       <!--<Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" default="0"/>--> 
+       <!--<Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>--> 
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1" default="0">
+        <BitFields>
+          <!-- <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/> -->
+          <!-- <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/> -->
+          <!-- <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/> -->
+          <!-- <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5"/> -->
+        </BitFields>
+      </Register>
+       <!--<Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>-->
+      <!--<Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>-->
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+       <!--<Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/>--> 
+      <Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/>
+       <!--<Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>-->
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <!--<BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />-->
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <!--<Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>-->
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="7" name="{ECSmartAirTCName:EC-Smart-Air-C}">
+    <Registers>
+       <!--<Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" default="0"/>--> 
+       <!--<Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>--> 
+       <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1" default="0">
+        <BitFields>
+          <!-- <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/> -->
+          <!-- <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3"  useDefault="true" default="6"/> -->
+          <!-- <BitField name="Error"  				initialVisible="false"  offset="6"	length="1"/> -->
+          <!-- <BitField name="Intensity"  		initialVisible="false"  offset="7"	length="5"/> -->
+        </BitFields>
+      </Register>
+      <!--<Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>-->
+      <Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="CO2"  siUnit="96"     				   registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/>
+       <!--<Register name="Humidity"  siUnit="29"     			 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/>--> 
+       <!--<Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>-->
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <!--<BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />-->
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <!--<Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>-->
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="8" name="{ECSmartAirTCHName:EC-Smart-Air-CH}">
+    <Registers>
+       <!--<Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" default="0"/>--> 
+       <!--<Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>--> 
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1" default="0">
+        <BitFields>
+          <!-- <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/> -->
+          <!-- <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3"  useDefault="true" default="6"/> -->
+          <!-- <BitField name="Error"  				initialVisible="false"  offset="6"	length="1"/> -->
+          <!-- <BitField name="Intensity"  		initialVisible="false"  offset="7"	length="5"/> -->
+        </BitFields>
+      </Register>
+       <!--<Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>-->
+      <Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>
+      <Register name="SpaceTemp" siUnit="62" 	registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="CO2"  siUnit="96"     			 registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="Humidity"  siUnit="29"     		 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/>
+       <!--<Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>-->
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <!--<BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />-->
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <!--<Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>-->
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="9" name="{ECSmartFullName:EC-Smart-Full}">
+    <Registers>
+      <Register name="EffectSetpointOffset"  	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" default="0"/>
+      <Register name="ConfigInput" registerType="3" dataType="Bit" address="3" endianness="1" readWrite="1"	direction="1" default="0">
+        <BitFields>
+          <BitField name="SetpointMode"	 initialVisible="false" offset="0" length="1"/>
+          <BitField name="SetpointSteps" initialVisible="false" offset="1" length="7"/>
+          <BitField name="SetpointRange" initialVisible="false" offset="8" length="4"/>
+        </BitFields>
+      </Register>
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1">
+        <!--default value 0b0000111 00111111(1855) => Occ = 7(means not connected input) , FanSpeed = 7(means not connected input), Intensity = 14 -->
+        <BitFields>
+          <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true" default="6"/>
+          <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true" default="6"/>
+          <BitField name="Error"  				 initialVisible="false" offset="6"	length="1"/>
+          <BitField name="Intensity"  		 initialVisible="false" offset="7"	length="5" useDefault="true" default="14"/>
+        </BitFields>
+      </Register>
+      <Register name="SleepTime" registerType="3" dataType="UInteger"	address="4" endianness="1" readWrite="1"	direction="1" default="0"/>
+      <Register name="Elevation" siUnit="31" initialVisible="false" registerType="3" dataType="Float" address="5" endianness="1" readWrite="1"  direction="1" useDefault="true" default="NaN"/>
+      <Register name="SpaceTemp" siUnit="62"   registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="CO2"  siUnit="96"     			 registerType="3"  dataType="Float" address="38" endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="Humidity"  siUnit="29"     		 registerType="3"  dataType="Float" address="40" endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="SetpointOffset" conversion="false"  siUnit="121"     registerType="3"  dataType="Float" address="34"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed"  		isEnum="true" enumOffsetShortStack="-1" offset="3" length="3" />
+          <BitField name="Error"  			initialVisible="false" offset="6" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="UpdateFlags" registerType="3" dataType="Update" address="42" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetpointOffsetUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="0" length="1" />
+          <BitField name="OccupancyUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean" 	offset="1" length="1" />
+          <BitField name="FanSpeedUpdate" enumKeyBacnet="boolean" enumKeyShortStack="boolean"  	offset="2" length="1" />
+          <BitField name="DigitalInputUpdate1" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="8" length="1" />
+          <BitField name="DigitalInputUpdate2" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="9" length="1" />
+          <BitField name="DigitalInputUpdate3" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="10" length="1" />
+          <BitField name="DigitalInputUpdate4" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="11" length="1" />
+          <BitField name="DigitalInputUpdate5" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="12" length="1" />
+          <BitField name="DigitalInputUpdate6" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="13" length="1" />
+          <BitField name="DigitalInputUpdate7" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="14" length="1" />
+          <BitField name="DigitalInputUpdate8" enumKeyShortStack="boolean" enumKeyBacnet="boolean"  initialVisible="false" offset="15" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="DigitalExtension" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="DigitalInput1"      initialVisible="false" offset="0" length="2"/>
+          <BitField name="DigitalInput2"      initialVisible="false" offset="2" length="2"/>
+          <BitField name="DigitalInput3"      initialVisible="false" offset="4" length="2"/>
+          <BitField name="DigitalInput4"      initialVisible="false" offset="6" length="2"/>
+          <BitField name="DigitalInput5"      initialVisible="false" offset="8" length="2"/>
+          <BitField name="DigitalInput6"      initialVisible="false" offset="10" length="2"/>
+          <BitField name="DigitalInput7"      initialVisible="false" offset="12" length="2"/>
+          <BitField name="DigitalInput8"      initialVisible="false" offset="14" length="2"/>
+        </BitFields>
+      </Register>
+    </Registers>
+  </GenericExtension>
+  <GenericExtension id="10" name="{RJ9GatewayName:RJ Adapter}" moduleNumber="9">
+    <Registers>
+      <!-- Inputs -->
+      <Register name="EffectSetpointOffset"	registerType="3" dataType="Float" address="1" endianness="1" readWrite="1"	direction="1" default="NaN"/>
+      <Register name="Temperature"	registerType="3" dataType="Float" address="3" endianness="1" readWrite="1"	direction="1" default="NaN"/>
+      <Register name="InputStatus" registerType="3" dataType="Bit" address="0" endianness="1" readWrite="1" direction="1">
+        <BitFields>
+          <BitField name="OccupancyStatus" isEnum="true" offset="0"	length="3" useDefault="true"  default="6"/>
+          <BitField name="FanSpeedStatus"  isEnum="true" enumOffsetShortStack="-1" offset="3"	length="3" useDefault="true"  default="6"/>
+          <BitField name="EcoVue"  	   offset="6"	length="3"/>
+          <BitField name="SensorZone"	   offset="9"	length="5" useDefault="true"  default="0"/>
+        </BitFields>
+      </Register>
+      <!-- Outputs -->
+      <Register name="SpaceTemp" siUnit="62" registerType="3"  dataType="Float" address="38"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="SetpointOffset"	siUnit="121" registerType="3"  dataType="Float" address="36"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+      <Register name="OutputStatus" registerType="3" dataType="Bit" address="32" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <BitField name="Occupancy" enumKeyBacnet="Bacnet.Standard.Occupancy" enumKeyShortStack="SNVT_occupancy" isEnum="true" offset="0" length="3" />
+          <BitField name="FanSpeed" enumKeyBacnet="Bacnet.Controllers.SmartComfortFanSpeed" enumKeyShortStack="ShortStack.Controllers.SmartComfortFanSpeed" isEnum="true" enumOffsetShortStack="-1"  offset="3" length="3" />
+          <BitField name="LastGroupUpdated" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroup" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroup" offset="6" length="4" />
+          <BitField name="LastGroupCommand" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" offset="10" length="4" />
+          <BitField name="Motion" offset="14" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="Groups_1" registerType="3" dataType="Bit" address="33" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <BitField name="Group1" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="0" length="4" />
+          <BitField name="Group2" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="4" length="4" />
+          <BitField name="Group3" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="8" length="4" />
+          <BitField name="Group4" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="12" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="Groups_2" registerType="3" dataType="Bit" address="34" endianness="1" readWrite="0"	direction="2" default="1">
+        <BitFields>
+          <BitField name="Group5" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="0" length="4" />
+          <BitField name="Group6" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="4" length="4" />
+          <BitField name="Group7" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="8" length="4" />
+          <BitField name="Group8" enumKeyBacnet="Bacnet.Controllers.MultiSensorGroupCommand" enumKeyShortStack="ShortStack.Controllers.MultiSensorGroupCommand" isEnum="true" initialVisible="false" offset="12" length="4" />
+        </BitFields>
+      </Register>
+      <Register name="UpdateFlags" registerType="3" dataType="Update" address="35" endianness="1" readWrite="0"	direction="2" default="0">
+        <BitFields>
+          <BitField name="SetPointOffsetUpdate" offset="2" length="1" />
+          <BitField name="OccupancyUpdate" offset="0" length="1" />
+          <BitField name="FanSpeedUpdate" offset="1" length="1" />
+          <BitField name="MotionUpdate" offset="3" length="1" initialVisible="false" />
+          <BitField name="GroupUpdate" offset="4" length="1" />
+        </BitFields>
+      </Register>
+      <Register name="LuxLevel"	registerType="3"  dataType="Float" address="40"  endianness="1" readWrite="0"	direction="2" default="NaN"/>
+    </Registers>
+  </GenericExtension>
+  </GenericExtensions>

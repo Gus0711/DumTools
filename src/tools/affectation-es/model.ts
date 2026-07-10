@@ -49,7 +49,10 @@ export interface Project {
   network_2: string;
   wifi_ssid: string;
   wifi_password: string;
+  /** IP du port 1 (réseau 1). Historiquement le seul champ IP. */
   controller_ip: string;
+  /** IP du port 2 (réseau 2) — les ECLYPSE ont 2 ports pouvant être séparés. */
+  controller_ip_2?: string;
   include_references: boolean;
   gfx_header_2: string;
   gfx_header_3: string;
@@ -78,6 +81,7 @@ export function defaultProject(dateLabel: string): Project {
     wifi_ssid: "ECLYPSE-XXXX",
     wifi_password: "????",
     controller_ip: "?.?.?.?",
+    controller_ip_2: "?.?.?.?",
     include_references: false,
     gfx_header_2: "CLIENT - SITE",
     gfx_header_3: "Affectation des entrées / sorties",
@@ -259,4 +263,39 @@ export function moduleSort(a: Module, b: Module): number {
   if (ac !== bc) return ac ? -1 : 1;
   if (ac && bc) return Math.abs(Number(a.number) || 0) - Math.abs(Number(b.number) || 0);
   return (Number(a.number) || 0) - (Number(b.number) || 0);
+}
+
+// --- Capacité électrique des bornes (triac vs universelle) ------------------
+// Une borne triac (DO/DOT sur ECY-303) est TOR seule : elle ne peut pas piloter
+// une sortie analogique 0-10V. À l'inverse une borne AO (ex. ECY-PTU-207) est
+// analogique seule. Ces règles pilotent l'affectation auto ET la validation.
+
+export type BorneCapacite = "tor" | "ana" | "both";
+
+/** Nature électrique qu'une borne peut piloter, déduite du préfixe de son code.
+ *  DO/DI = TOR seul ; AO/AI = analogique seul ; UO/DUO/UI (et SI, inconnus) =
+ *  universel (les deux). */
+export function capaciteBorne(code: string | undefined): BorneCapacite {
+  const c = String(code || "").trim().toUpperCase();
+  if (c.startsWith("DUO") || c.startsWith("UO") || c.startsWith("UI")) return "both";
+  if (c.startsWith("DO") || c.startsWith("DI")) return "tor";
+  if (c.startsWith("AO") || c.startsWith("AI")) return "ana";
+  return "both";
+}
+
+/** Un point est-il TOR (signal "D") ? Sinon il est analogique. */
+export function pointEstTor(signal: string | undefined): boolean {
+  return String(signal || "").toUpperCase() === "D";
+}
+
+/** Le signal d'un point est-il compatible avec la borne de son repère ?
+ *  Ex. incohérent : une vanne 0-10V (analogique) affectée à une borne triac DO. */
+export function signalCompatibleBorne(
+  signal: string | undefined,
+  repere: string | undefined,
+): boolean {
+  if (!repere) return true; // pas de borne affectée → rien à valider
+  const cap = capaciteBorne(repere);
+  if (cap === "both") return true;
+  return cap === "tor" ? pointEstTor(signal) : !pointEstTor(signal);
 }

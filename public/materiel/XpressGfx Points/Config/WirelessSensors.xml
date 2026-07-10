@@ -1,0 +1,2032 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file contains information about supported wireless sensors.
+-->
+<WirelessSensors fileVersion="2.0.0">
+
+  <!-- ====================== -->
+  <!-- Enumaration Definition -->
+  <!-- ====================== -->
+
+  <Enumerations>
+    <Enumeration name="Wireless Sensor FanSpeed" key="FanSpeed">
+      <Member text="Auto" value="1" />
+      <Member text="Off" value="2" />
+      <Member text="Low" value="3" />
+      <Member text="Medium" value="4" />
+      <Member text="High" value="5" />
+    </Enumeration>
+    <Enumeration name="Wireless Sensor Rocker Switch" key="RockerSwitchMomentary">
+      <Member text="I Pressed" value="1" />
+      <Member text="O Pressed" value="2" />
+      <Member text="Released" value="3" />
+    </Enumeration>
+    <Enumeration name="Wireless Battery Voltage" key="SupplyVoltage">
+      <Member text="Battery low" value="1" />
+      <Member text="Battery OK" value="2" />
+    </Enumeration>
+    <Enumeration name="Wireless Input State" key="InputStatus">
+      <Member text="Closed" value="1" />
+      <Member text="Open" value="2" />
+    </Enumeration>
+    <Enumeration name="PIR Status" key="PIRStatus">
+      <Member text="PIR off" value="1" />
+      <Member text="PIR on" value="2" />
+    </Enumeration>
+  </Enumerations>
+
+  <!-- ========================= -->
+  <!-- Sensor / Group Definition -->
+  <!-- ========================= -->
+
+  <WirelessSensorGroup name="Temperature">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-02-01" name="Temperature Sensor (-40°C to 0°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-02" name="Temperature Sensor (-30°C to +10°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-03" name="Temperature Sensor (-20°C to +20°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-04" name="Temperature Sensor (-10°C to +30°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-05" name="Temperature Sensor (0°C to +40°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-06" name="Temperature Sensor (+10°C to +50°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-07" name="Temperature Sensor (+20°C to +60°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-08" name="Temperature Sensor (+30°C to +70°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="70" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-09" name="Temperature Sensor (+40°C to +80°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="80" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-0A" name="Temperature Sensor (+50°C to +90°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="90" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-0B" name="Temperature Sensor (+60°C to +100°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-10" name="Temperature Sensor (-60°C to +20°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-11" name="Temperature Sensor (-50°C to +30°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-12" name="Temperature Sensor (-40°C to +40°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-13" name="Temperature Sensor (-30°C to +50°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-14" name="Temperature Sensor (-20°C to +60°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-15" name="Temperature Sensor (-10°C to +70°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="-10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="70" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-16" name="Temperature Sensor (0°C to +80°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="80" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-17" name="Temperature Sensor (+10°C to +90°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="90" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-18" name="Temperature Sensor (+20°C to +100°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-19" name="Temperature Sensor (+30°C to +110°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="110" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-1A" name="Temperature Sensor (+40°C to +120°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="120" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-02-1B" name="Temperature Sensor (+50°C to +130°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="130" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-02-01" name="Temperature Sensor (-40°C to 0°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-02" name="Temperature Sensor (-30°C to +10°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-03" name="Temperature Sensor (-20°C to +20°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-04" name="Temperature Sensor (-10°C to +30°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-05" name="Temperature Sensor (0°C to +40°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-06" name="Temperature Sensor (+10°C to +50°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-07" name="Temperature Sensor (+20°C to +60°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-08" name="Temperature Sensor (+30°C to +70°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="70" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-09" name="Temperature Sensor (+40°C to +80°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="80" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-0A" name="Temperature Sensor (+50°C to +90°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="90" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-0B" name="Temperature Sensor (+60°C to +100°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-10" name="Temperature Sensor (-60°C to +20°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-11" name="Temperature Sensor (-50°C to +30°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-12" name="Temperature Sensor (-40°C to +40°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-13" name="Temperature Sensor (-30°C to +50°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-14" name="Temperature Sensor (-20°C to +60°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="60" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-15" name="Temperature Sensor (-10°C to +70°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="-10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="70" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-16" name="Temperature Sensor (0°C to +80°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="80" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-17" name="Temperature Sensor (+10°C to +90°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="10" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="90" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-18" name="Temperature Sensor (+20°C to +100°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="20" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-19" name="Temperature Sensor (+30°C to +110°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="30" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="110" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-1A" name="Temperature Sensor (+40°C to +120°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="120" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-02-1B" name="Temperature Sensor (+50°C to +130°C)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="50" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="130" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Temperature and Humidity Sensor">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-04-01" name="Temperature &amp; Humidity Sensor (0°C to +40°C, 0% to 100%)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-04-01" name="Temperature &amp; Humidity Sensor (0°C to +40°C, 0% to 100%)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Rocker Switch">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="05-02-01" name="Light &amp; Blind Control 2 Rocker Switch EU Application Style">
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons" repeat="Button" />
+        <Input name="Button">
+          <UserProperty type="enum" name="Offset" bindTo="Mask" values="0=A;64=B" /> <!-- A=LeftRocker; B=RightRocker -->
+          <UserProperty type="enum" name="Options" bindTo="Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />  <!-- Pressed Up (O State) in Normal mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />  <!-- Pressed Down (I State) in Normal mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="2" />  <!-- Pressed Up (O State) in Momentary mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/YValue" value="1" />  <!-- Pressed Down (I State) in Momentary mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/YValue" value="3" />  <!-- Released State in Momentary mode -->
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="05-02-02" name="Light &amp; Blind Control 2 Rocker Switch US/CAN Application Style">
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons" repeat="Button" />
+        <Input name="Button">
+          <UserProperty type="enum" name="Offset" bindTo="Mask" values="0=A;64=B" /> <!-- B=LeftRocker; A=RightRocker -->
+          <UserProperty type="enum" name="Options" bindTo="Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />  <!-- Pressed Down (O State) in Normal mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />  <!-- Pressed Up (I State) in Normal mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="1" />  <!-- Pressed Down (O State) in Momentary mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/YValue" value="2" />  <!-- Pressed Up (I State) in Momentary mode -->
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/YValue" value="3" />  <!-- Released State in Momentary mode -->
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="05-03-01" name="Light &amp; Blind Control 4 Rocker Switch">
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons;3=3 buttons;4=4 buttons" repeat=" Button" />
+        <Input name=" Button"> <!-- White space in input name is intended here. -->
+          <UserProperty type="enum" name="Offset" bindTo="Mask" values="0=A;64=B;128=C;192=D" />
+          <UserProperty type="enum" name="Options" bindTo="Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/YValue" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/YValue" value="3" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="F6-02-01" name="Light &amp; Blind Control 2 Rocker Switch EU Application Style">
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons" repeat="Button" />
+        <Input name="Button">
+          <UserProperty type="enum" name="Offset" bindTo="EEP2X_DigitalMask" values="0=A;64=B" /> <!-- A=LeftRocker; B=RightRocker -->
+          <UserProperty type="enum" name="Options" bindTo="EEP2X_Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />  <!-- Pressed Up (O State) in Normal mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />  <!-- Pressed Down (I State) in Normal mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(2)/YValue" value="2" />  <!-- Pressed Up (O State) in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(3)/YValue" value="1" />  <!-- Pressed Down (I State) in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(4)/YValue" value="3" />  <!-- Released State in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="F6-02-02" name="Light &amp; Blind Control 2 Rocker Switch US/CAN Application Style">
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons" repeat="Button" />
+        <Input name="Button">
+          <UserProperty type="enum" name="Offset" bindTo="EEP2X_DigitalMask" values="0=A;64=B" /> <!-- B=LeftRocker; A=RightRocker -->
+          <UserProperty type="enum" name="Options" bindTo="EEP2X_Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />  <!-- Pressed Down (O State) in Normal mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />  <!-- Pressed Up (I State) in Normal mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(2)/YValue" value="1" />  <!-- Pressed Down (O State) in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(3)/YValue" value="2" />  <!-- Pressed Up (I State) in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(4)/YValue" value="3" />  <!-- Released State in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="F6-02-04" name="Light &amp; Blind Control 2 Rocker Switch ERP2" platformCondition="GetType().Name=IPPlatform" >
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons" repeat="Button" />
+        <Input name="Button">
+          <UserProperty type="enum" name="Offset" bindTo="EEP2X_DigitalMask" values="0=A;64=B" /> <!-- B=LeftRocker; A=RightRocker -->
+          <UserProperty type="enum" name="Options" bindTo="EEP2X_Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" /> <!-- Pressed Down (O State) in Normal mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" /> <!-- Pressed Up (I State) in Normal mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(2)/YValue" value="1" /> <!-- Pressed Down (O State) in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(3)/YValue" value="2" /> <!-- Pressed Up (I State) in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(4)/YValue" value="3" /> <!-- Released State in Momentary mode -->
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="F6-03-01" name="Light &amp; Blind Control 4 Rocker Switch">
+        <UserProperty type="enum" name="Number of buttons" bindTo="RepeatTime" values="1=1 button;2=2 buttons;3=3 buttons;4=4 buttons" repeat="Button" />
+        <Input name="Button">
+          <UserProperty type="enum" name="Offset" bindTo="EEP2X_DigitalMask" values="0=A;64=B;128=C;192=D" />
+          <UserProperty type="enum" name="Options" bindTo="EEP2X_Options/Bits(2)" values="0=Normal;1=Momentary;2=Toggle" />
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(2)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(3)/YValue" value="2" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(4)/YValue" value="3" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>  
+  <WirelessSensorGroup name="Room Operating Panel">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-10-01" name="Temperature Sensor; SetPoint, FanSpeed &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="FanSpeed">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="5" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="145" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="4" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="165" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="3" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="190" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/YValue" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/XValue" value="210" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/YValue" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="2" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-02" name="Temperature Sensor; SetPoint, FanSpeed &amp; DayNight Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="FanSpeed">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="5" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="145" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="4" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="165" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="3" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="190" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/YValue" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/XValue" value="210" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(4)/YValue" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="2" />
+        </Input>
+        <Input name="SlideSwitch">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-03" name="Temperature Sensor; SetPoint Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-05" name="Temperature Sensor; SetPoint &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-06" name="Temperature Sensor; SetPoint &amp; DayNight Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SlideSwitch">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-0C" name="Temperature Sensor &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max Receive Time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-10" name="Temperature &amp; Humidity Sensor; SetPoint &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-11" name="Temperature &amp; Humidity Sensor; SetPoint &amp; DayNight Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SlideSwitch">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-10-12" name="Temperature &amp; Humidity Sensor; SetPoint Control">
+        <UserProperty type="numeric" name="Max Receive Time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="LookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="LookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-10-01" name="Temperature Sensor; SetPoint, FanSpeed &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="FanSpeed">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/YValue" value="5" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/XValue" value="145" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/YValue" value="4" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(2)/XValue" value="165" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(2)/YValue" value="3" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(3)/XValue" value="190" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(3)/YValue" value="2" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(4)/XValue" value="210" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(4)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="2" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-02" name="Temperature Sensor; SetPoint, FanSpeed &amp; DayNight Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="FanSpeed">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/YValue" value="5" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/XValue" value="145" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/YValue" value="4" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(2)/XValue" value="165" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(2)/YValue" value="3" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(3)/XValue" value="190" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(3)/YValue" value="2" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(4)/XValue" value="210" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(4)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="2" />
+        </Input>
+        <Input name="SlideSwitch">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-03" name="Temperature Sensor; SetPoint Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-05" name="Temperature Sensor; SetPoint &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-06" name="Temperature Sensor; SetPoint &amp; DayNight Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SlideSwitch">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-0C" name="Temperature Sensor &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-10" name="Temperature &amp; Humidity Sensor; SetPoint &amp; Occupancy Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-11" name="Temperature &amp; Humidity Sensor; SetPoint &amp; DayNight Control">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SlideSwitch">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-10-12" name="Temperature &amp; Humidity Sensor; SetPoint Control">
+        <UserProperty type="numeric" name="Max Receive Time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="40" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SetPoint">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="numeric" name="Min range" bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" unitId="121" syncUnitWithProject="true" minValue="-10" maxValue="0" value="-2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/YValue" value="0" />
+          <UserProperty type="numeric" name="Max range" bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/YValue" unitId="121" syncUnitWithProject="true" minValue="0" maxValue="10" value="2" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="120" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(2)/XValue" value="134" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(3)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Light Sensor">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-06-01" name="Light Sensor 300 lx to 60.000 lx">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="5.1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Illumination">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="enum" name="Range" bindTo="DatabyteIndex" values="2=300...30.000lx;1=600..60.000lx" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-06-01" name="Light Sensor 300 lx to 60.000 lx">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="5.1" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Illumination">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="enum" name="Range" bindTo="EEP2X_BitOffset" values="8=300...30.000lx;16=600...60.000lx" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-06-02" name="Light Sensor 0 lx to 1.020 lx">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="5.1" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Illumination">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <UserProperty type="enum" name="Range" bindTo="EEP2X_BitOffset" values="8=0...510lx;16=0...1.020lx" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Digital Input">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-30-01" name="Digital Input; Single Input Contact, Battery Monitor">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="121" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="2" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="2" />
+        </Input>
+        <Input name="InputStatus">
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="196" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="2" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="2" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="07-30-02" name="Digital Input; Single Input Contact">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="WindowContact">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-30-01" name="Digital Input; Single Input Contact, Battery Monitor">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/XValue" value="121" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/YValue" value="2" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="2" />
+        </Input>
+        <Input name="InputStatus">
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/XValue" value="196" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/YValue" value="2" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="2" />
+        </Input>
+      </WirelessSensor>
+      <WirelessSensor eep="A5-30-02" name="Digital Input; Single Input Contact">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="WindowContact">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Contact &amp; Switch">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="06-00-01" name="Contacts &amp; Switches; Single Input Contact">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="WindowContact">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="D5-00-01" name="Contacts &amp; Switches; Single Input Contact">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="WindowContact">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="7" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <!-- ===================================================================
+  Key Card Holder profiles are unsupported: The EnOcean telegram cannot be 
+  interpreted using actual RPS implementation. This is due to the mask 
+  property being exclusively used to identify the rockerID.  
+  ========================================================================
+  <WirelessSensorGroup name="Key Card Holder">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="05-04-01" name="Key Card Activated Switch">
+        <Input name="KeyCard">
+          <SystemProperty bindTo="Mask" value="112" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="F6-04-01" name="Key Card Activated Switch">
+        <Input name="KeyCard">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="112" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  -->
+  <WirelessSensorGroup name="Occupancy Sensor">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-07-01" name="Occupancy Sensor">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="PIR">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="127" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="2" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="2" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-07-01" name="Occupancy Sensor">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <!-- Limitation: Error codes are not extracted from value range 251 to 255 -->
+          <!-- Limitation: The supply voltage availability is not dynamically detected.  This input is always considered as available. -->
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="5.0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="250" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="PIR">
+          <UserProperty type="statetextenum" name="Enumeration" bindTo="EnumID" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(0)/YValue" value="1" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/XValue" value="128" />
+          <SystemProperty bindTo="EEP2X_MultiStateLookupTable/Value/Entries(1)/YValue" value="2" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="2" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>    
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Light, Temperature &amp; Occupancy Sensor">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-08-01" name="Light, Temperature &amp; Occupancy Sensor 0 to 510 lx, 0 to 51°C">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="5.1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="Illumination">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="510" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="51" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="PIR">
+          <SystemProperty bindTo="Mask" value="2" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="Mask" value="1" />
+          <SystemProperty bindTo="DatabyteIndex" value="0" />
+          <SystemProperty bindTo="ConversionType" value="1" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-08-01" name="Light, Temperature &amp; Occupancy Sensor 0 to 510 lx, 0 to 51°C">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="SupplyVoltage">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="5.1" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="Illumination">
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="510" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="51" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="PIR">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="30" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+        <Input name="Occupancy">
+          <SystemProperty bindTo="EEP2X_DigitalMask" value="1" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="1" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="31" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="1" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(0)/YValue" value="0" />
+          <SystemProperty bindTo="EEP2X_DigitalLookupTable/Value/Entries(1)/YValue" value="1" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Gas Sensor">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+      <WirelessSensor eep="07-09-04" name="Humidity; CO2 &amp; Temperature Sensor ( 0% to 100%, 0ppm to 2550ppm, 0°C to +51°C,)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="Humidity">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="200" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="CO2">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="96" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="96" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="2550" unitId="96" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="SpaceTemp">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="51" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-09-04" name="Humidity; CO2 &amp; Temperature Sensor ( 0% to 100%, 0ppm to 2550ppm, 0°C to +51°C,)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="Humidity">
+          <!-- Limitation: The humidity availability is not dynamically detected.  This input is always considered as available.-->
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="29" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="200" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="100" unitId="29" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="CO2">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="96" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="96" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="2550" unitId="96" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="SpaceTemp">
+          <!-- Limitation: The space temp availability is not dynamically detected.  This input is always considered as available.-->
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="121" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="51" unitId="62" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+  <WirelessSensorGroup name="Universal" platformCondition="GetType().Name=BacnetPlatform Or GetType().Name=ShortStackPlatform">
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.0 and Lower)">
+      <WirelessSensor eep="07-3F-7F" name="Analog Input Module (3 analog 0...10V DC inputs)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="InputVoltage 1">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="5" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="10" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="1" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="InputVoltage 2">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="5" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="10" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="2" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+        <Input name="InputVoltage 3">
+          <UserProperty type="numeric" name="Offset" bindTo="Offset" unitId="5" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(0)/YValue" value="0" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="LookupTable/Value/Entries(1)/YValue" value="10" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="DatabyteIndex" value="3" />
+          <SystemProperty bindTo="ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+    <WirelessSensorGroup name="EnOcean Equipement Profile (v2.1 and Higher)">
+      <WirelessSensor eep="A5-3F-7F" name="Analog Input Module (3 analog 0...10V DC inputs)">
+        <UserProperty type="numeric" name="Max receive time" bindTo="MaxReceiveTime" unitId="73" minValue="0" maxValue="65535" value="2400" />
+        <Input name="InputVoltage 1">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="5" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="10" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="16" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="InputVoltage 2">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="5" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="10" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="8" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+        <Input name="InputVoltage 3">
+          <UserProperty type="numeric" name="Offset" bindTo="EEP2X_LinearOffset" unitId="5" syncUnitWithProject="true" />
+          <UserProperty type="numeric" name="Default" bindTo="Default" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/XValue" value="0" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(0)/YValue" value="0" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/XValue" value="255" />
+          <SystemProperty bindTo="EEP2X_LinearLookupTable/Value/Entries(1)/YValue" value="10" unitId="5" syncUnitWithProject="true" />
+          <SystemProperty bindTo="EEP2X_BitSize" value="8" />
+          <SystemProperty bindTo="EEP2X_BitOffset" value="0" />
+          <SystemProperty bindTo="EEP2X_ConversionType" value="0" />
+        </Input>
+      </WirelessSensor>
+    </WirelessSensorGroup>
+  </WirelessSensorGroup>
+
+</WirelessSensors>

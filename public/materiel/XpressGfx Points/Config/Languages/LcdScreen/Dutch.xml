@@ -1,0 +1,613 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Language key="nl" name="Dutch" displayName="Netherlands">
+  <Element type="WEEKDAYS" id="1">
+    <Text value="maandag" />
+    <Text value="dinsdag" />
+    <Text value="woensdag" />
+    <Text value="donderdag" />
+    <Text value="vrijdag" />
+    <Text value="zaterdag" />
+    <Text value="zondag" />
+  </Element>
+  <Element type="SHRT WEEKDAYS" id="2">
+    <Text value="maa." />
+    <Text value="din." />
+    <Text value="woe." />
+    <Text value="don." />
+    <Text value="vri." />
+    <Text value="zat." />
+    <Text value="zon." />
+  </Element>
+  <Element type="MONTHS" id="3">
+    <Text value="januari" />
+    <Text value="februari" />
+    <Text value="maart" />
+    <Text value="april" />
+    <Text value="mei" />
+    <Text value="juni" />
+    <Text value="juli" />
+    <Text value="augustus" />
+    <Text value="september" />
+    <Text value="oktober" />
+    <Text value="november" />
+    <Text value="december" />
+  </Element>
+  <Element type="SHRT MONTHS" id="4">
+    <Text value="jan." />
+    <Text value="feb." />
+    <Text value="maa." />
+    <Text value="apr." />
+    <Text value="mei" />
+    <Text value="jun." />
+    <Text value="jul." />
+    <Text value="aug." />
+    <Text value="sep." />
+    <Text value="okt." />
+    <Text value="nov." />
+    <Text value="dec." />
+  </Element>
+  <Element type="NULL VALUE" id="5">
+    <Text value="Onge." />
+  </Element>
+  <Element type="DAYOFWEEKRANK" id="6">
+    <Text value="Eerste" />
+    <Text value="Tweede" />
+    <Text value="Derde" />
+    <Text value="Vierde" />
+    <Text value="Laatste" />
+  </Element>
+  <Element type="OBJECT TYPES" id="8">
+    <Text member="1" value="AI" />
+    <Text member="2" value="AU" />
+    <Text member="3" value="AW" />
+    <Text member="4" value="BI" />
+    <Text member="5" value="BU" />
+    <Text member="6" value="BW" />
+    <Text member="7" value="KAL" />
+    <Text member="13" value="PID" />
+    <Text member="14" value="MSI" />
+    <Text member="18" value="SCH" />
+    <Text member="20" value="MSW" />
+    <Text member="21" value="TRND" />
+    <Text member="117" value="DRI" />
+    <Text member="118" value="COM" />
+    <Text member="119" value="HWI" />
+    <Text member="120" value="HWU" />
+    <Text member="121" value="NW" />
+    <Text member="122" value="BW" />
+    <Text member="123" value="EW" />
+    <Text member="124" value="NC" />
+    <Text member="125" value="BC" />
+    <Text member="126" value="EC" />
+    <Text member="127" value="NVI" />
+    <Text member="128" value="NVU" />
+  </Element>
+  <Element type="EVENTSTATE" id="9">
+    <Text value="Normaal" />
+    <Text value="Fout" />
+    <Text value="Abnormaal" />
+    <Text value="Hoge limiet" />
+    <Text value="Lage limiet" />
+    <Text value="Veiligheidsalarm" />
+  </Element>
+  <Element type="RELIABILITY" id="10" filter="bacnet;bacnetIp">
+    <Text value="Geen fout gedetecteerd" />
+    <Text value="Geen sensor" />
+    <Text value="Boven bereik" />
+    <Text value="Onder bereik" />
+    <Text value="Open circuit" />
+    <Text value="Kortsluiting" />
+    <Text value="Geen output" />
+    <Text value="Onbetr.andere" />
+    <Text value="Procesfout" />
+    <Text value="Multi-state fault" />
+    <Text value="Configuratiefout" />
+    <Text value="Gereserveerd" />
+    <Text value="Communicatiefout" />
+    <Text value="Onderdeelfout" />
+  </Element>
+  <Element type="BOOLEAN" id="11">
+    <Text value="Onwaar" />
+    <Text value="Waar" />
+  </Element>
+  <Element type="CALENDAR ENTRY" id="12">
+    <Text value="01" />
+    <Text value="1ste" />
+    <Text value="2de" />
+    <Text value="3de" />
+    <Text value="4de" />
+    <Text value="5de" />
+    <Text value="Laatste" />
+    <Text value="Iedere" />
+    <Text value="Week:" />
+    <Text value="Iedere dag" />
+    <Text value="Laatste dag" />
+    <Text value="Even dagen" />
+    <Text value="Ied. maand" />
+    <Text value="Onev. maan." />
+    <Text value="Ev. maand." />
+    <Text value="Ieder jaar" />
+    <Text value="Iedere dag" />
+    <Text value="LD" />
+    <Text value="OD" />
+    <Text value="LD" />
+    <Text value="OD" />
+    <Text value="EM" />
+    <Text value=", " />
+    <Text value=", " />
+    <Text value=" - " />
+    <Text value="%M/%D/%y" />
+    <Text value="Iedere week" />
+  </Element>
+  <Element type="SPEC EVENT TYPE" id="13">
+    <Text value="Datum" />
+    <Text value="Datumbereik" />
+    <Text value="Week en dag" />
+    <Text value="Referentie" />
+  </Element>
+  <Element type="LONG DATE FMT" id="15">
+    <Text value="%W, %t %d, %j" />
+  </Element>
+  <Element type="LONG TIME FMT" id="16">
+    <Text value="%h:%m:%s%A" />
+  </Element>
+  <Element type="MED DATE FMT" id="17">
+    <Text value="%w, %t %d, %j" />
+  </Element>
+  <Element type="SHRT DATE FMT" id="18">
+    <Text value="%t %d, %j" />
+  </Element>
+  <Element type="SHRT TIME FMT" id="19">
+    <Text value="%h:%m%A" />
+  </Element>
+  <Element type="DST DATE FMT" id="20">
+    <Text value="%D %w of %t" />
+  </Element>
+  <Element type="WEATHERSTATE" id="28">
+    <Text value="Helder" />
+    <Text value="Zonnig" />
+    <Text value="Overweg.zon." />
+    <Text value="Gedeeltel.zon." />
+    <Text value="Mooi" />
+    <Text value="Enkele wolken" />
+    <Text value="Gedeel.bewol." />
+    <Text value="Overw.bewol." />
+    <Text value="Bewolkt" />
+    <Text value="Betrokken" />
+    <Text value="Lichte regen" />
+    <Text value="Regen" />
+    <Text value="Zware regen" />
+    <Text value="Thunderstorms" />
+    <Text value="Aanvriez.regen" />
+    <Text value="Mist" />
+    <Text value="Nelvel" />
+    <Text value="Snow" />
+    <Text value="Winderig" />
+    <Text value="Misterig" />
+    <Text value="Stof" />
+    <Text value="Onbekend" />
+    <Text value="Tsunami" />
+    <Text value="Tornado" />
+    <Text value="Overstroming" />
+    <Text value="Brand" />
+    <Text value="Hurricane" />
+    <Text value="Aardbeving" />
+    <Text value="Vulkaan" />
+  </Element>
+  <Element type="WINDDIRECTION" id="29">
+    <Text value="N" />
+    <Text value="NO" />
+    <Text value="O" />
+    <Text value="ZO" />
+    <Text value="Z" />
+    <Text value="ZW" />
+    <Text value="W" />
+    <Text value="NW" />
+    <Text value="Variabel" />
+  </Element>
+  <Element type="BINARY STATES" id="30">
+    <Text value="inactief" />
+    <Text value="actief" />
+  </Element>
+  <Element type="LON POINTS SCN" id="73" filter="lon">
+    <Text value="Punten" />
+    <Text value="Hardware-inputs" />
+    <Text value="Hardwareoutputs" />
+    <Text value="Numerieke waarden" />
+    <Text value="Boolean-waarden" />
+    <Text value="Enum-waarden" />
+    <Text value="Numerieke constanten" />
+    <Text value="Boolean-constanten" />
+    <Text value="Enum-constanten" />
+    <Text value="Instelpuntconstanten" />
+    <Text value="Netwerkvariabele inputs" />
+    <Text value="Netwerkvariabele outputs" />
+    <Text value="Com-inputs" />
+    <Text value="Draadloze ingangen" />
+  </Element>
+  <Element type="LON AV SCN" id="74" filter="lon">
+    <Text>
+      <Line value="Numerieke" />
+      <Line value="waarden" />
+    </Text>
+    <Text value="Geen numerieke waarden" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="LON BV SCN" id="75" filter="lon">
+    <Text>
+      <Line value="Boolean" />
+      <Line value="waarden" />
+    </Text>
+    <Text value="Geen boolean-waarden" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="LON MSV SCN" id="76" filter="lon">
+    <Text value="Enum-waarden" />
+    <Text value="Geen enum-waarden" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="SETPOINTS SCN" id="77" filter="lon">
+    <Text>
+      <Line value="Instelpunt" />
+      <Line value="constanten" />
+    </Text>
+    <Text value="Geen instelpuntconst." />
+    <Text value="Bezette koeling" />
+    <Text value="Standby koeling" />
+    <Text value="Onbezette koeling" />
+    <Text value="Bezette verwarming" />
+    <Text value="Standby verwarming" />
+    <Text value="Onbezette verwarming" />
+  </Element>
+  <Element type="NVI SCN" id="78" filter="lon">
+    <Text>
+      <Line value="Netwerk" />
+      <Line value="variabele inputs" />
+    </Text>
+    <Text value="Geen netwerkvariabele inputs" />
+  </Element>
+  <Element type="NVO SCN" id="79" filter="lon">
+    <Text>
+      <Line value="Netwerk" />
+      <Line value="variabele outputs" />
+    </Text>
+    <Text value="Geen netwerkvariabele outputs" />
+  </Element>
+  <Element type="MAIN SCN" id="80">
+    <Text value="Punten" />
+    <Text value="Schema's &amp; kalenders" />
+    <Text value="Alarmen" />
+    <Text value="Overrides" />
+    <Text value="Favorieten" />
+    <Text value="PID-loops" />
+    <Text value="Weer" />
+    <Text value="Instellingen" />
+    <Text value="Over" />
+  </Element>
+  <Element type="PASSWORD SCN" id="81">
+    <Text value="Wachtwoord invoeren" />
+    <Text value="Toegang geweigerd" />
+    <Text value="Verkeerd wachtwoord" />
+    <Text value="Ok" />
+  </Element>
+  <Element type="POINTS SCN" id="82" filter="bacnet;bacnetIp">
+    <Text value="Punten" />
+    <Text value="Hardware-inputs" />
+    <Text value="Hardwareoutputs" />
+    <Text value="Analoge waarden" />
+    <Text value="Binaire waarden" />
+    <Text value="Waarden met meerdere toestanden" />
+    <Text value="Com-inputs" />
+    <Text value="Draadloze ingangen" />
+  </Element>
+  <Element type="HWIN SCN" id="83">
+    <Text>
+      <Line value="Hardware" />
+      <Line value="ingangen" />
+    </Text>
+    <Text value="Geen inputs" />
+  </Element>
+  <Element type="HWOUT SCN" id="84">
+    <Text>
+      <Line value="Hardware" />
+      <Line value="uitgangen" />
+    </Text>
+    <Text value="Geen outputs" />
+  </Element>
+  <Element type="COMIN SCN" id="85">
+    <Text value="Com-inputs" />
+    <Text value="Geen Com-inputs" />
+  </Element>
+  <Element type="WRLSIN SCN" id="86">
+    <Text>
+      <Line value="Draadloze" />
+      <Line value="ingangen" />
+    </Text>
+    <Text value="Geen draadloze inputs" />
+  </Element>
+  <Element type="AV SCN" id="88" filter="bacnet;bacnetIp">
+    <Text value="Analoge waarden" />
+    <Text value="Geen analoge waarden" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="BV SCN" id="89" filter="bacnet;bacnetIp">
+    <Text value="Binaire waarden" />
+    <Text value="Geen binaire waarden" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="MSV SCN" id="90" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Meervoudige-status" />
+      <Line value="waarden" />
+    </Text>
+    <Text value="Geen waarden met meerdere toestanden" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="LON AC SCN" id="91" filter="lon">
+    <Text>
+      <Line value="Numerieke" />
+      <Line value="constanten" />
+    </Text>
+    <Text value="Geen numerieke constanten" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="LON BC SCN" id="92" filter="lon">
+    <Text>
+      <Line value="Boolean" />
+      <Line value="constanten" />
+    </Text>
+    <Text value="Geen boolean constanten" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="LON MSC SCN" id="93" filter="lon">
+    <Text>
+      <Line value="Enum" />
+      <Line value="constanten" />
+    </Text>
+    <Text value="Geen enum constanten" />
+    <Text value="Toon vorige" />
+    <Text value="Toon volgende" />
+  </Element>
+  <Element type="PT MENU SCN" id="94">
+    <Text value="Noodoverschrijving" />
+    <Text value="Nood-auto" />
+    <Text value="Overschrijven" />
+    <Text value="Auto" />
+    <Text value="Waarde bepalen" />
+    <Text value="Alarmdetails" />
+    <Text value="Ga naar trendlog" />
+  </Element>
+  <Element type="SCH CAL SCN" id="95">
+    <Text>
+      <Line value="Schema's &amp;" />
+      <Line value="kalenders" />
+    </Text>
+    <Text value="Geen schema's of kalenders" />
+    <Text value="Wekelijkse planning" />
+    <Text value="%41r planning" />
+    <Text value="Speciale gebeurtenissen" />
+    <Text value="Speciale gebeurtenis" />
+    <Text value="Geen kalenderpost" />
+    <Text value="Kalenderpost" />
+    <Text value="Einde van de dag" />
+    <Text value="Geen gebeurtenissen" />
+    <Text value="Standaardwaarde wijzigen" />
+    <Text value="Stand. op ongeldig instel." />
+    <Text value="Gebeurtenis toevoegen" />
+    <Text value="Gebeurtenis wijzigen" />
+    <Text value="Gebeurtenis verwijderen" />
+    <Text value="Status" />
+    <Text value="Start" />
+    <Text value="Einde" />
+    <Text value="Planning gewijzigd&#x9;Wijzigingen opslaan?" />
+    <Text value="Standaardwaarde" />
+    <Text value="Tijd van de dag gebeur." />
+    <Text value="Speciale gebeurt. wijzig." />
+    <Text value="Verwijderen" />
+    <Text value="Voordien toevoegen" />
+    <Text value="Nadien toevoegen" />
+    <Text value="Special. gebeurt. toevoeg." />
+    <Text value="Annuleren" />
+    <Text value="Type" />
+    <Text value="Datum" />
+    <Text value="Begindatum" />
+    <Text value="Einddatum" />
+    <Text value="Week en dag" />
+    <Text value="Kalender referentie" />
+    <Text value="Wijzigen" />
+    <Text value="Post toevoegen" />
+    <Text value="Kalender gewijzigd&#x9;Wijzigingen opslaan?" />
+    <Text>
+      <Line value="Datumformaat: MM/DD/JJJJ" />
+      <Line value="*: Alle; LD: Laatste dag" />
+      <Line value="OD: Oneven dagen; ED: Even dagen" />
+      <Line value="OM: Oneven maanden; EM: Even maanden" />
+    </Text>
+    <Text value="Limiet overschreden&#x9;Kan niet worden weergegeven." filter="bacnetIp" />
+  </Element>
+  <Element type="ALARM SCN" id="96">
+    <Text value="Alarmen" />
+    <Text value="Actief niet erkend" />
+    <Text value="Actief erkend" />
+    <Text value="Inactief niet erkend" />
+  </Element>
+  <Element type="ALARM ACTNOTACK SCN" id="97">
+    <Text>
+      <Line value="Actief" />
+      <Line value="niet erkend" />
+    </Text>
+    <Text value="Geen actieve alarmen" />
+  </Element>
+  <Element type="ALARM ACTACK SCN" id="98" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Actief" />
+      <Line value="erkend" />
+    </Text>
+    <Text value="Geen actieve alarmen" />
+  </Element>
+  <Element type="ALARM INACTNOTACK SCN" id="99" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Inactief" />
+      <Line value="niet erkend" />
+    </Text>
+    <Text value="Geen actieve alarmen" />
+  </Element>
+  <Element type="ALARM INFO SCN" id="100" filter="bacnet;bacnetIp">
+    <Text value="Alarmdetails" />
+    <Text value="Van-status" />
+    <Text value="Naar-status" />
+    <Text value="Datum gebeurtenis" />
+    <Text value="Tijd gebeurtenis" />
+    <Text value="Overschreden limiet" />
+    <Text value="Overschrijd.waarde" />
+    <Text value="Nieuwe toestand" />
+    <Text value="Instelwaarde" />
+    <Text value="Feedback" />
+    <Text value="Buiten dienst" />
+    <Text value="Betrouwbaarheid" />
+  </Element>
+  <Element type="ALARM MENU SCN" id="101" filter="bacnet;bacnetIp">
+    <Text value="Erkennen" />
+    <Text value="Annuleren" />
+  </Element>
+  <Element type="OVERRIDE SCN" id="102">
+    <Text value="Opheffingen" />
+    <Text value="Geen opheffingen" />
+  </Element>
+  <Element type="FAVORITE SCN" id="103">
+    <Text value="Favorieten" />
+    <Text value="Geen favorieten" />
+  </Element>
+  <Element type="PIDS SCN" id="104">
+    <Text value="PID-loops" />
+    <Text value="Geen PID-loops" />
+  </Element>
+  <Element type="PID SCN" id="105">
+    <Text value="Input" />
+    <Text value="Instelpunt" />
+    <Text value="Output" />
+    <Text value="Prop. zone" />
+    <Text value="Integrale tijd" />
+    <Text value="Afgeleide tijd" />
+    <Text value="Dode zone" />
+    <Text value="Effect" />
+    <Text value="Aanlooptijd" />
+    <Text value="Verzadigingst." />
+    <Text value="Actie" />
+    <Text value="Grafiekperiode" />
+  </Element>
+  <Element type="PID ACTION" id="106">
+    <Text value="Direct" />
+    <Text value="Omgek." />
+  </Element>
+  <Element type="WEATHER SCN" id="109">
+    <Text value="Weer" />
+    <Text value="Zonsopgang" />
+    <Text value="Zonsopgang" />
+    <Text value="Zonsondergang" />
+    <Text value="Temperatuur" />
+    <Text value="Minimum" />
+    <Text value="Maximum" />
+    <Text value="Samenvatting" />
+    <Text value="Vochtigheid" />
+    <Text value="Windrichting" />
+    <Text value="Windsnelheid" />
+    <Text value="Windvlaag" />
+    <Text value="Gevoelstemperatuur" />
+    <Text value="Druk" />
+    <Text value="Dauwpunt" />
+    <Text value="Weer niet beschikbaar" />
+  </Element>
+  <Element type="SETTINGS SCN" id="110">
+    <Text value="Instellingen" />
+    <Text value="Helderheid" />
+    <Text value="Afmeldtijd" />
+    <Text value="Toestelexemplaar" />
+    <Text value="MAC-adres" />
+    <Text value="Baudrate" />
+    <Text value="Datum" />
+    <Text value="Tijd" />
+    <Text value="zomertijd inschakelen" />
+    <Text value="startdatum zomertijd" />
+    <Text value="DST einddatum" />
+    <Text value="begin zomertijd" />
+    <Text value="Taal" />
+    <Text value="Max master" />
+    <Text value="starttijd zomertijd" />
+    <Text value="DST eindtijd" />
+    <Text value="Tijdzone" />
+  </Element>
+  <Element type="ABOUT SCN" id="111">
+    <Text value="Over" />
+    <Text value="Druk op de kiesschijf voor versies" />
+    <Text value="Versies" />
+    <Text value="Controller" />
+    <Text value="Operator interface" />
+    <Text value="Firmware" />
+    <Text value="Bootloader" />
+  </Element>
+  <Element type="BUTTON TEXT" id="112">
+    <Text value="Ok" />
+    <Text value="Annul." />
+    <Text value="Scrol." />
+    <Text value="Bewer." />
+    <Text value="Ja" />
+    <Text value="Nee" />
+  </Element>
+  <Element type="DATEEDIT TEXT" id="113">
+    <Text value="Weekdag:" />
+    <Text value="Maand:" />
+    <Text value="Dag:" />
+    <Text value="Jaar:" />
+    <Text value="Week:" />
+  </Element>
+  <Element type="TIMEEDIT TEXT" id="114">
+    <Text value="Uur:" />
+    <Text value="Minuut:" />
+    <Text value="Seconde:" />
+    <Text value="Periode:" />
+  </Element>
+  <Element type="DSTEDIT TEXT" id="115">
+    <Text value="Maand:" />
+    <Text value="Week:" />
+    <Text value="Dag:" />
+  </Element>
+  <Element type="SHORT RELIABILITY" id="116" filter="lon">
+    <Text value="Geen.fout.gedet." />
+    <Text value="Geen sensor" />
+    <Text value="Boven bereik" />
+    <Text value="Onder bereik" />
+    <Text value="Open circuit" />
+    <Text value="Kortsluiting" />
+    <Text value="Geen output" />
+    <Text value="Onbetr.andere" />
+    <Text value="Procesfout" />
+    <Text value="Opsommingsfout" />
+    <Text value="Config.fout" />
+    <Text value="Gereserveerd" />
+    <Text value="Com.fout" />
+    <Text value="Onderdeelfout" />
+  </Element>
+  <Element type="DEVICE INFO SCN" id="117">
+    <Text value="Druk op de instelknop voor apparaatgegevens" />
+    <Text value="Druk op de instelknop voor meer informatie over het apparaat" />
+    <Text value="Apparaatgegevens" />
+    <Text value="Hostnaam" />
+    <Text value="Vast IP-adres" />
+    <Text value="Vast IP-subnetmasker" />
+    <Text value="Vast MAC-adres eth0" />
+    <Text value="Wifi IP-adres" />
+    <Text value="Wifi IP-subnetmasker" />
+    <Text value="Controllernaam" />
+    <Text value="Modelnaam" />
+    <Text value="SSID" />
+  </Element>
+</Language>

@@ -3,23 +3,28 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Building2, Home, SlidersHorizontal, Tags, type LucideIcon } from "lucide-react";
+import { BookOpen, Briefcase, Building2, Home, SlidersHorizontal, Tags, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TOOLS } from "@/tools/registry";
 
-export function Sidebar() {
+export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
   const items = [
     { href: "/", nom: "Accueil", icon: Home },
+    { href: "/affaires", nom: "Affaires", icon: Briefcase },
     ...TOOLS.map((t) => ({ href: t.href, nom: t.nom, icon: t.icon })),
   ];
 
   const configItems = [
     { href: "/clients", nom: "Clients", icon: Building2 },
-    { href: "/configuration/points", nom: "Catalogue & modèles", icon: Tags },
+    { href: "/configuration/points", nom: "Points & modèles", icon: Tags },
     { href: "/configuration/materiel", nom: "Base matériel", icon: SlidersHorizontal },
     { href: "/documentation", nom: "Documentation", icon: BookOpen },
+    // Gestion des comptes : réservée aux administrateurs.
+    ...(isAdmin
+      ? [{ href: "/configuration/utilisateurs", nom: "Utilisateurs", icon: Users }]
+      : []),
   ];
 
   return (
@@ -28,16 +33,30 @@ export function Sidebar() {
       <div aria-hidden className="blueprint-grid pointer-events-none absolute inset-0" />
 
       <div className="relative flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-        {/* Logo sur pastille blanche : le lockup contient du texte marine. */}
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+        {/* Logo sur pastille blanche : le lockup contient du texte marine.
+            Private joke : au survol, le logo s'affiche en TRÈS grand plein écran. */}
+        <div className="group flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-white shadow-sm">
           <Image
-            src="/logo-dumortier.png"
-            alt="Dumortier — Groupe Fareneït"
+            src="/logo_DumTools.png"
+            alt="DumoTool — Groupe Fareneït"
             width={32}
             height={43}
             className="h-8 w-auto object-contain"
             priority
           />
+          {/* Overlay plein écran révélé au group-hover : le logo en très grand. */}
+          <div
+            aria-hidden
+            className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-black/70 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100"
+          >
+            <Image
+              src="/logo_DumTools.png"
+              alt=""
+              width={880}
+              height={1189}
+              className="h-[85vh] w-auto max-w-[90vw] scale-90 object-contain drop-shadow-2xl transition-transform duration-300 group-hover:scale-100"
+            />
+          </div>
         </div>
         <div className="leading-tight">
           <div className="font-display text-[15px] font-bold tracking-tight text-sidebar-fg">

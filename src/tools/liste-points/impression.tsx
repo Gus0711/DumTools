@@ -270,7 +270,15 @@ function PrintRow({ r }: { r: PointRow }) {
   return (
     <tr style={{ borderBottom: "1px solid #e5e8ee" }}>
       <td style={{ padding: "3px 6px" }}>{r.nom || ""}</td>
-      <td style={{ padding: "3px 6px", color: "#555" }}>{r.note || ""}</td>
+      <td style={{ padding: "3px 6px", color: "#555" }}>
+        {r.io?.COM && r.signal && (
+          <b style={{ color: IO_HEX.COM }}>
+            {r.signal}
+            {r.note ? " · " : ""}
+          </b>
+        )}
+        {r.note || ""}
+      </td>
       {IO_TYPES.map((t) => (
         <td key={t} style={{ textAlign: "center", padding: "3px 2px" }}>
           {r.io?.[t] ? (

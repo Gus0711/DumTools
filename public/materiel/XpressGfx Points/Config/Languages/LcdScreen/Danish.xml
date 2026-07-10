@@ -1,0 +1,613 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Language key="da" name="Danish" displayName="Dansk">
+  <Element type="WEEKDAYS" id="1">
+    <Text value="Mandag" />
+    <Text value="Tirsdag" />
+    <Text value="Onsdag" />
+    <Text value="Torsdag" />
+    <Text value="Fredag" />
+    <Text value="Lørdag" />
+    <Text value="Søndag" />
+  </Element>
+  <Element type="SHRT WEEKDAYS" id="2">
+    <Text value="Man" />
+    <Text value="Tirs" />
+    <Text value="Ons" />
+    <Text value="Tors" />
+    <Text value="Fre" />
+    <Text value="Lør" />
+    <Text value="Søn" />
+  </Element>
+  <Element type="MONTHS" id="3">
+    <Text value="Januar" />
+    <Text value="Februar" />
+    <Text value="Marts" />
+    <Text value="April" />
+    <Text value="Maj" />
+    <Text value="Juni" />
+    <Text value="Juli" />
+    <Text value="August" />
+    <Text value="September" />
+    <Text value="Oktober" />
+    <Text value="November" />
+    <Text value="December" />
+  </Element>
+  <Element type="SHRT MONTHS" id="4">
+    <Text value="Jan" />
+    <Text value="Feb" />
+    <Text value="Mar" />
+    <Text value="Apr" />
+    <Text value="Maj" />
+    <Text value="Jun" />
+    <Text value="Jul" />
+    <Text value="Aug" />
+    <Text value="Sep" />
+    <Text value="Okt" />
+    <Text value="Nov" />
+    <Text value="Dec" />
+  </Element>
+  <Element type="NULL VALUE" id="5">
+    <Text value="Ugyldig" />
+  </Element>
+  <Element type="DAYOFWEEKRANK" id="6">
+    <Text value="Første" />
+    <Text value="Anden" />
+    <Text value="Tredje" />
+    <Text value="Fjerde" />
+    <Text value="Sidste" />
+  </Element>
+  <Element type="OBJECT TYPES" id="8">
+    <Text member="1" value="AI" />
+    <Text member="2" value="AO" />
+    <Text member="3" value="AV" />
+    <Text member="4" value="BI" />
+    <Text member="5" value="BO" />
+    <Text member="6" value="BV" />
+    <Text member="7" value="KAL" />
+    <Text member="13" value="PID" />
+    <Text member="14" value="MSI" />
+    <Text member="18" value="PROG" />
+    <Text member="20" value="MSV" />
+    <Text member="21" value="TRND" />
+    <Text member="117" value="TRI" />
+    <Text member="118" value="COM" />
+    <Text member="119" value="HWI" />
+    <Text member="120" value="HWO" />
+    <Text member="121" value="NV" />
+    <Text member="122" value="BV" />
+    <Text member="123" value="OV" />
+    <Text member="124" value="NK" />
+    <Text member="125" value="BK" />
+    <Text member="126" value="OK" />
+    <Text member="127" value="NVI" />
+    <Text member="128" value="NVO" />
+  </Element>
+  <Element type="EVENTSTATE" id="9">
+    <Text value="Normal" />
+    <Text value="Fejl" />
+    <Text value="Ikke-normal" />
+    <Text value="Høj grænse" />
+    <Text value="Lav grænse" />
+    <Text value="Sikkerhedsalarm" />
+  </Element>
+  <Element type="RELIABILITY" id="10" filter="bacnet;bacnetIp">
+    <Text value="Ingen fejl påvist" />
+    <Text value="Ingen sensor" />
+    <Text value="Over intervallet" />
+    <Text value="Under intervallet" />
+    <Text value="Åbent kredsløb" />
+    <Text value="Kortslutning" />
+    <Text value="Intet output" />
+    <Text value="And.upålid.elem" />
+    <Text value="Behandlingsfejl" />
+    <Text value="Multiple-tilstandsfejl" />
+    <Text value="Konfigurationsfejl" />
+    <Text value="Reserveret" />
+    <Text value="Kommunikationsfejl" />
+    <Text value="Komponentfejl" />
+  </Element>
+  <Element type="BOOLEAN" id="11">
+    <Text value="Falsk" />
+    <Text value="Sand" />
+  </Element>
+  <Element type="CALENDAR ENTRY" id="12">
+    <Text value="01" />
+    <Text value="1." />
+    <Text value="2." />
+    <Text value="3." />
+    <Text value="4." />
+    <Text value="5." />
+    <Text value="Sidste" />
+    <Text value="Hver" />
+    <Text value="Uge" />
+    <Text value="Hver dag" />
+    <Text value="Sidste dag" />
+    <Text value="Ulige dage" />
+    <Text value="Lige dage" />
+    <Text value="Hver måned" />
+    <Text value="Ulige mån." />
+    <Text value="Lige mån." />
+    <Text value="Hvert år" />
+    <Text value="SD" />
+    <Text value="UD" />
+    <Text value="LD" />
+    <Text value="UM" />
+    <Text value="LM" />
+    <Text value=", " />
+    <Text value=", " />
+    <Text value=" - " />
+    <Text value="%M/%D/%y" />
+    <Text value="Hver uge" />
+  </Element>
+  <Element type="SPEC EVENT TYPE" id="13">
+    <Text value="Dato" />
+    <Text value="Datointerval" />
+    <Text value="Uge og dag" />
+    <Text value="Reference" />
+  </Element>
+  <Element type="LONG DATE FMT" id="15">
+    <Text value="%W, %t %d, %y" />
+  </Element>
+  <Element type="LONG TIME FMT" id="16">
+    <Text value="%h:%m:%s%A" />
+  </Element>
+  <Element type="MED DATE FMT" id="17">
+    <Text value="%w, %t %d, %y" />
+  </Element>
+  <Element type="SHRT DATE FMT" id="18">
+    <Text value="%t %d, %y" />
+  </Element>
+  <Element type="SHRT TIME FMT" id="19">
+    <Text value="%h:%m%A" />
+  </Element>
+  <Element type="DST DATE FMT" id="20">
+    <Text value="%D %w of %t" />
+  </Element>
+  <Element type="WEATHERSTATE" id="28">
+    <Text value="Klar" />
+    <Text value="Solrig" />
+    <Text value="Hov. solrig" />
+    <Text value="Delvist solrig" />
+    <Text value="Tørt" />
+    <Text value="Nogle få skyer" />
+    <Text value="Delvist skyet" />
+    <Text value="Hovedsageligt" />
+    <Text value="Skyet Skyet" />
+    <Text value="Overskyet" />
+    <Text value="Let regn" />
+    <Text value="Regn" />
+    <Text value="Kraftig regn" />
+    <Text value="Tordenvejr" />
+    <Text value="Frysende regn" />
+    <Text value="Tåge" />
+    <Text value="Dis" />
+    <Text value="Sne" />
+    <Text value="Blæsende" />
+    <Text value="Diset" />
+    <Text value="Støv" />
+    <Text value="Ukendt" />
+    <Text value="Tsunami" />
+    <Text value="Tornado" />
+    <Text value="Oversvøm." />
+    <Text value="Brand" />
+    <Text value="Orkan" />
+    <Text value="Jordskælv" />
+    <Text value="Vulkan" />
+  </Element>
+  <Element type="WINDDIRECTION" id="29">
+    <Text value="N" />
+    <Text value="NØ" />
+    <Text value="Ø" />
+    <Text value="SØ" />
+    <Text value="S" />
+    <Text value="SV" />
+    <Text value="V" />
+    <Text value="NV" />
+    <Text value="Variable" />
+  </Element>
+  <Element type="BINARY STATES" id="30">
+    <Text value="Inaktiv" />
+    <Text value="Aktiv" />
+  </Element>
+  <Element type="LON POINTS SCN" id="73" filter="lon">
+    <Text value="Point" />
+    <Text value="Hardware-inputs" />
+    <Text value="Hardware-outputs" />
+    <Text value="Numeriske værdier" />
+    <Text value="Booleske værdier" />
+    <Text value="Statistiske værdier" />
+    <Text value="Numeriske konstanter" />
+    <Text value="Booleske konstanter" />
+    <Text value="Statistiske konstanter" />
+    <Text value="Indstillings konstanter" />
+    <Text value="Netværks variable inputs" />
+    <Text value="Netværks variable outputs" />
+    <Text value="Com-inputs" />
+    <Text value="Trådløse input" />
+  </Element>
+  <Element type="LON AV SCN" id="74" filter="lon">
+    <Text>
+      <Line value="Numeriske" />
+      <Line value="værdier" />
+    </Text>
+    <Text value="Ingen numeriske værdier" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="LON BV SCN" id="75" filter="lon">
+    <Text>
+      <Line value="Booleske" />
+      <Line value="værdier" />
+    </Text>
+    <Text value="Ingen booleske værdier" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="LON MSV SCN" id="76" filter="lon">
+    <Text value="Statistiske værdier" />
+    <Text value="Ingen statistiske værdier" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="SETPOINTS SCN" id="77" filter="lon">
+    <Text>
+      <Line value="Indstillings" />
+      <Line value="konstanter" />
+    </Text>
+    <Text value="Ingen indstillingskonstanter" />
+    <Text value="Optaget afkøling" />
+    <Text value="Standby afkøling" />
+    <Text value="Ledig afkøling" />
+    <Text value="Optaget opvarmning" />
+    <Text value="Standy opvarmning" />
+    <Text value="Ledig opvarmning" />
+  </Element>
+  <Element type="NVI SCN" id="78" filter="lon">
+    <Text>
+      <Line value="Netværks" />
+      <Line value="variable inputs" />
+    </Text>
+    <Text value="Ingen netværks variable inputs" />
+  </Element>
+  <Element type="NVO SCN" id="79" filter="lon">
+    <Text>
+      <Line value="Netværks" />
+      <Line value="variable outputs" />
+    </Text>
+    <Text value="Ingen netværks variable outputs" />
+  </Element>
+  <Element type="MAIN SCN" id="80">
+    <Text value="Point" />
+    <Text value="Programmer og kalendere" />
+    <Text value="Alarmer" />
+    <Text value="Overstyringer" />
+    <Text value="Favoritter" />
+    <Text value="PID loops" />
+    <Text value="Vejr" />
+    <Text value="Indstillinger" />
+    <Text value="Om" />
+  </Element>
+  <Element type="PASSWORD SCN" id="81">
+    <Text value="Indtast adgangskode" />
+    <Text value="Adgang afvist" />
+    <Text value="Forkert adgangskode" />
+    <Text value="Ok" />
+  </Element>
+  <Element type="POINTS SCN" id="82" filter="bacnet;bacnetIp">
+    <Text value="Point" />
+    <Text value="Hardware-inputs" />
+    <Text value="Hardware-outputs" />
+    <Text value="Analoge værdier" />
+    <Text value="Binære værdier" />
+    <Text value="Multiple-tilstandsværdier" />
+    <Text value="Com-inputs" />
+    <Text value="Trådløse input" />
+  </Element>
+  <Element type="HWIN SCN" id="83">
+    <Text>
+      <Line value="Hardware" />
+      <Line value="input" />
+    </Text>
+    <Text value="Ingen inputs" />
+  </Element>
+  <Element type="HWOUT SCN" id="84">
+    <Text>
+      <Line value="Hardware" />
+      <Line value="output" />
+    </Text>
+    <Text value="Ingen outputs" />
+  </Element>
+  <Element type="COMIN SCN" id="85">
+    <Text value="Com-inputs" />
+    <Text value="Ingen Com-inputs" />
+  </Element>
+  <Element type="WRLSIN SCN" id="86">
+    <Text>
+      <Line value="Trådløse" />
+      <Line value="input" />
+    </Text>
+    <Text value="Ingen trådløse inputs" />
+  </Element>
+  <Element type="AV SCN" id="88" filter="bacnet;bacnetIp">
+    <Text value="Analoge værdier" />
+    <Text value="Ingen analoge værdier" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="BV SCN" id="89" filter="bacnet;bacnetIp">
+    <Text value="Binære værdier" />
+    <Text value="Ingen binære værdier" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="MSV SCN" id="90" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Multitilstands" />
+      <Line value="værdier" />
+    </Text>
+    <Text value="Ingen multiple-tilstandsv." />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="LON AC SCN" id="91" filter="lon">
+    <Text>
+      <Line value="Numeriske" />
+      <Line value="konstanter" />
+    </Text>
+    <Text value="Ingen numeriske konstanter" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="LON BC SCN" id="92" filter="lon">
+    <Text>
+      <Line value="Booleske" />
+      <Line value="konstanter" />
+    </Text>
+    <Text value="Ingen booleske konstanter" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="LON MSC SCN" id="93" filter="lon">
+    <Text>
+      <Line value="Opregn." />
+      <Line value="konstanter" />
+    </Text>
+    <Text value="Ingen opregnede konstanter" />
+    <Text value="Vis foregående" />
+    <Text value="Vis næste" />
+  </Element>
+  <Element type="PT MENU SCN" id="94">
+    <Text value="Nødoverstyring" />
+    <Text value="Nødautomatik" />
+    <Text value="Overstyring" />
+    <Text value="Automatik" />
+    <Text value="Indstil alarm" />
+    <Text value="Alarmdetaljer" />
+    <Text value="Gå til trend log" />
+  </Element>
+  <Element type="SCH CAL SCN" id="95">
+    <Text>
+      <Line value="Programmer og" />
+      <Line value="kalendere" />
+    </Text>
+    <Text value="Ingen programmer eller kalendere" />
+    <Text value="Ugentligt program" />
+    <Text value="%41r program" />
+    <Text value="Særlige begivenheder" />
+    <Text value="Særlig begivenhed" />
+    <Text value="Ingen kalenderoptegnelser" />
+    <Text value="Kalenderoptegnelse" />
+    <Text value="Slut på dagen" />
+    <Text value="Ingen begivenheder" />
+    <Text value="Ændr standardværdien" />
+    <Text value="Sæt stand. som ugyldig" />
+    <Text value="Tilføj begivenhed" />
+    <Text value="Modificér begivenhed" />
+    <Text value="Slet begivenhed" />
+    <Text value="Tilstand" />
+    <Text value="Start" />
+    <Text value="Slut" />
+    <Text value="&#x9;" />
+    <Text value="Standardværdi" />
+    <Text value="Tidspunk. for begiven." />
+    <Text value="Modif. særlig begiven." />
+    <Text value="Slet" />
+    <Text value="Tilføj inden" />
+    <Text value="Tilføj efter" />
+    <Text value="Tilføj særlig begivenhed" />
+    <Text value="Annuller" />
+    <Text value="Type" />
+    <Text value="Dato" />
+    <Text value="Startdato" />
+    <Text value="Slutdato" />
+    <Text value="Uge og dag" />
+    <Text value="Kalenderreference" />
+    <Text value="Modificér" />
+    <Text value="Tilføj optegnelse" />
+    <Text value="Kalender er blevet modif.&#x9;Gem ændring.?" />
+    <Text>
+      <Line value="Datoformat: MM/DD/ÅÅÅÅ" />
+      <Line value="*: Nogen; SD: Sidste dag" />
+      <Line value="UD: Ulige dage; LD: Lige dage" />
+      <Line value="UM: Ulige måneder; LM: Lige måneder" />
+    </Text>
+    <Text value="Grænse overskredet&#x9;Kan ikke vises." filter="bacnetIp" />
+  </Element>
+  <Element type="ALARM SCN" id="96">
+    <Text value="Alarmer" />
+    <Text value="Aktiv ikke anerkendt" />
+    <Text value="Aktiv anerkendt" />
+    <Text value="Inaktiv ikke anerkendt" />
+  </Element>
+  <Element type="ALARM ACTNOTACK SCN" id="97">
+    <Text>
+      <Line value="Aktiv" />
+      <Line value="ikke anerkendt" />
+    </Text>
+    <Text value="Ingen aktive alarmer" />
+  </Element>
+  <Element type="ALARM ACTACK SCN" id="98" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Aktiv" />
+      <Line value="anerkendt" />
+    </Text>
+    <Text value="Ingen aktive alarmer" />
+  </Element>
+  <Element type="ALARM INACTNOTACK SCN" id="99" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Inaktiv" />
+      <Line value="ikke anerkendt" />
+    </Text>
+    <Text value="Ingen inaktive alarmer" />
+  </Element>
+  <Element type="ALARM INFO SCN" id="100" filter="bacnet;bacnetIp">
+    <Text value="Alarmdetaljer" />
+    <Text value="Fra tilstand" />
+    <Text value="Til tilstand" />
+    <Text value=" Hændelsesdato" />
+    <Text value=" Hændelsestidspunkt" />
+    <Text value="Overskredet grænse" />
+    <Text value="Overskrider værdi" />
+    <Text value="Ny tilstand" />
+    <Text value="Kommandoværdi" />
+    <Text value="Feedback" />
+    <Text value="Ude af drift" />
+    <Text value="Pålidelighed" />
+  </Element>
+  <Element type="ALARM MENU SCN" id="101" filter="bacnet;bacnetIp">
+    <Text value="Anerkend" />
+    <Text value="Annuller" />
+  </Element>
+  <Element type="OVERRIDE SCN" id="102">
+    <Text value="Overstyringer" />
+    <Text value="Ingen overstyringer" />
+  </Element>
+  <Element type="FAVORITE SCN" id="103">
+    <Text value="Favoritter" />
+    <Text value="Ingen favoritter" />
+  </Element>
+  <Element type="PIDS SCN" id="104">
+    <Text value="PID loops" />
+    <Text value="Ingen PID loops" />
+  </Element>
+  <Element type="PID SCN" id="105">
+    <Text value="Input" />
+    <Text value="Indstilling" />
+    <Text value="Output" />
+    <Text value="Proportionalb." />
+    <Text value="Integraltid" />
+    <Text value="Differentialtid" />
+    <Text value="Neutral zone" />
+    <Text value="Sys.afvigelse" />
+    <Text value="Opstartstid" />
+    <Text value="Mætningstid" />
+    <Text value="Handling" />
+    <Text value="Grafperiode" />
+  </Element>
+  <Element type="PID ACTION" id="106">
+    <Text value="Direkte" />
+    <Text value="Modsat" />
+  </Element>
+  <Element type="WEATHER SCN" id="109">
+    <Text value="Vejr" />
+    <Text value="Sidste opdatering" />
+    <Text value="Solopgang" />
+    <Text value="Solnedgang" />
+    <Text value="Temperatur" />
+    <Text value="Minimum" />
+    <Text value="Maksimum" />
+    <Text value="Sammenfatning" />
+    <Text value="Luftfugtighed" />
+    <Text value="Vindretning" />
+    <Text value="Vindhastighed" />
+    <Text value="Vindstød" />
+    <Text value="Kuldeindeks" />
+    <Text value="Tryk" />
+    <Text value="Dugpunkt" />
+    <Text value="Vejret er ikke tilgængeligt" />
+  </Element>
+  <Element type="SETTINGS SCN" id="110">
+    <Text value="Indstillinger" />
+    <Text value="Lysintensitet" />
+    <Text value="Aflogningstidspunkt" />
+    <Text value="Enhedseksempel" />
+    <Text value="MAC-adresse" />
+    <Text value="Baudrate" />
+    <Text value="Dato" />
+    <Text value="Klokkeslæt" />
+    <Text value="Aktiver sommertid" />
+    <Text value="Startdato for sommertid" />
+    <Text value="DST end date" />
+    <Text value="Kompenser sommertid" />
+    <Text value="Sprog" />
+    <Text value="Maks. master" />
+    <Text value="Starttidspunkt sommertid" />
+    <Text value="DST slutdato" />
+    <Text value="Tidszone" />
+  </Element>
+  <Element type="ABOUT SCN" id="111">
+    <Text value="Om" />
+    <Text value="Tryk på jog dial for versioner" />
+    <Text value="Versioner" />
+    <Text value="Kontrolenhed" />
+    <Text value="Operatørens grænseflade" />
+    <Text value="Firmware" />
+    <Text value="Bootloader" />
+  </Element>
+  <Element type="BUTTON TEXT" id="112">
+    <Text value="Ok" />
+    <Text value="Annul." />
+    <Text value="Rul" />
+    <Text value="Redig." />
+    <Text value="Ja" />
+    <Text value="Nej" />
+  </Element>
+  <Element type="DATEEDIT TEXT" id="113">
+    <Text value="Ugedag:" />
+    <Text value="Måned:" />
+    <Text value="Dag:" />
+    <Text value="År:" />
+    <Text value="Uge:" />
+  </Element>
+  <Element type="TIMEEDIT TEXT" id="114">
+    <Text value="Time:" />
+    <Text value="Minut:" />
+    <Text value="Sekund:" />
+    <Text value="Periode:" />
+  </Element>
+  <Element type="DSTEDIT TEXT" id="115">
+    <Text value="Måned:" />
+    <Text value="Uge:" />
+    <Text value="Dag:" />
+  </Element>
+  <Element type="SHORT RELIABILITY" id="116" filter="lon">
+    <Text value="Ingen fejl påvist" />
+    <Text value="Ingen sensor" />
+    <Text value="Over intervallet" />
+    <Text value="Under intervallet" />
+    <Text value="Åbent kredsløb" />
+    <Text value="Kortslutning" />
+    <Text value="Intet output" />
+    <Text value="And.upålid.elem" />
+    <Text value="Behandlingsfejl" />
+    <Text value="Statistisk fejl" />
+    <Text value="Konfig.fejl" />
+    <Text value="Reserveret" />
+    <Text value="Com.fejl" />
+    <Text value="Komponentfejl" />
+  </Element>
+  <Element type="DEVICE INFO SCN" id="117">
+    <Text value="Tryk på drejeknappen for at få vist enhedsoplysninger" />
+    <Text value="Tryk på drejeknappen for at få vist flere enhedsoplysninger" />
+    <Text value="Enhedsoplysninger" />
+    <Text value="Værtsnavn" />
+    <Text value="IP-adresse for kabelnetværk" />
+    <Text value="IP-undernet for kabelnetværk" />
+    <Text value="MAC-adresse for kabelnetværk, eth0" />
+    <Text value="IP-adresse for Wi-Fi-netværk" />
+    <Text value="IP-undernet for Wi-Fi-netværk" />
+    <Text value="Styreenhedsnavn" />
+    <Text value="Modelnavn" />
+    <Text value="SSID" />
+  </Element>
+</Language>

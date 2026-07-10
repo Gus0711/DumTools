@@ -1,19 +1,27 @@
 "use client";
 
 import { useMemo } from "react";
-import { ArrowDownToLine, ArrowUpFromLine, Wand2 } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Wand2 } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import { INPUT_SIGNALS, OUTPUT_SIGNALS } from "./catalog";
+import { signalLabel } from "@/tools/liste-points/model";
 import { affecterAuto } from "./affectation-auto";
 import {
   allowedModules,
   channelCount,
   moduleDisplayTitle,
+  signalCompatibleBorne,
   type Module,
   type Point,
   type Project,
 } from "./model";
+
+/** Un point est-il affecté à une borne incompatible avec son signal ?
+ *  (ex. sortie analogique 0-10V posée sur une borne triac DO). */
+function borneIncompatible(p: Point): boolean {
+  return p.module != null && p.channel != null && !signalCompatibleBorne(p.signal, p.repere);
+}
 
 export function AffectationTab({
   project,
@@ -31,6 +39,7 @@ export function AffectationTab({
   const inputs = points.filter((p) => p.direction === "input");
   const outputs = points.filter((p) => p.direction === "output");
   const nonAffectes = points.filter((p) => p.module == null || p.channel == null).length;
+  const incompatibles = points.filter(borneIncompatible).length;
 
   const update = (uid: string, patchPoint: Partial<Point>) =>
     patch((p) => ({
@@ -57,6 +66,9 @@ export function AffectationTab({
           value={nonAffectes}
           tone={nonAffectes > 0 ? "danger" : "success"}
         />
+        {incompatibles > 0 && (
+          <StatPill label="Bornes incompatibles" value={incompatibles} tone="danger" />
+        )}
         <div className="ml-auto">
           <Button size="sm" onClick={reaffecter}>
             <Wand2 className="h-4 w-4" /> Ré-affecter automatiquement
@@ -147,6 +159,7 @@ function BorneTable({
   const toneChip = isOut ? "bg-io-do/12 text-io-do" : "bg-io-ai/12 text-io-ai";
   const DirIcon = isOut ? ArrowUpFromLine : ArrowDownToLine;
   const nonAffectes = pts.filter((p) => p.module == null || p.channel == null).length;
+  const incompatibles = pts.filter(borneIncompatible).length;
 
   return (
     <div className="data-card overflow-hidden">
@@ -164,8 +177,24 @@ function BorneTable({
           {titre}
         </h3>
         <span className="text-xs text-muted">· {pts.length}</span>
+        {incompatibles > 0 && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full bg-danger/12 px-2 py-0.5 text-xs font-medium text-danger",
+              nonAffectes > 0 ? "ml-2" : "ml-auto",
+            )}
+          >
+            <AlertTriangle className="h-3 w-3" />
+            {incompatibles} borne{incompatibles > 1 ? "s" : ""} incompatible{incompatibles > 1 ? "s" : ""}
+          </span>
+        )}
         {nonAffectes > 0 && (
-          <span className="ml-auto rounded-full bg-danger/12 px-2 py-0.5 text-xs font-medium text-danger">
+          <span
+            className={cn(
+              "rounded-full bg-danger/12 px-2 py-0.5 text-xs font-medium text-danger",
+              incompatibles > 0 ? "" : "ml-auto",
+            )}
+          >
             {nonAffectes} non affectée{nonAffectes > 1 ? "s" : ""}
           </span>
         )}
@@ -188,19 +217,29 @@ function BorneTable({
               const mod = modules.find((m) => Number(m.number) === Number(p.module));
               const canaux = mod ? channelCount(direction, mod) : 0;
               const affecte = p.module != null && p.channel != null;
+              const incompatible = borneIncompatible(p);
+              const titreIncompat = incompatible
+                ? `Signal ${signalLabel(p.signal)} incompatible avec la borne ${p.repere} (triac/analogique). Choisir une autre borne.`
+                : undefined;
               return (
-                <tr key={p.uid}>
+                <tr key={p.uid} className={cn(incompatible && "bg-danger/5")}>
                   <td className="cell-wrap cell-title !font-normal">
                     {p.designation || <span className="text-subtle">—</span>}
                   </td>
                   <td>
                     {p.repere ? (
                       <span
+                        title={titreIncompat}
                         className={cn(
-                          "rounded-md px-1.5 py-0.5 font-mono text-xs font-medium",
-                          affecte ? toneChip : "bg-surface-2 text-subtle",
+                          "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-xs font-medium",
+                          incompatible
+                            ? "bg-danger/12 text-danger ring-1 ring-danger/40"
+                            : affecte
+                              ? toneChip
+                              : "bg-surface-2 text-subtle",
                         )}
                       >
+                        {incompatible && <AlertTriangle className="h-3 w-3" />}
                         {p.repere}
                       </span>
                     ) : (
@@ -215,7 +254,7 @@ function BorneTable({
                     >
                       {signals.map((s) => (
                         <option key={s} value={s}>
-                          {s}
+                          {signalLabel(s)}
                         </option>
                       ))}
                     </select>

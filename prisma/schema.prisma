@@ -48,15 +48,32 @@ model Client {
   affectations AffectationProjet[]
 }
 
-/// Chantier (worksite) rattaché à un client. Point d'ancrage des outils.
+/// État commercial d'une affaire (le financier — prix, coûts — reste dans WhySoft).
+enum EtatAffaire {
+  DEVIS
+  COMMANDE
+  EN_COURS
+  LIVRE
+  CLOTURE
+}
+
+/// Chantier = « Affaire » : pivot de la plateforme. Rattaché à un client, il
+/// regroupe TOUT ce qui est produit pour une même affaire (numéro Why) à travers
+/// tous les outils. Chaque outil pointe vers lui via `chantierId` ; la fiche
+/// Affaire agrège les artefacts (voir src/lib/chantiers/providers.ts).
 model Chantier {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   nom       String
   reference String?
+  /// Référence de l'affaire dans WhySoft (CRM) — clé naturelle de résolution.
+  numeroWhy String?     @unique
+  etat      EtatAffaire @default(DEVIS)
   clientId  String
-  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  client    Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  affectations AffectationProjet[]
 
   @@index([clientId])
 }
@@ -93,6 +110,10 @@ model PointCatalog {
   id        String   @id @default(cuid())
   nom       String   @unique
   type      String // AI | DI | AO | DO | COM
+  /// Signal électrique par défaut (entrée : 0-10V/4-20mA/PT1000/D… ; sortie :
+  /// 0-10V/4-20mA/PWM/D). Null = défaut selon le type. Permet une affectation
+  /// directement correcte à l'insertion. Voir INPUT_SIGNALS/OUTPUT_SIGNALS.
+  signal    String?
   createdAt DateTime @default(now())
 }
 
@@ -175,6 +196,9 @@ model AffectationProjet {
   client      Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
   /// Référence de l'affaire / du chantier dans WhySoft (CRM).
   numeroWhy   String?
+  /// Rattachement à l'Affaire (pivot). Null = non rattaché.
+  chantierId  String?
+  chantier    Chantier? @relation(fields: [chantierId], references: [id], onDelete: SetNull)
   data        Json      @default("{}")
   createdById String?
   createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
@@ -183,4 +207,5 @@ model AffectationProjet {
 
   @@index([createdById])
   @@index([clientId])
+  @@index([chantierId])
 }

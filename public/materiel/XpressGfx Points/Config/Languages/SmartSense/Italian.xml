@@ -1,0 +1,290 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Language key="it" name="Italian" displayName="Italiano">
+  <Element type="WEEKDAYS" id="1">
+    <Text value="Lunedì" />
+    <Text value="Martedì" />
+    <Text value="Mercoledì" />
+    <Text value="Giovedì" />
+    <Text value="Venerdì" />
+    <Text value="Sabato" />
+    <Text value="Domenica" />
+  </Element>
+  <Element type="SHRT WEEKDAYS" id="2">
+    <Text value="Lu" />
+    <Text value="Ma" />
+    <Text value="Me" />
+    <Text value="Gi" />
+    <Text value="Ve" />
+    <Text value="Sa" />
+    <Text value="Do" />
+  </Element>
+  <Element type="MONTHS" id="3">
+    <Text value="Gennaio" />
+    <Text value="Febbraio" />
+    <Text value="Marzo" />
+    <Text value="Aprile" />
+    <Text value="Maggio" />
+    <Text value="Giugno" />
+    <Text value="Luglio" />
+    <Text value="Agosto" />
+    <Text value="Settembre" />
+    <Text value="Ottobre" />
+    <Text value="Novembre" />
+    <Text value="Dicembre" />
+  </Element>
+  <Element type="SHRT MONTHS" id="4">
+    <Text value="Gen" />
+    <Text value="Feb" />
+    <Text value="Mar" />
+    <Text value="Apr" />
+    <Text value="Mag" />
+    <Text value="Giu" />
+    <Text value="Lug" />
+    <Text value="Ago" />
+    <Text value="Set" />
+    <Text value="Ott" />
+    <Text value="Nov" />
+    <Text value="Dic" />
+  </Element>
+  <Element type="NULL VALUE" id="5">
+    <Text value="Nullo" />
+  </Element>
+  <Element type="DAYOFWEEKRANK" id="6">
+    <Text value="Primo" />
+    <Text value="Secondo" />
+    <Text value="Terzo" />
+    <Text value="Quarto" />
+    <Text value="Ultimo" />
+  </Element>
+  <Element type="ANY VALUE" id="7">
+    <Text value="Qualsiasi" />
+  </Element>
+  <Element type="BOOLEAN" id="11">
+    <Text value="Falso" />
+    <Text value="Vero" />
+  </Element>
+  <Element type="SPEC EVENT TYPE" id="13">
+    <Text value="Data" />
+    <Text value="Intervallo date" />
+    <Text value="Settimana e giorno" />
+    <Text value="Riferimento" />
+  </Element>
+  <Element type="WIFI MODE" id="14">
+    <Text value="Disabilitato" />
+    <Text value="Client" />
+    <Text value="Hotspot" />
+    <Text value="Punto di accesso" />
+  </Element>
+  <Element type="LONG DATE FMT" id="15">
+    <Text value="%W, %t %d, %y" />
+  </Element>
+  <Element type="LONG TIME FMT" id="16">
+    <Text value="%h:%m:%s %A" />
+  </Element>
+  <Element type="MED DATE FMT" id="17">
+    <Text value="%w, %t %d, %y" />
+  </Element>
+  <Element type="SHRT DATE FMT" id="18">
+    <Text value="%t %d, %y" />
+  </Element>
+  <Element type="SHRT TIME FMT" id="19">
+    <Text value="%h:%m %A" />
+  </Element>
+  <Element type="SPEC EVENT DAY" id="21">
+    <Text value="Ultimo giorno" />
+    <Text value="Giorni dispari" />
+    <Text value="Giorni pari" />
+  </Element>
+  <Element type="SPEC EVENT WEEK" id="22">
+    <Text value="1ª settimana" />
+    <Text value="2ª settimana" />
+    <Text value="3ª settimana" />
+    <Text value="4ª settimana" />
+    <Text value="5ª settimana" />
+    <Text value="Ultima settimana" />
+  </Element>
+  <Element type="SPEC EVENT MONTH" id="23">
+    <Text value="Mesi dispari" />
+    <Text value="Mesi pari" />
+  </Element>
+  <Element type="WEATHERSTATE" id="28">
+    <Text value="Sereno" />
+    <Text value="Soleggiato" />
+    <Text value="Preval. soleg." />
+    <Text value="Parzial. soleg." />
+    <Text value="Bello" />
+    <Text value="Poco nuvoloso" />
+    <Text value="Parzial. nuvol." />
+    <Text value="Preval. nuvol." />
+    <Text value="Nuvoloso" />
+    <Text value="Coperto" />
+    <Text value="Piogge leggere" />
+    <Text value="Piogge" />
+    <Text value="Piogge intense" />
+    <Text value="Temporali" />
+    <Text value="Piog. congel." />
+    <Text value="Nebbia" />
+    <Text value="Foschia" />
+    <Text value="Neve" />
+    <Text value="Vento" />
+    <Text value="Nebbioso" />
+    <Text value="Polvere" />
+    <Text value="Sconosciuto" />
+    <Text value="Tsunami" />
+    <Text value="Tornado" />
+    <Text value="Alluvione" />
+    <Text value="Incendio" />
+    <Text value="Uragano" />
+    <Text value="Terremoto" />
+    <Text value="Vulcano" />
+  </Element>
+  <Element type="WINDDIRECTION" id="29">
+    <Text value="N" />
+    <Text value="NE" />
+    <Text value="E" />
+    <Text value="SE" />
+    <Text value="S" />
+    <Text value="SO" />
+    <Text value="O" />
+    <Text value="NO" />
+    <Text value="Variabile" />
+  </Element>
+  <Element type="BINARY STATES" id="30">
+    <Text value="Inattivo" />
+    <Text value="Attivo" />
+  </Element>
+  <Element type="AUTO STATE" id="31">
+    <Text value="Auto" />
+  </Element>
+  <Element type="SHRT AUTO STATE" id="32">
+    <Text value="A" />
+  </Element>
+  <Element type="HOURS" id="33">
+    <Text value="%h" />
+  </Element>
+  <Element type="MINUTES" id="34">
+    <Text value="%m" />
+  </Element>
+  <Element type="AMPM" id="35">
+    <Text value="%A" />
+  </Element>
+  <Element type="OCCUPANCY" id="36">
+    <Text value="" />
+    <Text value="Occupato" />
+    <Text value="Non occ." />
+    <Text value="Bypass" />
+    <Text value="Standby" />
+  </Element>
+  <Element type="OCCUPANCY SETPOINTS" id="37">
+    <Text value="" />
+    <Text value="Setpoint occupato" />
+    <Text value="Setpoint non occ." />
+    <Text value="Setpoint bypass" />
+    <Text value="Setpoint standby" />
+  </Element>
+  <Element type="SHORT SPEC EVENT" id="38">
+    <Text value="Dispari" />
+    <Text value="Pari" />
+    <Text value="Ultimo" />
+  </Element>
+  <Element type="MAIN MENU" id="100">
+    <Text value="my PERSONIFY" />
+    <Text value="Impostazioni" />
+    <Text value="Modalità per il tecnico" />
+    <Text value="Esci" />
+    <Text value="Informazioni su" />
+    <Text value="Programmazione Oraria" />
+    <Text value="Weather" />
+    <Text value="Change Units" />
+  </Element>
+  <Element type="PCA SCN" id="101">
+    <Text value="Scarica l'app mobile my PERSONIFY" />
+    <Text value="Mostra codice PIN" />
+  </Element>
+  <Element type="SETTINGS SCN" id="102">
+    <Text value="Lingua" />
+    <Text value="Unità" />
+    <Text value="Impostazioni avanzate" />
+  </Element>
+  <Element type="TECHNICIAN SCN" id="103">
+    <Text value="Impostazioni Subnet ID" />
+    <Text value="Subnet ID" />
+  </Element>
+  <Element type="ADV SETTINGS SCN" id="104">
+    <Text value="Tema colori" />
+    <Text value="Timeout screen saver" />
+    <Text value="Sensore di riattivazione" />
+    <Text value="Bluetooth" />
+    <Text value="Impostazioni Bluetooth" />
+  </Element>
+  <Element type="PRODUCT INFO SCN" id="105">
+    <Text value="Firmware" />
+    <Text value="Bootloader" />
+    <Text value="Master" />
+    <Text value="Versione firmware" />
+    <Text value="Versione GUI" />
+    <Text value="Nome host" />
+    <Text value="Ind IP Ethernet" />
+    <Text value="Ind MAC Ethernet" />
+    <Text value="Modalità Wi-Fi" />
+    <Text value="Ind IP Wi-Fi" />
+    <Text value="Ind MAC Wi-Fi" />
+    <Text value="SSID" />
+  </Element>
+  <Element type="SCHEDULES SCN" id="106">
+    <Text value="Programma Orario" />
+    <Text value="Giornaliero" />
+    <Text value="Condiviso" />
+    <Text value="Speciali" />
+    <Text value="Valore di default" />
+    <Text value="Copia in altro giorno" />
+    <Text value="Imposta temperatura" />
+    <Text value="Data di inizio" />
+    <Text value="Data di fine" />
+    <Text value="Copia in..." />
+    <Text value="Feriali" />
+    <Text value="Tutti i giorni" />
+    <Text value="Copia" />
+    <Text value="Imposta valore di default" />
+    <Text value="Le modifiche sono state salvate!" />
+    <Text value="Da lunedì a venerdì" />
+    <Text value="Fine settimana" />
+    <Text value="Modifica priorità" />
+    <Text value="Eventi" />
+    <Text value="Proprietà" />
+    <Text value="Seleziona la data" />
+    <Text value="Nome evento" />
+    <Text value="Tipo" />
+    <Text value="Impostare il tipo" />
+    <Text value="Inizio" />
+    <Text value="Fine" />
+    <Text value="Giorno" />
+    <Text value="Giorno della settimana" />
+    <Text value="Settimana" />
+    <Text value="Mese" />
+    <Text value="Anno" />
+    <Text value="Modifica programma" />
+    <Text value="Nuovo programma" />
+    <Text value="Setpoint occupazione" />
+    <Text value="Seleziona giorno" />
+    <Text value="Seleziona settimana" />
+    <Text value="Seleziona mese" />
+    <Text value="Seleziona anno" />
+    <Text value="Seleziona giorno settimana" />
+    <Text value="Evento" />
+    <Text value="Riferimento calendario" />
+  </Element>
+  <Element type="WEATHER SCN" id="107">
+    <Text value="Weather" />
+    <Text value="Today" />
+    <Text value="High" />
+    <Text value="Low" />
+    <Text value="RH" />
+    <Text value="POP" />
+  </Element>
+  <Element type="WIFI CONFIGURATION SCN" id="108">
+    <Text value="Configurazione WiFi" />
+    <Text value="Ripristino del WiFi" />
+    <Text value="Ripristino del WiFi in corso..." />
+  </Element>
+</Language>

@@ -24,6 +24,13 @@ export function signalParDefaut(t: IoType): string {
   return t === "DI" || t === "DO" ? "D" : "0-10V";
 }
 
+/** Un signal est-il cohérent avec la FAMILLE du type ? (TOR = "D" ; analogique ≠ "D"). */
+function signalCoherent(signal: string | undefined, t: IoType): boolean {
+  if (!signal) return false;
+  const tor = t === "DI" || t === "DO";
+  return tor ? signal === "D" : signal !== "D";
+}
+
 /**
  * Régénère les points (E/S physiques) depuis les lignes de la liste.
  * 1 ligne point non-COM → 1 point. Préserve l'affectation borne (module/canal/
@@ -40,19 +47,26 @@ export function syncPoints(rows: PointRow[], existants: Point[]): Point[] {
     const dir = IO_TO_DIR[t] as "input" | "output";
     const prev = parId.get(r.id);
     const memeSens = prev?.direction === dir;
-    // On ne garde l'ancien signal que s'il est cohérent avec la FAMILLE du
-    // nouveau type (TOR = "D" ; analogique = tout sauf "D"). Sinon on repart du
-    // défaut : ainsi DI→AI repasse bien en 0-10V au lieu de rester en "D".
-    const tor = t === "DI" || t === "DO";
-    const signalCoherent =
-      !!prev?.signal && (tor ? prev.signal === "D" : prev.signal !== "D");
+    // Priorité du signal, chacun retenu s'il est cohérent avec la FAMILLE du type
+    // (TOR = "D" ; analogique ≠ "D") :
+    //   1. signal du point existant (affinage manuel en onglet Affectation) ;
+    //   2. signal issu du catalogue, porté par la ligne (row.signal) ;
+    //   3. défaut selon le type.
+    // Ainsi DI→AI repasse bien de "D" à 0-10V, et une sonde catalogue en PT1000
+    // arrive directement affectée sans repasser par le défaut.
+    const signal =
+      memeSens && signalCoherent(prev?.signal, t)
+        ? prev!.signal
+        : signalCoherent(r.signal, t)
+          ? r.signal
+          : signalParDefaut(t);
     out.push({
       uid: r.id,
       direction: dir,
       active: prev?.active ?? true,
       designation: r.nom,
       repere: memeSens ? prev?.repere ?? "" : "",
-      signal: memeSens && signalCoherent ? prev!.signal : signalParDefaut(t),
+      signal,
       source: r.note ?? prev?.source ?? "",
       relay: memeSens ? prev?.relay ?? "" : "",
       module: memeSens ? prev?.module ?? null : null,
@@ -77,6 +91,7 @@ export function pointsToRows(points: Point[]): PointRow[] {
       nom: p.designation,
       note: p.source ?? "",
       io,
+      signal: p.signal,
     };
   });
 }

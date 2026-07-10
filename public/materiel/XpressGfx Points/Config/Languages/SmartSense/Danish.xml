@@ -1,0 +1,290 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Language key="da" name="Danish" displayName="Dansk">
+  <Element type="WEEKDAYS" id="1">
+    <Text value="Mandag" />
+    <Text value="Tirsdag" />
+    <Text value="Onsdag" />
+    <Text value="Torsdag" />
+    <Text value="Fredag" />
+    <Text value="Lørdag" />
+    <Text value="Søndag" />
+  </Element>
+  <Element type="SHRT WEEKDAYS" id="2">
+    <Text value="Ma" />
+    <Text value="Ti" />
+    <Text value="On" />
+    <Text value="To" />
+    <Text value="Fr" />
+    <Text value="Lø" />
+    <Text value="Sø" />
+  </Element>
+  <Element type="MONTHS" id="3">
+    <Text value="Januar" />
+    <Text value="Februar" />
+    <Text value="Marts" />
+    <Text value="April" />
+    <Text value="Maj" />
+    <Text value="Juni" />
+    <Text value="Juli" />
+    <Text value="August" />
+    <Text value="September" />
+    <Text value="Oktober" />
+    <Text value="November" />
+    <Text value="December" />
+  </Element>
+  <Element type="SHRT MONTHS" id="4">
+    <Text value="Jan" />
+    <Text value="Feb" />
+    <Text value="Mar" />
+    <Text value="Apr" />
+    <Text value="Maj" />
+    <Text value="Jun" />
+    <Text value="Jul" />
+    <Text value="Aug" />
+    <Text value="Sep" />
+    <Text value="Okt" />
+    <Text value="Nov" />
+    <Text value="Dec" />
+  </Element>
+  <Element type="NULL VALUE" id="5">
+    <Text value="Ugyldig" />
+  </Element>
+  <Element type="DAYOFWEEKRANK" id="6">
+    <Text value="Første" />
+    <Text value="Anden" />
+    <Text value="Tredje" />
+    <Text value="Fjerde" />
+    <Text value="Sidste" />
+  </Element>
+  <Element type="ANY VALUE" id="7">
+    <Text value="Alle" />
+  </Element>
+  <Element type="BOOLEAN" id="11">
+    <Text value="Falsk" />
+    <Text value="Sand" />
+  </Element>
+  <Element type="SPEC EVENT TYPE" id="13">
+    <Text value="Dato" />
+    <Text value="Datointer." />
+    <Text value="Uge og dag" />
+    <Text value="Reference" />
+  </Element>
+  <Element type="WIFI MODE" id="14">
+    <Text value="Deaktiveret" />
+    <Text value="Klient" />
+    <Text value="Hotspot" />
+    <Text value="Adgangspunkt" />
+  </Element>
+  <Element type="LONG DATE FMT" id="15">
+    <Text value="%W, %t %d, %y" />
+  </Element>
+  <Element type="LONG TIME FMT" id="16">
+    <Text value="%h:%m:%s %A" />
+  </Element>
+  <Element type="MED DATE FMT" id="17">
+    <Text value="%w, %t %d, %y" />
+  </Element>
+  <Element type="SHRT DATE FMT" id="18">
+    <Text value="%t %d, %y" />
+  </Element>
+  <Element type="SHRT TIME FMT" id="19">
+    <Text value="%h:%m %A" />
+  </Element>
+  <Element type="SPEC EVENT DAY" id="21">
+    <Text value="Sidste dag" />
+    <Text value="Ulige dage" />
+    <Text value="Lige dage" />
+  </Element>
+  <Element type="SPEC EVENT WEEK" id="22">
+    <Text value="1. uge" />
+    <Text value="2. uge" />
+    <Text value="3. uge" />
+    <Text value="4. uge" />
+    <Text value="5. uge" />
+    <Text value="Sidste uge" />
+  </Element>
+  <Element type="SPEC EVENT MONTH" id="23">
+    <Text value="Ulige måneder" />
+    <Text value="Lige måneder" />
+  </Element>
+  <Element type="WEATHERSTATE" id="28">
+    <Text value="Klar" />
+    <Text value="Solrig" />
+    <Text value="Hov. solrig" />
+    <Text value="Delvist solrig" />
+    <Text value="Tørt" />
+    <Text value="Nogle få skyer" />
+    <Text value="Delvist skyet" />
+    <Text value="Hovedsageligt" />
+    <Text value="Skyet Skyet" />
+    <Text value="Overskyet" />
+    <Text value="Let regn" />
+    <Text value="Regn" />
+    <Text value="Kraftig regn" />
+    <Text value="Tordenvejr" />
+    <Text value="Frysende regn" />
+    <Text value="Tåge" />
+    <Text value="Dis" />
+    <Text value="Sne" />
+    <Text value="Blæsende" />
+    <Text value="Diset" />
+    <Text value="Støv" />
+    <Text value="Ukendt" />
+    <Text value="Tsunami" />
+    <Text value="Tornado" />
+    <Text value="Oversvøm." />
+    <Text value="Brand" />
+    <Text value="Orkan" />
+    <Text value="Jordskælv" />
+    <Text value="Vulkan" />
+  </Element>
+  <Element type="WINDDIRECTION" id="29">
+    <Text value="N" />
+    <Text value="NØ" />
+    <Text value="Ø" />
+    <Text value="SØ" />
+    <Text value="S" />
+    <Text value="SV" />
+    <Text value="V" />
+    <Text value="NV" />
+    <Text value="Variable" />
+  </Element>
+  <Element type="BINARY STATES" id="30">
+    <Text value="Inaktiv" />
+    <Text value="Aktiv" />
+  </Element>
+  <Element type="AUTO STATE" id="31">
+    <Text value="Auto" />
+  </Element>
+  <Element type="SHRT AUTO STATE" id="32">
+    <Text value="A" />
+  </Element>
+  <Element type="HOURS" id="33">
+    <Text value="%h" />
+  </Element>
+  <Element type="MINUTES" id="34">
+    <Text value="%m" />
+  </Element>
+  <Element type="AMPM" id="35">
+    <Text value="%A" />
+  </Element>
+  <Element type="OCCUPANCY" id="36">
+    <Text value="" />
+    <Text value="Optaget" />
+    <Text value="Ledig" />
+    <Text value="Bypass" />
+    <Text value="Standby" />
+  </Element>
+  <Element type="OCCUPANCY SETPOINTS" id="37">
+    <Text value="" />
+    <Text value="Setpunkt for optaget" />
+    <Text value="Setpunkt for ledig" />
+    <Text value="Setpunkt for bypass" />
+    <Text value="Setpunkt for standby" />
+  </Element>
+  <Element type="SHORT SPEC EVENT" id="38">
+    <Text value="Tilfældigt" />
+    <Text value="Lige" />
+    <Text value="Sidste" />
+  </Element>
+  <Element type="MAIN MENU" id="100">
+    <Text value="my PERSONIFY" />
+    <Text value="Indstillinger" />
+    <Text value="Tekniker tilstand" />
+    <Text value="Log ud" />
+    <Text value="Om" />
+    <Text value="Planlægger" />
+    <Text value="Weather" />
+    <Text value="Change Units" />
+  </Element>
+  <Element type="PCA SCN" id="101">
+    <Text value="Download my PERSONIFY-mobil appen" />
+    <Text value="Vis kode" />
+  </Element>
+  <Element type="SETTINGS SCN" id="102">
+    <Text value="Sprog" />
+    <Text value="Enheder" />
+    <Text value="Avancerede indstillinger" />
+  </Element>
+  <Element type="TECHNICIAN SCN" id="103">
+    <Text value="Indstillinger for subnet-id" />
+    <Text value="Subnet-id" />
+  </Element>
+  <Element type="ADV SETTINGS SCN" id="104">
+    <Text value="Farvetema" />
+    <Text value="Timeout for pauseskærm" />
+    <Text value="Vækningssensor" />
+    <Text value="Bluetooth" />
+    <Text value="Bluetooth-indstillinger" />
+  </Element>
+  <Element type="PRODUCT INFO SCN" id="105">
+    <Text value="Firmware" />
+    <Text value="Bootloader" />
+    <Text value="Master" />
+    <Text value="Firmwareversion" />
+    <Text value="GUI-version" />
+    <Text value="Værtsnavn" />
+    <Text value="Ethernet IP-adr." />
+    <Text value="Ethernet MAC-adr." />
+    <Text value="Wi-Fi-tilstand" />
+    <Text value="Wi-Fi IP-adr." />
+    <Text value="Wi-Fi MAC-adr." />
+    <Text value="SSID" />
+  </Element>
+  <Element type="SCHEDULES SCN" id="106">
+    <Text value="Skema" />
+    <Text value="Dagligt" />
+    <Text value="Delt" />
+    <Text value="Speciale" />
+    <Text value="Standardværdi" />
+    <Text value="Kopier til en anden dag" />
+    <Text value="Indstil temperatur" />
+    <Text value="Starttid" />
+    <Text value="Sluttid" />
+    <Text value="Kopier til …" />
+    <Text value="Hverdage" />
+    <Text value="Hver dag" />
+    <Text value="Kopier" />
+    <Text value="Indstil standardværdi" />
+    <Text value="Dine ændringer er blevet gemt!" />
+    <Text value="Mandag til Fredag" />
+    <Text value="Weekend" />
+    <Text value="Rediger prioritet" />
+    <Text value="Begivenheder" />
+    <Text value="Egenskaber" />
+    <Text value="Vælg dato" />
+    <Text value="Navn på begivenhed" />
+    <Text value="Type" />
+    <Text value="Indstil type" />
+    <Text value="Start" />
+    <Text value="Slut" />
+    <Text value="Dag" />
+    <Text value="Ugedag" />
+    <Text value="Uge" />
+    <Text value="Måned" />
+    <Text value="År" />
+    <Text value="Rediger programmering" />
+    <Text value="Ny programmering" />
+    <Text value="Setpunkter for optagethed" />
+    <Text value="Vælg dag" />
+    <Text value="Vælg uge" />
+    <Text value="Vælg måned" />
+    <Text value="Vælg år" />
+    <Text value="Vælg ugedag" />
+    <Text value="Begivenhed" />
+    <Text value="Kalenderreference" />
+  </Element>
+  <Element type="WEATHER SCN" id="107">
+    <Text value="Weather" />
+    <Text value="Today" />
+    <Text value="High" />
+    <Text value="Low" />
+    <Text value="RH" />
+    <Text value="POP" />
+  </Element>
+  <Element type="WIFI CONFIGURATION SCN" id="108">
+    <Text value="Wi-Fi konfiguration" />
+    <Text value="Nulstilling af Wi-Fi" />
+    <Text value="Nulstilling af Wi-Fi er i gang..." />
+  </Element>
+</Language>

@@ -1,0 +1,424 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DeviceTemplate programId="80:00:83:05:01:84:04:43" aliasCount="10" aliasOffset="61" guidelines="3.4" creationDate="2009-09-29 09:38:59" selfDoc="3.4@0NodeObject,3300RTC,20020Sch1,20020Sch2,20100FreeProg,1HwInput1,1HwInput2,1HwInput3,1HwInput4,1HwInput5,1HwInput6,3HwOutput1,3HwOutput2,3HwOutput3,3HwOutput4,3HwOutput5,3HwOutput6,3HwOutput7,3HwOutput8;Programmable I/O Controller ; 6 Inputs - 8 Outputs">
+  <LMOS>
+    <LMO name="NodeObject" index="0" typeIndex="0">
+      <NVS>
+        <NV name="nviRequest" axName="nviRequest" index="0" direction="input" flags="4E" typeIndex="92" fullTypeName="SNVT_obj_request" length="3" maxLength="3" memberNumber="|1" />
+        <NV name="nviFileReq" axName="nviFileReq" index="1" direction="input" flags="4E" typeIndex="73" fullTypeName="SNVT_file_req" length="12" maxLength="12" memberNumber="|5" />
+        <NV name="nviFilePos" axName="nviFilePos" index="2" direction="input" flags="4E" typeIndex="90" fullTypeName="SNVT_file_pos" length="6" maxLength="6" memberNumber="|7" />
+        <NV name="nvoStatus" axName="nvoStatus" index="3" direction="output" flags="4E" typeIndex="93" fullTypeName="SNVT_obj_status" length="6" maxLength="6" memberNumber="|2" />
+        <NV name="nvoFileStat" axName="nvoFileStat" index="4" direction="output" flags="4E" typeIndex="74" fullTypeName="SNVT_file_status" length="27" maxLength="27" memberNumber="|6" />
+      </NVS>
+      <CPS>
+        <CP name="SCPTlocation" axName="Location" offset="842" absoluteIndex="96" fileIndex="1" flags="0" typeIndex="17" fullTypeName="SCPTlocation" length="31" defaultValue="0" />
+        <CP name="SCPTdevMajVer" axName="DevMajVer" offset="0" absoluteIndex="97" fileIndex="2" flags="4" typeIndex="165" fullTypeName="SCPTdevMajVer" length="1" defaultValue="3" />
+        <CP name="SCPTdevMinVer" axName="DevMinVer" offset="1" absoluteIndex="98" fileIndex="2" flags="24" typeIndex="166" fullTypeName="SCPTdevMinVer" length="1" defaultValue="17" />
+        <CP name="UCPThardwareInfo" axName="HardwareInfo" offset="2" absoluteIndex="99" fileIndex="2" flags="24" typeIndex="107" fullTypeName="#8000830000000000[3].UCPThardwareInfo" typeScope="3" typeProgramId="8000830000000000" length="4" defaultValue="0" />
+      </CPS>
+    </LMO>
+    <LMO name="RTC" index="1" typeIndex="3300">
+      <NVS>
+        <NV name="nvoTimeDate" axName="nvoTimeDate" index="5" direction="output" flags="8E" typeIndex="84" fullTypeName="SNVT_time_stamp" length="7" maxLength="7" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTupdateRate" axName="UpdateRate_0" offset="0" absoluteIndex="0" fileIndex="1" flags="0" typeIndex="98" fullTypeName="SCPTupdateRate" length="2" defaultValue="258" />
+          </CPS>
+        </NV>
+        <NV name="nviTimeSet" axName="nviTimeSet" index="6" direction="input" flags="4E" typeIndex="84" fullTypeName="SNVT_time_stamp" length="7" maxLength="7" memberNumber="|2" />
+      </NVS>
+      <CPS>
+        <CP name="UCPTdst" axName="Dst" offset="873" absoluteIndex="100" fileIndex="1" flags="0" typeIndex="52" fullTypeName="#8000830000000000[3].UCPTdst" typeScope="3" typeProgramId="8000830000000000" length="12" defaultValue="20003020001000B02003C01" />
+        <CP name="SCPTobjMajVer" axName="ObjMajVer_0" offset="6" absoluteIndex="101" fileIndex="2" flags="4" typeIndex="167" fullTypeName="SCPTobjMajVer" length="1" defaultValue="2" />
+        <CP name="SCPTobjMinVer" axName="ObjMinVer_0" offset="8" absoluteIndex="103" fileIndex="2" flags="24" typeIndex="168" fullTypeName="SCPTobjMinVer" length="1" defaultValue="14" />
+      </CPS>
+    </LMO>
+    <LMO name="Sch1" index="2" typeIndex="20020">
+      <NVS>
+        <NV name="nvoSchedule1" axName="nvoSchedule1" index="7" changeableType="true" direction="output" flags="24E" typeIndex="128" fullTypeName="SNVT_tod_event" length="4" maxLength="4" memberNumber="#1">
+          <CPS>
+            <CP name="SCPTupdateRate" axName="UpdateRate_1" offset="2" absoluteIndex="1" fileIndex="1" flags="0" typeIndex="98" fullTypeName="SCPTupdateRate" length="2" defaultValue="0" />
+            <CP name="SCPTnvType" axName="NvType1_0" offset="6" absoluteIndex="3" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="800904000100000000" />
+            <CP name="SCPTdefOutput" axName="DefOutput_0" offset="728" absoluteIndex="41" fileIndex="1" flags="0" typeIndex="7" fullTypeName="SCPTdefOutput" inherited="true" length="4" defaultValue="FF0000" />
+          </CPS>
+        </NV>
+        <NV name="nviSchedule1" axName="nviSchedule1" index="9" changeableType="true" direction="input" flags="24E" typeIndex="128" fullTypeName="SNVT_tod_event" length="4" maxLength="4" memberNumber="#2">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType1_2" offset="44" absoluteIndex="5" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="800904000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime1_0" offset="736" absoluteIndex="43" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="SCPTobjMajVer" axName="ObjectMajorVersion" offset="26" absoluteIndex="116" fileIndex="2" flags="4" typeIndex="167" fullTypeName="SCPTobjMajVer" length="1" defaultValue="2" />
+        <CP name="SCPTobjMinVer" axName="ObjectMinorVersion" offset="27" absoluteIndex="117" fileIndex="2" flags="24" typeIndex="168" fullTypeName="SCPTobjMinVer" length="1" defaultValue="B" />
+        <CP name="UCPTassociatedFileIndex" axName="ObjectFileIndex" offset="28" absoluteIndex="118" fileIndex="2" flags="4" typeIndex="71" fullTypeName="#8000830000000000[3].UCPTassociatedFileIndex" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="7" />
+      </CPS>
+    </LMO>
+    <LMO name="Sch2" index="3" typeIndex="20020">
+      <NVS>
+        <NV name="nvoSchedule2" axName="nvoSchedule2" index="8" changeableType="true" direction="output" flags="24E" typeIndex="128" fullTypeName="SNVT_tod_event" length="4" maxLength="4" memberNumber="#1">
+          <CPS>
+            <CP name="SCPTupdateRate" axName="UpdateRate_2" offset="4" absoluteIndex="2" fileIndex="1" flags="0" typeIndex="98" fullTypeName="SCPTupdateRate" length="2" defaultValue="0" />
+            <CP name="SCPTnvType" axName="NvType1_1" offset="25" absoluteIndex="4" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="800904000100000000" />
+            <CP name="SCPTdefOutput" axName="DefOutput_1" offset="732" absoluteIndex="42" fileIndex="1" flags="0" typeIndex="7" fullTypeName="SCPTdefOutput" inherited="true" length="4" defaultValue="FF0000" />
+          </CPS>
+        </NV>
+        <NV name="nviSchedule2" axName="nviSchedule2" index="10" changeableType="true" direction="input" flags="24E" typeIndex="128" fullTypeName="SNVT_tod_event" length="4" maxLength="4" memberNumber="#2">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType1_3" offset="63" absoluteIndex="6" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="800904000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime1_1" offset="738" absoluteIndex="44" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="SCPTobjMajVer" axName="ObjectMajorVersion" offset="26" absoluteIndex="116" fileIndex="2" flags="4" typeIndex="167" fullTypeName="SCPTobjMajVer" length="1" defaultValue="2" />
+        <CP name="SCPTobjMinVer" axName="ObjectMinorVersion" offset="27" absoluteIndex="117" fileIndex="2" flags="24" typeIndex="168" fullTypeName="SCPTobjMinVer" length="1" defaultValue="B" />
+        <CP name="UCPTassociatedFileIndex" axName="ObjectFileIndex" offset="28" absoluteIndex="118" fileIndex="2" flags="4" typeIndex="71" fullTypeName="#8000830000000000[3].UCPTassociatedFileIndex" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="7" />
+      </CPS>
+    </LMO>
+    <LMO name="FreeProg" index="4" typeIndex="20100">
+      <NVS>
+        <NV name="nvoVn1_7" axName="nvoVn17" index="16" direction="output" flags="4E" typeIndex="23" fullTypeName="#8000830501000000[4].UNVT_variable_num_1to7" typeScope="4" typeProgramId="8000830501000000" length="29" maxLength="29" memberNumber="#60" />
+        <NV name="nvoVn8_14" axName="nvoVn814" index="17" direction="output" flags="4E" typeIndex="24" fullTypeName="#8000830501000000[4].UNVT_variable_num_8to14" typeScope="4" typeProgramId="8000830501000000" length="29" maxLength="29" memberNumber="#61" />
+        <NV name="nvoVn15_21" axName="nvoVn1521" index="18" direction="output" flags="4E" typeIndex="25" fullTypeName="#8000830501000000[4].UNVT_variable_num_15to21" typeScope="4" typeProgramId="8000830501000000" length="29" maxLength="29" memberNumber="#62" />
+        <NV name="nvoVn22_28" axName="nvoVn2228" index="19" direction="output" flags="4E" typeIndex="26" fullTypeName="#8000830501000000[4].UNVT_variable_num_22to28" typeScope="4" typeProgramId="8000830501000000" length="29" maxLength="29" memberNumber="#63" />
+        <NV name="nvoVn29_35" axName="nvoVn2935" index="20" direction="output" flags="4E" typeIndex="27" fullTypeName="#8000830501000000[4].UNVT_variable_num_29to35" typeScope="4" typeProgramId="8000830501000000" length="29" maxLength="29" memberNumber="#64" />
+        <NV name="nvoVe1_27" axName="nvoVe127" index="21" direction="output" flags="4E" typeIndex="28" fullTypeName="#8000830501000000[4].UNVT_variable_enum_1to27" typeScope="4" typeProgramId="8000830501000000" length="31" maxLength="31" memberNumber="#65" />
+        <NV name="nvoHwI1_6" axName="nvoHwI16" index="22" direction="output" flags="4E" typeIndex="29" fullTypeName="#8000830501000000[4].UNVT_hardware_input_1to7" typeScope="4" typeProgramId="8000830501000000" length="29" maxLength="29" memberNumber="#66" />
+        <NV name="nvoSmI1_5" axName="nvoSmI15" index="23" direction="output" flags="4E" typeIndex="32" fullTypeName="#8000830501000000[4].UNVT_smart_input_1to5" typeScope="4" typeProgramId="8000830501000000" length="12" maxLength="12" memberNumber="#68" />
+        <NV name="nvoWrI1_14" axName="nvoWrI114" index="24" direction="output" flags="4E" typeIndex="17" fullTypeName="#8000830501000000[4].UNVT_wireless_input_1to14" typeScope="4" typeProgramId="8000830501000000" length="30" maxLength="30" memberNumber="#70" />
+        <NV name="nvoHwO1_8" axName="nvoHwO18" index="25" direction="output" flags="4E" typeIndex="33" fullTypeName="#8000830501000000[4].UNVT_hardware_output_1to12" typeScope="4" typeProgramId="8000830501000000" length="26" maxLength="26" memberNumber="#71" />
+        <NV name="nviModify" axName="nviModify" index="26" direction="input" flags="4E" typeIndex="34" fullTypeName="#8000830501000000[4].UNVT_modify_val" typeScope="4" typeProgramId="8000830501000000" length="7" maxLength="7" memberNumber="#72" />
+        <NV name="nviFP_09" axName="nviFP09" index="35" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#24">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_8" offset="557" absoluteIndex="32" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_8" offset="756" absoluteIndex="53" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_10" axName="nviFP10" index="36" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#25">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_9" offset="576" absoluteIndex="33" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_9" offset="758" absoluteIndex="54" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_11" axName="nviFP11" index="37" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#26">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_10" offset="595" absoluteIndex="34" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_10" offset="760" absoluteIndex="55" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_12" axName="nviFP12" index="38" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#27">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_11" offset="614" absoluteIndex="35" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_11" offset="762" absoluteIndex="56" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_13" axName="nviFP13" index="39" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#28">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_12" offset="633" absoluteIndex="36" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_12" offset="764" absoluteIndex="57" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_14" axName="nviFP14" index="40" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#29">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_13" offset="652" absoluteIndex="37" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_13" offset="766" absoluteIndex="58" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_15" axName="nviFP15" index="41" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#30">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_14" offset="671" absoluteIndex="38" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_14" offset="768" absoluteIndex="59" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_16" axName="nviFP16" index="42" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#31">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_15" offset="690" absoluteIndex="39" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_15" offset="770" absoluteIndex="60" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nviFP_17" axName="nviFP17" index="43" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#32">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_16" offset="709" absoluteIndex="40" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_16" offset="772" absoluteIndex="61" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_07" axName="nvoFP07" index="50" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#40">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_6" offset="196" absoluteIndex="13" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_6" offset="786" absoluteIndex="68" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_6" offset="820" absoluteIndex="85" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_08" axName="nvoFP08" index="51" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#41">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_7" offset="215" absoluteIndex="14" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_7" offset="788" absoluteIndex="69" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_7" offset="822" absoluteIndex="86" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_09" axName="nvoFP09" index="52" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#42">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_8" offset="234" absoluteIndex="15" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_8" offset="790" absoluteIndex="70" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_8" offset="824" absoluteIndex="87" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_10" axName="nvoFP10" index="53" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#43">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_9" offset="253" absoluteIndex="16" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_9" offset="792" absoluteIndex="71" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_9" offset="826" absoluteIndex="88" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_11" axName="nvoFP11" index="54" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#44">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_10" offset="272" absoluteIndex="17" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_10" offset="794" absoluteIndex="72" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_10" offset="828" absoluteIndex="89" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_12" axName="nvoFP12" index="55" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#45">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_11" offset="291" absoluteIndex="18" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_11" offset="796" absoluteIndex="73" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_11" offset="830" absoluteIndex="90" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_13" axName="nvoFP13" index="56" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#46">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_12" offset="310" absoluteIndex="19" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_12" offset="798" absoluteIndex="74" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_12" offset="832" absoluteIndex="91" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_14" axName="nvoFP14" index="57" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#47">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_13" offset="329" absoluteIndex="20" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_13" offset="800" absoluteIndex="75" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_13" offset="834" absoluteIndex="92" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_15" axName="nvoFP15" index="58" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#48">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_14" offset="348" absoluteIndex="21" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_14" offset="802" absoluteIndex="76" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_14" offset="836" absoluteIndex="93" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_16" axName="nvoFP16" index="59" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#49">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_15" offset="367" absoluteIndex="22" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_15" offset="804" absoluteIndex="77" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_15" offset="838" absoluteIndex="94" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+        <NV name="nvoFP_17" axName="nvoFP17" index="60" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="#50">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_16" offset="386" absoluteIndex="23" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_16" offset="806" absoluteIndex="78" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_16" offset="840" absoluteIndex="95" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPT_constant_num_1to7" axName="Cn17" offset="0" absoluteIndex="0" fileIndex="0" isNci="true" flags="0" typeIndex="2" fullTypeName="#8000830501000000[4].UCPT_constant_num_1to7" typeScope="4" typeProgramId="8000830501000000" length="28" defaultValue="0" />
+        <CP name="UCPT_constant_num_8to14" axName="Cn814" offset="28" absoluteIndex="1" fileIndex="0" isNci="true" flags="0" typeIndex="3" fullTypeName="#8000830501000000[4].UCPT_constant_num_8to14" typeScope="4" typeProgramId="8000830501000000" length="28" defaultValue="0" />
+        <CP name="UCPT_constant_num_15to21" axName="Cn1521" offset="56" absoluteIndex="2" fileIndex="0" isNci="true" flags="0" typeIndex="4" fullTypeName="#8000830501000000[4].UCPT_constant_num_15to21" typeScope="4" typeProgramId="8000830501000000" length="28" defaultValue="0" />
+        <CP name="UCPT_constant_num_22to28" axName="Cn2228" offset="84" absoluteIndex="3" fileIndex="0" isNci="true" flags="0" typeIndex="5" fullTypeName="#8000830501000000[4].UCPT_constant_num_22to28" typeScope="4" typeProgramId="8000830501000000" length="28" defaultValue="0" />
+        <CP name="UCPT_constant_enum_1to31" axName="Ce131" offset="112" absoluteIndex="4" fileIndex="0" isNci="true" flags="0" typeIndex="6" fullTypeName="#8000830501000000[4].UCPT_constant_enum_1to31" typeScope="4" typeProgramId="8000830501000000" length="31" defaultValue="0" />
+        <CP name="SCPTobjMajVer" axName="ObjMajVer_1" offset="7" absoluteIndex="102" fileIndex="2" flags="4" typeIndex="167" fullTypeName="SCPTobjMajVer" length="1" defaultValue="3" />
+        <CP name="SCPTobjMinVer" axName="ObjMinVer_1" offset="9" absoluteIndex="104" fileIndex="2" flags="24" typeIndex="168" fullTypeName="SCPTobjMinVer" length="1" defaultValue="17" />
+        <CP name="SCPTminSendTime" axName="MinSendTime2" offset="885" absoluteIndex="105" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="12C" />
+        <CP name="SCPTmaxSendTime" axName="MaxSendTime2" offset="887" absoluteIndex="106" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+        <CP name="UCPTobjectOptions" axName="ObjectOption" offset="889" absoluteIndex="107" fileIndex="1" flags="0" typeIndex="68" fullTypeName="#8000830000000000[3].UCPTobjectOptions" typeScope="3" typeProgramId="8000830000000000" length="8" defaultValue="0" />
+      </CPS>
+    </LMO>
+    <LMO name="HwInput1" index="5" typeIndex="1">
+      <NVS>
+        <NV name="nvoFP_01" axName="nvoFP01" index="44" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_0" offset="82" absoluteIndex="7" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_0" offset="774" absoluteIndex="62" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_0" offset="808" absoluteIndex="79" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS />
+    </LMO>
+    <LMO name="HwInput2" index="6" typeIndex="1">
+      <NVS>
+        <NV name="nvoFP_02" axName="nvoFP02" index="45" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_1" offset="101" absoluteIndex="8" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_1" offset="776" absoluteIndex="63" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_1" offset="810" absoluteIndex="80" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS />
+    </LMO>
+    <LMO name="HwInput3" index="7" typeIndex="1">
+      <NVS>
+        <NV name="nvoFP_03" axName="nvoFP03" index="46" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_2" offset="120" absoluteIndex="9" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_2" offset="778" absoluteIndex="64" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_2" offset="812" absoluteIndex="81" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS />
+    </LMO>
+    <LMO name="HwInput4" index="8" typeIndex="1">
+      <NVS>
+        <NV name="nvoFP_04" axName="nvoFP04" index="47" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_3" offset="139" absoluteIndex="10" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_3" offset="780" absoluteIndex="65" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_3" offset="814" absoluteIndex="82" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS />
+    </LMO>
+    <LMO name="HwInput5" index="9" typeIndex="1">
+      <NVS>
+        <NV name="nvoFP_05" axName="nvoFP05" index="48" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_4" offset="158" absoluteIndex="11" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_4" offset="782" absoluteIndex="66" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_4" offset="816" absoluteIndex="83" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS />
+    </LMO>
+    <LMO name="HwInput6" index="10" typeIndex="1">
+      <NVS>
+        <NV name="nvoFP_06" axName="nvoFP06" index="49" changeableType="true" direction="output" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType2_5" offset="177" absoluteIndex="12" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTminSendTime" axName="MinSendTime1_5" offset="784" absoluteIndex="67" fileIndex="1" flags="0" typeIndex="52" fullTypeName="SCPTminSendTime" length="2" defaultValue="64" />
+            <CP name="SCPTmaxSendTime" axName="MaxSendTime1_5" offset="818" absoluteIndex="84" fileIndex="1" flags="0" typeIndex="49" fullTypeName="SCPTmaxSendTime" length="2" defaultValue="1770" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS />
+    </LMO>
+    <LMO name="HwOutput1" index="11" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_01" axName="nviFP01" index="27" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_0" offset="405" absoluteIndex="24" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_0" offset="740" absoluteIndex="45" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_0" offset="10" absoluteIndex="108" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="13" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput2" index="12" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_02" axName="nviFP02" index="28" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_1" offset="424" absoluteIndex="25" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_1" offset="742" absoluteIndex="46" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_1" offset="12" absoluteIndex="109" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="13" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput3" index="13" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_03" axName="nviFP03" index="29" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_2" offset="443" absoluteIndex="26" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_2" offset="744" absoluteIndex="47" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_2" offset="14" absoluteIndex="110" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="13" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput4" index="14" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_04" axName="nviFP04" index="30" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_3" offset="462" absoluteIndex="27" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_3" offset="746" absoluteIndex="48" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_3" offset="16" absoluteIndex="111" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="13" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput5" index="15" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_05" axName="nviFP05" index="31" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_4" offset="481" absoluteIndex="28" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_4" offset="748" absoluteIndex="49" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_4" offset="18" absoluteIndex="112" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="13" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput6" index="16" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_06" axName="nviFP06" index="32" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_5" offset="500" absoluteIndex="29" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_5" offset="750" absoluteIndex="50" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_5" offset="20" absoluteIndex="113" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="17" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput7" index="17" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_07" axName="nviFP07" index="33" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_6" offset="519" absoluteIndex="30" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_6" offset="752" absoluteIndex="51" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_6" offset="22" absoluteIndex="114" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="17" />
+      </CPS>
+    </LMO>
+    <LMO name="HwOutput8" index="18" typeIndex="3">
+      <NVS>
+        <NV name="nviFP_08" axName="nviFP08" index="34" changeableType="true" direction="input" flags="24E" typeIndex="9" fullTypeName="SNVT_count_inc" length="2" maxLength="2" memberNumber="|1">
+          <CPS>
+            <CP name="SCPTnvType" axName="NvType3_7" offset="538" absoluteIndex="31" fileIndex="1" flags="0" typeIndex="254" fullTypeName="SCPTnvType" length="19" defaultValue="90502000100000000" />
+            <CP name="SCPTmaxRcvTime" axName="MaxRcvTime2_7" offset="754" absoluteIndex="52" fileIndex="1" flags="0" typeIndex="48" fullTypeName="SCPTmaxRcvTime" length="2" defaultValue="0" />
+          </CPS>
+        </NV>
+      </NVS>
+      <CPS>
+        <CP name="UCPTvalidOutputSignalTypes" axName="ValidOutSigTypes_7" offset="24" absoluteIndex="115" fileIndex="2" flags="4" typeIndex="60" fullTypeName="#8000830000000000[3].UCPTvalidOutputSignalTypes" typeScope="3" typeProgramId="8000830000000000" length="2" defaultValue="17" />
+      </CPS>
+    </LMO>
+  </LMOS>
+  <NVS>
+    <NV name="nciCn1_7" axName="nciCn17" cpName="UCPT_constant_num_1to7" isNci="true" index="11" direction="input" flags="4E" cpFlags="0" cpTypeIndex="2" cpFullTypeName="#8000830501000000[4].UCPT_constant_num_1to7" cpTypeScope="4" cpTypeProgramId="8000830501000000" length="28" maxLength="28" />
+    <NV name="nciCn8_14" axName="nciCn814" cpName="UCPT_constant_num_8to14" isNci="true" index="12" direction="input" flags="4E" cpFlags="0" cpTypeIndex="3" cpFullTypeName="#8000830501000000[4].UCPT_constant_num_8to14" cpTypeScope="4" cpTypeProgramId="8000830501000000" length="28" maxLength="28" />
+    <NV name="nciCn15_21" axName="nciCn1521" cpName="UCPT_constant_num_15to21" isNci="true" index="13" direction="input" flags="4E" cpFlags="0" cpTypeIndex="4" cpFullTypeName="#8000830501000000[4].UCPT_constant_num_15to21" cpTypeScope="4" cpTypeProgramId="8000830501000000" length="28" maxLength="28" />
+    <NV name="nciCn22_28" axName="nciCn2228" cpName="UCPT_constant_num_22to28" isNci="true" index="14" direction="input" flags="4E" cpFlags="0" cpTypeIndex="5" cpFullTypeName="#8000830501000000[4].UCPT_constant_num_22to28" cpTypeScope="4" cpTypeProgramId="8000830501000000" length="28" maxLength="28" />
+    <NV name="nciCe1_31" axName="nciCe131" cpName="UCPT_constant_enum_1to31" isNci="true" index="15" direction="input" flags="4E" cpFlags="0" cpTypeIndex="6" cpFullTypeName="#8000830501000000[4].UCPT_constant_enum_1to31" cpTypeScope="4" cpTypeProgramId="8000830501000000" length="31" maxLength="31" />
+  </NVS>
+  <TAGS>
+    <TAG name="DebugMsgOut" index="0" direction="output" />
+    <TAG name="fx_explicit_tag" index="1" direction="input" />
+  </TAGS>
+</DeviceTemplate>

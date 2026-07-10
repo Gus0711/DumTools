@@ -19,5 +19,7 @@ export const CONTROLLER_IMAGES: Record<string, string> = {
   "ECY-600": "/materiel/ctrl-ECY-600.png",
   "ECY-PTU-207": "/materiel/ctrl-ECY-PTU-207.png",
   "ECY-303": "/materiel/ctrl-ECY-303.png",
-  "ECY-300": "/materiel/ctrl-ECY-300.png"
+  "ECY-300": "/materiel/ctrl-ECY-300.png",
+  "ECY-S1000E": "/materiel/ctrl-ECY-S1000E.png",
+  "ECY-APEX": "/materiel/ctrl-ECY-APEX.png"
 };

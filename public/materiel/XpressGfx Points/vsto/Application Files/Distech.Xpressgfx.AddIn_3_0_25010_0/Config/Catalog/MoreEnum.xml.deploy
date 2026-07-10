@@ -1,0 +1,424 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DrfSet scope="6" programId="80:00:83:00:00:00:00:00" name="MoreEnum">
+  <TypeDefinitions originalCrc="53F213D2">
+    <NVTs />
+    <CPTs />
+    <Enums>
+      <Enum name="Start_Stop" id="1">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="STOP">0</Member>
+          <Member name="START">1</Member>
+          <Member name="AUTO">2</Member>
+        </Members>
+      </Enum>
+      <Enum name="Day_Night" id="2">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NIGHT">0</Member>
+          <Member name="DAY">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="On_Off" id="3">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="OFF">0</Member>
+          <Member name="ON">1</Member>
+          <Member name="AUTO">2</Member>
+        </Members>
+      </Enum>
+      <Enum name="Mode" id="4">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="AUTO">0</Member>
+          <Member name="MANUAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Manual_Mode" id="5">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="MANUAL_OFF">0</Member>
+          <Member name="MANUAL_ON">1</Member>
+          <Member name="AUTOMATIC">2</Member>
+        </Members>
+      </Enum>
+      <Enum name="Occupancy" id="6">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="UNOCCUPIED">0</Member>
+          <Member name="OCCUPIED">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Off_On" id="7">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="ON">0</Member>
+          <Member name="OFF">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Stop_Start" id="8">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="START">0</Member>
+          <Member name="STOP">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Night_Day" id="9">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="DAY">0</Member>
+          <Member name="NIGHT">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Closed_Open" id="10">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="OPEN">0</Member>
+          <Member name="CLOSED">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Open_Closed" id="11">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="CLOSED">0</Member>
+          <Member name="OPEN">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Flow" id="12">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NO_FLOW">0</Member>
+          <Member name="FLOW">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Light_Scene" id="13">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="AUTO">0</Member>
+          <Member name="NONE">1</Member>
+          <Member name="ALL">2</Member>
+          <Member name="HOUSEKEEPING">3</Member>
+          <Member name="GENERAL">4</Member>
+          <Member name="DISPLAY">5</Member>
+          <Member name="OUTSIDE">6</Member>
+          <Member name="SHOW_WINDOW">7</Member>
+          <Member name="SHOWCASE">8</Member>
+          <Member name="CURTAILMENT">9</Member>
+        </Members>
+      </Enum>
+      <Enum name="Inactive_Active" id="14">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="INACTIVE">0</Member>
+          <Member name="ACTIVE">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="EmergencyMode" id="15">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="EMERGENCY_MODE1">1</Member>
+          <Member name="EMERGENCY_MODE2">2</Member>
+          <Member name="EMERGENCY_MODE3">3</Member>
+          <Member name="EMERGENCY_MODE4">4</Member>
+        </Members>
+      </Enum>
+      <Enum name="Normal_StandBy" id="16">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="STANDBY">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="PhxTempMode" id="17">
+        <Members>
+          <Member name="UNUSED">-1</Member>
+          <Member name="COOLING">0</Member>
+          <Member name="HEATING">1</Member>
+          <Member name="MULTI_HEATING">2</Member>
+          <Member name="STAGED_HEATING">3</Member>
+          <Member name="MULTI_COOLING">4</Member>
+          <Member name="STAGED_COOLING">5</Member>
+          <Member name="NO_ACTION">6</Member>
+          <Member name="AUX_HEAT_ONLY">7</Member>
+          <Member name="AUX_COOL_ONLY">8</Member>
+          <Member name="COOL_WITH_AUX_HEAT">9</Member>
+          <Member name="HEAT_WITH_AUX_COOL">10</Member>
+        </Members>
+      </Enum>
+      <Enum name="Light_Scene2" id="18">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="AUTO">0</Member>
+          <Member name="ALL">1</Member>
+          <Member name="HOUSEKEEPING">2</Member>
+          <Member name="GENERAL">3</Member>
+          <Member name="DISPLAY">4</Member>
+          <Member name="SHOWCASE">5</Member>
+          <Member name="CURTAILMENT">6</Member>
+        </Members>
+      </Enum>
+      <Enum name="Normal_Alarm" id="19">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="ALARM">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Close_Open_Failed" id="21">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="CLOSE">0</Member>
+          <Member name="OPEN">1</Member>
+          <Member name="FAILED">2</Member>
+        </Members>
+      </Enum>
+      <Enum name="NoFlow_Flow_Failed" id="22">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NO_FLOW">0</Member>
+          <Member name="FLOW">1</Member>
+          <Member name="FAILED">2</Member>
+        </Members>
+      </Enum>
+      <Enum name="Failed_Healthy" id="23">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="FAILED">0</Member>
+          <Member name="HEALTHY">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Healthy_Failed" id="24">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="HEALTHY">0</Member>
+          <Member name="FAILED">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Fault_Healthy" id="25">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="FAULT">0</Member>
+          <Member name="HEALTHY">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Healthy_Fault" id="26">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="HEALTHY">0</Member>
+          <Member name="FAULT">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Activated_Healthy" id="27">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="ACTIVATED">0</Member>
+          <Member name="HEALTHY">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Frost_Normal" id="28">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="FROST">0</Member>
+          <Member name="NORMAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Normal_Frost" id="29">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="FROST">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Fan_Select" id="30">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="FAN1">0</Member>
+          <Member name="FAN2">1</Member>
+          <Member name="FAN3">2</Member>
+          <Member name="FAN4">3</Member>
+        </Members>
+      </Enum>
+      <Enum name="Speed_Select" id="31">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="LOW">0</Member>
+          <Member name="HIGH">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="MUA_Type" id="32">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="DUAL">0</Member>
+          <Member name="MODULATING">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Season" id="33">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="WINTER">0</Member>
+          <Member name="SUMMER">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Switch_Mode" id="34">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="PRESSURE_MODE">0</Member>
+          <Member name="DAY_SWITCH">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Control_Strategy" id="35">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="SPEED">0</Member>
+          <Member name="VOLUME">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Open_Close" id="36">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="OPEN">0</Member>
+          <Member name="CLOSE">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Close_Open" id="37">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="CLOSE">0</Member>
+          <Member name="OPEN">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Enabled_Disabled" id="38">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="ENABLED">0</Member>
+          <Member name="DISABLED">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Enable_Disable" id="39">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="ENABLE">0</Member>
+          <Member name="DISABLE">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Run_Stop" id="40">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="RUN">0</Member>
+          <Member name="STOP">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Failed_Normal" id="41">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="FAILED">0</Member>
+          <Member name="NORMAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="High_Normal" id="42">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="HIGH">0</Member>
+          <Member name="NORMAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="High_Low" id="43">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="HIGH">0</Member>
+          <Member name="LOW">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Low_Normal" id="44">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="LOW">0</Member>
+          <Member name="NORMAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Heating_Cooling" id="45">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="HEATING">0</Member>
+          <Member name="COOLING">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Alarm_Normal" id="46">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="ALARM">0</Member>
+          <Member name="NORMAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Cooling_Heating" id="47">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="COOLING">0</Member>
+          <Member name="HEATING">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Stop_Run" id="48">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="STOP">0</Member>
+          <Member name="RUN">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Disabled_Enabled" id="49">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="DISABLED">0</Member>
+          <Member name="ENABLED">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Disable_Enable" id="50">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="DISABLE">0</Member>
+          <Member name="ENABLE">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Normal_Failed" id="51">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="FAILED">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Normal_Low" id="52">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="LOW">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Normal_High" id="53">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="NORMAL">0</Member>
+          <Member name="HIGH">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="Low_High" id="54">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="LOW">0</Member>
+          <Member name="HIGH">1</Member>
+        </Members>
+      </Enum>
+    </Enums>
+  </TypeDefinitions>
+  <FormatDefinitions originalCrc="7600B444" />
+  <ProfileDefinitions />
+  <LanguageDefinitions originalCrc="60D87907">
+    <Strings lang="en_US">
+      <String id="1">This file is a scope 6 type file. It contains user network variable types, configuration property types, and the enumeration types that support them.</String>
+      <String id="2">This LonMark Device Resource TYP file was created by Distech Controls. Contact us at  or at  on the internet.</String>
+      <String id="3">This is a scope 6 FPT file. It contains functional profile templates.</String>
+      <String id="4">This LonMark Device Resource FPT file was created by Distech Controls. Contact us at  or at  on the internet.</String>
+      <String id="5">This file is a scope 6 language-dependent string resource file. It is localized for the US English (enu) language.</String>
+      <String id="6">This LonMark Device Resource language-string file was created by Distech Controls. Contact us at  or at  on the internet.</String>
+    </Strings>
+  </LanguageDefinitions>
+</DrfSet>

@@ -1,0 +1,637 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Language key="fr" name="French" displayName="Français">
+  <Element type="WEEKDAYS" id="1">
+    <Text value="Lundi" />
+    <Text value="Mardi" />
+    <Text value="Mercredi" />
+    <Text value="Jeudi" />
+    <Text value="Vendredi" />
+    <Text value="Samedi" />
+    <Text value="Dimanche" />
+  </Element>
+  <Element type="SHRT WEEKDAYS" id="2">
+    <Text value="Lun." />
+    <Text value="Mar." />
+    <Text value="Mer." />
+    <Text value="Jeu." />
+    <Text value="Ven." />
+    <Text value="Sam." />
+    <Text value="Dim." />
+  </Element>
+  <Element type="MONTHS" id="3">
+    <Text value="Janvier" />
+    <Text value="Février" />
+    <Text value="Mars" />
+    <Text value="Avril" />
+    <Text value="Mai" />
+    <Text value="Juin" />
+    <Text value="Juillet" />
+    <Text value="Août" />
+    <Text value="Septembre" />
+    <Text value="Octobre" />
+    <Text value="Novembre" />
+    <Text value="Décembre" />
+  </Element>
+  <Element type="SHRT MONTHS" id="4">
+    <Text value="Jan." />
+    <Text value="Fév." />
+    <Text value="Mar." />
+    <Text value="Avr." />
+    <Text value="Mai" />
+    <Text value="Jun." />
+    <Text value="Jui." />
+    <Text value="Aoû." />
+    <Text value="Sep." />
+    <Text value="Oct." />
+    <Text value="Nov." />
+    <Text value="Déc." />
+  </Element>
+  <Element type="NULL VALUE" id="5">
+    <Text value="Nul" />
+  </Element>
+  <Element type="DAYOFWEEKRANK" id="6">
+    <Text value="Premier" />
+    <Text value="Deuxième" />
+    <Text value="Troisième" />
+    <Text value="Quatrième" />
+    <Text value="Dernier" />
+  </Element>
+  <Element type="OBJECT TYPES" id="8">
+    <Text member="1" value="EA" />
+    <Text member="2" value="SA" />
+    <Text member="3" value="VA" />
+    <Text member="4" value="EB" />
+    <Text member="5" value="SB" />
+    <Text member="6" value="VB" />
+    <Text member="7" value="CAL" />
+    <Text member="13" value="PID" />
+    <Text member="14" value="EME" />
+    <Text member="18" value="HOR" />
+    <Text member="20" value="VME" />
+    <Text member="21" value="HIST" />
+    <Text member="117" value="ESF" />
+    <Text member="118" value="COM" />
+    <Text member="119" value="EPH" />
+    <Text member="120" value="SPH" />
+    <Text member="121" value="VN" />
+    <Text member="122" value="VB" />
+    <Text member="123" value="VE" />
+    <Text member="124" value="CN" />
+    <Text member="125" value="CB" />
+    <Text member="126" value="CE" />
+    <Text member="127" value="VRE" />
+    <Text member="128" value="VRS" />
+  </Element>
+  <Element type="EVENTSTATE" id="9">
+    <Text value="Normal" />
+    <Text value="Faute" />
+    <Text value="Anormal" />
+    <Text value="Limite haute" />
+    <Text value="Limite basse" />
+    <Text value="Alarme critique" />
+  </Element>
+  <Element type="RELIABILITY" id="10" filter="bacnet;bacnetIp">
+    <Text value="Aucun défaut détecté" />
+    <Text value="Pas de sonde" />
+    <Text value="Plage sup. dépassée" />
+    <Text value="Plage inf. dépassée" />
+    <Text value="Circuit ouvert" />
+    <Text value="Court-circuit" />
+    <Text value="Pas de sortie" />
+    <Text value="Défaillance autres" />
+    <Text value="Erreur interne" />
+    <Text value="Multi-états en faute" />
+    <Text value="Erreur de configuration" />
+    <Text value="Réservé" />
+    <Text value="Panne de comm." />
+    <Text value="Faute du membre" />
+  </Element>
+  <Element type="BOOLEAN" id="11">
+    <Text value="Faux" />
+    <Text value="Vrai" />
+  </Element>
+  <Element type="CALENDAR ENTRY" id="12">
+    <Text value="0D" />
+    <Text value="1er" />
+    <Text value="2e" />
+    <Text value="3e" />
+    <Text value="4e" />
+    <Text value="5e" />
+    <Text value="Dern." />
+    <Text value="Tous les" />
+    <Text value="Sem." />
+    <Text value="Tous les jours" />
+    <Text value="Dernier jour" />
+    <Text value="Jours impair" />
+    <Text value="Jours pair" />
+    <Text value="Tous les mois" />
+    <Text value="Mois impair" />
+    <Text value="Mois pair" />
+    <Text value="Toutes les années" />
+    <Text value="DJ" />
+    <Text value="JI" />
+    <Text value="JP" />
+    <Text value="MI" />
+    <Text value="MP" />
+    <Text value=", " />
+    <Text value=", " />
+    <Text value=" - " />
+    <Text value="%D/%M/%y" />
+    <Text value="Toutes les semaines" />
+  </Element>
+  <Element type="SPEC EVENT TYPE" id="13">
+    <Text value="Date" />
+    <Text value="Intervalle date" />
+    <Text value="Semaine et jour" />
+    <Text value="Référence" />
+  </Element>
+  <Element type="LONG DATE FMT" id="15">
+    <Text value="%W, %d %t %y" />
+  </Element>
+  <Element type="LONG TIME FMT" id="16">
+    <Text value="%H:%m:%s" />
+  </Element>
+  <Element type="MED DATE FMT" id="17">
+    <Text value="%w %d %t %y" />
+  </Element>
+  <Element type="SHRT DATE FMT" id="18">
+    <Text value="%d %t %y" />
+  </Element>
+  <Element type="SHRT TIME FMT" id="19">
+    <Text value="%H:%m" />
+  </Element>
+  <Element type="DST DATE FMT" id="20">
+    <Text value="%D %w de %t" />
+  </Element>
+  <Element type="WEATHERSTATE" id="28">
+    <Text value="Clair" />
+    <Text value="Ensoleillé" />
+    <Text>
+      <Line value="Plutôt" />
+      <Line value="ensoleillé" />
+    </Text>
+    <Text>
+      <Line value="Partiellement" />
+      <Line value="ensoleillé" />
+    </Text>
+    <Text value="Beau" />
+    <Text>
+      <Line value="Quelques" />
+      <Line value="nuages" />
+    </Text>
+    <Text>
+      <Line value="Partiellement" />
+      <Line value="nuageux" />
+    </Text>
+    <Text value="Plutôt nuageux" />
+    <Text value="Nuageux" />
+    <Text value="Couvert" />
+    <Text value="Pluie faible" />
+    <Text value="Pluie" />
+    <Text value="Pluie forte" />
+    <Text value="Orages" />
+    <Text>
+      <Line value="Pluie" />
+      <Line value="verglaçante" />
+    </Text>
+    <Text value="Brouillard" />
+    <Text value="Brume" />
+    <Text value="Neige" />
+    <Text value="Venteux" />
+    <Text value="Brumeux" />
+    <Text value="Poussiéreux" />
+    <Text value="Inconnu" />
+    <Text value="Tsunami" />
+    <Text value="Tornade" />
+    <Text value="Inondation" />
+    <Text value="Feux" />
+    <Text value="Ouragan" />
+    <Text value="Séisme" />
+    <Text value="Volcan" />
+  </Element>
+  <Element type="WINDDIRECTION" id="29">
+    <Text value="N" />
+    <Text value="NE" />
+    <Text value="E" />
+    <Text value="SE" />
+    <Text value="S" />
+    <Text value="SO" />
+    <Text value="O" />
+    <Text value="NO" />
+    <Text value="Variable" />
+  </Element>
+  <Element type="BINARY STATES" id="30">
+    <Text value="Inactif" />
+    <Text value="Actif" />
+  </Element>
+  <Element type="LON POINTS SCN" id="73" filter="lon">
+    <Text value="Points" />
+    <Text value="Entrées physiques" />
+    <Text value="Sorties physiques" />
+    <Text value="Valeurs numériques" />
+    <Text value="Valeurs booléennes" />
+    <Text value="Valeurs énumérées" />
+    <Text value="Constantes numériques" />
+    <Text value="Constantes booléennes" />
+    <Text value="Constantes énumérées" />
+    <Text value="Points de consignes" />
+    <Text value="Variables réseaux en entrée" />
+    <Text value="Variables réseaux en sortie" />
+    <Text value="Entrées com" />
+    <Text value="Entrées sans fil" />
+  </Element>
+  <Element type="LON AV SCN" id="74" filter="lon">
+    <Text>
+      <Line value="Valeurs" />
+      <Line value="numériques" />
+    </Text>
+    <Text value="Aucune valeur numérique" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="LON BV SCN" id="75" filter="lon">
+    <Text>
+      <Line value="Valeurs" />
+      <Line value="booléennes" />
+    </Text>
+    <Text value="Aucune valeur booléenne" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="LON MSV SCN" id="76" filter="lon">
+    <Text>
+      <Line value="Valeurs" />
+      <Line value="énumérées" />
+    </Text>
+    <Text value="Aucune valeur énumérée" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="SETPOINTS SCN" id="77" filter="lon">
+    <Text>
+      <Line value="Points de" />
+      <Line value="consignes" />
+    </Text>
+    <Text value="Aucun point de consigne" />
+    <Text value="Froid occupé" />
+    <Text value="Froid en veille" />
+    <Text value="Froid inoccupé" />
+    <Text value="Chaud occupé" />
+    <Text value="Chaud en veille" />
+    <Text value="Chaud inoccupé" />
+  </Element>
+  <Element type="NVI SCN" id="78" filter="lon">
+    <Text>
+      <Line value="Variables" />
+      <Line value="réseaux en entrée" />
+    </Text>
+    <Text value="Aucune variables réseaux en entrée" />
+  </Element>
+  <Element type="NVO SCN" id="79" filter="lon">
+    <Text>
+      <Line value="Variables" />
+      <Line value="réseaux en sorties" />
+    </Text>
+    <Text value="Aucune variables réseaux en sortie" />
+  </Element>
+  <Element type="MAIN SCN" id="80">
+    <Text value="Points" />
+    <Text value="Horaires &amp; calendriers" />
+    <Text value="Alarmes" />
+    <Text value="Forçages" />
+    <Text value="Favoris" />
+    <Text value="Boucles PID" />
+    <Text value="Météo" />
+    <Text value="Réglages" />
+    <Text value="À propos" />
+  </Element>
+  <Element type="PASSWORD SCN" id="81">
+    <Text value="Entrez le mot de passe" />
+    <Text value="Accès refusé" />
+    <Text value="Mauvais mot de passe" />
+    <Text value="Ok" />
+  </Element>
+  <Element type="POINTS SCN" id="82" filter="bacnet;bacnetIp">
+    <Text value="Points" />
+    <Text value="Entrées physiques" />
+    <Text value="Sorties physiques" />
+    <Text value="Valeurs analogiques" />
+    <Text value="Valeurs binaires" />
+    <Text value="Valeurs multi-états" />
+    <Text value="Entrées com" />
+    <Text value="Entrées sans fil" />
+  </Element>
+  <Element type="HWIN SCN" id="83">
+    <Text>
+      <Line value="Entrées" />
+      <Line value="physiques" />
+    </Text>
+    <Text value="Aucune entrée physique" />
+  </Element>
+  <Element type="HWOUT SCN" id="84">
+    <Text>
+      <Line value="Sorties" />
+      <Line value="physiques" />
+    </Text>
+    <Text value="Aucune sortie physique" />
+  </Element>
+  <Element type="COMIN SCN" id="85">
+    <Text value="Entrées com" />
+    <Text value="Aucune entrée com" />
+  </Element>
+  <Element type="WRLSIN SCN" id="86">
+    <Text value="Entrées sans fil" />
+    <Text value="Aucune entrée sans fil" />
+  </Element>
+  <Element type="AV SCN" id="88" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Valeurs" />
+      <Line value="analogiques" />
+    </Text>
+    <Text value="Aucune valeur analogique" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="BV SCN" id="89" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Valeurs" />
+      <Line value="binaires" />
+    </Text>
+    <Text value="Aucune valeur binaire" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="MSV SCN" id="90" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Valeurs" />
+      <Line value="multi-états" />
+    </Text>
+    <Text value="Aucune valeur multi-état" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="LON AC SCN" id="91" filter="lon">
+    <Text>
+      <Line value="Constantes" />
+      <Line value="numériques" />
+    </Text>
+    <Text value="Aucune constante numérique" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="LON BC SCN" id="92" filter="lon">
+    <Text>
+      <Line value="Constantes" />
+      <Line value="booléennes" />
+    </Text>
+    <Text value="Aucune constante booléenne" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="LON MSC SCN" id="93" filter="lon">
+    <Text>
+      <Line value="Constantes" />
+      <Line value="énumérées" />
+    </Text>
+    <Text value="Aucune constante énumérée" />
+    <Text value="Voir les précédents" />
+    <Text value="Voir les suivants" />
+  </Element>
+  <Element type="PT MENU SCN" id="94">
+    <Text value="Forçage d'urgence" />
+    <Text value="Automatique (urgence)" />
+    <Text value="Forçage" />
+    <Text value="Automatique" />
+    <Text value="Régler la valeur" />
+    <Text value="Détails de l'alarme" />
+    <Text value="Voir l'historique" />
+  </Element>
+  <Element type="SCH CAL SCN" id="95">
+    <Text>
+      <Line value="Horaires &amp;" />
+      <Line value=" calendriers" />
+    </Text>
+    <Text value="Aucun horaire ou calendrier" />
+    <Text value="Horaire hebdomadaire" />
+    <Text value="Horaire du %41r" />
+    <Text value="Événements spéciaux" />
+    <Text value="Événement spécial" />
+    <Text value="Entrées du calendrier" />
+    <Text value="Entrée du calendier" />
+    <Text value="Fin de journée" />
+    <Text value="Aucun événement" />
+    <Text value="Changer val. par défaut" />
+    <Text value="Utiliser nul comme défaut" />
+    <Text value="Ajouter un événement" />
+    <Text value="Modifier l'événement" />
+    <Text value="Effacer l'événement" />
+    <Text value="État" />
+    <Text value="Début" />
+    <Text value="Fin" />
+    <Text value="Horaire modifié&#x9;Sauvegarder l'horaire?" />
+    <Text value="Valeur par défaut" />
+    <Text value="Événements de la journée" />
+    <Text value="Modifier l'événement spécial" />
+    <Text value="Effacer" />
+    <Text value="Ajouter avant" />
+    <Text value="Ajouter après" />
+    <Text value="Ajouter un événement spécial" />
+    <Text value="Annuler" />
+    <Text value="Type" />
+    <Text value="Date" />
+    <Text value="Date de début" />
+    <Text value="Date de fin" />
+    <Text value="Semaine et jour" />
+    <Text value="Référence" />
+    <Text value="Modifier" />
+    <Text value="Ajouter une entrée" />
+    <Text value="Calendrier modifié&#x9;Sauvegarder le calendrier?" />
+    <Text>
+      <Line value="Format de la date: JJ/MM/AAAA" />
+      <Line value="*: Tous;    DJ: Dernier jour" />
+      <Line value="JI: Jours impairs;    JP: Jours pairs" />
+      <Line value="MI: Mois impairs;    MP: Mois pairs" />
+    </Text>
+    <Text value="Limite dépassée&#x9;Affichage impossible." filter="bacnetIp" />
+  </Element>
+  <Element type="ALARM SCN" id="96">
+    <Text value="Alarmes" />
+    <Text value="Actif non-acquitté" />
+    <Text value="Actif acquitté" />
+    <Text value="Inactif non-acquitté" />
+  </Element>
+  <Element type="ALARM ACTNOTACK SCN" id="97">
+    <Text>
+      <Line value="Actif" />
+      <Line value="non-acquitté" />
+    </Text>
+    <Text value="Aucune alarme active" />
+  </Element>
+  <Element type="ALARM ACTACK SCN" id="98" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Actif" />
+      <Line value="acquitté" />
+    </Text>
+    <Text value="Aucune alarme active" />
+  </Element>
+  <Element type="ALARM INACTNOTACK SCN" id="99" filter="bacnet;bacnetIp">
+    <Text>
+      <Line value="Inactive" />
+      <Line value="non-acquitté" />
+    </Text>
+    <Text value="Aucune alarme inactive" />
+  </Element>
+  <Element type="ALARM INFO SCN" id="100" filter="bacnet;bacnetIp">
+    <Text value="Détails de l'alarme" />
+    <Text value="État précédent" />
+    <Text value="État actuel" />
+    <Text value=" date de l'évènement" />
+    <Text value=" heure de l'évènement" />
+    <Text value="Limite dépassée" />
+    <Text value="Valeur de dépassement" />
+    <Text value="Nouvel état" />
+    <Text value="Valeur de commande" />
+    <Text value="Retour de commande" />
+    <Text value="Hors service" />
+    <Text value="Fiabilité" />
+  </Element>
+  <Element type="ALARM MENU SCN" id="101" filter="bacnet;bacnetIp">
+    <Text value="Réceptionner l'alarme" />
+    <Text value="Annuler" />
+  </Element>
+  <Element type="OVERRIDE SCN" id="102">
+    <Text value="Forçages" />
+    <Text value="Aucun Forçage" />
+  </Element>
+  <Element type="FAVORITE SCN" id="103">
+    <Text value="Favoris" />
+    <Text value="Aucun favori" />
+  </Element>
+  <Element type="PIDS SCN" id="104">
+    <Text value="Boucles PID" />
+    <Text value="Aucune boucle PID" />
+  </Element>
+  <Element type="PID SCN" id="105">
+    <Text value="Entrée" />
+    <Text value="Pt de consigne" />
+    <Text value="Sortie" />
+    <Text value="Bande prop." />
+    <Text value="Temps intégral" />
+    <Text value="Temps dériv." />
+    <Text value="Bande morte" />
+    <Text value="Alignement" />
+    <Text value="Temps rampe" />
+    <Text value="Temps de sat." />
+    <Text value="Action" />
+    <Text value="Période graph" />
+  </Element>
+  <Element type="PID ACTION" id="106">
+    <Text value="Directe" />
+    <Text value="Inverse" />
+  </Element>
+  <Element type="WEATHER SCN" id="109">
+    <Text value="Météo" />
+    <Text value="Dernière mise-à-jour" />
+    <Text value="Lever du soleil" />
+    <Text value="Coucher du soleil" />
+    <Text value="Température" />
+    <Text value="Minimum" />
+    <Text value="Maximum" />
+    <Text value="Sommaire" />
+    <Text value="Humidité" />
+    <Text value="Direction du vent" />
+    <Text value="Vitesse du vent" />
+    <Text value="Rafales de vent" />
+    <Text value="Ref. éolien" />
+    <Text value="Pression" />
+    <Text value="Point de rosée" />
+    <Text value="Météo non disponible" />
+  </Element>
+  <Element type="SETTINGS SCN" id="110">
+    <Text value="Réglages" />
+    <Text value="Luminosité" />
+    <Text value="Temps de déconnexion" />
+    <Text value="Instance du périphérique" />
+    <Text value="Adresse MAC" />
+    <Text value="Vitesse de transmission" />
+    <Text value="Date" />
+    <Text value="Heure" />
+    <Text value="Activer l'HE" />
+    <Text value="Date de début de l'HE" />
+    <Text value="Date de fin de l'HE" />
+    <Text value="Ajustement" />
+    <Text value="Langue" />
+    <Text value="Dernier maître" />
+    <Text value="Heure de début de l'HE" />
+    <Text value="Heure de fin de l'HE" />
+    <Text value="Fuseau horaire" />
+  </Element>
+  <Element type="ABOUT SCN" id="111">
+    <Text value="À propos" />
+    <Text value="Appuyez sur la molette pour les versions" />
+    <Text value="Versions" />
+    <Text value="Contrôleur" />
+    <Text value="Interface utilisateur" />
+    <Text value="Micrologiciel" />
+    <Text value="Bootloader" />
+  </Element>
+  <Element type="BUTTON TEXT" id="112">
+    <Text value="Ok" />
+    <Text value="Annuler" />
+    <Text value="Défiler" />
+    <Text value="Éditer" />
+    <Text value="Oui" />
+    <Text value="Non" />
+  </Element>
+  <Element type="DATEEDIT TEXT" id="113">
+    <Text value="Jour semaine:" />
+    <Text value="Mois:" />
+    <Text value="Jour:" />
+    <Text value="Année:" />
+    <Text value="Semaine:" />
+  </Element>
+  <Element type="TIMEEDIT TEXT" id="114">
+    <Text value="Heure:" />
+    <Text value="Minute:" />
+    <Text value="Seconde:" />
+    <Text value="Période:" />
+  </Element>
+  <Element type="DSTEDIT TEXT" id="115">
+    <Text value="Mois:" />
+    <Text value="Semaine:" />
+    <Text value="Jour:" />
+  </Element>
+  <Element type="SHORT RELIABILITY" id="116" filter="lon">
+    <Text value="Aucun défaut" />
+    <Text value="Pas de sonde" />
+    <Text value="Limite haute" />
+    <Text value="Limite basse" />
+    <Text value="Circuit ouvert" />
+    <Text value="Court circuit" />
+    <Text value="Pas de sortie" />
+    <Text value="Défaillance autre" />
+    <Text value="Erreur interne" />
+    <Text value="Erreur d'énum." />
+    <Text value="Erreur de config." />
+    <Text value="Réservé" />
+    <Text value="Panne de com." />
+    <Text value="Faute du membre" />
+  </Element>
+  <Element type="DEVICE INFO SCN" id="117">
+    <Text value="Appuyez sur la molette pour information" />
+    <Text value="Appuyez sur la molette pour plus d'information" />
+    <Text>
+      <Line value="Information" />
+      <Line value="des périphériques" />
+    </Text>
+    <Text value="Nom d'hôte" />
+    <Text value="Adresse IP (câblé)" />
+    <Text value="Masque sous-réseau" />
+    <Text value="Adresse MAC (câblé)" />
+    <Text value="Adresse IP (Wi-Fi)" />
+    <Text value="Masque sous-réseau" />
+    <Text value="Nom du contrôleur" />
+    <Text value="Nom du modèle" />
+    <Text value="Identifiant SSID" />
+  </Element>
+</Language>

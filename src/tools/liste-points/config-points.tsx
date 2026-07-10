@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
-import { IO_TYPES, type IoType, type ModelePoint } from "./model";
+import { IO_TYPES, signalLabel, signalsForType, type IoType, type ModelePoint } from "./model";
 import type { ModeleRow, PointCatalogueRow } from "./queries";
 import {
   enregistrerModele,
@@ -14,7 +14,7 @@ import {
   supprimerPointCatalogue,
 } from "./config-actions";
 
-type PointDraft = { id?: string; nom: string; type: string };
+type PointDraft = { id?: string; nom: string; type: string; signal: string };
 type ModeleDraft = { id?: string; nom: string; ordre: number; points: ModelePoint[] };
 
 export function ConfigPoints({
@@ -41,10 +41,10 @@ export function ConfigPoints({
     <div className="mx-auto max-w-6xl px-6 py-6 md:px-10">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-fg">Catalogue &amp; modèles</h1>
+          <h1 className="text-xl font-semibold text-fg">Points &amp; modèles</h1>
           <p className="mt-1 text-sm text-muted">
-            Points suggérés (nom → type d&apos;E/S) et modèles de saisie de l&apos;outil Liste de
-            points. Partagés entre tous.
+            Points suggérés (nom → type d&apos;E/S + signal) et modèles de saisie. Le signal
+            pré-affecte la bonne borne à l&apos;insertion. Partagés entre tous.
           </p>
         </div>
         {pending && <Loader2 className="mt-1 h-5 w-5 animate-spin text-muted" />}
@@ -54,9 +54,9 @@ export function ConfigPoints({
       <section className="mb-8">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-fg">
-            Catalogue de points <span className="text-subtle">({catalogue.length})</span>
+            Points <span className="text-subtle">({catalogue.length})</span>
           </h2>
-          <Button size="sm" variant="outline" onClick={() => setPtDraft({ nom: "", type: "AI" })}>
+          <Button size="sm" variant="outline" onClick={() => setPtDraft({ nom: "", type: "AI", signal: "0-10V" })}>
             <Plus className="h-4 w-4" /> Ajouter un point
           </Button>
         </div>
@@ -77,6 +77,7 @@ export function ConfigPoints({
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                 <th className="px-4 py-2.5 font-medium">Nom</th>
                 <th className="w-24 px-4 py-2.5 font-medium">Type</th>
+                <th className="w-32 px-4 py-2.5 font-medium">Signal / protocole</th>
                 <th className="w-24" />
               </tr>
             </thead>
@@ -84,7 +85,7 @@ export function ConfigPoints({
               {catalogue.map((c) =>
                 ptDraft?.id === c.id ? (
                   <tr key={c.id}>
-                    <td colSpan={3} className="p-0">
+                    <td colSpan={4} className="p-0">
                       <PointForm
                         draft={ptDraft}
                         setDraft={setPtDraft}
@@ -100,9 +101,23 @@ export function ConfigPoints({
                     <td className="px-4 py-2">
                       <TypeBadge type={c.type} />
                     </td>
+                    <td className="px-4 py-2 text-muted">
+                      {c.signal ? (
+                        signalLabel(c.signal)
+                      ) : (
+                        <span className="text-subtle">{c.type === "COM" ? "—" : "défaut"}</span>
+                      )}
+                    </td>
                     <td className="px-2 py-2">
                       <LigneActions
-                        onEdit={() => setPtDraft({ id: c.id, nom: c.nom, type: c.type })}
+                        onEdit={() =>
+                          setPtDraft({
+                            id: c.id,
+                            nom: c.nom,
+                            type: c.type,
+                            signal: c.signal ?? signalsForType(c.type)[0] ?? "",
+                          })
+                        }
                         onDelete={() => run(() => supprimerPointCatalogue(c.id))}
                       />
                     </td>
@@ -212,7 +227,32 @@ function PointForm({
       </label>
       <label className="block space-y-1">
         <span className="text-xs font-medium text-muted">Type</span>
-        <TypeSelect value={draft.type} onChange={(v) => setDraft({ ...draft, type: v })} />
+        <TypeSelect
+          value={draft.type}
+          onChange={(v) => {
+            // Réaligne le signal sur un défaut cohérent avec le nouveau type.
+            const sigs = signalsForType(v);
+            const signal = sigs.includes(draft.signal) ? draft.signal : sigs[0] ?? "";
+            setDraft({ ...draft, type: v, signal });
+          }}
+        />
+      </label>
+      <label className="block space-y-1">
+        <span className="text-xs font-medium text-muted">
+          {draft.type === "COM" ? "Protocole" : "Signal"}
+        </span>
+        <select
+          value={draft.signal}
+          onChange={(e) => setDraft({ ...draft, signal: e.target.value })}
+          className="h-9 w-40 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+        >
+          {draft.type === "COM" && <option value="">— aucun —</option>}
+          {signalsForType(draft.type).map((s) => (
+            <option key={s} value={s}>
+              {signalLabel(s)}
+            </option>
+          ))}
+        </select>
       </label>
       <div className="ml-auto flex gap-2">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={pending}>
@@ -252,7 +292,10 @@ function ModeleForm({
   const addPoint = (nom: string) => {
     const c = catalogue.find((x) => x.nom === nom);
     if (!c) return;
-    setDraft({ ...draft, points: [...draft.points, { nom: c.nom, type: c.type as IoType }] });
+    setDraft({
+      ...draft,
+      points: [...draft.points, { nom: c.nom, type: c.type as IoType, signal: c.signal ?? undefined }],
+    });
     setChoix("");
   };
   const move = (i: number, dir: -1 | 1) => {
@@ -306,6 +349,9 @@ function ModeleForm({
             <span className="w-5 text-right text-xs text-subtle">{i + 1}</span>
             <span className="text-fg">{p.nom}</span>
             <TypeBadge type={p.type} />
+            {p.signal && p.type !== "COM" && (
+              <span className="text-[11px] text-subtle">{signalLabel(p.signal)}</span>
+            )}
             <span className="ml-auto flex items-center gap-0.5">
               <IconBtn label="Monter" onClick={() => move(i, -1)} disabled={i === 0}>
                 <ArrowUp className="h-3.5 w-3.5" />

@@ -6,6 +6,8 @@
 > Branche de travail : `fusion-liste-affectation`. Voir aussi
 > [plan-fusion-liste-affectation.md](plan-fusion-liste-affectation.md) et
 > [A_FAIRE-base-materiel.md](A_FAIRE-base-materiel.md).
+>
+> 🆕 **Couche « Affaire » (pivot multi-outils) & multi-automate : [`AFFAIRES.md`](AFFAIRES.md).**
 
 ---
 
@@ -16,8 +18,9 @@ Stack : **Next.js 16** (App Router, RSC) · **PostgreSQL + Prisma 7** (client da
 `src/generated/prisma`, adaptateur `@prisma/adapter-pg`) · **Auth.js v5** (JWT,
 rôles ADMIN/MEMBRE) · **Tailwind v4** (tokens 3 étages) · Docker Compose.
 
-Les données sont **partagées** entre tous les collègues. La **base client**
-(`Client`) est le pivot : la fiche client agrège la production de tous les outils.
+Les données sont **partagées** entre tous les collègues. Deux **pivots** agrègent
+la production de tous les outils : le **client** (`Client`) et l'**affaire**
+(`Chantier`, 1 par n° Why — voir [`AFFAIRES.md`](AFFAIRES.md)).
 
 ### Les deux outils historiques ont fusionné
 
@@ -98,14 +101,15 @@ stocke **deux représentations liées** :
 
 | Modèle | Rôle |
 |---|---|
-| `User` | comptes (ADMIN/MEMBRE), bcrypt |
-| `Client` / `Chantier` | référentiel client partagé |
+| `User` | comptes (ADMIN/MEMBRE), bcrypt — **gérables** via `/configuration/utilisateurs` (ADMIN) |
+| `Client` | référentiel client partagé |
+| `Chantier` | **= « Affaire » : le pivot** (`numeroWhy @unique`, `etat` enum `EtatAffaire`) — voir [`AFFAIRES.md`](AFFAIRES.md) |
 | `PointsList` | **outil autonome (déprécié)** — conservé pour migration |
-| `PointCatalog` | catalogue de points partagé (nom → type) |
+| `PointCatalog` | catalogue de points partagé (nom → type ; COM porte un **protocole**) |
 | `Modele` | modèles de saisie (sections pré-remplies) — éditables |
 | `AutomateModele` | base matériel : automates (E/S intégrées, extensibilité, `maxModules`, `maxPoints`, `docUrl`, `modulesCompat`) |
 | `ModuleModele` | base matériel : modules (extension/communication/accessoire, `docUrl`) |
-| `AffectationProjet` | **le projet unifié** — `data` (JSON `Project`) + `clientId`/`numeroWhy` |
+| `AffectationProjet` | **un automate** — `data` (JSON `Project`) + `clientId`/`numeroWhy` + **`chantierId`** (rattachement Affaire) |
 
 Le `Project` complet (identification, automate, réseaux, `rows`, `points`,
 `modules`, suivi tests) est stocké en **JSON** dans `AffectationProjet.data`
@@ -173,11 +177,14 @@ automate si le besoin dépasse `maxPoints` ou `maxModules`.
 ## 7. Navigation / écrans de configuration
 
 Sidebar (`components/app-shell/sidebar.tsx`) :
-- **Outils** : Accueil · Projet GTB.
-- **Configuration** : Clients · Catalogue & modèles · Base matériel · Documentation.
+- **Outils** : Accueil · **Affaires** · Projet GTB.
+- **Configuration** : Clients · Catalogue & modèles · Base matériel · Documentation ·
+  **Utilisateurs** (ADMIN uniquement).
 
 Registre `src/tools/registry.ts` : une seule carte « Projet GTB ».
-Fiche client : un seul provider (`src/lib/clients/providers.ts`).
+Agrégation multi-outils : deux pivots, même patron `PROVIDERS` —
+**fiche client** (`src/lib/clients/providers.ts`) et **fiche affaire**
+(`src/lib/chantiers/providers.ts`, voir [`AFFAIRES.md`](AFFAIRES.md)).
 
 ---
 
@@ -233,13 +240,15 @@ client → `npm run db:generate` + redémarrer `next dev`) :
 
 ## 10. Reste à faire
 
+- **Multi-automate — brique 3** : livrables consolidés au niveau affaire (dossier
+  unique multi-automate + nomenclature/BOM cumulée) ; 1er outil satellite **GED
+  « Documents »** (backup `.gfx`, plans, schémas). Voir [`AFFAIRES.md`](AFFAIRES.md) §9.
 - **Phase 5.2 (destructif, à valider)** : retrait des routes `/outils/liste-points`,
   déplacement du code réutilisé sous `affectation-es/`/`lib/`, **drop de la table
   `PointsList`** (après confirmation que tout est migré en prod).
 - **Import GFX/PDF piloté par la base matériel** (aujourd'hui détection sur les
   constantes `catalog.ts`) — voir `A_FAIRE-base-materiel.md`.
 - **Esthétique de l'impression A4 de la liste** (signalée moins jolie).
-- Variantes matériel non ajoutées : ECY-TU-203, ECY-303-M3 déjà ajouté.
 
 ---
 
@@ -261,3 +270,24 @@ b4b64a6  Base matériel : alignement spec Distech + capacités + documentation
 
 `main` = état de référence d'avant fusion. La branche est poussée sur
 GitHub (`Gus0711/DumTools`) ; merge après validation de la Phase 5.2.
+
+### Travaux récents (session en cours, non encore commités)
+
+- **Gestion des utilisateurs** — écran `/configuration/utilisateurs` (ADMIN) :
+  créer / éditer (nom, rôle, actif) / réinitialiser le mot de passe. Pas de
+  suppression (désactivation via « actif »). Garde-fou anti-lockout (dernier
+  admin actif). `src/lib/users/`.
+- **Affectation « capability-aware » (triac)** — l'ECY-303 a 4 sorties **triac DO
+  (TOR seul)** : l'affectation ne place plus jamais un point **analogique** sur
+  un triac. Algo 2 passes (bornes dédiées puis universelles) dans
+  `affectation-auto.ts` (`capaciteBorne`/`pointEstTor` dans `model.ts`) +
+  **validation visuelle** (onglet Affectation + aperçu) des incompatibilités.
+- **Protocoles COM** — les points de communication portent un **protocole**
+  (`Modbus RTU/TCP · BACnet MS/TP · BACnet IP · M-Bus · LoRaWAN · KNX`) dans le
+  champ `signal` (`COM_SIGNALS` dans `liste-points/model.ts`) : menu dans la liste,
+  le catalogue et affichage à l'impression.
+- **Pivot « Affaire » + multi-automate** — la grosse addition : voir
+  [`AFFAIRES.md`](AFFAIRES.md). Identification (client, n° Why) déplacée sur
+  l'affaire ; N automates par affaire ; IP par port (`controller_ip_2`).
+  *(Un « plan réseau » partagé sur l'affaire a été essayé puis retiré : le réseau
+  reste géré par automate.)*

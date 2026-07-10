@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NLightDeviceTemplate name="nIO EZDL CCT">
+  <Features>
+    <Feature id="DimInLevel" />
+  </Features>
+  <Poles>
+    <Pole number="1">
+      <Features>
+        <Feature id="DimLevel" />
+        <Feature id="RelayState" />
+      </Features>
+    </Pole>
+  </Poles>
+</NLightDeviceTemplate>

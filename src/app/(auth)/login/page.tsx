@@ -10,8 +10,8 @@ export default function LoginPage() {
     <Card className="w-full max-w-sm p-8">
       <div className="mb-6 flex flex-col items-center text-center">
         <Image
-          src="/logo-dumortier.png"
-          alt="Dumortier — Groupe Fareneït"
+          src="/logo_DumTools.png"
+          alt="DumoTool — Groupe Fareneït"
           width={64}
           height={86}
           className="h-16 w-auto object-contain"

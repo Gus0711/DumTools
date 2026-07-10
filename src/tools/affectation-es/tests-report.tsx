@@ -4,6 +4,7 @@
 import type { ReactNode } from "react";
 import "./tests-print.css";
 import { moduleDisplayTitle, type Module, type Point, type Project } from "./model";
+import { signalLabel } from "@/tools/liste-points/model";
 
 const DISTECH_LOGO = "/materiel/distech-logo.png";
 const DUMORTIER_LOGO = "/logo-dumortier.png";
@@ -172,7 +173,8 @@ export function RapportTests({
           <tbody>
             {s.rows.map((p) => {
               const info = statutInfo(p.testStatus);
-              const signal = p.direction === "output" ? p.relay || p.signal || "" : p.signal || "";
+              const signal =
+                p.direction === "output" ? p.relay || signalLabel(p.signal) : signalLabel(p.signal);
               return (
                 <tr key={p.uid} className={info.cls}>
                   <td className="mono">{p.repere || "—"}</td>

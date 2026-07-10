@@ -1,0 +1,1023 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DrfSet scope="4" programId="80:00:83:05:01:00:00:00" name="FreeProgLM">
+  <TypeDefinitions originalCrc="7757AD27">
+    <NVTs>
+      <Type name="UNVT_internal_var_1to15" id="1" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="IntVar1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="IntVar2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="IntVar3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="IntVar4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="IntVar5" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="IntVar6" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="IntVar7" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="IntVar8" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="IntVar9" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="IntVar10" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="IntVar11" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="IntVar12" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="IntVar13" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="IntVar14" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="IntVar15" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_internal_var_16to30" id="2" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="IntVar16" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="IntVar17" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="IntVar18" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="IntVar19" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="IntVar20" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="IntVar21" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="IntVar22" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="IntVar23" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="IntVar24" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="IntVar25" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="IntVar26" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="IntVar27" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="IntVar28" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="IntVar29" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="IntVar30" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_internal_var_31to45" id="3" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="IntVar31" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="IntVar32" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="IntVar33" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="IntVar34" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="IntVar35" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="IntVar36" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="IntVar37" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="IntVar38" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="IntVar39" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="IntVar40" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="IntVar41" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="IntVar42" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="IntVar43" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="IntVar44" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="IntVar45" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_internal_var_46to50_const_1to10" id="4" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="IntVar46" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="IntVar47" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="IntVar48" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="IntVar49" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="IntVar50" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Const1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Const2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Const3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Const4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Const5" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="Const6" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="Const7" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="Const8" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="Const9" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="Const10" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_const_11to25" id="5" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="Const11" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Const12" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Const13" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Const14" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="Const15" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Const16" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Const17" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Const18" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Const19" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Const20" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="Const21" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="Const22" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="Const23" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="Const24" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="Const25" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_const_26to40" id="6" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="Const26" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Const27" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Const28" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Const29" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="Const30" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Const31" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Const32" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Const33" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Const34" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Const35" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="Const36" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="Const37" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="Const38" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="Const39" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="Const40" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_const_41to50" id="7" type="Struct" field="10" size="20">
+        <Nodes>
+          <Node name="Const41" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Const42" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Const43" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Const44" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="Const45" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Const46" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Const47" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Const48" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Const49" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Const50" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_input" id="8" type="Struct" field="12" size="24">
+        <Nodes>
+          <Node name="Input1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Input2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Input3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Input4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="Input5" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Input6" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Input7" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Input8" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Input9" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Input10" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="Input11" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="Input12" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_output" id="9" type="Struct" field="12" size="24">
+        <Nodes>
+          <Node name="Output1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Output2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Output3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Output4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="Output5" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Output6" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Output7" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Output8" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Output9" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Output10" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="Output11" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="Output12" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_mode_internal_val" id="10" type="Struct" field="85" size="11">
+        <Nodes>
+          <Node name="ModeVar1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" />
+          <Node name="ModeVar2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar8" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar9" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="ModeVar10" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar11" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar12" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar13" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar14" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar15" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar16" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar17" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="2" />
+          <Node name="ModeVar18" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar19" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar20" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar21" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar22" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar23" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar24" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar25" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="3" />
+          <Node name="ModeVar26" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar27" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar28" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar29" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar30" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar31" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar32" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar33" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="4" />
+          <Node name="ModeVar34" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar35" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar36" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar37" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar38" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar39" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar40" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar41" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="5" />
+          <Node name="ModeVar42" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar43" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar44" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar45" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar46" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar47" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar48" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar49" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="6" />
+          <Node name="ModeVar50" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput1" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput2" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput3" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput4" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput5" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput6" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput7" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="7" />
+          <Node name="ModeInput8" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput9" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput10" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput11" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput12" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeOutput1" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeOutput2" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeOutput3" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="8" />
+          <Node name="ModeOutput4" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput5" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput6" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput7" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput8" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput9" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput10" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput11" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="9" />
+          <Node name="ModeOutput12" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO1" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO2" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO3" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO4" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO5" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO6" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO7" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="10" />
+          <Node name="ModeCO8" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO9" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO10" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="Unused" type="BitField" bitSize="4" bitOffset="4" min="0" max="15" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_modify_internal_val" id="11" type="Struct" field="4" size="5">
+        <Nodes>
+          <Node name="IntValType" type="Enumeration" enumScope="4" enumIndex="1" fullEnumName="#8000830501000000[4].internal_val_t" enumName="internal_val_t" min="0" max="5" size="1" />
+          <Node name="Index" type="UnsignedShort" min="0" max="74" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="Mode" type="Enumeration" enumScope="4" enumIndex="2" fullEnumName="#8000830501000000[4].internal_val_mode_t" enumName="internal_val_mode_t" min="0" max="1" size="1" offset="2" />
+          <Node name="Value" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="3" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_CO_1to10_OS_1to4" id="12" type="Struct" field="14" size="28">
+        <Nodes>
+          <Node name="CO1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="CO2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="CO3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="CO4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="CO5" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="CO6" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="CO7" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="CO8" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="CO9" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="CO10" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="OS1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="OS2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="OS3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="OS4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_timer_1to15" id="13" type="Struct" field="15" size="30">
+        <Nodes>
+          <Node name="Timer1" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Timer2" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Timer3" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Timer4" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+          <Node name="Timer5" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="8" />
+          <Node name="Timer6" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="10" />
+          <Node name="Timer7" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="12" />
+          <Node name="Timer8" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="14" />
+          <Node name="Timer9" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="16" />
+          <Node name="Timer10" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="18" />
+          <Node name="Timer11" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="20" />
+          <Node name="Timer12" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="22" />
+          <Node name="Timer13" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="24" />
+          <Node name="Timer14" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="26" />
+          <Node name="Timer15" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_input13_16" id="14" type="Struct" field="4" size="8">
+        <Nodes>
+          <Node name="Input13" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" />
+          <Node name="Input14" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="2" />
+          <Node name="Input15" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="4" />
+          <Node name="Input16" type="SignedLong" min="-32768" max="32767" scaleA="1" scaleB="0" scaleC="0" size="2" offset="6" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_mode_internal_val2" id="15" type="Struct" field="88" size="11">
+        <Nodes>
+          <Node name="ModeVar1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" />
+          <Node name="ModeVar2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar8" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" />
+          <Node name="ModeVar9" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="ModeVar10" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar11" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar12" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar13" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar14" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar15" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar16" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="1" />
+          <Node name="ModeVar17" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="2" />
+          <Node name="ModeVar18" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar19" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar20" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar21" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar22" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar23" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar24" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="2" />
+          <Node name="ModeVar25" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="3" />
+          <Node name="ModeVar26" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar27" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar28" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar29" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar30" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar31" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar32" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="3" />
+          <Node name="ModeVar33" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="4" />
+          <Node name="ModeVar34" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar35" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar36" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar37" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar38" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar39" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar40" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="4" />
+          <Node name="ModeVar41" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="5" />
+          <Node name="ModeVar42" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar43" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar44" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar45" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar46" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar47" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar48" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="5" />
+          <Node name="ModeVar49" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="6" />
+          <Node name="ModeVar50" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput1" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput2" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput3" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput4" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput5" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput6" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="6" />
+          <Node name="ModeInput7" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="7" />
+          <Node name="ModeInput8" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput9" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput10" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput11" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput12" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput13" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput14" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="7" />
+          <Node name="ModeInput15" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="8" />
+          <Node name="ModeInput16" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput1" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput2" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput3" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput4" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput5" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput6" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="ModeOutput7" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="9" />
+          <Node name="ModeOutput8" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeOutput9" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeOutput10" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeOutput11" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeOutput12" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO1" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO2" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="9" />
+          <Node name="ModeCO3" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="10" />
+          <Node name="ModeCO4" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO5" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO6" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO7" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO8" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO9" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeCO10" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_hwout_ovr_1to12" id="16" type="Struct" field="24" size="24">
+        <Nodes>
+          <Node name="Mode1" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" />
+          <Node name="Value1" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="Mode2" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="2" />
+          <Node name="Value2" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="3" />
+          <Node name="Mode3" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="4" />
+          <Node name="Value3" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="5" />
+          <Node name="Mode4" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="6" />
+          <Node name="Value4" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="7" />
+          <Node name="Mode5" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="8" />
+          <Node name="Value5" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="9" />
+          <Node name="Mode6" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="10" />
+          <Node name="Value6" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="11" />
+          <Node name="Mode7" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="12" />
+          <Node name="Value7" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="13" />
+          <Node name="Mode8" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="14" />
+          <Node name="Value8" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="15" />
+          <Node name="Mode9" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="16" />
+          <Node name="Value9" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="17" />
+          <Node name="Mode10" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="18" />
+          <Node name="Value10" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="19" />
+          <Node name="Mode11" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="20" />
+          <Node name="Value11" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="21" />
+          <Node name="Mode12" type="Enumeration" enumScope="4" enumIndex="3" fullEnumName="#8000830501000000[4].hwout_ovr_t" enumName="hwout_ovr_t" min="0" max="2" size="1" offset="22" />
+          <Node name="Value12" type="SignedShort" min="0" max="120" scaleA="1" scaleB="0" scaleC="0" size="1" offset="23" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_wireless_input_1to14" id="17" type="Struct" field="28" size="30">
+        <Nodes>
+          <Node name="WrInput1" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" />
+          <Node name="WrInput2" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="2" />
+          <Node name="WrInput3" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="4" />
+          <Node name="WrInput4" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="6" />
+          <Node name="WrInput5" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="8" />
+          <Node name="WrInput6" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="10" />
+          <Node name="WrInput7" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="12" />
+          <Node name="WrInput8" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="14" />
+          <Node name="WrInput9" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="16" />
+          <Node name="WrInput10" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="18" />
+          <Node name="WrInput11" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="20" />
+          <Node name="WrInput12" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="22" />
+          <Node name="WrInput13" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="24" />
+          <Node name="WrInput14" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="26" />
+          <Node name="ModeWrInput1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeWrInput2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput8" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeWrInput9" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="29" />
+          <Node name="ModeWrInput10" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeWrInput11" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeWrInput12" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeWrInput13" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeWrInput14" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_constant_num_15to21" id="18" type="Struct" field="7" size="28">
+        <Nodes>
+          <Node name="ConstantNum15" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="ConstantNum16" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="ConstantNum17" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="ConstantNum18" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="ConstantNum19" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="ConstantNum20" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="ConstantNum21" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_constant_num_1to7" id="19" type="Struct" field="7" size="28">
+        <Nodes>
+          <Node name="ConstantNum1" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="ConstantNum2" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="ConstantNum3" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="ConstantNum4" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="ConstantNum5" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="ConstantNum6" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="ConstantNum7" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_constant_num_22to28" id="20" type="Struct" field="7" size="28">
+        <Nodes>
+          <Node name="ConstantNum22" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="ConstantNum23" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="ConstantNum24" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="ConstantNum25" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="ConstantNum26" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="ConstantNum27" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="ConstantNum28" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_constant_enum_1to31" id="21" type="Struct" field="31" size="31">
+        <Nodes>
+          <Node name="ConstantEnum1" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" />
+          <Node name="ConstantEnum2" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="ConstantEnum3" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="2" />
+          <Node name="ConstantEnum4" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="3" />
+          <Node name="ConstantEnum5" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="4" />
+          <Node name="ConstantEnum6" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="5" />
+          <Node name="ConstantEnum7" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="6" />
+          <Node name="ConstantEnum8" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="7" />
+          <Node name="ConstantEnum9" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="8" />
+          <Node name="ConstantEnum10" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="9" />
+          <Node name="ConstantEnum11" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="10" />
+          <Node name="ConstantEnum12" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="11" />
+          <Node name="ConstantEnum13" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="12" />
+          <Node name="ConstantEnum14" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="13" />
+          <Node name="ConstantEnum15" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="14" />
+          <Node name="ConstantEnum16" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="15" />
+          <Node name="ConstantEnum17" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="16" />
+          <Node name="ConstantEnum18" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="17" />
+          <Node name="ConstantEnum19" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="18" />
+          <Node name="ConstantEnum20" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="19" />
+          <Node name="ConstantEnum21" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="20" />
+          <Node name="ConstantEnum22" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="21" />
+          <Node name="ConstantEnum23" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="22" />
+          <Node name="ConstantEnum24" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="23" />
+          <Node name="ConstantEnum25" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="24" />
+          <Node name="ConstantEnum26" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="25" />
+          <Node name="ConstantEnum27" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="26" />
+          <Node name="ConstantEnum28" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="27" />
+          <Node name="ConstantEnum29" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ConstantEnum30" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="29" />
+          <Node name="ConstantEnum31" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="30" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_constant_num_8to14" id="22" type="Struct" field="7" size="28">
+        <Nodes>
+          <Node name="ConstantNum8" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="ConstantNum9" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="ConstantNum10" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="ConstantNum11" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="ConstantNum12" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="ConstantNum13" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="ConstantNum14" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_variable_num_1to7" id="23" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="VariableNum1" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="VariableNum2" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="VariableNum3" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="VariableNum4" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="VariableNum5" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="VariableNum6" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="VariableNum7" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeVariableNum1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeVariableNum2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_variable_num_8to14" id="24" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="VariableNum8" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="VariableNum9" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="VariableNum10" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="VariableNum11" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="VariableNum12" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="VariableNum13" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="VariableNum14" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeVariableNum8" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeVariableNum9" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum10" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum11" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum12" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum13" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum14" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_variable_num_15to21" id="25" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="VariableNum15" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="VariableNum16" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="VariableNum17" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="VariableNum18" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="VariableNum19" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="VariableNum20" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="VariableNum21" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeVariableNum15" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeVariableNum16" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum17" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum18" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum19" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum20" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum21" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_variable_num_22to28" id="26" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="VariableNum22" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="VariableNum23" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="VariableNum24" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="VariableNum25" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="VariableNum26" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="VariableNum27" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="VariableNum28" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeVariableNum22" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeVariableNum23" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum24" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum25" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum26" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum27" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum28" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_variable_num_29to35" id="27" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="VariableNum29" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="VariableNum30" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="VariableNum31" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="VariableNum32" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="VariableNum33" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="VariableNum34" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="VariableNum35" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeVariableNum29" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeVariableNum30" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum31" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum32" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum33" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum34" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableNum35" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_variable_enum_1to27" id="28" type="Struct" field="54" size="31">
+        <Nodes>
+          <Node name="VariableEnum1" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" />
+          <Node name="VariableEnum2" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="VariableEnum3" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="2" />
+          <Node name="VariableEnum4" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="3" />
+          <Node name="VariableEnum5" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="4" />
+          <Node name="VariableEnum6" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="5" />
+          <Node name="VariableEnum7" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="6" />
+          <Node name="VariableEnum8" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="7" />
+          <Node name="VariableEnum9" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="8" />
+          <Node name="VariableEnum10" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="9" />
+          <Node name="VariableEnum11" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="10" />
+          <Node name="VariableEnum12" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="11" />
+          <Node name="VariableEnum13" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="12" />
+          <Node name="VariableEnum14" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="13" />
+          <Node name="VariableEnum15" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="14" />
+          <Node name="VariableEnum16" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="15" />
+          <Node name="VariableEnum17" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="16" />
+          <Node name="VariableEnum18" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="17" />
+          <Node name="VariableEnum19" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="18" />
+          <Node name="VariableEnum20" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="19" />
+          <Node name="VariableEnum21" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="20" />
+          <Node name="VariableEnum22" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="21" />
+          <Node name="VariableEnum23" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="22" />
+          <Node name="VariableEnum24" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="23" />
+          <Node name="VariableEnum25" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="24" />
+          <Node name="VariableEnum26" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="25" />
+          <Node name="VariableEnum27" type="SignedShort" min="-128" max="127" scaleA="1" scaleB="0" scaleC="0" size="1" offset="26" />
+          <Node name="ModeVariableEnum1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="27" />
+          <Node name="ModeVariableEnum2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum8" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="27" />
+          <Node name="ModeVariableEnum9" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeVariableEnum10" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum11" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum12" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum13" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum14" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum15" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum16" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeVariableEnum17" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="29" />
+          <Node name="ModeVariableEnum18" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum19" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum20" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum21" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum22" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum23" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum24" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="29" />
+          <Node name="ModeVariableEnum25" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="30" />
+          <Node name="ModeVariableEnum26" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="30" />
+          <Node name="ModeVariableEnum27" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="30" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_hardware_input_1to7" id="29" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="HwInput1" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="HwInput2" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="HwInput3" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="HwInput4" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="HwInput5" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="HwInput6" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="HwInput7" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeHwInput1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeHwInput2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_hardware_input_8to14" id="30" type="Struct" field="14" size="29">
+        <Nodes>
+          <Node name="HwInput8" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="HwInput9" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="HwInput10" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="8" />
+          <Node name="HwInput11" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="12" />
+          <Node name="HwInput12" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="16" />
+          <Node name="HwInput13" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="20" />
+          <Node name="HwInput14" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="24" />
+          <Node name="ModeHwInput8" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="28" />
+          <Node name="ModeHwInput9" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput10" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput11" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput12" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput13" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+          <Node name="ModeHwInput14" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="28" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_hardware_input_15to16" id="31" type="Struct" field="17" size="21">
+        <Nodes>
+          <Node name="HwInput15" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+          <Node name="HwInput16" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="4" />
+          <Node name="ModeHwInput15" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="8" />
+          <Node name="ModeHwInput16" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="Unusedbits1" type="BitField" bitSize="6" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="8" />
+          <Node name="SpaceTemp" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="9" />
+          <Node name="Setpoint" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="11" />
+          <Node name="FanSpeed" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="13" />
+          <Node name="HVACmode" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="15" />
+          <Node name="SmInput5" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="17" />
+          <Node name="ModeSpaceTemp" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="19" />
+          <Node name="ModeSetpoint" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="19" />
+          <Node name="ModeFanSpeed" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="19" />
+          <Node name="ModeHVACmode" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="19" />
+          <Node name="ModeSmInput5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="19" />
+          <Node name="Unusedbits2" type="BitField" bitSize="3" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="19" />
+          <Node name="Unusedbits3" type="BitField" bitSize="8" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="20" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_smart_input_1to5" id="32" type="Struct" field="12" size="12">
+        <Nodes>
+          <Node name="SpaceTemp" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" />
+          <Node name="Setpoint" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="2" />
+          <Node name="FanSpeed" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="4" />
+          <Node name="HVACmode" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="6" />
+          <Node name="SmInput5" type="SignedLong" min="-327.68" max="327.67" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="8" />
+          <Node name="ModeSpaceTemp" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="10" />
+          <Node name="ModeSetpoint" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeFanSpeed" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeHVACmode" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="ModeSmInput5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="Unusedbits1" type="BitField" bitSize="3" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="10" />
+          <Node name="Unusedbits2" type="BitField" bitSize="8" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="11" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_hardware_output_1to12" id="33" type="Struct" field="24" size="26">
+        <Nodes>
+          <Node name="HwOutput1" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" />
+          <Node name="HwOutput2" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="2" />
+          <Node name="HwOutput3" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="4" />
+          <Node name="HwOutput4" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="6" />
+          <Node name="HwOutput5" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="8" />
+          <Node name="HwOutput6" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="10" />
+          <Node name="HwOutput7" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="12" />
+          <Node name="HwOutput8" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="14" />
+          <Node name="HwOutput9" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="16" />
+          <Node name="HwOutput10" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="18" />
+          <Node name="HwOutput11" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="20" />
+          <Node name="HwOutput12" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" size="2" offset="22" />
+          <Node name="ModeHwOutput1" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="24" />
+          <Node name="ModeHwOutput2" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput3" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput4" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput5" type="BitField" bitSize="1" bitOffset="4" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput6" type="BitField" bitSize="1" bitOffset="5" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput7" type="BitField" bitSize="1" bitOffset="6" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput8" type="BitField" bitSize="1" bitOffset="7" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="24" />
+          <Node name="ModeHwOutput9" type="BitField" bitSize="1" bitOffset="0" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="1" offset="25" />
+          <Node name="ModeHwOutput10" type="BitField" bitSize="1" bitOffset="1" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="25" />
+          <Node name="ModeHwOutput11" type="BitField" bitSize="1" bitOffset="2" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="25" />
+          <Node name="ModeHwOutput12" type="BitField" bitSize="1" bitOffset="3" min="0" max="1" scaleA="1" scaleB="0" scaleC="0" size="0" offset="25" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_modify_val" id="34" type="Struct" field="4" size="7">
+        <Nodes>
+          <Node name="IntValType" type="Enumeration" enumScope="4" enumIndex="4" fullEnumName="#8000830501000000[4].internal_val2_t" enumName="internal_val2_t" min="0" max="5" size="1" />
+          <Node name="Index" type="UnsignedShort" min="1" max="35" scaleA="1" scaleB="0" scaleC="0" size="1" offset="1" />
+          <Node name="Mode" type="Enumeration" enumScope="4" enumIndex="2" fullEnumName="#8000830501000000[4].internal_val_mode_t" enumName="internal_val_mode_t" min="0" max="1" size="1" offset="2" />
+          <Node name="Value" type="SignedQuad" min="-83886.08" max="83886.07" scaleA="1" scaleB="-2" scaleC="0" size="4" offset="3" />
+        </Nodes>
+      </Type>
+      <Type name="UNVT_flow_calib" id="35" type="Struct" field="3" nameScope="3" nameId="107" size="5">
+        <Nodes>
+          <Node name="Command" type="Enumeration" enumScope="4" enumIndex="5" fullEnumName="#8000830501000000[4].flow_calib_t" enumName="flow_calib_t" min="-1" max="6" nameScope="3" nameId="108" size="1" />
+          <Node name="Percent" type="SignedLong" min="0" max="100" scaleA="1" scaleB="-2" scaleC="0" nameScope="3" nameId="109" size="2" offset="1" />
+          <Node name="Flow" type="Reference" refTypeIndex="15" fullTypeName="SNVT_flow" nameId="47" unitId="48" size="2" offset="3" />
+        </Nodes>
+      </Type>
+    </NVTs>
+    <CPTs>
+      <Type name="UCPTfpValidIOType" id="1" type="Struct" field="2" size="36">
+        <Nodes>
+          <Node name="Input" type="Array" dim="12" innerType="Struct" innerSize="2" field="16" size="24" />
+          <Node name="Output" type="Array" dim="12" innerType="Struct" innerSize="1" field="8" size="12" offset="24" />
+        </Nodes>
+      </Type>
+      <Type name="UCPT_constant_num_1to7" id="2" type="Reference" refTypeScope="4" refTypeIndex="19" fullTypeName="#8000830501000000[4].UNVT_constant_num_1to7" size="28" />
+      <Type name="UCPT_constant_num_8to14" id="3" type="Reference" refTypeScope="4" refTypeIndex="22" fullTypeName="#8000830501000000[4].UNVT_constant_num_8to14" size="28" />
+      <Type name="UCPT_constant_num_15to21" id="4" type="Reference" refTypeScope="4" refTypeIndex="18" fullTypeName="#8000830501000000[4].UNVT_constant_num_15to21" size="28" />
+      <Type name="UCPT_constant_num_22to28" id="5" type="Reference" refTypeScope="4" refTypeIndex="20" fullTypeName="#8000830501000000[4].UNVT_constant_num_22to28" size="28" />
+      <Type name="UCPT_constant_enum_1to31" id="6" type="Reference" refTypeScope="4" refTypeIndex="21" fullTypeName="#8000830501000000[4].UNVT_constant_enum_1to31" size="31" />
+      <Type name="UCPTkfactor" id="7" type="SignedQuad" min="0" max="10000" scaleA="1" scaleB="-2" scaleC="0" size="4" />
+    </CPTs>
+    <Enums>
+      <Enum name="internal_val_t" id="1">
+        <Members>
+          <Member name="TYPE_NUL">-1</Member>
+          <Member name="VARIABLE">0</Member>
+          <Member name="CONSTANT">1</Member>
+          <Member name="INPUT">2</Member>
+          <Member name="OUTPUT">3</Member>
+          <Member name="CONTROLLER">4</Member>
+          <Member name="TIMER">5</Member>
+        </Members>
+      </Enum>
+      <Enum name="internal_val_mode_t" id="2">
+        <Members>
+          <Member name="MODE_NUL">-1</Member>
+          <Member name="AUTOMATIC">0</Member>
+          <Member name="MANUAL">1</Member>
+        </Members>
+      </Enum>
+      <Enum name="hwout_ovr_t" id="3">
+        <Members>
+          <Member name="MEM_NUL">-1</Member>
+          <Member name="OFF">0</Member>
+          <Member name="AUTO">1</Member>
+          <Member name="ON">2</Member>
+        </Members>
+      </Enum>
+      <Enum name="internal_val2_t" id="4">
+        <Members>
+          <Member name="TYPE_NUL">-1</Member>
+          <Member name="HW_INPUT">0</Member>
+          <Member name="WR_INPUT">1</Member>
+          <Member name="SM_INPUT">2</Member>
+          <Member name="HW_OUTPUT">3</Member>
+          <Member name="NUM_VARIABLE">4</Member>
+          <Member name="ENUM_VARIABLE">5</Member>
+        </Members>
+      </Enum>
+      <Enum name="flow_calib_t" id="5">
+        <Members>
+          <Member name="NULL">-1</Member>
+          <Member name="NORMAL_OPERATION">0</Member>
+          <Member name="GOTO_PERCENT">1</Member>
+          <Member name="GOTO_FLOW">2</Member>
+          <Member name="DO_ZERO_CALIB">3</Member>
+          <Member name="DO_HI_POINT_CALIB">4</Member>
+          <Member name="RESET_CALIBRATION">5</Member>
+          <Member name="DO_DAMPER_INIT">6</Member>
+        </Members>
+      </Enum>
+    </Enums>
+  </TypeDefinitions>
+  <FormatDefinitions originalCrc="BCB38B6B">
+    <Formats typeName="UNVT_internal_var_1to15">
+      <Format name="UNVT_internal_var_1to15" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,IntVar1,IntVar2,IntVar3,IntVar4,IntVar5,IntVar6,IntVar7,IntVar8,IntVar9,IntVar10,IntVar11,IntVar12,IntVar13,IntVar14,IntVar15)" />
+    </Formats>
+    <Formats typeName="UNVT_internal_var_16to30">
+      <Format name="UNVT_internal_var_16to30" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,IntVar16,IntVar17,IntVar18,IntVar19,IntVar20,IntVar21,IntVar22,IntVar23,IntVar24,IntVar25,IntVar26,IntVar27,IntVar28,IntVar29,IntVar30)" />
+    </Formats>
+    <Formats typeName="UNVT_internal_var_31to45">
+      <Format name="UNVT_internal_var_31to45" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,IntVar31,IntVar32,IntVar33,IntVar34,IntVar35,IntVar36,IntVar37,IntVar38,IntVar39,IntVar40,IntVar41,IntVar42,IntVar43,IntVar44,IntVar45)" />
+    </Formats>
+    <Formats typeName="UNVT_internal_var_46to50_const_1to10">
+      <Format name="UNVT_internal_var_46to50_const_1to10" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,IntVar46,IntVar47,IntVar48,IntVar49,IntVar50,Const1,Const2,Const3,Const4,Const5,Const6,Const7,Const8,Const9,Const10)" />
+    </Formats>
+    <Formats typeName="UNVT_const_11to25">
+      <Format name="UNVT_const_11to25" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,Const11,Const12,Const13,Const14,Const15,Const16,Const17,Const18,Const19,Const20,Const21,Const22,Const23,Const24,Const25)" />
+    </Formats>
+    <Formats typeName="UNVT_const_26to40">
+      <Format name="UNVT_const_26to40" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,Const26,Const27,Const28,Const29,Const30,Const31,Const32,Const33,Const34,Const35,Const36,Const37,Const38,Const39,Const40)" />
+    </Formats>
+    <Formats typeName="UNVT_const_41to50">
+      <Format name="UNVT_const_41to50" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d&quot;,Const41,Const42,Const43,Const44,Const45,Const46,Const47,Const48,Const49,Const50)" />
+    </Formats>
+    <Formats typeName="UNVT_input">
+      <Format name="UNVT_input" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d&quot;,Input1,Input2,Input3,Input4,Input5,Input6,Input7,Input8,Input9,Input10,Input11,Input12)" />
+    </Formats>
+    <Formats typeName="UNVT_output">
+      <Format name="UNVT_output" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d&quot;,Output1,Output2,Output3,Output4,Output5,Output6,Output7,Output8,Output9,Output10,Output11,Output12)" />
+    </Formats>
+    <Formats typeName="UNVT_mode_internal_val">
+      <Format name="UNVT_mode_internal_val" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,ModeVar1,ModeVar2,ModeVar3,ModeVar4,ModeVar5,ModeVar6,ModeVar7,ModeVar8,ModeVar9,ModeVar10,ModeVar11,ModeVar12,ModeVar13,ModeVar14,ModeVar15,ModeVar16,ModeVar17,ModeVar18,ModeVar19,ModeVar20,ModeVar21,ModeVar22,ModeVar23,ModeVar24,ModeVar25,ModeVar26,ModeVar27,ModeVar28,ModeVar29,ModeVar30,ModeVar31,ModeVar32,ModeVar33,ModeVar34,ModeVar35,ModeVar36,ModeVar37,ModeVar38,ModeVar39,ModeVar40,ModeVar41,ModeVar42,ModeVar43,ModeVar44,ModeVar45,ModeVar46,ModeVar47,ModeVar48,ModeVar49,ModeVar50,ModeInput1,ModeInput2,ModeInput3,ModeInput4,ModeInput5,ModeInput6,ModeInput7,ModeInput8,ModeInput9,ModeInput10,ModeInput11,ModeInput12,ModeOutput1,ModeOutput2,ModeOutput3,ModeOutput4,ModeOutput5,ModeOutput6,ModeOutput7,ModeOutput8,ModeOutput9,ModeOutput10,ModeOutput11,ModeOutput12,ModeCO1,ModeCO2,ModeCO3,ModeCO4,ModeCO5,ModeCO6,ModeCO7,ModeCO8,ModeCO9,ModeCO10,Unused)" />
+    </Formats>
+    <Formats typeName="UNVT_modify_internal_val">
+      <Format name="UNVT_modify_internal_val" spec="text(&quot;%m %d %m %d&quot;,IntValType,Index,Mode,Value)" />
+    </Formats>
+    <Formats typeName="UNVT_CO_1to10_OS_1to4">
+      <Format name="UNVT_CO_1to10_OS_1to4" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,CO1,CO2,CO3,CO4,CO5,CO6,CO7,CO8,CO9,CO10,OS1,OS2,OS3,OS4)" />
+    </Formats>
+    <Formats typeName="UNVT_timer_1to15">
+      <Format name="UNVT_timer_1to15" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,Timer1,Timer2,Timer3,Timer4,Timer5,Timer6,Timer7,Timer8,Timer9,Timer10,Timer11,Timer12,Timer13,Timer14,Timer15)" />
+    </Formats>
+    <Formats typeName="UNVT_input13_16">
+      <Format name="UNVT_input13_16" spec="text(&quot;%d %d %d %d&quot;, Input13,Input14,Input15,Input16)" />
+    </Formats>
+    <Formats typeName="UNVT_mode_internal_val2">
+      <Format name="UNVT_mode_internal_val2" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;, ModeVar1,ModeVar2,ModeVar3,ModeVar4,ModeVar5,ModeVar6,ModeVar7,ModeVar8,ModeVar9,ModeVar10,ModeVar11,ModeVar12,ModeVar13,ModeVar14,ModeVar15,ModeVar16,ModeVar17,ModeVar18,ModeVar19,ModeVar20,ModeVar21,ModeVar22,ModeVar23,ModeVar24,ModeVar25,ModeVar26,ModeVar27,ModeVar28,ModeVar29,ModeVar30,ModeVar31,ModeVar32,ModeVar33,ModeVar34,ModeVar35,ModeVar36,ModeVar37,ModeVar38,ModeVar39,ModeVar40,ModeVar41,ModeVar42,ModeVar43,ModeVar44,ModeVar45,ModeVar46,ModeVar47,ModeVar48,ModeVar49,ModeVar50,ModeInput1,ModeInput2,ModeInput3,ModeInput4,ModeInput5,ModeInput6,ModeInput7,ModeInput8,ModeInput9,ModeInput10,ModeInput11,ModeInput12,ModeInput13,ModeInput14,ModeInput15,ModeInput16,ModeOutput1,ModeOutput2,ModeOutput3,ModeOutput4,ModeOutput5,ModeOutput6,ModeOutput7,ModeOutput8,ModeOutput9,ModeOutput10,ModeOutput11,ModeOutput12,ModeCO1,ModeCO2,ModeCO3,ModeCO4,ModeCO5,ModeCO6,ModeCO7,ModeCO8,ModeCO9,ModeCO10)" />
+    </Formats>
+    <Formats typeName="UNVT_hwout_ovr_1to12">
+      <Format name="UNVT_hwout_ovr_1to12" spec="text(&quot;%m %d %m %d %m %d %m %d %m %d %m %d %m %d %m %d %m %d %m %d %m %d %m %d&quot;, Mode1,Value1,Mode2,Value2,Mode3,Value3,Mode4,Value4,Mode5,Value5,Mode6,Value6,Mode7,Value7,Mode8,Value8,Mode9,Value9,Mode10,Value10,Mode11,Value11,Mode12,Value12)" />
+    </Formats>
+    <Formats typeName="UNVT_wireless_input_1to14">
+      <Format name="UNVT_wireless_input_1to14" spec="text(&quot;%f %f %f %f %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;, WrInput1,WrInput2,WrInput3,WrInput4,WrInput5,WrInput6,WrInput7,WrInput8,WrInput9,WrInput10,WrInput11,WrInput12,WrInput13,WrInput14,ModeWrInput1,ModeWrInput2,ModeWrInput3,ModeWrInput4,ModeWrInput5,ModeWrInput6,ModeWrInput7,ModeWrInput8,ModeWrInput9,ModeWrInput10,ModeWrInput11,ModeWrInput12,ModeWrInput13,ModeWrInput14)" />
+    </Formats>
+    <Formats typeName="UNVT_constant_num_15to21">
+      <Format name="UNVT_constant_num_15to21" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum15,ConstantNum16,ConstantNum17,ConstantNum18,ConstantNum19,ConstantNum20,ConstantNum21)" />
+    </Formats>
+    <Formats typeName="UNVT_constant_num_1to7">
+      <Format name="UNVT_constant_num_1to7" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum1,ConstantNum2,ConstantNum3,ConstantNum4,ConstantNum5,ConstantNum6,ConstantNum7)" />
+    </Formats>
+    <Formats typeName="UNVT_constant_num_22to28">
+      <Format name="UNVT_constant_num_22to28" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum22,ConstantNum23,ConstantNum24,ConstantNum25,ConstantNum26,ConstantNum27,ConstantNum28)" />
+    </Formats>
+    <Formats typeName="UNVT_constant_enum_1to31">
+      <Format name="UNVT_constant_enum_1to31" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;, ConstantEnum1,ConstantEnum2,ConstantEnum3,ConstantEnum4,ConstantEnum5,ConstantEnum6,ConstantEnum7,ConstantEnum8,ConstantEnum9,ConstantEnum10,ConstantEnum11,ConstantEnum12,ConstantEnum13,ConstantEnum14,ConstantEnum15,ConstantEnum16,ConstantEnum17,ConstantEnum18,ConstantEnum19,ConstantEnum20,ConstantEnum21,ConstantEnum22,ConstantEnum23,ConstantEnum24,ConstantEnum25,ConstantEnum26,ConstantEnum27,ConstantEnum28,ConstantEnum29,ConstantEnum30,ConstantEnum31)" />
+    </Formats>
+    <Formats typeName="UNVT_constant_num_8to14">
+      <Format name="UNVT_constant_num_8to14" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum8,ConstantNum9,ConstantNum10,ConstantNum11,ConstantNum12,ConstantNum13,ConstantNum14)" />
+    </Formats>
+    <Formats typeName="UNVT_variable_num_1to7">
+      <Format name="UNVT_variable_num_1to7" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, VariableNum1,VariableNum2,VariableNum3,VariableNum4,VariableNum5,VariableNum6,VariableNum7,ModeVariableNum1,ModeVariableNum2,ModeVariableNum3,ModeVariableNum4,ModeVariableNum5,ModeVariableNum6,ModeVariableNum7)" />
+    </Formats>
+    <Formats typeName="UNVT_variable_num_8to14">
+      <Format name="UNVT_variable_num_8to14" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, VariableNum8,VariableNum9,VariableNum10,VariableNum11,VariableNum12,VariableNum13,VariableNum14,ModeVariableNum8,ModeVariableNum9,ModeVariableNum10,ModeVariableNum11,ModeVariableNum12,ModeVariableNum13,ModeVariableNum14)" />
+    </Formats>
+    <Formats typeName="UNVT_variable_num_15to21">
+      <Format name="UNVT_variable_num_15to21" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, VariableNum15,VariableNum16,VariableNum17,VariableNum18,VariableNum19,VariableNum20,VariableNum21,ModeVariableNum15,ModeVariableNum16,ModeVariableNum17,ModeVariableNum18,ModeVariableNum19,ModeVariableNum20,ModeVariableNum21)" />
+    </Formats>
+    <Formats typeName="UNVT_variable_num_22to28">
+      <Format name="UNVT_variable_num_22to28" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, VariableNum22,VariableNum23,VariableNum24,VariableNum25,VariableNum26,VariableNum27,VariableNum28,ModeVariableNum22,ModeVariableNum23,ModeVariableNum24,ModeVariableNum25,ModeVariableNum26,ModeVariableNum27,ModeVariableNum28)" />
+    </Formats>
+    <Formats typeName="UNVT_variable_num_29to35">
+      <Format name="UNVT_variable_num_29to35" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, VariableNum29,VariableNum30,VariableNum31,VariableNum32,VariableNum33,VariableNum34,VariableNum35,ModeVariableNum29,ModeVariableNum30,ModeVariableNum31,ModeVariableNum32,ModeVariableNum33,ModeVariableNum34,ModeVariableNum35)" />
+    </Formats>
+    <Formats typeName="UNVT_variable_enum_1to27">
+      <Format name="UNVT_variable_enum_1to27" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;, VariableEnum1,VariableEnum2,VariableEnum3,VariableEnum4,VariableEnum5,VariableEnum6,VariableEnum7,VariableEnum8,VariableEnum9,VariableEnum10,VariableEnum11,VariableEnum12,VariableEnum13,VariableEnum14,VariableEnum15,VariableEnum16,VariableEnum17,VariableEnum18,VariableEnum19,VariableEnum20,VariableEnum21,VariableEnum22,VariableEnum23,VariableEnum24,VariableEnum25,VariableEnum26,VariableEnum27,ModeVariableEnum1,ModeVariableEnum2,ModeVariableEnum3,ModeVariableEnum4,ModeVariableEnum5,ModeVariableEnum6,ModeVariableEnum7,ModeVariableEnum8,ModeVariableEnum9,ModeVariableEnum10,ModeVariableEnum11,ModeVariableEnum12,ModeVariableEnum13,ModeVariableEnum14,ModeVariableEnum15,ModeVariableEnum16,ModeVariableEnum17,ModeVariableEnum18,ModeVariableEnum19,ModeVariableEnum20,ModeVariableEnum21,ModeVariableEnum22,ModeVariableEnum23,ModeVariableEnum24,ModeVariableEnum25,ModeVariableEnum26,ModeVariableEnum27)" />
+    </Formats>
+    <Formats typeName="UNVT_hardware_input_1to7">
+      <Format name="UNVT_hardware_input_1to7" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, HwInput1,HwInput2,HwInput3,HwInput4,HwInput5,HwInput6,HwInput7,ModeHwInput1,ModeHwInput2,ModeHwInput3,ModeHwInput4,ModeHwInput5,ModeHwInput6,ModeHwInput7)" />
+      <Format name="UNVT_hardware_input_1to7#2" spec="text(&quot;%f %f %d %d&quot;, HwInput1,HwInput2,ModeHwInput1,ModeHwInput2)" />
+      <Format name="UNVT_hardware_input_1to7#4" spec="text(&quot;%f %f %f %f %d %d %d %d&quot;, HwInput1,HwInput2,HwInput3,HwInput4,ModeHwInput1,ModeHwInput2,ModeHwInput3,ModeHwInput4)" />
+      <Format name="UNVT_hardware_input_1to7#6" spec="text(&quot;%f %f %f %f %f %f %d %d %d %d %d %d&quot;, HwInput1,HwInput2,HwInput3,HwInput4,HwInput5,HwInput6,ModeHwInput1,ModeHwInput2,ModeHwInput3,ModeHwInput4,ModeHwInput5,ModeHwInput6)" />
+    </Formats>
+    <Formats typeName="UNVT_hardware_input_8to14">
+      <Format name="UNVT_hardware_input_8to14" spec="text(&quot;%f %f %f %f %f %f %f %d %d %d %d %d %d %d&quot;, HwInput8,HwInput9,HwInput10,HwInput11,HwInput12,HwInput13,HwInput14,ModeHwInput8,ModeHwInput9,ModeHwInput10,ModeHwInput11,ModeHwInput12,ModeHwInput13,ModeHwInput14)" />
+      <Format name="UNVT_hardware_input_8to14#10" spec="text(&quot;%f %f %f  %d %d %d &quot;, HwInput8,HwInput9,HwInput10,ModeHwInput8,ModeHwInput9,ModeHwInput10)" />
+      <Format name="UNVT_hardware_input_8to14#12" spec="text(&quot;%f %f %f %f %f %d %d %d %d %d &quot;, HwInput8,HwInput9,HwInput10,HwInput11,HwInput12,,ModeHwInput8,ModeHwInput9,ModeHwInput10,ModeHwInput11,ModeHwInput12)" />
+    </Formats>
+    <Formats typeName="UNVT_hardware_input_15to16">
+      <Format name="UNVT_hardware_input_15to16" spec="text(&quot;%f %f %f %f %f %f %d %d %d %d %d %d&quot;, HwInput15,HwInput16,SpaceTemp,Setpoint,FanSpeed,HVACmode,ModeHwInput15,ModeHwInput16,ModeSpaceTemp,ModeSetpoint,ModeFanSpeed,ModeHVACmode)" />
+    </Formats>
+    <Formats typeName="UNVT_smart_input_1to5">
+      <Format name="UNVT_smart_input_1to5" spec="text(&quot;%f %f %f %f %d %d %d %d&quot;, SpaceTemp,Setpoint,FanSpeed,HVACmode,ModeSpaceTemp,ModeSetpoint,ModeFanSpeed,ModeHVACmode)" />
+    </Formats>
+    <Formats typeName="UNVT_hardware_output_1to12">
+      <Format name="UNVT_hardware_output_1to12" spec="text(&quot;%f %f %f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d %d %d&quot;, HwOutput1,HwOutput2,HwOutput3,HwOutput4,HwOutput5,HwOutput6,HwOutput7,HwOutput8,HwOutput9,HwOutput10,HwOutput11,HwOutput12,ModeHwOutput1,ModeHwOutput2,ModeHwOutput3,ModeHwOutput4,ModeHwOutput5,ModeHwOutput6,ModeHwOutput7,ModeHwOutput8,ModeHwOutput9,ModeHwOutput10,ModeHwOutput11,ModeHwOutput12)" />
+      <Format name="UNVT_hardware_output_1to12#10" spec="text(&quot;%f %f %f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d %d %d&quot;, HwOutput1,HwOutput2,HwOutput3,HwOutput4,HwOutput5,HwOutput6,HwOutput7,HwOutput8,HwOutput9,HwOutput10,ModeHwOutput1,ModeHwOutput2,ModeHwOutput3,ModeHwOutput4,ModeHwOutput5,ModeHwOutput6,ModeHwOutput7,ModeHwOutput8,ModeHwOutput9,ModeHwOutput10)" />
+      <Format name="UNVT_hardware_output_1to12#2" spec="text(&quot;%f %f %d %d&quot;, HwOutput1,HwOutput2,ModeHwOutput1,ModeHwOutput2)" />
+      <Format name="UNVT_hardware_output_1to12#6" spec="text(&quot;%f %f %f %f %f %f %d %d %d %d %d %d&quot;, HwOutput1,HwOutput2,HwOutput3,HwOutput4,HwOutput5,HwOutput6,,ModeHwOutput1,ModeHwOutput2,ModeHwOutput3,ModeHwOutput4,ModeHwOutput5,ModeHwOutput6)" />
+      <Format name="UNVT_hardware_output_1to12#8" spec="text(&quot;%f %f %f %f %f %f %f %f %d %d %d %d %d %d %d %d&quot;, HwOutput1,HwOutput2,HwOutput3,HwOutput4,HwOutput5,HwOutput6,HwOutput7,HwOutput8,ModeHwOutput1,ModeHwOutput2,ModeHwOutput3,ModeHwOutput4,ModeHwOutput5,ModeHwOutput6,ModeHwOutput7,ModeHwOutput8)" />
+    </Formats>
+    <Formats typeName="UNVT_modify_val">
+      <Format name="UNVT_modify_val" spec="text(&quot;%m %d %m %f&quot;, IntValType,Index,Mode,Value)" />
+    </Formats>
+    <Formats typeName="UNVT_flow_calib">
+      <Format name="UNVT_flow_calib" spec="text(&quot;%m %d %d&quot;, Command,Percent,Flow)" />
+      <Format name="UNVT_flow_calib#SI" spec="text(&quot;%m %f %d&quot;, Command,Percent,Flow)" />
+      <Format name="UNVT_flow_calib#SI_m3h" spec="text(&quot;%m %f %d&quot;, Command,Percent,Flow*3.6+0)" />
+      <Format name="UNVT_flow_calib#US" spec="text(&quot;%m %f %d&quot;, Command,Percent,Flow*2.1189)" />
+    </Formats>
+    <Formats typeName="UCPTfpValidIOType">
+      <Format name="UCPTfpValidIOType" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;,Input[0].Thermistor10K,Input[0].Thermistor1K,Input[0].Sensor4to20mA,Input[0].Sensor0to10V,Input[0].Digital,Input[0].PulseCount,Input[0].IsVAV,Input[0].PT100,Input[0].IsECPVAV,Input[0].SqrtEnable,Input[0].IsECP500,Input[0].SupportHwOvr,Input[0].FilterRTD1K,Input[0].Reserved8,Input[0].Reserved9,Input[0].Reserved10,Input[1].Thermistor10K,Input[1].Thermistor1K,Input[1].Sensor4to20mA,Input[1].Sensor0to10V,Input[1].Digital,Input[1].PulseCount,Input[1].IsVAV,Input[1].PT100,Input[1].IsECPVAV,Input[1].SqrtEnable,Input[1].IsECP500,Input[1].SupportHwOvr,Input[1].FilterRTD1K,Input[1].Reserved8,Input[1].Reserved9,Input[1].Reserved10,Input[2].Thermistor10K,Input[2].Thermistor1K,Input[2].Sensor4to20mA,Input[2].Sensor0to10V,Input[2].Digital,Input[2].PulseCount,Input[2].IsVAV,Input[2].PT100,Input[2].IsECPVAV,Input[2].SqrtEnable,Input[2].IsECP500,Input[2].SupportHwOvr,Input[2].FilterRTD1K,Input[2].Reserved8,Input[2].Reserved9,Input[2].Reserved10,Input[3].Thermistor10K,Input[3].Thermistor1K,Input[3].Sensor4to20mA,Input[3].Sensor0to10V,Input[3].Digital,Input[3].PulseCount,Input[3].IsVAV,Input[3].PT100,Input[3].IsECPVAV,Input[3].SqrtEnable,Input[3].IsECP500,Input[3].SupportHwOvr,Input[3].FilterRTD1K,Input[3].Reserved8,Input[3].Reserved9,Input[3].Reserved10,Input[4].Thermistor10K,Input[4].Thermistor1K,Input[4].Sensor4to20mA,Input[4].Sensor0to10V,Input[4].Digital,Input[4].PulseCount,Input[4].IsVAV,Input[4].PT100,Input[4].IsECPVAV,Input[4].SqrtEnable,Input[4].IsECP500,Input[4].SupportHwOvr,Input[4].FilterRTD1K,Input[4].Reserved8,Input[4].Reserved9,Input[4].Reserved10,Input[5].Thermistor10K,Input[5].Thermistor1K,Input[5].Sensor4to20mA,Input[5].Sensor0to10V,Input[5].Digital,Input[5].PulseCount,Input[5].IsVAV,Input[5].PT100,Input[5].IsECPVAV,Input[5].SqrtEnable,Input[5].IsECP500,Input[5].SupportHwOvr,Input[5].FilterRTD1K,Input[5].Reserved8,Input[5].Reserved9,Input[5].Reserved10,Input[6].Thermistor10K,Input[6].Thermistor1K,Input[6].Sensor4to20mA,Input[6].Sensor0to10V,Input[6].Digital,Input[6].PulseCount,Input[6].IsVAV,Input[6].PT100,Input[6].IsECPVAV,Input[6].SqrtEnable,Input[6].IsECP500,Input[6].SupportHwOvr,Input[6].FilterRTD1K,Input[6].Reserved8,Input[6].Reserved9,Input[6].Reserved10,Input[7].Thermistor10K,Input[7].Thermistor1K,Input[7].Sensor4to20mA,Input[7].Sensor0to10V,Input[7].Digital,Input[7].PulseCount,Input[7].IsVAV,Input[7].PT100,Input[7].IsECPVAV,Input[7].SqrtEnable,Input[7].IsECP500,Input[7].SupportHwOvr,Input[7].FilterRTD1K,Input[7].Reserved8,Input[7].Reserved9,Input[7].Reserved10,Input[8].Thermistor10K,Input[8].Thermistor1K,Input[8].Sensor4to20mA,Input[8].Sensor0to10V,Input[8].Digital,Input[8].PulseCount,Input[8].IsVAV,Input[8].PT100,Input[8].IsECPVAV,Input[8].SqrtEnable,Input[8].IsECP500,Input[8].SupportHwOvr,Input[8].FilterRTD1K,Input[8].Reserved8,Input[8].Reserved9,Input[8].Reserved10,Input[9].Thermistor10K,Input[9].Thermistor1K,Input[9].Sensor4to20mA,Input[9].Sensor0to10V,Input[9].Digital,Input[9].PulseCount,Input[9].IsVAV,Input[9].PT100,Input[9].IsECPVAV,Input[9].SqrtEnable,Input[9].IsECP500,Input[9].SupportHwOvr,Input[9].FilterRTD1K,Input[9].Reserved8,Input[9].Reserved9,Input[9].Reserved10,Input[10].Thermistor10K,Input[10].Thermistor1K,Input[10].Sensor4to20mA,Input[10].Sensor0to10V,Input[10].Digital,Input[10].PulseCount,Input[10].IsVAV,Input[10].PT100,Input[10].IsECPVAV,Input[10].SqrtEnable,Input[10].IsECP500,Input[10].SupportHwOvr,Input[10].FilterRTD1K,Input[10].Reserved8,Input[10].Reserved9,Input[10].Reserved10,Input[11].Thermistor10K,Input[11].Thermistor1K,Input[11].Sensor4to20mA,Input[11].Sensor0to10V,Input[11].Digital,Input[11].PulseCount,Input[11].IsVAV,Input[11].PT100,Input[11].IsECPVAV,Input[11].SqrtEnable,Input[11].IsECP500,Input[11].SupportHwOvr,Input[11].FilterRTD1K,Input[11].Reserved8,Input[11].Reserved9,Input[11].Reserved10,Output[0].PWM,Output[0].Signal4to20mA,Output[0].Signal0to10V,Output[0].Digital,Output[0].Reserved1,Output[0].Reserved2,Output[0].Reserved3,Output[0].Reserved4,Output[1].PWM,Output[1].Signal4to20mA,Output[1].Signal0to10V,Output[1].Digital,Output[1].Reserved1,Output[1].Reserved2,Output[1].Reserved3,Output[1].Reserved4,Output[2].PWM,Output[2].Signal4to20mA,Output[2].Signal0to10V,Output[2].Digital,Output[2].Reserved1,Output[2].Reserved2,Output[2].Reserved3,Output[2].Reserved4,Output[3].PWM,Output[3].Signal4to20mA,Output[3].Signal0to10V,Output[3].Digital,Output[3].Reserved1,Output[3].Reserved2,Output[3].Reserved3,Output[3].Reserved4,Output[4].PWM,Output[4].Signal4to20mA,Output[4].Signal0to10V,Output[4].Digital,Output[4].Reserved1,Output[4].Reserved2,Output[4].Reserved3,Output[4].Reserved4,Output[5].PWM,Output[5].Signal4to20mA,Output[5].Signal0to10V,Output[5].Digital,Output[5].Reserved1,Output[5].Reserved2,Output[5].Reserved3,Output[5].Reserved4,Output[6].PWM,Output[6].Signal4to20mA,Output[6].Signal0to10V,Output[6].Digital,Output[6].Reserved1,Output[6].Reserved2,Output[6].Reserved3,Output[6].Reserved4,Output[7].PWM,Output[7].Signal4to20mA,Output[7].Signal0to10V,Output[7].Digital,Output[7].Reserved1,Output[7].Reserved2,Output[7].Reserved3,Output[7].Reserved4,Output[8].PWM,Output[8].Signal4to20mA,Output[8].Signal0to10V,Output[8].Digital,Output[8].Reserved1,Output[8].Reserved2,Output[8].Reserved3,Output[8].Reserved4,Output[9].PWM,Output[9].Signal4to20mA,Output[9].Signal0to10V,Output[9].Digital,Output[9].Reserved1,Output[9].Reserved2,Output[9].Reserved3,Output[9].Reserved4,Output[10].PWM,Output[10].Signal4to20mA,Output[10].Signal0to10V,Output[10].Digital,Output[10].Reserved1,Output[10].Reserved2,Output[10].Reserved3,Output[10].Reserved4,Output[11].PWM,Output[11].Signal4to20mA,Output[11].Signal0to10V,Output[11].Digital,Output[11].Reserved1,Output[11].Reserved2,Output[11].Reserved3,Output[11].Reserved4)" />
+    </Formats>
+    <Formats typeName="UCPT_constant_num_1to7">
+      <Format name="UCPT_constant_num_1to7" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum1,ConstantNum2,ConstantNum3,ConstantNum4,ConstantNum5,ConstantNum6,ConstantNum7)" />
+    </Formats>
+    <Formats typeName="UCPT_constant_num_8to14">
+      <Format name="UCPT_constant_num_8to14" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum8,ConstantNum9,ConstantNum10,ConstantNum11,ConstantNum12,ConstantNum13,ConstantNum14)" />
+    </Formats>
+    <Formats typeName="UCPT_constant_num_15to21">
+      <Format name="UCPT_constant_num_15to21" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum15,ConstantNum16,ConstantNum17,ConstantNum18,ConstantNum19,ConstantNum20,ConstantNum21)" />
+    </Formats>
+    <Formats typeName="UCPT_constant_num_22to28">
+      <Format name="UCPT_constant_num_22to28" spec="text(&quot;%f %f %f %f %f %f %f&quot;, ConstantNum22,ConstantNum23,ConstantNum24,ConstantNum25,ConstantNum26,ConstantNum27,ConstantNum28)" />
+    </Formats>
+    <Formats typeName="UCPT_constant_enum_1to31">
+      <Format name="UCPT_constant_enum_1to31" spec="text(&quot;%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d&quot;, ConstantEnum1,ConstantEnum2,ConstantEnum3,ConstantEnum4,ConstantEnum5,ConstantEnum6,ConstantEnum7,ConstantEnum8,ConstantEnum9,ConstantEnum10,ConstantEnum11,ConstantEnum12,ConstantEnum13,ConstantEnum14,ConstantEnum15,ConstantEnum16,ConstantEnum17,ConstantEnum18,ConstantEnum19,ConstantEnum20,ConstantEnum21,ConstantEnum22,ConstantEnum23,ConstantEnum24,ConstantEnum25,ConstantEnum26,ConstantEnum27,ConstantEnum28,ConstantEnum29,ConstantEnum30,ConstantEnum31)" />
+    </Formats>
+    <Formats typeName="UCPTkfactor">
+      <Format name="UCPTkfactor" spec="text(&quot;%d&quot;)" />
+      <Format name="UCPTkfactor#SI" spec="text(&quot;%f&quot;,*0.02992(0:48))" />
+      <Format name="UCPTkfactor#SI_m3h" spec="text(&quot;%f&quot;,*0.107713(0:1408))" />
+      <Format name="UCPTkfactor#US" spec="text(&quot;%f&quot;, *1+0(0:966))" />
+    </Formats>
+  </FormatDefinitions>
+  <ProfileDefinitions />
+  <LanguageDefinitions originalCrc="CEDC5AF7">
+    <Strings lang="en_US">
+      <String id="1">This file is a scope 4 type file. It contains user network variable types, configuration property types, and the enumeration types that support them.</String>
+      <String id="2">This file was created and is maintained by Distech Controls Inc., Canada.  Contact us at 1-450-444-9898, or at www.distech-controls.com on the Internet.</String>
+      <String id="3">This is a scope 4 FPT file. It contains functional profile templates.</String>
+      <String id="4">This LonMark Device Resource FPT file was created by Distech Controls. Contact us at (450) 449-5552 or at www.distech-controls.com on the internet.</String>
+      <String id="5">This file is a scope 4 language-dependent string resource file. It is localized for the US English (enu) language.</String>
+      <String id="6">This LonMark Device Resource language-string file was created by Distech Controls. Contact us at (450) 449-5552 or at www.distech-controls.com on the internet.</String>
+    </Strings>
+  </LanguageDefinitions>
+</DrfSet>

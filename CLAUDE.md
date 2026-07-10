@@ -12,6 +12,8 @@ Passage des outils HTML autonomes vers une plateforme unique, auto-hébergée su
 
 > 📐 **État courant détaillé : [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)** (à lire en premier).
 > Les deux outils historiques ont **fusionné** en un seul, **« Projet GTB »** (route `/outils/affectation-es`) : la « Liste de points » est devenue un **onglet** du projet, qui dérive les E/S affectées aux bornes (`Project.rows` → `Project.points`, voir `derivation.ts`). Écrans de config ajoutés : base matériel, catalogue de points & modèles, documentation Distech. Travail sur la branche `fusion-liste-affectation` ; l'outil autonome « liste-points » reste comme bibliothèque + code déprécié (retrait Phase 5.2 à valider).
+>
+> 🆕 **Couche « Affaire » (2e pivot) : [`docs/AFFAIRES.md`](docs/AFFAIRES.md).** Le modèle `Chantier` est promu **« Affaire »** (1 par n° Why) : elle **porte l'identification** (client, n° Why — retirée de l'éditeur d'automate) et **regroupe N automates** (multi-automate = N `AffectationProjet` par affaire). Écrans `/affaires` (tableau de bord) + `/affaires/[id]` (fiche). Même patron d'agrégation `PROVIDERS` que la fiche client. Le **financier reste dans WhySoft**. Autres ajouts session : **gestion des utilisateurs** (`/configuration/utilisateurs`, ADMIN), **affectation capability-aware** (jamais d'analogique sur une borne triac DO) + validation, **protocoles COM** (Modbus/BACnet/M-Bus/LoRaWAN/KNX dans le champ `signal`).
 
 - **Stack** : Next.js 16 (App Router, React 19, TypeScript) · PostgreSQL + Prisma · Auth.js (Credentials) · Tailwind v4 (CSS-first `@theme`) · déploiement Docker Compose (app + postgres + caddy).
 - **Principe « ultra flexible »** : un **registre d'outils** (`src/tools/registry.ts`). Ajouter un outil = déposer un module + une entrée de registre → carte auto sur l'écran d'accueil.
@@ -29,6 +31,8 @@ La **base client** (`/clients`, `src/lib/clients/`) est le pivot de la plateform
 **Agrégation multi-outils** — chaque outil expose `listerPourClient(clientId): Promise<ClientArtefact[]>` (dans son `queries.ts`) et l'enregistre dans `PROVIDERS` de `src/lib/clients/providers.ts`. La fiche client `/clients/[id]` compose tous les providers (triés par date). `ClientArtefact` (`src/lib/clients/types.ts`) = `{ id, titre, href, numeroWhy, updatedAt, resume }`.
 
 > **Ajouter un futur outil à la base client** : (a) `clientId` + `numeroWhy` sur son entité (`schema.prisma`) ; (b) `resoudreClientId` + persistance `numeroWhy` dans son action de save ; (c) champ `numeroWhy` + combobox client dans son éditeur ; (d) `listerPourClient` dans son `queries.ts` ; (e) une ligne dans `PROVIDERS`. Rien d'autre — la fiche client le prend en compte automatiquement.
+>
+> **Idem pour la fiche Affaire** (2e pivot, [`docs/AFFAIRES.md`](docs/AFFAIRES.md)) : ajouter `chantierId` sur l'entité, résoudre via `resoudreChantierId(numeroWhy, clientId, nom)` au save, exporter `listerPourChantier`, et une ligne dans `PROVIDERS` de `src/lib/chantiers/providers.ts`.
 
 ## Domain glossary (needed to read the code)
 

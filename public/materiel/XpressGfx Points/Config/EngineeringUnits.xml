@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Groups>
+  <Group name="Acceleration"             baseSi="166"  baseUs="166">
+    <Unit name="meters-per-second-per-second"  id="166"  system="si"  short="m/s²"  scale="1"/>
+  </Group>
+  <Group name="Angular Velocity"         baseSi="184"  baseUs="184">
+    <Unit name="radians-per-second"      id="184"  system="si"  short="rad/s"  scale="1"/>
+    <Unit name="revolutions-per-minute"  id="104"  system="si"  short="rpm"  scale="6.2831853071796"/>
+  </Group>
+  <Group name="Area"                     baseSi="0"    baseUs="1">
+    <Unit name="square-meters"       id="0"    system="si"  short="m²"   scale ="1"/>
+    <Unit name="square-centimeters"  id="116"  system="si"  short="cm²"  scale="0.0001"/>
+    <Unit name="square-feet"         id="1"    system="us"  short="ft²"  scale="0.09290304"/>
+    <Unit name="square-inches"       id="115"  system="us"  short="in²"  scale="0.00064516"/>
+  </Group>
+  <Group name="Currency"                 baseSi="105"  baseUs="105">
+    <Unit name="currency1"   id="105"  system="si"/>
+    <Unit name="currency2"   id="106"  system="si"/>
+    <Unit name="currency3"   id="107"  system="si"/>
+    <Unit name="currency4"   id="108"  system="si"/>
+    <Unit name="currency5"   id="109"  system="si"/>
+    <Unit name="currency6"   id="110"  system="si"/>
+    <Unit name="currency7"   id="111"  system="si"/>
+    <Unit name="currency8"   id="112"  system="si"/>
+    <Unit name="currency9"   id="113"  system="si"/>
+    <Unit name="currency10"  id="114"  system="si"/>
+  </Group>
+  <Group name="Concentration"            baseSi="96"   baseUs="96">
+    <Unit name="parts-per-million"     id="96"   system="si"  short="ppm"   scale="1"/>
+    <Unit name="parts-per-billion"     id="97"   system="si"  short="ppb"   scale="1000"/>
+    <Unit name="grams-per-liter"       id="214"  system="si"  short="g/L"   scale="1"/>
+    <Unit name="grams-per-milliliter"  id="213"  system="si"  short="g/mL"  scale="1000"/>
+    <Unit name="milligrams-per-liter"  id="215"  system="si"  short="mg/L"  scale="0.001"/>
+    <Unit name="micrograms-per-liter"  id="216"  system="si"  short="µg/L"  scale="0.000001"/>
+  </Group>
+  <Group name="Density"                  baseSi="186"  baseUs="259">
+    <Unit name="kilograms-per-cubic-meter"  id="186"  system="si"  short="kg/m³"  scale="1"/>
+    <Unit name="grams-per-cubic-meter"      id="217"  system="si"  short="g/m³"   scale="0.001"/>
+    <Unit name="milligrams-per-cubic-meter" id="218"  system="si"  short="mg/m³"  scale="0.000001"/>
+    <Unit name="micrograms-per-cubic-meter" id="219"  system="si"  short="µg/m³"  scale="1e-6"/>
+    <Unit name="nanograms-per-cubic-meter"  id="220"  system="si"  short="ng/m³"  scale="1e-9"/>
+    <Unit name="grams-per-cubic-centimeter" id="221"  system="si"  short="g/cm³"  scale="1000"/>
+    <Unit name="pounds-per-cubic-foot"      id="259"  system="us"  short="lb/ft³" scale="16.018463306" />
+  </Group>
+  <Group name="Electrical"               baseSi="3"    baseUs="3">
+    <Unit name="amperes"             id="3"   system="si"  short="A"    scale="1"/>
+    <Unit name="milliamperes"        id="2"   system="si"  short="mA"   scale="0.001"/>
+    <Unit name="decibels"            id="199" system="si"  short="dB"   scale="1"/>
+    <Unit name="decibels-millivolt"  id="200" system="si"  short="dBmV" scale="0.001"/>
+    <Unit name="decibels-volt"       id="201" system="si"  short="dBV"  scale="1"/>
+  </Group>
+  <Group name="Magnetic Field Strength"  baseSi="167"  baseUs="167">
+    <Unit name="amperes-per-meter"  id="167"  system="si"  short="A/m"  scale="1"/>
+  </Group>
+  <Group name="Electric Current Density" baseSi="168"  baseUs="168">
+    <Unit name="amperes-per-square-meter"  id="168"  system="si"  short="A/m²"  scale="1"/>
+  </Group>
+  <Group name="Capacitance"              baseSi="170"  baseUs="170">
+    <Unit name="farads"  id="170"  system="si"  short="F"  scale="1"/>
+  </Group>
+  <Group name="Inductance"               baseSi="171"  baseUs="171">
+    <Unit name="henrys"  id="171"  system="si"  short="H"  scale="1"/>
+  </Group>
+  <Group name="Resistance"               baseSi="4"    baseUs="4">
+    <Unit name="ohms"       id="4"    system="si"  short="Ω"   scale="1"/>
+    <Unit name="milliohms"  id="145"  system="si"  short="mΩ"  scale="0.001"/>
+    <Unit name="kilohms"    id="122"  system="si"  short="kΩ"  scale="1000"/>
+    <Unit name="megohms"    id="123"  system="si"  short="MΩ"  scale="1e6"/>
+  </Group>
+  <Group name="Electric Conductance"     baseSi="173"  baseUs="173">
+    <Unit name="siemens"       id="173"  system="si"  short="S"   scale="1"/>
+    <Unit name="millisiemens"  id="202"  system="si"  short="mS"  scale="0.001"/>
+  </Group>
+  <Group name="Electrical Resistivity"   baseSi="172"  baseUs="172">
+    <Unit name="ohm-meters"  id="172"  system="si"  short="Ωm"  scale="1"/>
+  </Group>
+  <Group name="Electrical Conductivity"  baseSi="174"  baseUs="174">
+    <Unit name="siemens-per-meter"  id="174"  system="si"  short="S/m"  scale="1"/>
+  </Group>
+  <Group name="Magnetic Flux Density"    baseSi="175"  baseUs="175">
+    <Unit name="teslas"  id="175"  system="si"  short="T"  scale="1"/>
+  </Group>
+  <Group name="Electric Potential"       baseSi="5"    baseUs="5">
+    <Unit name="volts"       id="5"    system="si"  short="V"   scale="1"/>
+    <Unit name="millivolts"  id="124"  system="si"  short="mV"  scale="0.001"/>
+    <Unit name="kilovolts"   id="6"    system="si"  short="kV"  scale="1000"/>
+    <Unit name="megavolts"   id="7"    system="si"  short="MV"  scale="1000000"/>
+  </Group>
+  <Group name="Power Apparent"           baseSi="8"    baseUs="8">
+    <Unit name="volt-amperes"      id="8"   system="si"  short="VA"   scale="1"/>
+    <Unit name="kilovolt-amperes"  id="9"   system="si"  short="kVA"  scale="1000"/>
+    <Unit name="megavolt-amperes"  id="10"  system="si"  short="MVA"  scale="1e6"/>
+  </Group>
+  <Group name="Power Reactive"           baseSi="11"   baseUs="11">
+    <Unit name="volt-amperes-reactive"      id="11"  system="si"  short="var"   scale="1"/>
+    <Unit name="kilovolt-amperes-reactive"  id="12"  system="si"  short="kvar"  scale="1000"/>
+    <Unit name="megavolt-amperes-reactive"  id="13"  system="si"  short="Mvar"  scale="1e6"/>
+  </Group>
+  <Group name="Electric Field Strength"  baseSi="177"  baseUs="177">
+    <Unit name="volts-per-meter"  id="177"  system="si"  short="V/m"  scale="1"/>
+  </Group>
+  <Group name="Plane Angle"              baseSi="103"  baseUs="103">
+    <Unit name="radians"          id="103"  system="si"  short="rad"    scale="1"/>
+    <Unit name="degrees-angular"  id="90"   system="si"  short="deg"    scale="0.017453292519943"/>
+    <Unit name="degrees-phase"    id="14"   system="si"  short="degPh"  scale="0.017453292519943"/>
+  </Group>
+  <Group name="Magnetic Flux"            baseSi="178"  baseUs="178">
+    <Unit name="webers"  id="178"  system="si"  short="Wb" scale="1"/>
+  </Group>
+  <Group name="Energy Apparent"           baseSi="16"   baseUs="20">
+    <Unit name="joules"                   id="16"   system="si"  short="J"      scale="1"/>
+    <Unit name="kilojoules"               id="17"   system="si"  short="kJ"     scale="1000"/>
+    <Unit name="megajoules"               id="126"  system="si"  short="MJ"     scale="1e6"/>
+    <Unit name="gigajoules"               id="265"  system="si"  short="GJ"     scale="1e9"/>
+    <Unit name="watt-hours"               id="18"   system="si"  short="Wh"     scale="3600"/>
+    <Unit name="kilowatt-hours"           id="19"   system="si"  short="kWh"    scale="3.6e6"/>
+    <Unit name="megawatt-hours"           id="146"  system="si"  short="MWh"    scale="3.6e9"/>
+    <Unit name="btus"                     id="20"   system="us"  short="BTU"    scale="1055.05585"/>
+    <Unit name="kilo-btus"                id="147"  system="us"  short="kBTU"   scale="1055055.85"/>
+    <Unit name="mega-btus"                id="148"  system="us"  short="MBTU"   scale="1055055850"/>
+    <Unit name="therms"                   id="21"   system="us"  short="therm"  scale="105506000"/>
+    <Unit name="ton-hours"                id="22"   system="us"  short="ton-h"  scale="12660670.8"/>
+  </Group>
+  <Group name="Energy Reactive"                   baseSi="203"   baseUs="203">
+    <Unit name="volt-amperes-reactive-hours"      id="203"  system="si"  short="varh"    scale="1"/>
+    <Unit name="kilovolt-amperes-reactive-hours"  id="204"  system="si"  short="kvarh"   scale="1000"/>
+    <Unit name="megavolt-amperes-reactive-hours"  id="205"  system="si"  short="Mvarh"   scale="1e6"/>
+  </Group>
+  <Group name="Specific Energy"          baseSi="125"   baseUs="24">
+    <Unit name="joules-per-kilogram-dry-air"      id="23"   system="si"  short="J/kgAir"    scale="1"/>
+    <Unit name="kilojoules-per-kilogram-dry-air"  id="149"  system="si"  short="kJ/kgAir"   scale="1000"/>
+    <Unit name="megajoules-per-kilogram-dry-air"  id="150"  system="si"  short="MJ/kgAir"   scale="1e6"/>
+    <Unit name="kilojoules-per-kilogram"          id="125"  system="si"  short="kJ/kg"      scale="1000"/>
+    <Unit name="btus-per-pound-dry-air"           id="24"   system="us"  short="BTU/lbAir"  scale="2325.5576058607864794495481612289"  offset="-17777.777777777777" />
+    <Unit name="btus-per-pound"                   id="117"  system="us"  short="BTU/lb"     scale="2325.5576058607864794495481612289" />
+  </Group>
+  <Group name="Entropy"                  baseSi="127"  baseUs="127">
+    <Unit name="joules-per-degree-Kelvin"      id="127"  system="si"  short="J/K"   scale="1"/>
+    <Unit name="kilojoules-per-degree-Kelvin"  id="151"  system="si"  short="kJ/K"  scale="1000"/>
+    <Unit name="megajoules-per-degree-Kelvin"  id="152"  system="si"  short="MJ/K"  scale="1e6"/>
+  </Group>
+  <Group name="Specific Entropy"         baseSi="128"  baseUs="128">
+    <Unit name="joules-per-kilogram-degree-Kelvin"  id="128"  system="si"  short="J/kg-K"  scale="1"/>
+  </Group>
+  <Group name="Force"                    baseSi="153"  baseUs="153">
+    <Unit name="newton"  id="153"  system="si"  short="N"  scale="1"/>
+  </Group>
+  <Group name="Frequency"                baseSi="27"   baseUs="27">
+    <Unit name="hertz"              id="27"   system="si"  short="Hz"    scale="1"/>
+    <Unit name="kilohertz"          id="129"  system="si"  short="kHz"   scale="1000"/>
+    <Unit name="megahertz"          id="130"  system="si"  short="MHz"   scale="1e6"/>
+    <Unit name="cycles-per-hour"    id="25"   system="si"  short="cph"   scale="0.00027777777777777777777777777778"/>
+    <Unit name="cycles-per-minute"  id="26"   system="si"  short="cpm"   scale="0.01666666666666666666666666666667"/>
+    <Unit name="per-second"         id="101"  system="si"  short="/s"    scale="1"/>
+    <Unit name="per-minute"         id="100"  system="si"  short="/min"  scale="0.01666666666666666666666666666667"/>
+    <Unit name="per-hour"           id="131"  system="si"  short="/h"    scale="0.00027777777777777777777777777778"/>
+  </Group>
+  <Group name="Humidity Ratio"                 baseSi="28"   baseUs="260">
+    <Unit name="grams-of-water-per-kilogram-dry-air"         id="28"   system="si"  short="gH₂O/kgAir"  scale="1"/>
+    <Unit name="grains-of-water-per-pound-of-dry-air"        id="260"  system="us"  short="gr/lbAir"    scale="0.142857143"/>
+  </Group>
+  <Group name="Humidity"                 baseSi="29"   baseUs="29">
+    <Unit name="percent-relative-humidity"  id="29"  system="si"  short="% RH"  scale="1"/>
+  </Group>
+  <Group name="Length"                   baseSi="31"   baseUs="33">
+    <Unit name="meters"       id="31"   system="si"  short="m"   scale="1"/>
+    <Unit name="micrometers"  id="194"  system="si"  short="µm"  scale="0.000001"/>
+    <Unit name="millimeters"  id="30"   system="si"  short="mm"  scale="0.001"/>
+    <Unit name="centimeters"  id="118"  system="si"  short="cm"  scale="0.01"/>
+    <Unit name="kilometers"   id="193"  system="si"  short="km"  scale="1000"/>
+    <Unit name="inches"       id="32"   system="us"  short="in"  scale="0.0254"/>
+    <Unit name="feet"         id="33"   system="us"  short="ft"  scale="0.3048"/>
+  </Group>
+  <Group name="Luminescence"             baseSi="179"  baseUs="179">
+    <Unit name="candelas"  id="179"  system="si"  short="cd"  scale="1"/>
+  </Group>
+  <Group name="Illuminance"              baseSi="37"   baseUs="37">
+    <Unit name="luxes"                      id="37"   system="si"  short="lux"    scale="1"/>
+    <Unit name="candelas-per-square-meter"  id="180"  system="si"  short="cd/m²"  scale="1"/>
+    <Unit name="foot-candles"               id="38"   system="si"  short="ftcd"   scale="10.76391041671"/>
+  </Group>
+  <Group name="Irradiance"               baseSi="34"   baseUs="34">
+    <Unit name="watts-per-square-meter"  id="35"  system="si"  short="W/m²"   scale="1"/>
+    <Unit name="watts-per-square-foot"   id="34"  system="si"  short="W/ft²"  scale="10.76391041671"/>
+  </Group>
+  <Group name="Luminous Flux"            baseSi="36"   baseUs="36">
+    <Unit name="lumens"  id="36"  system="si"  short="lm"  scale="1"/>
+  </Group>
+  <Group name="Mass"                     baseSi="39"   baseUs="40">
+    <Unit name="kilograms"    id="39"  system="si"  short="kg"   scale="1"/>
+    <Unit name="milligrams"   id="196" system="si"  short="mg"   scale="0.000001"/>
+    <Unit name="grams"        id="195" system="si"  short="g"    scale="0.001"/>
+    <Unit name="pounds-mass"  id="40"  system="us"  short="lb"   scale="0.453591"/>
+    <Unit name="tons"         id="41"  system="si"  short="ton"  scale="1000"/>
+  </Group>
+  <Group name="Mass Ratio"       baseSi="209"   baseUs="209">
+    <Unit name="grams-per-gram"           id="208" system="si"  short="g/g"     scale="1"/>
+    <Unit name="kilograms-per-kilogram"   id="209" system="si"  short="kg/g"    scale="1"/>
+    <Unit name="grams-per-kilogram"       id="210" system="si"  short="g/kg"    scale="0.001"/>
+    <Unit name="milligrams-per-gram"      id="211" system="si"  short="mg/g"    scale="0.001"/>
+    <Unit name="milligrams-per-kilogram"  id="212" system="si"  short="mg/kg"   scale="0.000001"/>
+  </Group>
+  <Group name="Mass Flow"                baseSi="42"   baseUs="119">
+    <Unit name="grams-per-second"        id="154"  system="si"  short="g/s"     scale="0.001"/>
+    <Unit name="grams-per-minute"        id="155"  system="si"  short="g/min"   scale="0.00001666666666666666666666666667"/>
+    <Unit name="kilograms-per-second"    id="42"   system="si"  short="kg/sec"  scale="1"/>
+    <Unit name="kilograms-per-minute"    id="43"   system="si"  short="kg/min"  scale="0.01666666666666666666666666666667"/>
+    <Unit name="kilograms-per-hour"      id="44"   system="si"  short="kg/h"    scale="0.00027777777777777777777777777778"/>
+    <Unit name="pounds-mass-per-second"  id="119"  system="us"  short="lb/s"    scale="0.45359237"/>
+    <Unit name="pounds-mass-per-minute"  id="45"   system="us"  short="lb/min"  scale="0.00755987283333333333333333333333"/>
+    <Unit name="pounds-mass-per-hour"    id="46"   system="us"  short="lb/h"    scale="0.00012599788055555555555555555556"/>
+    <Unit name="tons-per-hour"           id="156"  system="si"  short="ton/h"   scale="0.27777777777777777777777777777778"/>
+  </Group>
+  <Group name="Power"                    baseSi="47"   baseUs="50">
+    <Unit name="watts"                   id="47"   system="si"  short="W"       scale="1"/>
+    <Unit name="milliwatts"              id="132"  system="si"  short="mW"      scale="0.001"/>
+    <Unit name="kilowatts"               id="48"   system="si"  short="kW"      scale="1000"/>
+    <Unit name="megawatts"               id="49"   system="si"  short="MW"      scale="1e6"/>
+    <Unit name="joules-per-hours"        id="262"  system="si"  short="J-h"     scale="2.777777778e-4"/>
+    <Unit name="gigajoules-per-hours"    id="263"  system="si"  short="GJ-h"    scale="277777.77777777777777777777777778"/>
+    <Unit name="btus-per-hour"           id="50"   system="us"  short="BTU/h"   scale="0.292875"/>
+    <Unit name="kilo-btus-per-hour"      id="157"  system="us"  short="kBTU/h"  scale="293.07107017222"/>
+    <Unit name="horsepower"              id="51"   system="us"  short="hp"      scale="745.7"/>
+    <Unit name="tons-refrigeration"      id="52"   system="us"  short="tR"      scale="3516.853"/>
+  </Group>
+  <Group name="Pressure"                 baseSi="54"   baseUs="56">
+    <Unit name="pascals"                       id="53"   system="si"  short="Pa"      scale="1"/>
+    <Unit name="hectopascals"                  id="133"  system="si"  short="hPa"     scale="100"/>
+    <Unit name="kilopascals"                   id="54"   system="si"  short="kPa"     scale="1000"/>
+    <Unit name="millibars"                     id="134"  system="si"  short="mbar"    scale="100"/>
+    <Unit name="bars"                          id="55"   system="si"  short="bar"     scale="100000"/>
+    <Unit name="pounds-force-per-square-inch"  id="56"   system="us"  short="psi"     scale="6894.73"/>
+    <Unit name="millimeters-of-water"          id="206"  system="si"  short="mm H₂O"  scale="9.80665"/>
+    <Unit name="centimeters-of-water"          id="57"   system="si"  short="cm H₂O"  scale="98.0665"/>
+    <Unit name="inches-of-water"               id="58"   system="us"  short="in H₂O"  scale="248.84"/>
+    <Unit name="millimeters-of-mercury"        id="59"   system="si"  short="mm Hg"   scale="133.322368421"/>
+    <Unit name="centimeters-of-mercury"        id="60"   system="si"  short="cm Hg"   scale="1333.22368421"/>
+    <Unit name="inches-of-mercury"             id="61"   system="us"  short="in Hg"   scale="3386.38815789"/>
+  </Group>
+  <Group name="K Factor"                 baseSi="256"   baseUs="257">
+    <Unit name="liters-per-second-per-sqrt-pascal"              id="256"   system="si"  short="L/s/√(Pa)"        scale="1"/>
+    <Unit name="cubic-feet-per-minute-per-sqrt-inch-of-water"   id="257"   system="us"  short="cfm/√(in H₂O)"    scale="0.029918081133705098"/>
+    <Unit name="cubic-meters-per-hour-per-sqrt-pascal"          id="258"   system="si"  short="m³/h/√(Pa)"       scale="3.6"/>
+  </Group>
+  <Group name="Temperature"              baseSi="62"   baseUs="64">
+    <Unit name="degrees-Kelvin"      id="63"  system="si"  short="K"  scale="1"/>
+    <Unit name="degrees-Celsius"     id="62"  system="si"  short="°C"  scale="1" offset="273.15"/>
+    <Unit name="degrees-Fahrenheit"  id="64"  system="us"  short="°F"  scale="0.5555555555555555555555555" offset="255.37222222222222222222222222222"/>
+  </Group>
+  <Group name="Heating Rate"             baseSi="182"  baseUs="94">
+    <Unit name="degrees-Kelvin-per-minute"      id="182"  system="si"  short="K/m"    scale="0.01666666666666666666666666666667"/>
+    <Unit name="degrees-Kelvin-per-hour"        id="181"  system="si"  short="K/h"    scale="0.00027777777777777777777777777778"/>
+    <Unit name="degrees-Celsius-per-minute"     id="92"   system="si"  short="°C/min"  scale="0.01666666666666666666666666666667"/>
+    <Unit name="degrees-Celsius-per-hour"       id="91"   system="si"  short="°C/h"    scale="0.00027777777777777777777777777778"/>
+    <Unit name="degrees-Fahrenheit-per-minute"  id="94"   system="us"  short="°F/min"  scale="0.0092592592592593"/>
+    <Unit name="degrees-Fahrenheit-per-hour"    id="93"   system="us"  short="°F/h"    scale="0.00015432098765432"/>
+  </Group>
+  <Group name="Degree Days"              baseSi="65"   baseUs="66">
+    <Unit name="degree-days-Celsius"            id="65"   system="si"  short="°daysC"  scale="1"/>
+    <Unit name="degree-days-Fahrenheit"         id="66"   system="us"  short="°daysF"  scale="0.5555555555555555555555555"/>
+  </Group>
+  <Group name="Temperature Delta"        baseSi="261"  baseUs="120">
+    <Unit name="delta-degrees-Kelvin"           id="121"  system="si"  short="Δ K"  scale="1"/>
+    <Unit name="delta-degrees-Celsius"          id="261"  system="si"  short="Δ °C"  scale="1"/>
+    <Unit name="delta-degrees-Fahrenheit"       id="120"  system="us"  short="Δ °F"  scale="0.5555555555555555555555555"/>
+  </Group>
+  <Group name="Time"                     baseSi="73"   baseUs="73">
+    <Unit name="milliseconds"        id="159"  system="si"  short="ms"   scale="0.001"/>
+    <Unit name="hundredths-seconds"  id="158"  system="si"  short="cs"   scale="0.01"/>
+    <Unit name="seconds"             id="73"   system="si"  short="s"    scale="1"/>
+    <Unit name="minutes"             id="72"   system="si"  short="min"  scale="60"/>
+    <Unit name="hours"               id="71"   system="si"  short="h"    scale="3600"/>
+    <Unit name="days"                id="70"   system="si"  short="day"  scale="86400"/>
+    <Unit name="weeks"               id="69"   system="si"  short="wk"   scale="604800"/>
+    <Unit name="months"              id="68"   system="si"  short="mo"   scale="2629800"/>
+    <Unit name="years"               id="67"   system="si"  short="yr"   scale="31536000"/>
+  </Group>
+  <Group name="Torque"                   baseSi="160"  baseUs="160">
+    <Unit name="newton-meters"  id="160"  system="si"  short="N·m"  scale="1"/>
+  </Group>
+  <Group name="Velocity"                 baseSi="74"   baseUs="76">
+    <Unit name="millimeters-per-second"  id="161"  system="si"  short="mm/s"    scale="0.001"/>
+    <Unit name="millimeters-per-minute"  id="162"  system="si"  short="mm/min"    scale="0.00001666666666666666666666666667"/>
+    <Unit name="meters-per-second"       id="74"   system="si"  short="m/s"     scale="1"/>
+    <Unit name="meters-per-minute"       id="163"  system="si"  short="m/min"   scale="0.01666666666666666666666666666667"/>
+    <Unit name="meters-per-hour"         id="164"  system="si"  short="m/h"     scale="0.00027777777777777777777777777778"/>
+    <Unit name="kilometers-per-hour"     id="75"   system="si"  short="km/h"    scale="0.277778"/>
+    <Unit name="feet-per-second"         id="76"   system="us"  short="ft/s"    scale="0.3048"/>
+    <Unit name="feet-per-minute"         id="77"   system="us"  short="ft/min"  scale="0.00508"/>
+    <Unit name="miles-per-hour"          id="78"   system="us"  short="mph"     scale="0.447027"/>
+  </Group>
+  <Group name="Volume"                   baseSi="80"   baseUs="79">
+    <Unit name="cubic-meters"      id="80"  system="si"  short="m³"     scale="1"/>
+    <Unit name="cubic-feet"        id="79"  system="us"  short="ft³"    scale="0.028317"/>
+    <Unit name="liters"            id="82"  system="si"  short="L"      scale="0.001"/>
+    <Unit name="milliliters"       id="197" system="si"  short="mL"     scale="0.000001"/>
+    <Unit name="imperial-gallons"  id="81"  system="us"  short="galUK"  scale="0.004546092"/>
+    <Unit name="us-gallons"        id="83"  system="us"  short="gal"    scale="0.003785"/>
+  </Group>
+  <Group name="Volumetric Flow"          baseSi="85"   baseUs="84">
+    <Unit name="cubic-meters-per-second"      id="85"   system="si"  short="m³/s"       scale="1"/>
+    <Unit name="cubic-meters-per-minute"      id="165"  system="si"  short="m³/min"     scale="0.01666666666666666666666666666667"/>
+    <Unit name="cubic-meters-per-hour"        id="135"  system="si"  short="m³/h"       scale="0.00027777777777777777777777777778"/>
+    <Unit name="cubic-feet-per-second"        id="142"  system="us"  short="cfs"        scale="0.028317"/>
+    <Unit name="cubic-feet-per-minute"        id="84"   system="us"  short="cfm"        scale="0.0004719474432"/>
+    <Unit name="milliliters-per-second"       id="198"  system="si"  short="mL/s"       scale="0.000001"/>
+    <Unit name="liters-per-second"            id="87"   system="si"  short="L/s"        scale="0.001"/>
+    <Unit name="liters-per-minute"            id="88"   system="si"  short="L/min"      scale="0.00001666666666666666666666666667"/>
+    <Unit name="liters-per-hour"              id="136"  system="si"  short="L/h"        scale="0.00000027777777777777777777777778"/>
+    <Unit name="imperial-gallons-per-minute"  id="86"   system="us"  short="galUK/min"  scale="0.004546092"/>
+    <Unit name="us-gallons-per-minute"        id="89"   system="us"  short="gal/min"    scale="0.0000630901964"/>
+    <Unit name="us-gallons-per-hour"          id="192"  system="us"  short="gal/h"      scale="1.05150327333333333333333333333e-6"/>
+  </Group>
+  <Group name="Radioactivity"          baseSi="222"   baseUs="222">
+    <Unit name="becquerels"               id="222"  system="si"  short="Bq"    scale="1"/>
+    <Unit name="kilobecquerels"           id="223"  system="si"  short="kBq"   scale="1000"/>
+    <Unit name="megabecquerels"           id="224"  system="si"  short="MBq"   scale="1000000"/>
+    <Unit name="gray"                     id="225"  system="si"  short="Gy"    scale="1"/>
+    <Unit name="milligray"                id="226"  system="si"  short="mGy"   scale="0.001"/>
+    <Unit name="microgray"                id="227"  system="si"  short="µGy"   scale="0.000001"/>
+    <Unit name="sieverts"                 id="228"  system="si"  short="Sv"    scale="1"/>
+    <Unit name="millisieverts"            id="229"  system="si"  short="mSv"   scale="0.001"/>
+    <Unit name="microsieverts"            id="230"  system="si"  short="µSv"   scale="0.000001"/>
+    <Unit name="microsieverts-per-hour"   id="231"  system="si"  short="µSv/h" scale="1"/>
+  </Group>
+  <Group name="Other">
+    <Unit name="power-factor"                          id="15"   short="pf"/>
+    <Unit name="ampere-square-meters"                  id="169"  short="Am²"/>
+    <Unit name="volts-per-degree-Kelvin"               id="176"  short="V/K"/>
+    <Unit name="joule-seconds"                         id="183"  short="J-s"/>
+    <Unit name="kilowatt-hours-per-square-meter"       id="137"  short="kWh/m²"/>
+    <Unit name="kilowatt-hours-per-square-foot"        id="138"  short="kWh/ft²"/>
+    <Unit name="megajoules-per-square-meter"           id="139"  short="MJ/m²"/>
+    <Unit name="megajoules-per-square-foot"            id="140"  short="MJ/ft²"/>
+    <Unit name="newton-seconds"                        id="187"  short="N-s"/>
+    <Unit name="newtons-per-meter"                     id="188"  short="N/m"/>
+    <Unit name="percent"                               id="98"   short="%"/>
+    <Unit name="permille"                              id="207"  short="‰"/>
+    <Unit name="percent-obscuration-per-foot"          id="143"  short="%obsc/ft"/>
+    <Unit name="percent-obscuration-per-meter"         id="144"  short="%obsc/m"/>
+    <Unit name="percent-per-second"                    id="99"   short="%/s"/>
+    <Unit name="psi-per-degree-Fahrenheit"             id="102"  short="psi/°F"/>
+    <Unit name="square-meters-per-Newton"              id="185"  short="m²/N"/>
+    <Unit name="watts-per-meter-per-degree-Kelvin"     id="189"  short="W/m-K"/>
+    <Unit name="watts-per-square-meter-degree-kelvin"  id="141"  short="W/m²-K"/>
+    <Unit name="decibels-a"                            id="232"  short="dBA"/>
+    <Unit name="nephelometric-turbidity-unit"          id="233"  short="NTU"/>
+    <Unit name="pH"                                    id="234"  short="pH"/>
+    <Unit name="grams-per-square-meter"                id="235"  short="g/m²"/>
+    <Unit name="minutes-per-degree-kelvin"             id="236"  short="m/K"/>
+    <Unit name="no-unit"															 id="95"/>
+  </Group>
+</Groups>

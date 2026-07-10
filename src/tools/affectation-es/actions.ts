@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { resoudreClientId } from "@/lib/clients/queries";
+import { resoudreChantierId } from "@/lib/chantiers/queries";
 import { defaultProject, type Point, type Project } from "./model";
 import type { IoType, PointRow } from "@/tools/liste-points/model";
 
@@ -39,6 +40,35 @@ export async function creerProjet(): Promise<void> {
     select: { id: true },
   });
   revalidatePath(BASE);
+  redirect(`${BASE}/${doc.id}`);
+}
+
+/** Crée un nouvel automate (Projet GTB) déjà rattaché à une affaire : il hérite
+ *  du client et du numéro Why de l'affaire, donc apparaît aussitôt dans sa fiche. */
+export async function creerProjetPourAffaire(chantierId: string): Promise<void> {
+  const userId = await requireUserId();
+  const affaire = await prisma.chantier.findUnique({
+    where: { id: chantierId },
+    select: { nom: true, numeroWhy: true, clientId: true, client: { select: { nom: true } } },
+  });
+  if (!affaire) throw new Error("Affaire introuvable");
+  const project = defaultProject(dateLabel());
+  project.name = "Nouvel automate";
+  project.header = [affaire.client.nom, affaire.nom].filter((v) => v && v.trim()).join(" - ");
+  const doc = await prisma.affectationProjet.create({
+    data: {
+      nom: project.name,
+      clientNom: affaire.client.nom,
+      clientId: affaire.clientId,
+      numeroWhy: affaire.numeroWhy,
+      chantierId,
+      createdById: userId,
+      data: project as unknown as Prisma.InputJsonValue,
+    },
+    select: { id: true },
+  });
+  revalidatePath(BASE);
+  revalidatePath(`/affaires/${chantierId}`);
   redirect(`${BASE}/${doc.id}`);
 }
 
@@ -90,12 +120,15 @@ export async function creerProjetDepuisListe(formData: FormData): Promise<void> 
     project.header;
   project.points = listeRowsToPoints(rows);
 
+  const clientId = liste.clientId ?? (await resoudreClientId(liste.clientNom));
+  const chantierId = await resoudreChantierId(liste.numeroWhy, clientId, project.name);
   const doc = await prisma.affectationProjet.create({
     data: {
       nom: project.name,
       clientNom: liste.clientNom,
-      clientId: liste.clientId ?? (await resoudreClientId(liste.clientNom)),
+      clientId,
       numeroWhy: liste.numeroWhy,
+      chantierId,
       createdById: userId,
       data: project as unknown as Prisma.InputJsonValue,
     },
@@ -107,8 +140,6 @@ export async function creerProjetDepuisListe(formData: FormData): Promise<void> 
 
 export interface SauverPayload {
   nom: string;
-  clientNom: string;
-  numeroWhy: string;
   project: Project;
 }
 
@@ -117,20 +148,18 @@ export async function sauverProjet(
   data: SauverPayload,
 ): Promise<{ ok: true; updatedAt: string }> {
   await requireUserId();
-  const clientId = await resoudreClientId(data.clientNom);
+  // L'identification (client, n° Why, affaire) vit sur l'Affaire, pas ici :
+  // on ne persiste que le nom (rôle de l'automate) et le contenu technique.
   const doc = await prisma.affectationProjet.update({
     where: { id },
     data: {
       nom: data.nom?.trim() || "Sans titre",
-      clientNom: data.clientNom ?? "",
-      clientId,
-      numeroWhy: data.numeroWhy?.trim() || null,
       data: data.project as unknown as Prisma.InputJsonValue,
     },
     select: { updatedAt: true },
   });
   revalidatePath(BASE);
-  revalidatePath("/clients");
+  revalidatePath("/affaires");
   return { ok: true, updatedAt: doc.updatedAt.toISOString() };
 }
 

@@ -92,18 +92,22 @@ export async function getClients(): Promise<string[]> {
 }
 
 /** Catalogue de points (combobox de point). */
-export async function getCatalogue(): Promise<{ nom: string; type: string }[]> {
+export async function getCatalogue(): Promise<{ nom: string; type: string; signal: string | null }[]> {
   return prisma.pointCatalog.findMany({
     orderBy: { nom: "asc" },
-    select: { nom: true, type: true },
+    select: { nom: true, type: true, signal: true },
   });
 }
 
 const asPoints = (v: unknown): ModelePoint[] =>
   Array.isArray(v)
     ? v
-        .filter((p): p is { nom: string; type: string } => !!p && typeof p === "object")
-        .map((p) => ({ nom: String(p.nom ?? ""), type: (p.type as IoType) ?? "DI" }))
+        .filter((p): p is { nom: string; type: string; signal?: string } => !!p && typeof p === "object")
+        .map((p) => ({
+          nom: String(p.nom ?? ""),
+          type: (p.type as IoType) ?? "DI",
+          signal: p.signal ? String(p.signal) : undefined,
+        }))
     : [];
 
 /** Modèles de saisie (sections pré-remplies) pour l'éditeur. */
@@ -118,6 +122,7 @@ export interface PointCatalogueRow {
   id: string;
   nom: string;
   type: string;
+  signal: string | null;
 }
 export interface ModeleRow {
   id: string;
@@ -128,7 +133,7 @@ export interface ModeleRow {
 
 export async function getCataloguePointsAdmin(): Promise<PointCatalogueRow[]> {
   const rows = await prisma.pointCatalog.findMany({ orderBy: { nom: "asc" } });
-  return rows.map((r) => ({ id: r.id, nom: r.nom, type: r.type }));
+  return rows.map((r) => ({ id: r.id, nom: r.nom, type: r.type, signal: r.signal }));
 }
 
 export async function getModelesAdmin(): Promise<ModeleRow[]> {

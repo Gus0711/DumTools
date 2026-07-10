@@ -1,0 +1,704 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  This file contains information about supported light and sunblind extension modules.
+  
+  ModuleInput Type IDs
+      1: Multistate input
+      
+  LightOutput Type IDs 
+      1: Light 230V
+      2: Light 0-10V
+      3: Light DALI
+    
+  SunblindOutput Type IDs
+      1: Sunblind 230V
+      2: Sunblind 24V
+      3: Sunblind SMI 230V
+      4: Sunblind SMI 24V
+-->
+<LightAndSunblindModules fileVersion="1.2.2">
+  <LightAndSunblindModule id="-1" name="None" />
+  
+  <LightAndSunblindModule id="0" name="{ECxLight4Name:ECx-Light-4} (4 lights 230V)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="1" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <LightOutput name="Light 1" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="1" />
+      <UserProperty type="enum" name="Default value" bindTo="DefaultAction" values="0=Inactive;1=Active" value="0" />
+      <SystemProperty bindTo="ObjectType" value="1" />
+    </LightOutput>
+
+    <LightOutput name="Light 2" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="1" />
+      <UserProperty type="enum" name="Default value" bindTo="DefaultAction" values="0=Inactive;1=Active" value="0" />
+      <SystemProperty bindTo="ObjectType" value="1" />
+    </LightOutput>
+
+    <LightOutput name="Light 3" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="1" />
+      <UserProperty type="enum" name="Default value" bindTo="DefaultAction" values="0=Inactive;1=Active" value="0" />
+      <SystemProperty bindTo="ObjectType" value="1" />
+    </LightOutput>
+
+    <LightOutput name="Light 4" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="1" />
+      <UserProperty type="enum" name="Default value" bindTo="DefaultAction" values="0=Inactive;1=Active" value="0" />
+      <SystemProperty bindTo="ObjectType" value="1" />
+    </LightOutput>
+  </LightAndSunblindModule>
+
+  <LightAndSunblindModule id="1" name="{ECxLight4DName:ECx-Light-4D} (4 dimming lights)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="2" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <LightOutput name="Light 1" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="2" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 2" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="2" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 3" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="2" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 4" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="2" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+  </LightAndSunblindModule>
+
+  <LightAndSunblindModule id="5" name="{ECxLight4DALIName:ECx-Light-4DALI} (4 dimming lights)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="1" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <LightOutput name="Light 1" typeId="3" propertyChangeHandler="Dali">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="5" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1"/>
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 2" typeId="3" propertyChangeHandler="Dali">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="5" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 3" typeId="3" propertyChangeHandler="Dali">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="5" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 4" typeId="3" propertyChangeHandler="Dali">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="5" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+  </LightAndSunblindModule>
+
+  <LightAndSunblindModule id="2" name="{ECxBlind4Name:ECx-Blind-4} (4 sunblinds 230V)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="3" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <SunblindOutput name="Sunblind 1" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="3" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 2" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="3" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 3" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="3" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 4" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="3" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+  </LightAndSunblindModule>
+
+  <LightAndSunblindModule id="3" name="{ECxBlind4LVName:ECx-Blind-4LV} (4 sunblinds 24V)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="4" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <SunblindOutput name="Sunblind 1" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="4" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 2" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="4" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 3" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="4" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 4" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="4" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="-90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+  </LightAndSunblindModule>
+
+  <LightAndSunblindModule id="6" name="{ECxBlind4SMIName:ECx-Blind-4SMI} (4 sunblinds 230V)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="3" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <SunblindOutput name="Sunblind 1" typeId="3">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="6" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 2" typeId="3">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="6" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 3" typeId="3">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="6" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 4" typeId="3">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="6" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+  </LightAndSunblindModule>
+
+  <LightAndSunblindModule id="7" name="{ECxBlind4SMILVName:ECx-Blind-4SMI LoVo} (4 sunblinds 24V)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="4" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <SunblindOutput name="Sunblind 1" typeId="4">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="7" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 2" typeId="4">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="7" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 3" typeId="4">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="7" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+
+    <SunblindOutput name="Sunblind 4" typeId="4">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="7" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" configUnitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean" name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" value="True" />
+      <UserProperty type="numeric" name="Rotation ratio" bindTo="RotationRatio" minValue="0" maxValue="25" value="1" tag="Rotation" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+  </LightAndSunblindModule>
+
+
+  <!--
+  <LightAndSunblindModule id="4" name="{ECxDuo2D2Name:ECx-Duo-2D-2} (2 dimming lights 2 sunblinds 230V)">
+    <UserProperty type="numeric" name="Default address" bindTo="Number" minValue="1" maxValue="4" value="2" forceValue="true" />
+
+    <ModuleInput name="Input 1" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="1" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 2" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="2" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 3" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="3" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+
+    <ModuleInput name="Input 4" typeId="1">
+      <SystemProperty bindTo="InputNumber" value="4" />
+      <SystemProperty bindTo="ObjectType" value="2" />
+    </ModuleInput>
+    
+    <LightOutput name="Light 1" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="0" />
+      <SystemProperty bindTo="OutputType" value="2" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+
+    <LightOutput name="Light 2" typeId="2">
+      <SystemProperty bindTo="OutputNumber" value="1" />
+      <SystemProperty bindTo="OutputType" value="2" />
+      <UserProperty type="enum" name="Dimming management" bindTo="DimmingManagement" values="1=From 0 to 100%;2=From actual to next value" value="1" />
+      <UserProperty type="numeric" name="Dimming time" bindTo="FadeTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="180" value="10" />
+      <UserProperty type="numeric" name="Default value" bindTo="DefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </LightOutput>
+    
+    <SunblindOutput name="Sunblind 1" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="2" />
+      <SystemProperty bindTo="OutputType" value="3" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+    
+    <SunblindOutput name="Sunblind 2" typeId="1">
+      <SystemProperty bindTo="OutputNumber" value="3" />
+      <SystemProperty bindTo="OutputType" value="3" />
+      <UserProperty type="numeric" name="Translation time" bindTo="TranslationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="1800" value="20" tag="Translation" />
+      <UserProperty type="numeric" name="Translation min position" bindTo="TranslationMinPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="0" tag="Translation" />
+      <UserProperty type="numeric" name="Translation max position" bindTo="TranslationMaxPosition" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="numeric" name="Translation default value" bindTo="TranslationDefaultAction" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="100" tag="Translation" />
+      <UserProperty type="boolean" name="Translation reverse action" bindTo="TranslationReverseAction" tag="Translation" />
+      <UserProperty type="numeric" name="Rotation time" bindTo="RotationTime" baseUnitId="159" unitId="73" configUnitId="73" minValue="0" maxValue="25" value="1.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation steps" bindTo="RotationSteps" baseUnitId="98" unitId="98" minValue="0" maxValue="100" value="20" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation inter-step delay" bindTo="RotationStepDelay" baseUnitId="159" unitId="73" minValue="0.2" maxValue="65" value="0.5" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs min position" bindTo="RotationRealMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation abs max position" bindTo="RotationRealMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation min position" bindTo="RotationMinPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation max position" bindTo="RotationMaxPosition" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="90" tag="Rotation" />
+      <UserProperty type="numeric" name="Rotation default value" bindTo="RotationDefaultAction" baseUnitId="90" unitId="90" minValue="-359.98" maxValue="360" value="0" tag="Rotation" />
+      <UserProperty type="boolean"  name="Rotation reverse action" bindTo="RotationReverseAction" tag="Rotation" />
+      <UserProperty type="numeric" name="Boot delay" bindTo="BootDelay" baseUnitId="159" unitId="73" minValue="0" maxValue="65" value="0" />
+      <SystemProperty bindTo="ObjectType" value="0" />
+    </SunblindOutput>
+  </LightAndSunblindModule> 
+  -->
+
+  <Enumerations>
+    <Enumeration name="Light Sunblind Input Signal" key="BacnetLightSunblindInputSignal">
+      <Member text="Off" value="1" />
+      <Member text="On" value="2" />
+      <Member text="Pulse" value="3" />
+    </Enumeration>
+  </Enumerations>
+</LightAndSunblindModules>

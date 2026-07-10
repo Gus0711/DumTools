@@ -2,7 +2,7 @@
 // Ces défauts servent de seed BDD et de fallback. La source de vérité runtime est
 // la BDD (catalogue-queries.ts) ; catalog.ts reste utilisé par l'import GFX/PDF.
 import { CONTROLLER_CATALOG, MODULE_TYPE_DEFS } from "./catalog";
-import { MODULE_IMAGES } from "./images";
+import { CONTROLLER_IMAGES, MODULE_IMAGES } from "./images";
 
 export interface AutomateDef {
   reference: string;
@@ -88,6 +88,7 @@ export function catalogueParDefaut(): Catalogue {
   });
 
   const imgS1000 = C["ECY-S1000E-48"].img;
+  const imgApex = CONTROLLER_IMAGES["ECY-APEX"];
   const automates: AutomateDef[] = [
     auto("ECY-300", C["ECY-300"].img, true, "24 VAC/DC", D["ECY-300"], false, 0, 18, "ECY-300-Series_SP.pdf"),
     auto("ECY-350", C["ECY-300"].img, true, "24 VAC/DC", D["ECY-300"], false, 0, 18, "ECY-300-Series_SP.pdf"),
@@ -120,8 +121,8 @@ export function catalogueParDefaut(): Catalogue {
     auto("ECY-S1000E-28", imgS1000, false, "", undefined, true, 20, 28, "ECY-S1000_SP.pdf"),
     auto("ECY-S1000E-48", imgS1000, false, "", undefined, true, 20, 48, "ECY-S1000_SP.pdf"),
     auto("ECY-S1000E-320", imgS1000, false, "", undefined, true, 20, 320, "ECY-S1000_SP.pdf"),
-    auto("ECY-APEX", imgS1000, true, "24 VAC/DC (alim. directe)", undefined, true, 20, 320, "ECLYPSE APEX BI_SP.pdf"),
-    auto("ECY-APEX-48", imgS1000, true, "24 VAC/DC (alim. directe)", undefined, true, 20, 48, "ECLYPSE APEX BI_SP.pdf"),
+    auto("ECY-APEX", imgApex, true, "24 VAC/DC (alim. directe)", undefined, true, 20, 320, "ECLYPSE APEX BI_SP.pdf"),
+    auto("ECY-APEX-48", imgApex, true, "24 VAC/DC (alim. directe)", undefined, true, 20, 48, "ECLYPSE APEX BI_SP.pdf"),
   ];
 
   const IO_DOC = DOC + "ECY IO Modules_SP.pdf";

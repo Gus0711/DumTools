@@ -246,6 +246,26 @@
     padding-top: 0.35rem;
     padding-bottom: 0.35rem;
   }
+
+  /* Variante « ajustée » — la table tient TOUJOURS dans son conteneur (jamais
+     de scroll horizontal). Largeurs de colonnes réparties par les hints posés
+     sur les <th> ; le texte des colonnes flexibles passe à la ligne, les
+     colonnes courtes tronquent proprement (…) plutôt que de déborder. */
+  .data-table--fit {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .data-table--fit :where(td, th) {
+    overflow: hidden;
+  }
+  /* Colonnes non « wrap » : troncature à l'ellipse au lieu du débordement. */
+  .data-table--fit :where(td, th):not(.cell-wrap) {
+    text-overflow: ellipsis;
+  }
+  /* En layout fixe, un min-width forcerait la table à dépasser 100% : on l'annule. */
+  .data-table--fit .cell-wrap {
+    min-width: 0;
+  }
 }
 
 /* --- Impression : n'afficher que .print-root, en pleine page A4 ----------- */

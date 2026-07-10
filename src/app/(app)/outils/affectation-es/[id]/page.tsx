@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { Editeur } from "@/tools/affectation-es/editeur";
-import { getClients, getProjet } from "@/tools/affectation-es/queries";
+import { getProjet } from "@/tools/affectation-es/queries";
 import { getCatalogue } from "@/tools/affectation-es/catalogue-queries";
 import {
   getCatalogue as getCataloguePoints,
@@ -13,9 +13,8 @@ export default async function Page({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [projet, clients, catalogue, cataloguePoints, modeles] = await Promise.all([
+  const [projet, catalogue, cataloguePoints, modeles] = await Promise.all([
     getProjet(id),
-    getClients(),
     getCatalogue(),
     getCataloguePoints(),
     getModeles(),
@@ -29,9 +28,10 @@ export default async function Page({
         nom: projet.nom,
         clientNom: projet.clientNom,
         numeroWhy: projet.numeroWhy,
+        chantierId: projet.chantierId,
+        affaireNom: projet.affaireNom,
         project: projet.project,
       }}
-      clients={clients}
       catalogue={catalogue}
       cataloguePoints={cataloguePoints}
       modeles={modeles}

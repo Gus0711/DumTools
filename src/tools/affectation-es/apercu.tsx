@@ -19,9 +19,11 @@ import {
   moduleSort,
   normalizeControllerReference,
   pointLabel,
+  signalCompatibleBorne,
   type Module,
   type Project,
 } from "./model";
+import { signalLabel } from "@/tools/liste-points/model";
 
 const DISTECH_LOGO = "/materiel/distech-logo.png";
 const DUMORTIER_LOGO = "/logo-dumortier.png";
@@ -218,14 +220,22 @@ function IoTable({
       <tbody>
         {rows.map((ch) => {
           const p = getAssigned(project.points ?? [], direction, m.number, ch);
-          const third = direction === "input" ? (p ? p.signal : "-") : p ? p.relay || p.signal : "-";
+          const third = direction === "input" ? (p ? signalLabel(p.signal) : "-") : p ? p.relay || signalLabel(p.signal) : "-";
+          const incompatible = p ? !signalCompatibleBorne(p.signal, p.repere) : false;
           return (
-            <tr key={ch}>
+            <tr key={ch} className={incompatible ? "io-row-incompatible" : undefined}>
               <td>{ch}</td>
               <td className={p ? "" : "free-cell"}>{p ? pointLabel(p, !!project.include_references) : "Libre"}</td>
               <td className="old-wire-cell"></td>
               <td className="old-wire-cell"></td>
-              <td>{third || "-"}</td>
+              <td>
+                {third || "-"}
+                {incompatible && (
+                  <span className="io-incompatible-flag" title="Signal incompatible avec cette borne (triac / analogique)">
+                    {" "}⚠ incompatible
+                  </span>
+                )}
+              </td>
             </tr>
           );
         })}
@@ -347,11 +357,12 @@ function ControllerPage({
           <div className="network-list">
             <NetworkItem label="Alimentation" value={`${supply.label}${showSupply ? ` — ${supply.title}` : ""}`} />
             <NetworkItem label="Réseau 1" value={project.network_1 || "RJ45 - BACnet/IP"} />
+            <NetworkItem label="IP port 1" value={project.controller_ip} />
             <NetworkItem label="Réseau 2" value={project.network_2 || "RJ45 - supervision"} />
+            <NetworkItem label="IP port 2" value={project.controller_ip_2 || "—"} />
             <NetworkItem label="Modbus" value="RS485 - RTU" />
             <NetworkItem label="SSID Wi-Fi" value={project.wifi_ssid} />
             <NetworkItem label="Mot de passe" value={project.wifi_password} />
-            <NetworkItem label="Adresse IP" value={project.controller_ip} />
           </div>
         </div>
         <div className="controller-photo">

@@ -3,10 +3,12 @@
 // module par module selon les capacités. Le repère est posé via modulePointCode.
 import {
   allowedModules,
+  capaciteBorne,
   channelCount,
   isIntegratedControllerType,
   modulePointCode,
   moduleSort,
+  pointEstTor,
   type Module,
   type Point,
   type Project,
@@ -49,26 +51,53 @@ export function reconcilierModules(
   return integ ? [integ, ...sansIntegre] : sansIntegre;
 }
 
+interface Borne {
+  number: number;
+  channel: number;
+  code: string;
+  cap: ReturnType<typeof capaciteBorne>;
+}
+
 function assignerSens(points: Point[], modules: Project["modules"], direction: "input" | "output") {
   const mods = allowedModules(direction, modules).sort(moduleSort);
+
+  // Toutes les bornes de ce sens, dans l'ordre module puis canal, avec leur
+  // capacité électrique (triac/analogique/universelle) déduite du code.
+  const bornes: Borne[] = [];
+  for (const m of mods) {
+    const n = channelCount(direction, m);
+    for (let ch = 1; ch <= n; ch += 1) {
+      const code = modulePointCode(direction, m, ch);
+      bornes.push({ number: m.number, channel: ch, code, cap: capaciteBorne(code) });
+    }
+  }
+
   const pts = points.filter((p) => p.active && p.direction === direction);
-  let mi = 0;
-  let ch = 1;
   for (const p of pts) {
-    while (mi < mods.length && ch > channelCount(direction, mods[mi])) {
-      mi += 1;
-      ch = 1;
-    }
-    if (mi >= mods.length) {
-      p.module = null;
-      p.channel = null;
-      p.repere = "";
-      continue;
-    }
-    p.module = mods[mi].number;
-    p.channel = ch;
-    p.repere = modulePointCode(direction, mods[mi], ch);
-    ch += 1;
+    p.module = null;
+    p.channel = null;
+    p.repere = "";
+  }
+
+  const libre = (p: Point) => p.module == null;
+  const poser = (b: Borne, accepte: (p: Point) => boolean) => {
+    const p = pts.find((x) => libre(x) && accepte(x));
+    if (!p) return;
+    p.module = b.number;
+    p.channel = b.channel;
+    p.repere = b.code;
+  };
+
+  // Passe 1 : bornes dédiées d'abord (triac ← TOR, analogique ← analogique), pour
+  // réserver les bornes universelles à ce qui en a besoin et ne jamais poser un
+  // point analogique sur un triac (ni un TOR sur une borne analogique seule).
+  for (const b of bornes) {
+    if (b.cap === "tor") poser(b, (p) => pointEstTor(p.signal));
+    else if (b.cap === "ana") poser(b, (p) => !pointEstTor(p.signal));
+  }
+  // Passe 2 : bornes universelles pour les points restants, dans l'ordre de la liste.
+  for (const b of bornes) {
+    if (b.cap === "both") poser(b, () => true);
   }
 }
 

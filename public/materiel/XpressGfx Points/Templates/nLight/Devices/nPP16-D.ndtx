@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NLightDeviceTemplate name="nPP16-D">
+  <Features>
+    <Feature id="DimInLevel" />
+  </Features>
+  <Poles>
+    <Pole number="1">
+      <Features>
+        <Feature id="RelayState" />
+        <Feature id="DimLevel" />
+      </Features>
+    </Pole>
+  </Poles>
+</NLightDeviceTemplate>

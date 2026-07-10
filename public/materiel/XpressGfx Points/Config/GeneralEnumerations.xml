@@ -1,0 +1,769 @@
+<GeneralEnumerations>
+  <Group name="ComSensor Icons">
+    <Enumeration name="Alarm" key="General.ComSensorIcons.Alarm">
+      <Member text="Hidden" value="0" />
+      <Member text="Show" value="1" />
+      <Member text="Blink" value="2" />
+    </Enumeration>
+    <Enumeration name="Blind" key="General.ComSensorIcons.Blind">
+      <Member text="Hidden" value="0" />
+      <Member text="Show" value="1" />
+      <Member text="Blink" value="2" />
+    </Enumeration>
+    <Enumeration name="Light" key="General.ComSensorIcons.Light">
+      <Member text="Hidden" value="0" />
+      <Member text="Show" value="1" />
+      <Member text="Blink" value="2" />
+    </Enumeration>
+    <Enumeration name="Clock" key="General.ComSensorIcons.Clock">
+      <Member text="Hidden" value="0" />
+      <Member text="Show" value="1" />
+      <Member text="Blink" value="2" />
+    </Enumeration>
+    <Enumeration name="Eco Vue" key="General.ComSensorIcons.EcoVue">
+      <Member text="Hidden" value="0" />
+      <Member text="Eco Vue 1" value="1" />
+      <Member text="Eco Vue 2" value="2" />
+      <Member text="Eco Vue 3" value="3" />
+      <Member text="Eco Vue 4" value="4" />
+      <Member text="Blink Eco Vue 1" value="6" />
+      <Member text="Blink Eco Vue 2" value="7" />
+      <Member text="Blink Eco Vue 3" value="8" />
+      <Member text="Blink Eco Vue 4" value="9" />
+    </Enumeration>
+    <Enumeration name="Fan Speed" key="General.ComSensorIcons.FanSpeed">
+      <Member text="Hidden" value="0" />
+      <Member text="Off" value="1" />
+      <Member text="Low" value="2" />
+      <Member text="Medium" value="3" />
+      <Member text="High" value="4" />
+      <Member text="Auto" value="5" />
+      <Member text="Auto Low" value="6" />
+      <Member text="Auto Medium" value="7" />
+      <Member text="Auto High" value="8" />
+      <Member text="Blink Off" value="10" />
+      <Member text="Blink Low" value="11" />
+      <Member text="Blink Medium" value="12" />
+      <Member text="Blink High" value="13" />
+      <Member text="Blink Auto" value="14" />
+      <Member text="Blink Auto Low" value="15" />
+      <Member text="Blink Auto Medium" value="16" />
+      <Member text="Blink Auto High" value="17" />
+    </Enumeration>
+    <Enumeration name="HVAC Mode" key="General.ComSensorIcons.HvacMode">
+      <Member text="Hidden" value="0" />
+      <Member text="Heat" value="1" />
+      <Member text="Cool" value="2" />
+      <Member text="Emergency Heat" value="3" />
+      <Member text="Humidify" value="4" />
+      <Member text="Heat and Humidify" value="5" />
+      <Member text="Cool and Humidify" value="6" />
+      <Member text="Emergency Heat and Humidify" value="7" />
+      <Member text="Dehumidify" value="8" />
+      <Member text="Heat and Dehumidify" value="9" />
+      <Member text="Cool and Dehumidify" value="10" />
+      <Member text="Emergency Heat and Dehumidify" value="11" />
+      <Member text="Emergency Off" value="12" />
+      <Member text="Auto" value="13" />
+      <Member text="Auto Heat" value="14" />
+      <Member text="Auto Cool" value="15" />
+      <Member text="Auto Emergency Heat" value="16" />
+      <Member text="Auto Humidify" value="17" />
+      <Member text="Auto Heat and Humidify" value="18" />
+      <Member text="Auto Cool and Humidify" value="19" />
+      <Member text="Auto Emergency Heat and Humidify" value="20" />
+      <Member text="Auto Dehumidify" value="21" />
+      <Member text="Auto Heat and Dehumidify" value="22" />
+      <Member text="Auto Cool and Dehumidify" value="23" />
+      <Member text="Auto Emergency Heat and Dehumidify" value="24" />
+      <Member text="Auto Emergency Off" value="25" />
+      <Member text="Blink Heat" value="28" />
+      <Member text="Blink Cool" value="29" />
+      <Member text="Blink Emergency Heat" value="30" />
+      <Member text="Blink Humidify" value="31" />
+      <Member text="Blink Heat and Humidify" value="32" />
+      <Member text="Blink Cool and Humidify" value="33" />
+      <Member text="Blink Emergency Heat and Humidify" value="34" />
+      <Member text="Blink Dehumidify" value="35" />
+      <Member text="Blink Heat and Dehumidify" value="36" />
+      <Member text="Blink Cool and Dehumidify" value="37" />
+      <Member text="Blink Emergency Heat and Dehumidify" value="38" />
+      <Member text="Blink Emergency Off" value="39" />
+      <Member text="Blink Auto Off" value="40" />
+      <Member text="Blink Auto Heat" value="41" />
+      <Member text="Blink Auto Cool" value="42" />
+      <Member text="Blink Auto Emergency Heat" value="43" />
+      <Member text="Blink Auto Humidify" value="44" />
+      <Member text="Blink Auto Heat and Humidify" value="45" />
+      <Member text="Blink Auto Cool and Humidify" value="46" />
+      <Member text="Blink Auto Emergency Heat and Humidify" value="47" />
+      <Member text="Blink Auto Dehumidify" value="48" />
+      <Member text="Blink Auto Heat and Dehumidify" value="49" />
+      <Member text="Blink Auto Cool and Dehumidify" value="50" />
+      <Member text="Blink Auto Emergency Heat and Dehumidify" value="51" />
+      <Member text="Blink Auto Emergency Off" value="52" />
+    </Enumeration>
+    <Enumeration name="Occupancy" key="General.ComSensorIcons.Occupancy">
+      <Member text="Hidden" value="0" />
+      <Member text="Occupied Day" value="1" />
+      <Member text="Unoccupied Night" value="2" />
+      <Member text="Occupied Night" value="3" />
+      <Member text="Unoccupied Day" value="4" />
+      <Member text="Unoccupied" value="5" />
+      <Member text="Occupied" value="6" />
+      <Member text="Blink Occupied Day" value="9" />
+      <Member text="Blink Unoccupied Night" value="10" />
+      <Member text="Blink Occupied Night" value="11" />
+      <Member text="Blink Unoccupied Day" value="12" />
+      <Member text="Blink Unoccupied" value="13" />
+      <Member text="Blink Occupied" value="14" />
+    </Enumeration>
+    <Enumeration name="Temperature" key="General.ComSensorIcons.Temperature">
+      <Member text="Hidden" value="0" />
+      <Member text="Space Temperature" value="1" />
+      <Member text="Space SetPoint" value="2" />
+      <Member text="Outdoor Temperature" value="3" />
+      <Member text="Temperature" value="4" />
+      <Member text="Temperature Setpoint" value="5" />
+      <Member text="Setpoint" value="6" />
+      <Member text="Blink Space Temperature" value="9" />
+      <Member text="Blink Space SetPoint" value="10" />
+      <Member text="Blink Outdoor Temperature" value="11" />
+      <Member text="Blink Temperature" value="12" />
+      <Member text="Blink Temperature Setpoint" value="13" />
+      <Member text="Blink Setpoint" value="14" />
+    </Enumeration>
+    <Enumeration name="Unit" key="General.ComSensorIcons.Unit">
+      <Member text="No Units" value="0" />
+      <Member text="Degrees Celsius" value="1" />
+      <Member text="Degrees Fahrenheit" value="2" />
+      <Member text="Delta Degrees Celsius" value="3" />
+      <Member text="Delta Degrees Fahrenheit" value="4" />
+      <Member text="Pascals" value="5" />
+      <Member text="Inches of Water" value="6" />
+      <Member text="Liters per Second" value="7" />
+      <Member text="Cubic Feet per Minute" value="8" />
+      <Member text="Cubic Meters per Hour" value="9" />
+      <Member text="Parts per Million" value="10" />
+      <Member text="Percent" value="11" />
+      <Member text="Percent Relative Humidity" value="12" />
+      <Member text="Centimeters" value="13" />
+      <Member text="Inches" value="14" />
+      <Member text="Blink Degrees Celsius" value="16" />
+      <Member text="Blink Degrees Fahrenheit" value="17" />
+      <Member text="Blink Delta Degrees Celsius" value="18" />
+      <Member text="Blink Delta Degrees Fahrenheit" value="19" />
+      <Member text="Blink Pascals" value="20" />
+      <Member text="Blink Inches of Water" value="21" />
+      <Member text="Blink Liters per Second" value="22" />
+      <Member text="Blink Cubic Feet per Minute" value="23" />
+      <Member text="Blink Cubic Meters per Hour" value="24" />
+      <Member text="Blink Parts per Million" value="25" />
+      <Member text="Blink Percent" value="26" />
+      <Member text="Blink Percent Relative Humidity" value="27" />
+      <Member text="Blink Centimeters" value="28" />
+      <Member text="Blink Inches" value="29" />
+    </Enumeration>
+  </Group>
+  <Group name="BLE Room Device">
+    <Enumeration name="Eco Vue" key="General.SmartSense.EcoVue">
+      <Member text="Eco Vue 1" value="1" />
+      <Member text="Eco Vue 2" value="2" />
+      <Member text="Eco Vue 3" value="3" />
+      <Member text="Eco Vue 4" value="4" />
+      <Member text="Hide" value="5" />
+    </Enumeration>
+    <Enumeration name="Fan Speed" key="General.SmartSense.FanSpeed">
+      <Member text="Auto" value="1" />
+      <Member text="Off" value="2" />
+      <Member text="Low" value="3" />
+      <Member text="Medium" value="4" />
+      <Member text="High" value="5" />
+    </Enumeration>
+    <Enumeration name="Fan Speed On/Off" key="General.SmartSense.FanSpeedOnOff">
+      <Member text="Auto" value="1" />
+      <Member text="Off" value="2" />
+      <Member text="On" value="3" />
+    </Enumeration>
+    <Enumeration name="Heating/Cooling" key="General.SmartSense.HeatingCooling">
+      <Member text="Auto" value="1" />
+      <Member text="Heat" value="2" />
+      <Member text="Cool" value="3" />
+    </Enumeration>
+    <Enumeration name="HVAC Mode" key="General.SmartSense.HvacMode">
+      <Member text="Auto" value="1" />
+      <Member text="Off" value="2" />
+      <Member text="Cool" value="3" />
+      <Member text="Heat" value="4" />
+      <Member text="Eco" value="5" />
+    </Enumeration>
+    <Enumeration name="Motion" key="General.SmartSense.Motion">
+      <Member text="No Motion" value="0"/>
+      <Member text="Motion" value="1"/>
+    </Enumeration>
+    <Enumeration name="Occupancy" key="General.SmartSense.Occupancy">
+      <Member text="Occupied" value="1"/>
+      <Member text="Unoccupied" value="2"/>
+      <Member text="Bypass" value="3"/>
+      <Member text="Standby" value="4"/>
+    </Enumeration>
+    <Enumeration name="Custom Action Status" key="General.SmartSense.CustomActionStatus">
+      <Member text="Inactive" value="0"/>
+      <Member text="Active" value="1"/>
+    </Enumeration>
+    <Enumeration name="Remote Control Status" key="General.SmartSense.RemoteControlStatus">
+      <Member text="Disconnected" value="1"/>
+      <Member text="Battery Low" value="2"/>
+      <Member text="Battery Medium" value="3"/>
+      <Member text="Battery High" value="4"/>
+    </Enumeration>
+  </Group>
+  <Group name="BACnet">
+    <Group name="Standard Enumerations">
+      <Enumeration name="Reliability" key="Bacnet.Standard.Reliability">
+        <Member text="No fault detected" value="0" />
+        <Member text="No Sensor" value="1" />
+        <Member text="Over range" value="2" />
+        <Member text="Under range" value="3" />
+        <Member text="Open loop" value="4" />
+        <Member text="Shorted loop" value="5" />
+        <Member text="No output" value="6" />
+        <Member text="Unreliable other" value="7" />
+        <Member text="Process error" value="8" />
+        <Member text="Multi state fault" value="9" />
+        <Member text="Configuration error" value="10" />
+        <Member text="Reserved" value="11" />
+        <Member text="Communication failure" value="12" />    
+        <Member text="Member fault" value="13" />
+        <Member text="Monitored object fault" value="14" />
+        <Member text="Tripped" value="15" />
+        <Member text="Lamp failure" value="16" />
+        <Member text="Activation failure" value="17" />
+        <Member text="Renew DHCP failure" value="18" />
+        <Member text="Renew FD registration failure" value="19" />
+        <Member text="Restart auto negotiation failure" value="20" />
+        <Member text="Restart failure" value="21" />
+        <Member text="Proprietary command failure" value="22" />
+        <Member text="Faults listed" value="23" />
+        <Member text="Referenced object fault" value="24" />
+        <Member text="Multi state out of range" value="25" />
+      </Enumeration>
+      <Enumeration name="Device Status" key="Bacnet.Standard.DeviceStatus">
+        <Member text="Not online" value="-1" />
+        <Member text="Operational" value="0" />
+        <Member text="Operational read only" value="1" />
+        <Member text="Download required" value="2" />
+        <Member text="Download in progress" value="3" />
+        <Member text="Non operational" value="4" />
+        <Member text="Backup in progress" value="5" />
+      </Enumeration>
+      <Enumeration name="Priority" key="Bacnet.Standard.Priority">
+        <Member text="Default" value="0" />
+        <Member text="Manual Life Safety" value="1"/>
+        <Member text="Auto Life Safety" value="2"/>
+        <Member text="Available" value="3" />
+        <Member text="Available" value="4" />
+        <Member text="Critical Equipment Control" value="5" />
+        <Member text="Minimum On Off" value="6" />
+        <Member text="Available" value="7" />
+        <Member text="Manual Operator" value="8" />
+        <Member text="Available" value="9" />
+        <Member text="Available" value="10" />
+        <Member text="Available" value="11" />
+        <Member text="Available" value="12" />
+        <Member text="Available" value="13" />
+        <Member text="Program MSTP" value="14" />
+        <Member text="Available" value="15" />
+        <Member text="Program IP" value="16" />
+      </Enumeration>
+      <Enumeration name="Occupancy" key="Bacnet.Standard.Occupancy">
+        <Member text="Occupied" value="1"/>
+        <Member text="Unoccupied" value="2"/>
+        <Member text="Bypass" value="3" />
+        <Member text="Standby" value="4" />
+      </Enumeration>
+      <Enumeration name="Wind Direction" key="Bacnet.Standard.WindDirection">
+        <Member text="North" value="0"/>
+        <Member text="Northeast" value="1"/>
+        <Member text="East" value="2"/>
+        <Member text="Southeast" value="3" />
+        <Member text="South" value="4" />
+        <Member text="Southwest" value="5" />
+        <Member text="West" value="6" />
+        <Member text="Northwest" value="7" />
+        <Member text="Variable" value="8" />
+      </Enumeration>
+      <Enumeration name="Weather State" key="Bacnet.Standard.WeatherState">
+        <Member text="Clear" value="0" />
+        <Member text="Sunny" value="1" />
+        <Member text="Mostly Sunny" value="2" />
+        <Member text="Partly Sunny" value="3" />
+        <Member text="Fair" value="4" />
+        <Member text="A Few Clouds" value="5" />
+        <Member text="Partly Cloudy" value="6" />
+        <Member text="Mostly Cloudy" value="7" />
+        <Member text="Cloudy" value="8" />
+        <Member text="Overcast" value="9" />
+        <Member text="Light Rain" value="10" />
+        <Member text="Rain" value="11" />
+        <Member text="Heavy Rain" value="12" />
+        <Member text="Thunderstorms" value="13" />
+        <Member text="Freezing Rain" value="14" />
+        <Member text="Fog" value="15" />
+        <Member text="Haze" value="16" />
+        <Member text="Snow" value="17" />
+        <Member text="Windy" value="18" />
+        <Member text="Misty" value="19" />
+        <Member text="Dust" value="20" />
+        <Member text="Unknown" value="21" />
+        <Member text="Tsunami" value="22" />
+        <Member text="Tornado" value="23" />
+        <Member text="Flood" value="24" />
+        <Member text="Fire" value="25" />
+        <Member text="Hurricane" value="26" />
+        <Member text="Earthquake" value="27" />
+        <Member text="Volcano" value="28" />
+      </Enumeration>
+    </Group>
+    <Group name="Controllers">
+      <Enumeration name="Damper Speed" key="Bacnet.Controllers.DamperSpeed">
+        <Member text="Normal - 95 s" value="0" />
+        <Member text="Fast - 45 s" value="1" />
+      </Enumeration>
+      <Enumeration name="Damper Direction" key="Bacnet.Controllers.DamperDirection">
+        <Member text="Clockwise" value="0" />
+        <Member text="Counter clockwise" value="1" />
+      </Enumeration>
+      <Enumeration name="Network Value Status" key="Bacnet.Controllers.NetworkValueStatus">
+        <Member text="Not received" value="-2" />
+        <Member text="Not sent" value="-1" />
+        <Member text="No error" value="0" />
+        <Member text="Service request denied" value="1" />
+        <Member text="Missing required parameter" value="2" />
+        <Member text="Other error" value="3" />
+        <Member text="Unknown property" value="4" />
+        <Member text="Property is not an array" value="5" />
+        <Member text="Write access denied" value="6" />
+        <Member text="Invalid array index" value="7" />
+        <Member text="Invalid data type" value="8" />
+        <Member text="Value out of range" value="9" />
+        <Member text="Response timed out" value="10" />
+        <Member text="Request timed out" value="11" />
+        <Member text="Request queue full" value="12" />
+        <Member text="Response queue full" value="13" />
+        <Member text="Update failed" value="14" />
+        <Member text="Unknown object" value="15" />
+        <Member text="Unsupported object type" value="16" />
+        <Member text="Read access denied" value="17" />
+        <Member text="Unknown message type" value="18" />
+        <Member text="Transmission buffer overflow" value="19" />
+        <Member text="Transmission disable" value="20" />
+        <Member text="Address binding list is full" value="21" />
+        <Member text="Unknown error" value="22" />
+      </Enumeration>
+      <Enumeration name="Override Switch" key="Bacnet.Controllers.OverrideSwitch">
+        <Member text="Off" value="0" />
+        <Member text="Auto" value="1" />
+        <Member text="Manual" value="2" />
+        <Member text="Not available" value="3" />
+      </Enumeration>
+      <Enumeration name="MultiSensor Group" key="Bacnet.Controllers.MultiSensorGroup">
+        <Member text="Group 1-2" value="0" />
+        <Member text="Group 1" value="1" />
+        <Member text="Group 2" value="2" />
+        <Member text="Group 3" value="3" />
+        <Member text="Group 4" value="4" />
+        <Member text="Group 5" value="5" />
+        <Member text="Group 6" value="6" />
+        <Member text="Group 7" value="7" />
+        <Member text="Group 8" value="8" />
+        <Member text="Group 1-4" value="9" />
+        <Member text="Group 1-8" value="10" />
+      </Enumeration>
+      <Enumeration name="MultiSensor Group Command" key="Bacnet.Controllers.MultiSensorGroupCommand">
+        <Member text="Light stop" value="1" />
+        <Member text="Light up" value="2" />
+        <Member text="Light down" value="3" />
+        <Member text="Sunblind up" value="4" />
+        <Member text="Sunblind down" value="5" />
+        <Member text="Sunblind rotation up" value="6" />
+        <Member text="Sunblind rotation down" value="7" />
+        <Member text="Sunblind stop" value="8" />
+      </Enumeration>
+      <Enumeration name="FanSpeed" key="Bacnet.Controllers.SmartComfortFanSpeed">
+        <Member text="Auto" value="1" />
+        <Member text="Off" value="2" />
+        <Member text="Low" value="3" />
+        <Member text="Medium" value="4" />
+        <Member text="High" value="5" />
+      </Enumeration>
+      <Enumeration name="MultiSensor Remote FanSpeed" key="Bacnet.Controllers.MultiSensorRemoteFanSpeed">
+        <Member text="Auto" value="1" />
+        <Member text="Off" value="2" />
+        <Member text="Low" value="3" />
+        <Member text="Medium" value="4" />
+        <Member text="High" value="5" />
+      </Enumeration>
+      <Enumeration name="Light Sunblind Function" key="Bacnet.Controllers.LightSunblindFunction">
+        <Member text="Nul" value="1" />
+        <Member text="Off" value="2" />
+        <Member text="On" value="3" />
+        <Member text="Down" value="4" />
+        <Member text="Up" value="5" />
+        <Member text="Stop" value="6" />
+        <Member text="State" value="7" />
+      </Enumeration>
+      <Enumeration name="Light Sunblind Input Signal" key="Bacnet.Controllers.LightSunblindInputSignal">
+        <Member text="Off" value="1" />
+        <Member text="On" value="2" />
+        <Member text="Pulse" value="3" />
+      </Enumeration>
+      <Enumeration name="DALI Reliability" key="Bacnet.Controllers.DaliReliability">
+        <Member text="No fault detected" value="0" />
+        <Member text="Lamp failure" value="1" />
+        <Member text="No ballast detected" value="2" />
+        <Member text="Shorted DALI bus" value="3" />
+        <Member text="Communication failure" value="4" />
+        <Member text="Not available" value="5" />
+      </Enumeration>
+      <Enumeration name="SMI Reliability" key="Bacnet.Controllers.SmiReliability">
+        <Member text="No fault detected" value="0" />
+        <Member text="Sunblind failure" value="1" />
+        <Member text="No motor detected" value="2" />
+        <Member text="Shorted SMI bus" value="3" />
+        <Member text="Motor missing" value="4" />
+        <Member text="Addressing on going" value="5" />
+        <Member text="Addressing failure" value="6" />
+        <Member text="No Power SMI bus" value="7" />
+        <Member text="Not available" value="8" />
+      </Enumeration>
+    </Group>
+  </Group>
+  <Group name="LonWorks">
+    <Group name="Standard Enumerations">
+      <Enumeration name="Reliability" key="ShortStack.Standard.Reliability">
+        <Member text="No fault detected" value="0" />
+        <Member text="No Sensor" value="1" />
+        <Member text="Over range" value="2" />
+        <Member text="Under range" value="3" />
+        <Member text="Open loop" value="4" />
+        <Member text="Shorted loop" value="5" />
+        <Member text="No output" value="6" />
+        <Member text="Unreliable other" value="7" />
+        <Member text="Process error" value="8" />
+        <Member text="Multi state fault" value="9" />
+        <Member text="Configuration error" value="10" />
+        <Member text="Reserved" value="11" />
+        <Member text="Communication failure" value="12" />
+      </Enumeration>
+    </Group>
+    <Group name="Controllers">
+      <Enumeration name="Priority" key="ShortStack.Controllers.Priority">
+        <Member text="Default" value="0" />
+        <Member text="Override Switch" value="1" />
+        <Member text="Manual Operator" value="2" />
+        <Member text="Network Override" value="3" />
+        <Member text="Program" value="4" />
+      </Enumeration>
+      <Enumeration name="Override Switch" key="ShortStack.Controllers.OverrideSwitch">
+        <Member text="Off" value="0" />
+        <Member text="Auto" value="1" />
+        <Member text="Manual" value="2" />
+        <Member text="Not available" value="3" />
+      </Enumeration>
+      <Enumeration name="MultiSensor Group" key="ShortStack.Controllers.MultiSensorGroup">
+        <Member text="Group 1-2" value="0" />
+        <Member text="Group 1" value="1" />
+        <Member text="Group 2" value="2" />
+        <Member text="Group 3" value="3" />
+        <Member text="Group 4" value="4" />
+        <Member text="Group 5" value="5" />
+        <Member text="Group 6" value="6" />
+        <Member text="Group 7" value="7" />
+        <Member text="Group 8" value="8" />
+        <Member text="Group 1-4" value="9" />
+        <Member text="Group 1-8" value="10" />
+      </Enumeration>
+      <Enumeration name="MultiSensor Group Command" key="ShortStack.Controllers.MultiSensorGroupCommand">
+        <Member text="Light stop" value="0" />
+        <Member text="Light up" value="1" />
+        <Member text="Light down" value="2" />
+        <Member text="Sunblind up" value="3" />
+        <Member text="Sunblind down" value="4" />
+        <Member text="Sunblind rotation up" value="5" />
+        <Member text="Sunblind rotation down" value="6" />
+        <Member text="Sunblind stop" value="7" />
+      </Enumeration>
+      <Enumeration name="FanSpeed" key="ShortStack.Controllers.SmartComfortFanSpeed">
+        <Member text="Auto" value="-1" />
+        <Member text="Off" value="0" />
+        <Member text="Low" value="1" />
+        <Member text="Medium" value="2" />
+        <Member text="High" value="3" />
+      </Enumeration>
+      <Enumeration name="MultiSensor Remote FanSpeed" key="ShortStack.Controllers.MultiSensorRemoteFanSpeed">
+        <Member text="Auto" value="-1" />
+        <Member text="Off" value="0" />
+        <Member text="Low" value="1" />
+        <Member text="Medium" value="2" />
+        <Member text="High" value="3" />
+      </Enumeration>
+      <Enumeration name="Light Sunblind Function" key="ShortStack.Controllers.LightSunblindFunction">
+        <Member text="Nul" value="-1" />
+        <Member text="Off" value="0" />
+        <Member text="On" value="1" />
+        <Member text="Down" value="2" />
+        <Member text="Up" value="3" />
+        <Member text="Stop" value="4" />
+        <Member text="State" value="5" />
+      </Enumeration>
+      <Enumeration name="Light Sunblind Input Signal" key="ShortStack.Controllers.LightSunblindInputSignal">
+        <Member text="Off" value="0" />
+        <Member text="On" value="1" />
+        <Member text="Pulse" value="2" />
+      </Enumeration>
+      <Enumeration name="DALI Reliability" key="ShortStack.Controllers.DaliReliability">
+        <Member text="No fault detected" value="0" />
+        <Member text="Lamp failure" value="1" />
+        <Member text="No ballast detected" value="2" />
+        <Member text="Shorted DALI bus" value="3" />
+        <Member text="Communication failure" value="4" />
+        <Member text="Not available" value="5" />
+      </Enumeration>
+    </Group>
+  </Group>
+  <Group name="Modbus">
+    <Enumeration name="Modbus Status" key="Modbus.Status">
+      <Member text="No error" value="0" />
+      <Member text="Operation not permitted" value="1" />
+      <Member text="Bad file number" value="9" />
+      <Member text="Invalid argument" value="22" />
+      <Member text="Broken pipe" value="32" />
+      <Member text="Protocol not available" value="92" />
+      <Member text="Connection reset by peer" value="104" />
+      <Member text="Connection timed out" value="110" />
+      <Member text="Connection refused" value="111" />
+
+      <Member text="Modbus Illegal function" value="10001" />
+      <Member text="Modbus Illegal data address" value="10002" />
+      <Member text="Modbus Illegal data value" value="10003" />
+      <Member text="Modbus Slave device failure" value="10004" />
+      <Member text="Modbus Acknowledge" value="10005" />
+      <Member text="Modbus Slave device busy" value="10006" />
+      <Member text="Modbus Negative acknowledge" value="10007" />
+      <Member text="Modbus Memory parity error" value="10008" />
+      <Member text="Modbus Gateway path unavailable" value="10010" />
+      <Member text="Modbus Gateway target device failed to respond" value="10011" />
+
+      <Member text="Modbus invalid CRC" value="10012" />
+      <Member text="Modbus invalid data" value="10013" />
+      <Member text="Modbus invalid exception code" value="10014" />
+      <Member text="Modbus unknown exception" value="10015" />
+      <Member text="Modbus too many data" value="10016" />
+      <Member text="Modbus response not from requested slave" value="10017" />
+
+      <Member text="No such file or directory" value="2" />
+      <Member text="No such process" value="3" />
+      <Member text="Interrupted system call" value="4" />
+      <Member text="I/O error" value="5" />
+      <Member text="No such device or address" value="6" />
+      <Member text="Argument list too long" value="7" />
+      <Member text="Exec format error" value="8" />
+      <Member text="No child processes" value="10" />
+      <Member text="Try again" value="11" />
+      <Member text="Out of memory" value="12" />
+      <Member text="Permission denied" value="13" />
+      <Member text="Bad address" value="14" />
+      <Member text="Block device required" value="15" />
+      <Member text="Device or resource busy" value="16" />
+      <Member text="File exists" value="17" />
+      <Member text="Cross-device link" value="18" />
+      <Member text="No such device" value="19" />
+      <Member text="Not a directory" value="20" />
+      <Member text="Is a directory" value="21" />
+      <Member text="File table overflow" value="23" />
+      <Member text="Too many open files" value="24" />
+      <Member text="Not a typewriter" value="25" />
+      <Member text="Text file busy" value="26" />
+      <Member text="File too large" value="27" />
+      <Member text="No space left on device" value="28" />
+      <Member text="Illegal seek" value="29" />
+      <Member text="Read-only file system" value="30" />
+      <Member text="Too many links" value="31" />
+      <Member text="Math argument out of domain of func" value="33" />
+      <Member text="Math result not representable" value="34" />
+      <Member text="Resource deadlock would occur" value="35" />
+      <Member text="File name too long" value="36" />
+      <Member text="No record locks available" value="37" />
+      <Member text="Function not implemented" value="38" />
+      <Member text="Directory not empty" value="39" />
+      <Member text="Too many symbolic links encountered" value="40" />
+      <Member text="Operation would block" value="41" />
+      <Member text="No message of desired type" value="42" />
+      <Member text="Identifier removed" value="43" />
+      <Member text="Channel number out of range" value="44" />
+      <Member text="Level 2 not synchronized" value="45" />
+      <Member text="Level 3 halted" value="46" />
+      <Member text="Level 3 reset" value="47" />
+      <Member text="Link number out of range" value="48" />
+      <Member text="Protocol driver not attached" value="49" />
+      <Member text="No CSI structure available" value="50" />
+      <Member text="Level 2 halted" value="51" />
+      <Member text="Invalid exchange" value="52" />
+      <Member text="Invalid request descriptor" value="53" />
+      <Member text="Exchange full" value="54" />
+      <Member text="No anode" value="55" />
+      <Member text="Invalid request code" value="56" />
+      <Member text="Invalid slot" value="57" />
+      <Member text="Resource deadlock would occur" value="58" />
+      <Member text="Bad font file format" value="59" />
+      <Member text="Device not a stream" value="60" />
+      <Member text="No data available" value="61" />
+      <Member text="Timer expired" value="62" />
+      <Member text="Out of streams resources" value="63" />
+      <Member text="Machine is not on the network" value="64" />
+      <Member text="Package not installed" value="65" />
+      <Member text="Object is remote" value="66" />
+      <Member text="Link has been severed" value="67" />
+      <Member text="Advertise error" value="68" />
+      <Member text="Srmount error" value="69" />
+      <Member text="Communication error on send" value="70" />
+      <Member text="Protocol error" value="71" />
+      <Member text="Multihop attempted" value="72" />
+      <Member text="RFS specific error" value="73" />
+      <Member text="Not a data message" value="74" />
+      <Member text="Value too large for defined data type" value="75" />
+      <Member text="Name not unique on network" value="76" />
+      <Member text="File descriptor in bad state" value="77" />
+      <Member text="Remote address changed" value="78" />
+      <Member text="Can not access a needed shared library" value="79" />
+      <Member text="Accessing a corrupted shared library" value="80" />
+      <Member text=".lib section in a.out corrupted" value="81" />
+      <Member text="Attempting to link in too many shared libraries" value="82" />
+      <Member text="Cannot exec a shared library directly" value="83" />
+      <Member text="Illegal byte sequence" value="84" />
+      <Member text="Interrupted system call should be restarted" value="85" />
+      <Member text="Streams pipe error" value="86" />
+      <Member text="Too many users" value="87" />
+      <Member text="Socket operation on non-socket" value="88" />
+      <Member text="Destination address required" value="89" />
+      <Member text="Message too long" value="90" />
+      <Member text="Protocol wrong type for socket" value="91" />
+      <Member text="Protocol not supported" value="93" />
+      <Member text="Socket type not supported" value="94" />
+      <Member text="Operation not supported on transport endpoint" value="95" />
+      <Member text="Protocol family not supported" value="96" />
+      <Member text="Address family not supported by protocol" value="97" />
+      <Member text="Address already in use" value="98" />
+      <Member text="Cannot assign requested address" value="99" />
+      <Member text="Network is down" value="100" />
+      <Member text="Network is unreachable" value="101" />
+      <Member text="Network dropped connection because of reset" value="102" />
+      <Member text="Software caused connection abort" value="103" />
+      <Member text="No buffer space available" value="105" />
+      <Member text="Transport endpoint is already connected" value="106" />
+      <Member text="Transport endpoint is not connected" value="107" />
+      <Member text="Cannot send after transport endpoint shutdown" value="108" />
+      <Member text="Too many references: cannot splice" value="109" />
+      <Member text="Host is down" value="112" />
+      <Member text="No route to host" value="113" />
+      <Member text="Operation already in progress" value="114" />
+      <Member text="Operation now in progress" value="115" />
+      <Member text="Stale NFS file handle" value="116" />
+      <Member text="Structure needs cleaning" value="117" />
+      <Member text="Not a XENIX named type file" value="118" />
+      <Member text="No XENIX semaphores available" value="119" />
+      <Member text="Is a named type file" value="120" />
+      <Member text="Remote I/O error" value="121" />
+      <Member text="Quota exceeded" value="122" />
+      <Member text="No medium found" value="123" />
+      <Member text="Wrong medium type" value="124" />
+      <Member text="Operation Canceled" value="125" />
+      <Member text="Required key not available" value="126" />
+      <Member text="Key has expired" value="127" />
+      <Member text="Key has been revoked" value="128" />
+      <Member text="Key was rejected by service" value="129" />
+      <Member text="Owner died" value="130" />
+      <Member text="State not recoverable" value="131" />
+    </Enumeration>
+  </Group>
+  <Group name="M-Bus">
+    <Enumeration name="M-Bus Status" key="MBus.Status">
+      <Member text="No error" value="0" />
+
+      <!-- General Application Error -->
+      <Member text="Unimplemented CI" value="1" />
+      <Member text="Buffer too long" value="2" />
+      <Member text="Too many records" value="3" />
+      <Member text="Premature end record" value="4" />
+      <Member text="More 10 DIFE" value="5" />
+      <Member text="More 10 VIFE" value="6" />
+      <Member text="Reserved" value="7" />
+      <Member text="Application busy" value="8" />
+      <Member text="Too many readouts" value="9" />
+      <Member text="Unknown error" value="10" />
+      <Member text="Invalid primary address" value="11" />
+      <Member text="Invalid secondary address" value="12" />
+      <Member text="Invalid communication speed" value="13" />
+      <Member text="Invalid manufacturer id" value="14" />
+      <Member text="Invalid medium" value="15" />
+      <Member text="Invalid version" value="16" />
+      <Member text="Device unreachable" value="17" />
+      <Member text="Primary address conflict" value="18" />
+      <Member text="Secondary address conflict" value="19" />
+      <Member text="Internal error" value="20" />
+
+      <!-- Point Error -->
+      <Member text="Too Many DIFE" value="101" />
+      <Member text="Storage not implemented" value="102" />
+      <Member text="Unit not implemented" value="103" />
+      <Member text="Tariff not implemented" value="104" />
+      <Member text="Function not implemented" value="105" />
+      <Member text="Data class not implemented" value="106" />
+      <Member text="Data size not implemented" value="107" />
+
+      <Member text="Too many VIFE" value="111" />
+      <Member text="Illegal VIF group" value="112" />
+      <Member text="Illegal VIF exponent" value="113" />
+      <Member text="VIF DIF mismatch" value="114" />
+      <Member text="Unimplemented action" value="115" />
+
+      <Member text="No data available" value="121" />
+      <Member text="Data overflow" value="122" />
+      <Member text="Data underflow" value="123" />
+      <Member text="Data error" value="124" />
+
+      <Member text="Premature end record" value="128" />
+      <Member text="Unknown point" value="129" />
+
+      <!-- In M-Bus specification this code value is 0 -->
+      <Member text="Data unspecified" value="256" />
+    </Enumeration>
+  </Group>
+  <Group name="nLight">
+    <Enumeration name="nLight Channel Type" key="nLight.Channel.Type">
+      <Member text="Switch" value="1" />
+      <Member text="Occupancy" value="2" />
+      <Member text="Photocell" value="3" />
+    </Enumeration>
+    <Enumeration name="nLight Channel Device Type" key="nLight.Channel.DeviceType">
+      <Member text="Local" value="1" />
+      <Member text="First Bridge" value="2" />
+    </Enumeration>
+    <Enumeration name="nLight Device Battery Status" key="nLight.Device.BatteryStatus">
+      <Member text="Unknown" value="1" />
+      <Member text="Replace Battery" value="2" />
+      <Member text="Poor" value="3" />
+      <Member text="Fair" value="4" />
+      <Member text="Good" value="5" />
+    </Enumeration>  
+  </Group>
+  <Group name="OpenADR">
+    <Enumeration name="OpenADR Event Level" key="OpenADR.EventLevel">
+      <Member text="Normal" value="1" />
+      <Member text="Moderate" value="2" />
+      <Member text="High" value="3" />
+      <Member text="Special" value="4" />
+    </Enumeration>
+  </Group>
+</GeneralEnumerations>

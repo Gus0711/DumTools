@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, Prisma } from "../src/generated/prisma/client";
 import { Role } from "../src/generated/prisma/enums";
 import { CLIENTS, CATALOG, modelesParDefaut } from "../src/tools/liste-points/catalog";
+import { signalCatalogueParDefaut } from "../src/tools/liste-points/model";
 import { catalogueParDefaut } from "../src/tools/affectation-es/catalogue";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -35,7 +36,11 @@ async function main() {
     skipDuplicates: true,
   });
   const catalog = await prisma.pointCatalog.createMany({
-    data: CATALOG.map((p) => ({ nom: p.nom, type: p.type })),
+    data: CATALOG.map((p) => ({
+      nom: p.nom,
+      type: p.type,
+      signal: signalCatalogueParDefaut(p.nom, p.type),
+    })),
     skipDuplicates: true,
   });
   console.log(

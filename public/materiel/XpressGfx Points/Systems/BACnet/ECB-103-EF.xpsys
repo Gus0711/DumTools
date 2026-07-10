@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<template title="ECB-103 Exhaust Fan" family="BACnet" group="Exhaust Fan">
+  <variables>
+    <var name="model" value="ECB-103"/>
+    <var name="name" value="ECB-103 EF"/>
+    <var name="system" value="EF01"/>
+  </variables>
+  <prompts>
+    <prompt name="name" caption="Enter Controller Name" default="{name}" blank="false"/>
+    <prompt name="system" caption="Enter a System Prefix" default="{system}" blank="true"/>
+  </prompts>
+  <controllers>
+    <controller model="ECB-103" sheet="{name}" exportPath="{name}.gfx" src="ECB-103-EF.gfx">
+        <range address="ControllerName">
+          <![CDATA["{name}"]]>
+        </range>
+        <range address="ControllerDescription">
+          <![CDATA["Exhaust Fan"]]>
+        </range>
+        <range address="10,2,11,10">
+          <![CDATA["UI1","{system}LST","{system}LST","Exhaust Fan Low Speed Status",,"X",,,"Digital"
+          "UI2","{system}HST","{system}HST","Exhaust Fan High Speed Status",,"X",,,"Digital"]]>
+        </range>
+        <range address="14,2,15,10">
+          <![CDATA["UO1","{system}LOW","{system}LOW","Exhaust Fan Low Speed Command",,"X",,,"Digital"
+          "UO2","{system}HIGH","{system}HIGH","Exhaust Fan High Speed Command",,"X",,,"Digital"]]>
+        </range>
+    </controller>
+  </controllers>
+  <files>
+    <file src="EF.pdf" target="{name}.pdf"/>
+  </files>
+</template>

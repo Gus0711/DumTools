@@ -8,6 +8,6 @@ export default NextAuth(authConfig).auth;
 export const config = {
   // Protège tout sauf l'API d'auth, les assets Next et le logo public.
   matcher: [
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|logo-dumortier.png|materiel/|gfx-templates/|pdf.worker).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico|logo-dumortier.png|logo_DumTools.png|materiel/|gfx-templates/|pdf.worker).*)",
   ],
 };

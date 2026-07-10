@@ -4,7 +4,7 @@ import {
 } from "@/tools/liste-points/queries";
 import { ConfigPoints } from "@/tools/liste-points/config-points";
 
-export const metadata = { title: "Catalogue & modèles — Configuration" };
+export const metadata = { title: "Points & modèles — Configuration" };
 
 export default async function Page() {
   const [catalogue, modeles] = await Promise.all([

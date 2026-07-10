@@ -17,9 +17,9 @@ export const CONTROLLER_CATALOG: Record<string, ControllerInfo> = {
   "ECY-PTU-207": { reference: "ECY-PTU-207", img: CONTROLLER_IMAGES["ECY-PTU-207"], integratedPower: true, powerLabel: "100–240 VAC intégrée" },
   "ECY-300": { reference: "ECY-300", img: CONTROLLER_IMAGES["ECY-300"], integratedPower: true, powerLabel: "24 VAC/DC intégrée" },
   "ECY-303": { reference: "ECY-303", img: CONTROLLER_IMAGES["ECY-303"], integratedPower: true, powerLabel: "24 VAC/DC intégrée" },
-  "ECY-S1000E-28": { reference: "ECY-S1000E-28", img: MODULE_IMAGES.controller, integratedPower: false, powerLabel: "" },
-  "ECY-S1000E-48": { reference: "ECY-S1000E-48", img: MODULE_IMAGES.controller, integratedPower: false, powerLabel: "" },
-  "ECY-S1000E-320": { reference: "ECY-S1000E-320", img: MODULE_IMAGES.controller, integratedPower: false, powerLabel: "" },
+  "ECY-S1000E-28": { reference: "ECY-S1000E-28", img: CONTROLLER_IMAGES["ECY-S1000E"], integratedPower: false, powerLabel: "" },
+  "ECY-S1000E-48": { reference: "ECY-S1000E-48", img: CONTROLLER_IMAGES["ECY-S1000E"], integratedPower: false, powerLabel: "" },
+  "ECY-S1000E-320": { reference: "ECY-S1000E-320", img: CONTROLLER_IMAGES["ECY-S1000E"], integratedPower: false, powerLabel: "" },
 };
 
 export interface ModuleTypeDef {
@@ -54,8 +54,9 @@ export const MODULE_TYPE_DEFS: Record<string, ModuleTypeDef> = {
 
 export const CONTROLLER_OPTIONS = Object.keys(CONTROLLER_CATALOG);
 export const MODULE_TYPE_OPTIONS = ["8UI6UO", "8UI", "16DI", "8DOR", "4UI4UO", "MBUS", "RS485"];
-export const INPUT_SIGNALS = ["T", "PT1000", "NTC", "0-10V", "4-20mA", "D"];
-export const OUTPUT_SIGNALS = ["0-10V", "4-20mA", "D"];
+// Listes de signaux : source unique dans liste-points/model.ts (partagée avec
+// l'écran catalogue de points et la dérivation). Réexport pour compat.
+export { INPUT_SIGNALS, OUTPUT_SIGNALS, signalsForType } from "@/tools/liste-points/model";
 
 /** Alimentations disponibles. */
 export function powerSupplyInfo(value: string) {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  Briefcase,
   Check,
   Cpu,
   FileText,
@@ -15,7 +16,7 @@ import {
   Upload,
   Wand2,
 } from "lucide-react";
-import { Button, Combobox } from "@/ui";
+import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import {
   automateDef,
@@ -76,21 +77,26 @@ function reconcileInitial(p: Project, catalogue: Catalogue): Project {
 export function Editeur({
   id,
   initial,
-  clients,
   catalogue,
   cataloguePoints,
   modeles,
 }: {
   id: string;
-  initial: { nom: string; clientNom: string; numeroWhy: string; project: Project };
-  clients: string[];
+  initial: {
+    nom: string;
+    clientNom: string;
+    numeroWhy: string;
+    chantierId: string | null;
+    affaireNom: string | null;
+    project: Project;
+  };
   catalogue: Catalogue;
   cataloguePoints: CatalogItem[];
   modeles: ModeleDef[];
 }) {
   const [nom, setNom] = useState(initial.nom);
-  const [clientNom, setClientNom] = useState(initial.clientNom);
-  const [numeroWhy, setNumeroWhy] = useState(initial.numeroWhy);
+  // Identification (client, n° Why) : gérée sur l'affaire, lecture seule ici.
+  const clientNom = initial.clientNom;
   const [project, setProject] = useState<Project>(() => reconcileInitial(initial.project, catalogue));
   const [tab, setTab] = useState<TabId>("projet");
   const [save, setSave] = useState<"saved" | "saving" | "error">("saved");
@@ -167,14 +173,14 @@ export function Editeur({
     const t = setTimeout(async () => {
       setSave("saving");
       try {
-        await sauverProjet(id, { nom, clientNom, numeroWhy, project });
+        await sauverProjet(id, { nom, project });
         setSave("saved");
       } catch {
         setSave("error");
       }
     }, 700);
     return () => clearTimeout(t);
-  }, [nom, clientNom, numeroWhy, project, id]);
+  }, [nom, project, id]);
 
   const modules = useMemo(
     () => [...(project.modules ?? [])].sort(moduleSort),
@@ -325,10 +331,9 @@ export function Editeur({
           nom={nom}
           setNom={setNom}
           clientNom={clientNom}
-          setClientNom={setClientNom}
-          numeroWhy={numeroWhy}
-          setNumeroWhy={setNumeroWhy}
-          clients={clients}
+          numeroWhy={initial.numeroWhy}
+          chantierId={initial.chantierId}
+          affaireNom={initial.affaireNom}
           project={project}
           set={set}
         />
@@ -374,41 +379,55 @@ function ProjetTab({
   nom,
   setNom,
   clientNom,
-  setClientNom,
   numeroWhy,
-  setNumeroWhy,
-  clients,
+  chantierId,
+  affaireNom,
   project,
   set,
 }: {
   nom: string;
   setNom: (v: string) => void;
   clientNom: string;
-  setClientNom: (v: string) => void;
   numeroWhy: string;
-  setNumeroWhy: (v: string) => void;
-  clients: string[];
+  chantierId: string | null;
+  affaireNom: string | null;
   project: Project;
   set: <K extends keyof Project>(key: K, value: Project[K]) => void;
 }) {
-  const clientOptions = useMemo(() => clients.map((c) => ({ value: c })), [clients]);
   return (
     <div className="max-w-2xl">
       <Section titre="Identification">
-        <Field label="Nom du projet">
+        <Field label="Nom de l'automate">
           <TextInput value={nom} onChange={setNom} />
         </Field>
-        <Field label="Client">
-          <Combobox
-            value={clientNom}
-            onInput={setClientNom}
-            onPick={(o) => setClientNom(o.value)}
-            options={clientOptions}
-            placeholder="Rechercher un client…"
-          />
-        </Field>
-        <Field label="N° Why (réf. affaire WhySoft)">
-          <TextInput value={numeroWhy} onChange={setNumeroWhy} />
+        {/* Client + n° Why sont gérés sur l'affaire, pas ici (lecture seule). */}
+        <Field label="Affaire">
+          {chantierId ? (
+            <div className="flex items-center gap-2 text-sm">
+              <Link
+                href={`/affaires/${chantierId}`}
+                className="inline-flex items-center gap-1.5 font-medium text-brand hover:underline"
+              >
+                <Briefcase className="h-4 w-4" />
+                {affaireNom || "Voir l'affaire"}
+              </Link>
+              <span className="text-subtle">·</span>
+              <span className="text-muted">{clientNom || "—"}</span>
+              {numeroWhy && (
+                <span className="rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-muted">
+                  {numeroWhy}
+                </span>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted">
+              Non rattaché à une affaire. Créez cet automate depuis une{" "}
+              <Link href="/affaires" className="text-brand hover:underline">
+                affaire
+              </Link>{" "}
+              pour l&apos;identifier (client, n° Why).
+            </p>
+          )}
         </Field>
         <Field label="En-tête (client - site)">
           <TextInput value={project.header} onChange={(v) => set("header", v)} />
@@ -642,15 +661,23 @@ function AutomateModulesTab({
         </Section>
 
         <Section titre="Réseaux">
-          <Field label="Réseau 1">
+          <Field label="Réseau 1 (port 1)">
             <TextInput value={project.network_1} onChange={(v) => set("network_1", v)} />
           </Field>
-          <Field label="Réseau 2">
+          <Field label="Réseau 2 (port 2)">
             <TextInput value={project.network_2} onChange={(v) => set("network_2", v)} />
           </Field>
-          <Field label="Adresse IP automate">
-            <TextInput value={project.controller_ip} onChange={(v) => set("controller_ip", v)} />
-          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="IP port 1">
+              <TextInput value={project.controller_ip} onChange={(v) => set("controller_ip", v)} />
+            </Field>
+            <Field label="IP port 2">
+              <TextInput
+                value={project.controller_ip_2 ?? ""}
+                onChange={(v) => set("controller_ip_2", v)}
+              />
+            </Field>
+          </div>
         </Section>
 
         <Section titre="Wi-Fi de mise en service">

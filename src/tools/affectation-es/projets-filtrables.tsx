@@ -66,17 +66,17 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
           <p className="mt-3 text-muted">Aucun projet ne correspond à la recherche.</p>
         </div>
       ) : (
-        <div className="data-card overflow-x-auto">
-          <table className="data-table">
+        <div className="data-card">
+          <table className="data-table data-table--fit">
             <thead>
               <tr>
-                <th>Projet</th>
-                <th>Client</th>
-                <th>N° Why</th>
-                <th className="cell-num">Modules</th>
-                <th className="cell-num">Points</th>
-                <th>Auteur</th>
-                <th className="w-12" />
+                <th className="w-[26%]">Projet</th>
+                <th className="w-[22%]">Client</th>
+                <th className="w-[12%]">N° Why</th>
+                <th className="w-[11%] cell-num">Modules</th>
+                <th className="w-[10%] cell-num">Points</th>
+                <th className="w-[15%]">Auteur</th>
+                <th className="w-11" />
               </tr>
             </thead>
             <tbody>
