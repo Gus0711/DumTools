@@ -162,8 +162,10 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 |---|---|
 | `dumtools_list_projects` | liste des projets GTB (résumés) |
 | `dumtools_get_project` | projet complet (rows, points affectés, modules, réseaux) |
+| `dumtools_list_affaires` | tableau de bord des affaires (Chantier, 1 par n° Why) |
+| `dumtools_get_affaire` | fiche affaire : automates + documents rattachés, état, besoin armoire |
 | `dumtools_list_clients` | référentiel client + nb de réalisations |
-| `dumtools_get_client` | fiche client agrégée (projets rattachés) |
+| `dumtools_get_client` | fiche client agrégée (projets GTB + documents rattachés) |
 | `dumtools_list_catalog` | catalogue de points + modèles de saisie |
 | `dumtools_list_materiel` | base matériel (automates + modules Distech) |
 | `dumtools_recommend_controller` | recommandation d'automate (depuis un projet ou un besoin saisi) |
@@ -172,8 +174,10 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 
 | Outil | Rôle | Annotation |
 |---|---|---|
-| `dumtools_create_project` | crée un projet (éventuellement pré-rempli) | — |
-| `dumtools_update_project_meta` | modifie l'identification (nom, client, N° Why…) | idempotent |
+| `dumtools_create_affaire` | crée une affaire (Chantier) rattachée à un client | — |
+| `dumtools_update_affaire` | modifie une affaire (identité, état, besoin armoire) + resync automates | idempotent |
+| `dumtools_create_project` | crée un projet (éventuellement pré-rempli, rattaché à l'affaire du n° Why) | — |
+| `dumtools_update_project_meta` | modifie l'identification (nom, client, N° Why → re-rattache l'affaire) | idempotent |
 | `dumtools_update_project_rows` | remplace la liste de points → re-dérive + ré-affecte | destructif |
 | `dumtools_set_project_controller` | choisit l'automate → réconcilie modules + ré-affecte | idempotent |
 | `dumtools_upsert_catalog_point` | ajoute/édite un point du catalogue | idempotent |

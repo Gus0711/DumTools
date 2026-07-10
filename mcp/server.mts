@@ -13,11 +13,14 @@ import { z } from "zod";
 
 import {
   buildRows,
+  createAffaire,
   createProject,
   deleteProject,
+  getAffaire,
   getClient,
   getMateriel,
   getProject,
+  listAffaires,
   listCatalogPoints,
   listClients,
   listModeles,
@@ -27,6 +30,7 @@ import {
   resolveMcpUserId,
   resolveUserByToken,
   setProjectController,
+  updateAffaire,
   updateProjectMeta,
   updateProjectRows,
   upsertCatalogPoint,
@@ -67,6 +71,8 @@ async function run<T extends Record<string, unknown>>(fn: () => Promise<T>): Pro
 }
 
 const IO_TYPE = z.enum(["AI", "DI", "AO", "DO", "COM"]);
+const ETAT_AFFAIRE = z.enum(["DEVIS", "COMMANDE", "EN_COURS", "LIVRE", "CLOTURE"]);
+const BESOIN_ARMOIRE = z.enum(["INTEGRATION", "NOUVELLE"]);
 
 // Utilisateur courant, porté par requête en mode HTTP (résolu depuis le jeton).
 const userContext = new AsyncLocalStorage<AuthUser>();
@@ -157,6 +163,43 @@ Retourne : id, nom, realisations[] (id, titre, numeroWhy, resume « N modules ·
     const c = await getClient(id);
     if (!c) throw new Error(`Client introuvable pour l'id « ${id} ». Vérifiez l'id via dumtools_list_clients.`);
     return { client: c };
+  }),
+);
+
+server.registerTool(
+  "dumtools_list_affaires",
+  {
+    title: "Lister les affaires",
+    description: `Liste toutes les affaires (Chantier), de la plus récemment modifiée à la plus ancienne. Une affaire = 1 numéro Why, porte l'identification (client, n° Why) et regroupe N automates (projets GTB).
+
+Retourne pour chacune : id, nom, numeroWhy, etat (DEVIS|COMMANDE|EN_COURS|LIVRE|CLOTURE), besoinArmoire (INTEGRATION|NOUVELLE|null), clientNom, nbAutomates, date de modif (ISO).
+
+Pour le détail (automates + documents rattachés), enchaîner avec dumtools_get_affaire.`,
+    inputSchema: {},
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async () => run(async () => {
+    const affaires = await listAffaires();
+    return { count: affaires.length, affaires };
+  }),
+);
+
+server.registerTool(
+  "dumtools_get_affaire",
+  {
+    title: "Détail d'une affaire",
+    description: `Fiche d'une affaire : identification (nom, client, numeroWhy, etat, besoinArmoire) + tout ce qui lui est rattaché.
+
+Args : id (string) — l'id de l'affaire (voir dumtools_list_affaires).
+
+Retourne : affaire { id, nom, numeroWhy, etat, besoinArmoire, clientId, clientNom, automates[] (projets GTB : id, nom, controller, nbPoints, nbModules, date), documents[] (GED : id, nom, categorie, taille, statutSync, date) }.`,
+    inputSchema: { id: z.string().min(1).describe("Id de l'affaire") },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const a = await getAffaire(id);
+    if (!a) throw new Error(`Affaire introuvable pour l'id « ${id} ». Vérifiez l'id via dumtools_list_affaires.`);
+    return { affaire: a };
   }),
 );
 
@@ -260,6 +303,54 @@ Retourne : { id } du projet créé. Enchaîner avec dumtools_update_project_rows
   async (input) => run(async () => {
     const { id } = await createProject(input, currentUserId());
     return { id, created: true };
+  }),
+);
+
+server.registerTool(
+  "dumtools_create_affaire",
+  {
+    title: "Créer une affaire",
+    description: `Crée une affaire (Chantier) rattachée à un client. Le numéro Why est unique : c'est la clé qui rattachera automatiquement les projets GTB saisis avec ce même n° Why (regroupement multi-automate).
+
+Args : nom (string, requis), clientNom (string, requis — rattaché/créé dans le référentiel), numeroWhy? (réf. WhySoft).
+
+Retourne : { id } de l'affaire créée. Erreur si le numeroWhy est déjà pris.`,
+    inputSchema: {
+      nom: z.string().min(1).describe("Nom de l'affaire"),
+      clientNom: z.string().min(1).describe("Nom du client (créé si absent)"),
+      numeroWhy: z.string().optional().describe("Numéro d'affaire WhySoft (unique)"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async (input) => run(async () => {
+    const { id } = await createAffaire(input);
+    return { id, created: true };
+  }),
+);
+
+server.registerTool(
+  "dumtools_update_affaire",
+  {
+    title: "Modifier une affaire",
+    description: `Met à jour une affaire : identité (nom, client, n° Why), état d'avancement et besoin en armoire. Seuls les champs fournis changent. Si l'identité change, l'info dénormalisée sur les automates rattachés est resynchronisée.
+
+Args : id (string, requis) ; nom?, clientNom?, numeroWhy? ; etat? (DEVIS|COMMANDE|EN_COURS|LIVRE|CLOTURE) ; besoinArmoire? (INTEGRATION|NOUVELLE|null pour non défini).
+
+Retourne : { updatedAt }. Erreur si le numeroWhy entre en collision avec une autre affaire.`,
+    inputSchema: {
+      id: z.string().min(1).describe("Id de l'affaire"),
+      nom: z.string().optional(),
+      clientNom: z.string().optional().describe("Re-rattache au référentiel client"),
+      numeroWhy: z.string().optional(),
+      etat: ETAT_AFFAIRE.optional().describe("État d'avancement"),
+      besoinArmoire: BESOIN_ARMOIRE.nullable().optional().describe("Besoin en armoire (null = non défini)"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id, ...input }) => run(async () => {
+    const r = await updateAffaire(id, input);
+    if (!r) throw new Error(`Affaire introuvable pour l'id « ${id} ».`);
+    return { id, ...r };
   }),
 );
 
