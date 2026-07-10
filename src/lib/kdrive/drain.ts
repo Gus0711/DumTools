@@ -9,8 +9,14 @@ import { pousserVersKdrive } from "./index";
  * même ligne. Backoff simple : plafond de tentatives. */
 
 export const MAX_TENTATIVES = 5;
+/** Un push est considéré « orphelin » (worker mort en cours de route) au-delà de
+ *  ce délai en EN_COURS → il redevient éligible. Marge large (> durée d'un gros
+ *  upload) pour ne pas voler un push réellement en vol. */
+const EN_COURS_PERIME_MIN = 15;
 
-/** Réclame atomiquement le prochain document à pousser (ou null s'il n'y en a plus). */
+/** Réclame atomiquement le prochain document à pousser (ou null s'il n'y en a plus).
+ *  Éligibles : EN_ATTENTE, ERREUR sous plafond, et EN_COURS périmé (auto-guérison
+ *  des claims orphelins d'un drain interrompu). */
 async function claimProchain(): Promise<string | null> {
   const rows = await prisma.$queryRaw<{ id: string }[]>`
     UPDATE "Document" SET "statutSync" = 'EN_COURS', "updatedAt" = now()
@@ -18,7 +24,9 @@ async function claimProchain(): Promise<string | null> {
       SELECT id FROM "Document"
       WHERE "spoolPath" IS NOT NULL
         AND ("statutSync" = 'EN_ATTENTE'
-             OR ("statutSync" = 'ERREUR' AND "tentatives" < ${MAX_TENTATIVES}))
+             OR ("statutSync" = 'ERREUR' AND "tentatives" < ${MAX_TENTATIVES})
+             OR ("statutSync" = 'EN_COURS'
+                 AND "updatedAt" < now() - make_interval(mins => ${EN_COURS_PERIME_MIN})))
       ORDER BY "createdAt" ASC
       FOR UPDATE SKIP LOCKED
       LIMIT 1
