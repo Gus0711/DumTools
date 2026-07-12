@@ -6,7 +6,8 @@ import { RowsEditor, type CatalogItem } from "@/tools/liste-points/rows-editor";
 import { Impression } from "@/tools/liste-points/impression";
 import { GenererGfx } from "@/tools/liste-points/generer-gfx";
 import type { ModeleDef, PointRow } from "@/tools/liste-points/model";
-import type { Project } from "./model";
+import { SauvegarderListeKdrive } from "./sauvegarder-liste-kdrive";
+import type { KdriveMarker, Project } from "./model";
 
 /**
  * Onglet « Liste de points » d'un projet d'affectation. Remplace les anciens
@@ -18,14 +19,18 @@ export function ListeTab({
   project,
   nom,
   clientNom,
+  chantierId,
   setRows,
+  onKdriveSaved,
   cataloguePoints,
   modeles,
 }: {
   project: Project;
   nom: string;
   clientNom: string;
+  chantierId: string | null;
   setRows: React.Dispatch<React.SetStateAction<PointRow[]>>;
+  onKdriveSaved: (m: KdriveMarker) => void;
   cataloguePoints: CatalogItem[];
   modeles: ModeleDef[];
 }) {
@@ -49,6 +54,16 @@ export function ListeTab({
               chantier={project.header}
               client={clientNom}
               date={project.date}
+            />
+            <SauvegarderListeKdrive
+              chantierId={chantierId}
+              projectName={projectName}
+              clientNom={clientNom}
+              chantierNom={project.header}
+              date={project.date || null}
+              rows={rows}
+              marker={project.kdrive}
+              onSaved={onKdriveSaved}
             />
           </div>
         }

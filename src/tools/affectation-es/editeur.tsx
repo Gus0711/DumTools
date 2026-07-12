@@ -356,7 +356,9 @@ export function Editeur({
           project={project}
           nom={nom}
           clientNom={clientNom}
+          chantierId={initial.chantierId}
           setRows={setListeRows}
+          onKdriveSaved={(m) => setProject((p) => ({ ...p, kdrive: m }))}
           cataloguePoints={cataloguePoints}
           modeles={modeles}
         />
@@ -368,7 +370,15 @@ export function Editeur({
 
       {tab === "tests" && <TestsTab project={project} patch={patch} modules={modules} />}
 
-      {tab === "apercu" && <Apercu project={project} modules={modules} catalogue={catalogue} />}
+      {tab === "apercu" && (
+        <Apercu
+          project={project}
+          modules={modules}
+          catalogue={catalogue}
+          chantierId={initial.chantierId}
+          onKdriveSaved={(m) => setProject((p) => ({ ...p, kdriveApercu: m }))}
+        />
+      )}
     </div>
   );
 }

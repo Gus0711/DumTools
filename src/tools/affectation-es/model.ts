@@ -63,6 +63,17 @@ export interface Project {
   /** E/S physiques dérivées des `rows` (affectées aux bornes). Voir derivation.ts. */
   points: Point[];
   modules: Module[];
+  /** Dernière sauvegarde de la liste de points sur kDrive (voir sauvegarder-kdrive). */
+  kdrive?: KdriveMarker;
+  /** Dernière sauvegarde du document d'affectation (onglet Aperçu) sur kDrive. */
+  kdriveApercu?: KdriveMarker;
+}
+
+/** Marqueur d'une sauvegarde kDrive : quand, empreinte du contenu envoyé, nom du fichier. */
+export interface KdriveMarker {
+  savedAt: string;
+  hash: string;
+  nom: string;
 }
 
 export const MODULE_TYPE_OPTIONS = ["8UI6UO", "8UI", "16DI", "8DOR", "4UI4UO", "MBUS", "RS485"];

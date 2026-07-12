@@ -1,10 +1,13 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Printer } from "lucide-react";
 import { Button } from "@/ui";
 import "./apercu-print.css";
+import { fnv1a } from "@/tools/liste-points/hash";
+import { genererApercuPdf } from "./apercu-pdf";
+import { BoutonSauvegardeKdrive } from "./sauvegarder-kdrive";
 import { powerSupplyInfo } from "./catalog";
 import { MODULE_IMAGES } from "./images";
 import { automateDef, moduleDef, type AutomateDef, type Catalogue } from "./catalogue";
@@ -20,6 +23,7 @@ import {
   normalizeControllerReference,
   pointLabel,
   signalCompatibleBorne,
+  type KdriveMarker,
   type Module,
   type Project,
 } from "./model";
@@ -501,15 +505,28 @@ function IntegratedDiagramPage({
 
 // --- Document complet ------------------------------------------------------
 
+/** Empreinte du contenu du document d'affectation (hors marqueurs kDrive). */
+function hashApercu(p: Project): string {
+  const clone: Record<string, unknown> = { ...p };
+  delete clone.kdrive;
+  delete clone.kdriveApercu;
+  return fnv1a(JSON.stringify(clone));
+}
+
 export function Apercu({
   project,
   modules,
   catalogue,
+  chantierId,
+  onKdriveSaved,
 }: {
   project: Project;
   modules: Module[];
   catalogue: Catalogue;
+  chantierId: string | null;
+  onKdriveSaved: (m: KdriveMarker) => void;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const ordered = [...modules].filter((m) => !isCommunicationType(m)).sort(moduleSort);
   const integratedModules = ordered.filter(isIntegratedControllerType);
   const extensionModules = ordered.filter((m) => !isIntegratedControllerType(m));
@@ -563,14 +580,22 @@ export function Apercu({
             Modules de communication : {commModules.map((m) => `ECY-${m.type}`).join(", ")}
           </div>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <BoutonSauvegardeKdrive
+            chantierId={chantierId}
+            nomFichier={`Affectation E-S — ${project.name || project.header || "projet"} — ${new Date().toISOString().slice(0, 10)}.pdf`}
+            currentHash={hashApercu(project)}
+            marker={project.kdriveApercu}
+            genererPdf={() => genererApercuPdf(rootRef.current as HTMLElement)}
+            onSaved={onKdriveSaved}
+          />
           <Button size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4" /> Imprimer le document
           </Button>
         </div>
       </div>
 
-      <div className="print-root affectation-doc">
+      <div ref={rootRef} className="print-root affectation-doc">
         {/* Couverture */}
         <section className="print-page cover-page">
           <DocHeader project={project} />
