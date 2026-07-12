@@ -51,3 +51,33 @@ export function resolveCategorieDirId(
 ): Promise<string> {
   return resolveDir(affaireDirId, categorie);
 }
+
+/* --- Variantes LECTURE SEULE (miroir kDrive) : ne créent JAMAIS de dossier. --- */
+
+/** Cherche le sous-dossier `name` de `parentId` (match normalisé) SANS le créer.
+ *  Renvoie son id, ou null s'il n'existe pas. */
+export async function trouverSousDossier(
+  parentId: string,
+  name: string,
+): Promise<string | null> {
+  const enfants = await listChildren(parentId);
+  const existant = enfants.find(
+    (e: KdriveEntry) => e.type === "dir" && segmentsEgaux(e.name, name),
+  );
+  return existant ? existant.id : null;
+}
+
+/** Résout chantier/{année}/{Client}/{Affaire} en lecture seule.
+ *  Renvoie null si un maillon manque (rien n'est créé). */
+export async function trouverAffaireDirId(
+  annee: number,
+  clientDossier: string,
+  affaireNom: string,
+): Promise<string | null> {
+  let dir: string | null = rootDirId();
+  dir = await trouverSousDossier(dir, String(annee));
+  if (!dir) return null;
+  dir = await trouverSousDossier(dir, clientDossier);
+  if (!dir) return null;
+  return trouverSousDossier(dir, affaireNom);
+}

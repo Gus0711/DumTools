@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Briefcase, Hash } from "lucide-react";
@@ -7,6 +8,7 @@ import { EtatBadge } from "@/lib/chantiers/etat-badge";
 import { listerDocuments } from "@/tools/documents/queries";
 import { Depot } from "@/tools/documents/depot";
 import { DocumentsListe } from "@/tools/documents/documents-liste";
+import { MiroirKdrive } from "@/tools/documents/miroir-kdrive";
 
 export async function generateMetadata({
   params,
@@ -61,6 +63,13 @@ export default async function Page({
 
       <section>
         <DocumentsListe chantierId={chantierId} docs={docs} />
+        <Suspense
+          fallback={
+            <p className="mt-10 text-sm text-muted">Lecture du dossier kDrive…</p>
+          }
+        >
+          <MiroirKdrive chantierId={chantierId} />
+        </Suspense>
       </section>
     </div>
   );
