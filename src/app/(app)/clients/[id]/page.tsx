@@ -51,7 +51,7 @@ export default async function Page({
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-            <table className="w-full border-collapse text-sm">
+            <table className="table-cards w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                   <th className="px-4 py-2.5 font-medium">Document</th>
@@ -67,7 +67,7 @@ export default async function Page({
                     key={`${r.toolId}:${r.id}`}
                     className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                   >
-                    <td className="px-4 py-2.5">
+                    <td className="cell-card-title px-4 py-2.5">
                       <Link
                         href={r.href}
                         className="font-medium text-fg hover:text-brand"
@@ -75,8 +75,8 @@ export default async function Page({
                         {r.titre}
                       </Link>
                     </td>
-                    <td className="px-4 py-2.5 text-muted">{r.toolNom}</td>
-                    <td className="px-4 py-2.5 text-muted">
+                    <td data-label="Outil" className="px-4 py-2.5 text-muted">{r.toolNom}</td>
+                    <td data-label="N° Why" className="px-4 py-2.5 text-muted">
                       {r.numeroWhy ? (
                         <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg">
                           <Hash className="h-3 w-3 text-subtle" />
@@ -86,8 +86,8 @@ export default async function Page({
                         "—"
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-muted">{r.resume}</td>
-                    <td className="px-4 py-2.5 text-muted">{fmtDate(r.updatedAt)}</td>
+                    <td data-label="Détail" className="px-4 py-2.5 text-muted">{r.resume}</td>
+                    <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(r.updatedAt)}</td>
                   </tr>
                 ))}
               </tbody>

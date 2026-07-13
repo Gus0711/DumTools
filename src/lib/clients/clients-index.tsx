@@ -45,7 +45,7 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
         </div>
       ) : (
         <div className="data-card overflow-x-auto">
-          <table className="data-table">
+          <table className="data-table table-cards">
             <thead>
               <tr>
                 <th>Client</th>
@@ -56,7 +56,7 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
             <tbody>
               {filtres.map((c) => (
                 <tr key={c.id}>
-                  <td className="cell-wrap">
+                  <td className="cell-wrap cell-card-title">
                     <Link
                       href={`/clients/${c.id}`}
                       className="cell-title inline-flex items-center gap-2 hover:text-brand"
@@ -65,8 +65,8 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
                       {c.nom}
                     </Link>
                   </td>
-                  <td className="cell-num">{c.nbRealisations}</td>
-                  <td>{fmtDate(c.updatedAt)}</td>
+                  <td data-label="Réalisations" className="cell-num">{c.nbRealisations}</td>
+                  <td data-label="Modifié">{fmtDate(c.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

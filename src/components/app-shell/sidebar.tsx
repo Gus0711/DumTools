@@ -1,14 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Briefcase, Building2, Home, SlidersHorizontal, Tags, Users, type LucideIcon } from "lucide-react";
+import { BookOpen, Briefcase, Building2, Home, SlidersHorizontal, Tags, Users, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { TOOLS } from "@/tools/registry";
+import { useShell } from "./shell-context";
 
 export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const { navOpen, setNavOpen } = useShell();
+
+  // Fermer le tiroir à chaque navigation (mobile). Sans effet sur desktop.
+  useEffect(() => {
+    setNavOpen(false);
+  }, [pathname, setNavOpen]);
 
   const items = [
     { href: "/", nom: "Accueil", icon: Home },
@@ -28,9 +36,38 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   ];
 
   return (
-    <aside className="bg-brand-gradient text-sidebar-fg relative flex w-64 shrink-0 flex-col">
+    <>
+      {/* Voile mobile : couvre le contenu quand le tiroir est ouvert (< md). */}
+      <div
+        aria-hidden={!navOpen}
+        onClick={() => setNavOpen(false)}
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 md:hidden",
+          navOpen ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+
+      <aside
+        className={cn(
+          "bg-brand-gradient text-sidebar-fg fixed inset-y-0 left-0 z-50 flex w-64 flex-col shadow-xl transition-transform duration-300 ease-out",
+          // Desktop : statique dans le flux, toujours visible.
+          "md:static md:z-auto md:shrink-0 md:translate-x-0 md:shadow-none",
+          // Mobile : tiroir off-canvas, glissé hors écran quand fermé.
+          navOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
       {/* Trame « plan d'architecte » — signature discrète sur le fond marine. */}
       <div aria-hidden className="blueprint-grid pointer-events-none absolute inset-0" />
+
+      {/* Fermeture du tiroir (mobile uniquement). */}
+      <button
+        type="button"
+        onClick={() => setNavOpen(false)}
+        aria-label="Fermer le menu"
+        className="absolute right-3 top-3.5 z-10 inline-flex h-8 w-8 items-center justify-center rounded-md text-sidebar-muted transition-colors hover:bg-sidebar-hover hover:text-sidebar-fg md:hidden"
+      >
+        <X className="h-5 w-5" />
+      </button>
 
       <div className="relative flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
         {/* Logo sur pastille blanche : le lockup contient du texte marine.
@@ -83,7 +120,8 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
       <div className="relative border-t border-sidebar-border px-5 py-3 text-xs text-sidebar-muted">
         Groupe Fareneït · Dumortier
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 

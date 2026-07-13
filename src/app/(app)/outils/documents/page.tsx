@@ -25,7 +25,7 @@ export default async function Page() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
+          <table className="table-cards w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                 <th className="px-4 py-2.5 font-medium">Affaire</th>
@@ -39,7 +39,7 @@ export default async function Page() {
                   key={a.id}
                   className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                 >
-                  <td className="px-4 py-2.5">
+                  <td className="cell-card-title px-4 py-2.5">
                     <Link
                       href={`/outils/documents/${a.id}`}
                       className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
@@ -48,8 +48,8 @@ export default async function Page() {
                       {a.nom}
                     </Link>
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{a.clientNom}</td>
-                  <td className="px-4 py-2.5 text-muted">{a.numeroWhy ?? "—"}</td>
+                  <td data-label="Client" className="px-4 py-2.5 text-muted">{a.clientNom}</td>
+                  <td data-label="N° Why" className="px-4 py-2.5 text-muted">{a.numeroWhy ?? "—"}</td>
                 </tr>
               ))}
             </tbody>

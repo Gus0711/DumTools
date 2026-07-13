@@ -145,7 +145,7 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
+          <table className="table-cards w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                 <th className="px-4 py-2.5 font-medium">Affaire</th>
@@ -162,7 +162,7 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                   key={a.id}
                   className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                 >
-                  <td className="px-4 py-2.5">
+                  <td className="cell-card-title px-4 py-2.5">
                     <Link
                       href={`/affaires/${a.id}`}
                       className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
@@ -171,8 +171,8 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                       {a.nom}
                     </Link>
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{a.clientNom}</td>
-                  <td className="px-4 py-2.5 text-muted">
+                  <td data-label="Client" className="px-4 py-2.5 text-muted">{a.clientNom}</td>
+                  <td data-label="N° Why" className="px-4 py-2.5 text-muted">
                     {a.numeroWhy ? (
                       <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg">
                         <Hash className="h-3 w-3 text-subtle" />
@@ -182,11 +182,11 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                       "—"
                     )}
                   </td>
-                  <td className="px-4 py-2.5">
+                  <td data-label="État" className="px-4 py-2.5">
                     <EtatBadge etat={a.etat} />
                   </td>
-                  <td className="px-4 py-2.5 tabular-nums text-muted">{a.nbRealisations}</td>
-                  <td className="px-4 py-2.5 text-muted">{fmtDate(a.updatedAt)}</td>
+                  <td data-label="Réalisations" className="px-4 py-2.5 tabular-nums text-muted">{a.nbRealisations}</td>
+                  <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(a.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

@@ -266,6 +266,81 @@
   .data-table--fit .cell-wrap {
     min-width: 0;
   }
+
+  /* --- Mode « cartes » pour les tables de CONSULTATION sur mobile --------- *
+   * Opt-in via .table-cards. En dessous de 640px, chaque ligne devient une
+   * carte empilée : l'entête disparaît, chaque cellule affiche son libellé
+   * (attribut data-label) à gauche et sa valeur à droite. Une cellule
+   * .cell-card-title s'affiche pleine largeur, en tête de carte, sans libellé.
+   * Aucun effet ≥ 640px : le desktop garde la table intacte. */
+  @media (max-width: 639.98px) {
+    .table-cards,
+    .table-cards thead,
+    .table-cards tbody,
+    .table-cards tr,
+    .table-cards td {
+      display: block;
+    }
+    .table-cards thead {
+      display: none;
+    }
+    .table-cards tbody tr {
+      padding: 0.6rem 0.9rem;
+      border: 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .table-cards tbody tr:last-child {
+      border-bottom: 0;
+    }
+    /* Le survol « scan bureau » n'a pas de sens au doigt : on le neutralise. */
+    .table-cards tbody tr:hover {
+      background: transparent;
+      box-shadow: none;
+    }
+    .table-cards tbody td {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      min-width: 0;
+      padding: 0.25rem 0;
+      border: 0 !important;
+      white-space: normal;
+      text-align: right;
+    }
+    .table-cards tbody td::before {
+      content: attr(data-label);
+      flex: 0 0 auto;
+      font-family: var(--font-display);
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--subtle);
+      text-align: left;
+    }
+    /* Cellules sans libellé (actions, cellule-titre) : pas de préfixe. */
+    .table-cards tbody td:not([data-label])::before,
+    .table-cards tbody td[data-label=""]::before {
+      content: none;
+    }
+    /* Cellule d'actions (sans libellé) : groupe aligné à droite. */
+    .table-cards tbody td:not([data-label]):not(.cell-card-title),
+    .table-cards tbody td[data-label=""] {
+      justify-content: flex-end;
+    }
+    /* Cellule-titre : pleine largeur, en tête de carte, mise en avant. */
+    .table-cards tbody td.cell-card-title {
+      justify-content: flex-start;
+      margin-bottom: 0.35rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    .table-cards tbody td.cell-card-title,
+    .table-cards tbody td.cell-wrap {
+      min-width: 0;
+    }
+  }
 }
 
 /* --- Impression : n'afficher que .print-root, en pleine page A4 ----------- */

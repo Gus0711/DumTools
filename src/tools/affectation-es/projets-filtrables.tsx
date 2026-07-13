@@ -67,7 +67,7 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
         </div>
       ) : (
         <div className="data-card">
-          <table className="data-table data-table--fit">
+          <table className="data-table data-table--fit table-cards">
             <thead>
               <tr>
                 <th className="w-[26%]">Projet</th>
@@ -82,7 +82,7 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
             <tbody>
               {filtres.map((p) => (
                 <tr key={p.id}>
-                  <td className="cell-wrap">
+                  <td className="cell-wrap cell-card-title">
                     <Link
                       href={`/outils/affectation-es/${p.id}`}
                       className="cell-title inline-flex items-center gap-2 hover:text-brand"
@@ -91,8 +91,8 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
                       {p.nom}
                     </Link>
                   </td>
-                  <td className="cell-wrap">{p.clientNom || "—"}</td>
-                  <td>
+                  <td data-label="Client" className="cell-wrap">{p.clientNom || "—"}</td>
+                  <td data-label="N° Why">
                     {p.numeroWhy ? (
                       <span className="rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-xs text-fg">
                         {p.numeroWhy}
@@ -101,9 +101,9 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
                       "—"
                     )}
                   </td>
-                  <td className="cell-num">{p.nbModules}</td>
-                  <td className="cell-num">{p.nbPoints}</td>
-                  <td>{p.auteur ?? "—"}</td>
+                  <td data-label="Modules" className="cell-num">{p.nbModules}</td>
+                  <td data-label="Points" className="cell-num">{p.nbPoints}</td>
+                  <td data-label="Auteur">{p.auteur ?? "—"}</td>
                   <td className="text-right">
                     <SupprimerProjet id={p.id} />
                   </td>

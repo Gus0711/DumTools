@@ -1,6 +1,7 @@
 import { LogOut, UserCircle2 } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileMenuButton } from "./mobile-menu-button";
 
 /** Barre supérieure : thème + utilisateur connecté + déconnexion. */
 export async function Header() {
@@ -9,6 +10,9 @@ export async function Header() {
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-end gap-1.5 border-b border-border bg-surface/80 px-4 backdrop-blur">
+      {/* Ouverture du tiroir de navigation (mobile). Repousse le reste à droite. */}
+      <MobileMenuButton />
+
       <ThemeToggle />
 
       <div className="ml-1 flex items-center gap-2 rounded-full border border-border bg-surface-2 py-1 pl-2 pr-3 text-sm text-muted">

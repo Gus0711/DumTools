@@ -153,7 +153,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-            <table className="w-full border-collapse text-sm">
+            <table className="table-cards w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                   <th className="px-4 py-2.5 font-medium">Automate</th>
@@ -169,17 +169,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     key={p.id}
                     className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                   >
-                    <td className="px-4 py-2.5">
+                    <td className="cell-card-title px-4 py-2.5">
                       <Link href={p.href} className="font-medium text-fg hover:text-brand">
                         {p.nom}
                       </Link>
                     </td>
-                    <td className="px-4 py-2.5 text-muted">{p.controller || "—"}</td>
-                    <td className="px-4 py-2.5 tabular-nums text-muted">{p.nbPoints}</td>
-                    <td className="px-4 py-2.5">
+                    <td data-label="Contrôleur" className="px-4 py-2.5 text-muted">{p.controller || "—"}</td>
+                    <td data-label="E/S" className="px-4 py-2.5 tabular-nums text-muted">{p.nbPoints}</td>
+                    <td data-label="Mise en service" className="px-4 py-2.5">
                       <Avancement tests={p.tests} />
                     </td>
-                    <td className="px-4 py-2.5 text-muted">{fmtDate(p.updatedAt)}</td>
+                    <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(p.updatedAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -211,14 +211,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     {g.fichiers.length}
                   </span>
                 </div>
-                <table className="w-full border-collapse text-sm">
+                <table className="table-cards w-full border-collapse text-sm">
                   <tbody>
                     {g.fichiers.map((f: DocResume) => (
                       <tr
                         key={f.id}
                         className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                       >
-                        <td className="px-4 py-2.5">
+                        <td className="cell-card-title px-4 py-2.5">
                           <Link
                             href={`/outils/documents/${id}`}
                             className="font-medium text-fg hover:text-brand"
@@ -226,20 +226,20 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                             {f.nom}
                           </Link>
                         </td>
-                        <td className="px-4 py-2.5 whitespace-nowrap tabular-nums text-muted">
+                        <td data-label="Taille" className="px-4 py-2.5 whitespace-nowrap tabular-nums text-muted">
                           {formatTaille(f.taille)}
                         </td>
-                        <td className="px-4 py-2.5">
+                        <td data-label="kDrive" className="px-4 py-2.5">
                           <span
                             className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${STATUT_TON[f.statutSync]}`}
                           >
                             {STATUT_LABEL[f.statutSync]}
                           </span>
                         </td>
-                        <td className="px-4 py-2.5 whitespace-nowrap text-muted">
+                        <td data-label="Auteur" className="px-4 py-2.5 whitespace-nowrap text-muted">
                           {f.auteur ?? "—"}
                         </td>
-                        <td className="px-4 py-2.5 whitespace-nowrap text-muted">
+                        <td data-label="Déposé" className="px-4 py-2.5 whitespace-nowrap text-muted">
                           {fmtDate(f.createdAt)}
                         </td>
                       </tr>
@@ -269,7 +269,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-            <table className="w-full border-collapse text-sm">
+            <table className="table-cards w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                   <th className="px-4 py-2.5 font-medium">Réalisation</th>
@@ -285,18 +285,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                     key={`${r.toolId}:${r.id}`}
                     className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                   >
-                    <td className="px-4 py-2.5">
+                    <td className="cell-card-title px-4 py-2.5">
                       <Link href={r.href} className="font-medium text-fg hover:text-brand">
                         {r.titre}
                       </Link>
                     </td>
-                    <td className="px-4 py-2.5 text-muted">
+                    <td data-label="Outil" className="px-4 py-2.5 text-muted">
                       <span className="inline-flex items-center gap-1">
                         <Layers className="h-3 w-3 text-subtle" />
                         {r.toolNom}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-muted">
+                    <td data-label="N° Why" className="px-4 py-2.5 text-muted">
                       {r.numeroWhy ? (
                         <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg">
                           <Hash className="h-3 w-3 text-subtle" />
@@ -306,8 +306,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                         "—"
                       )}
                     </td>
-                    <td className="px-4 py-2.5 text-muted">{r.resume}</td>
-                    <td className="px-4 py-2.5 text-muted">{fmtDate(r.updatedAt)}</td>
+                    <td data-label="Détail" className="px-4 py-2.5 text-muted">{r.resume}</td>
+                    <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(r.updatedAt)}</td>
                   </tr>
                 ))}
               </tbody>

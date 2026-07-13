@@ -111,7 +111,7 @@ export function DocumentsListe({
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="w-full border-collapse text-sm">
+          <table className="table-cards w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
                 <th className="px-4 py-2.5 font-medium">Fichier</th>
@@ -128,7 +128,7 @@ export function DocumentsListe({
                   key={d.id}
                   className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                 >
-                  <td className="px-4 py-2.5">
+                  <td className="cell-card-title px-4 py-2.5">
                     <div className="flex items-center gap-3">
                       <Vignette doc={d} />
                       <a
@@ -141,12 +141,12 @@ export function DocumentsListe({
                       </a>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{d.categorie}</td>
-                  <td className="px-4 py-2.5 tabular-nums text-muted">{formatTaille(d.taille)}</td>
-                  <td className="px-4 py-2.5">
+                  <td data-label="Catégorie" className="px-4 py-2.5 text-muted">{d.categorie}</td>
+                  <td data-label="Taille" className="px-4 py-2.5 tabular-nums text-muted">{formatTaille(d.taille)}</td>
+                  <td data-label="kDrive" className="px-4 py-2.5">
                     <StatutBadge statut={d.statutSync} erreur={d.syncError} />
                   </td>
-                  <td className="px-4 py-2.5 text-muted">{fmtDate(d.createdAt)}</td>
+                  <td data-label="Déposé" className="px-4 py-2.5 text-muted">{fmtDate(d.createdAt)}</td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center justify-end gap-1">
                       <a
