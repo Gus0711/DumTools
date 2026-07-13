@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
-import { CircuitBoard, Plus } from "lucide-react";
-import { Button } from "@/ui";
-import { creerProjet } from "@/tools/affectation-es/actions";
+import { CircuitBoard } from "lucide-react";
 import { listerProjets } from "@/tools/affectation-es/queries";
+import { listerAffaires } from "@/lib/chantiers/queries";
 import { ProjetsFiltrables } from "@/tools/affectation-es/projets-filtrables";
+import { NouveauProjet } from "@/tools/affectation-es/boutons-affaire";
 
 export const metadata: Metadata = { title: "Projet GTB" };
 
 export default async function Page() {
-  const projets = await listerProjets();
+  const [projets, affaires] = await Promise.all([listerProjets(), listerAffaires()]);
+  const optionsAffaires = affaires.map((a) => ({
+    id: a.id,
+    nom: a.nom,
+    clientNom: a.clientNom,
+    numeroWhy: a.numeroWhy,
+  }));
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
@@ -20,11 +26,7 @@ export default async function Page() {
             chantier, partagé avec l’équipe.
           </p>
         </div>
-        <form action={creerProjet}>
-          <Button type="submit">
-            <Plus className="h-4 w-4" /> Nouveau projet
-          </Button>
-        </form>
+        <NouveauProjet affaires={optionsAffaires} />
       </header>
 
       {projets.length === 0 ? (

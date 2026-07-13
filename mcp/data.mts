@@ -341,15 +341,23 @@ export async function createProject(
   const clientNom = input.clientNom?.trim() ?? "";
   const clientId = await resolveClientId(clientNom);
   const numeroWhy = input.numeroWhy?.trim() || null;
+  // Affaire-first : un projet GTB doit être rattaché à une affaire (pas d'orphelin,
+  // même via MCP). L'affaire est retrouvée/créée par (client + n° Why).
+  const chantierId = await resolveChantierId(numeroWhy, clientId, project.name);
+  if (!chantierId) {
+    throw new Error(
+      "Un projet GTB doit être rattaché à une affaire : fournis clientNom ET numeroWhy " +
+        "(l'affaire est créée/retrouvée automatiquement), ou crée l'affaire d'abord " +
+        "avec dumtools_create_affaire.",
+    );
+  }
   const doc = await prisma.affectationProjet.create({
     data: {
       nom: project.name,
       clientNom,
       clientId,
       numeroWhy,
-      // Rattachement automatique à l'affaire (comme l'éditeur) : le projet
-      // apparaît sur le tableau de bord /affaires et le regroupement multi-automate.
-      chantierId: await resolveChantierId(numeroWhy, clientId, project.name),
+      chantierId,
       createdById,
       data: asJson(project),
     },

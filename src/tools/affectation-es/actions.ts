@@ -28,19 +28,31 @@ function dateLabel(): string {
   return new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 }
 
-export async function creerProjet(): Promise<void> {
-  const userId = await requireUserId();
-  const project = defaultProject(dateLabel());
-  const doc = await prisma.affectationProjet.create({
+/** Rattache un automate existant (orphelin) à une affaire : il en hérite le
+ *  client et le n° Why, et apparaît dès lors dans la fiche affaire / client.
+ *  N'écrase pas le contenu technique (data). */
+export async function rattacherProjetAffaire(
+  projetId: string,
+  chantierId: string,
+): Promise<void> {
+  await requireUserId();
+  const affaire = await prisma.chantier.findUnique({
+    where: { id: chantierId },
+    select: { numeroWhy: true, clientId: true, client: { select: { nom: true } } },
+  });
+  if (!affaire) throw new Error("Affaire introuvable");
+  await prisma.affectationProjet.update({
+    where: { id: projetId },
     data: {
-      nom: project.name,
-      createdById: userId,
-      data: project as unknown as Prisma.InputJsonValue,
+      clientNom: affaire.client.nom,
+      clientId: affaire.clientId,
+      numeroWhy: affaire.numeroWhy,
+      chantierId,
     },
-    select: { id: true },
   });
   revalidatePath(BASE);
-  redirect(`${BASE}/${doc.id}`);
+  revalidatePath(`${BASE}/${projetId}`);
+  revalidatePath(`/affaires/${chantierId}`);
 }
 
 /** Crée un nouvel automate (Projet GTB) déjà rattaché à une affaire : il hérite

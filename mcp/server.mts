@@ -287,15 +287,15 @@ server.registerTool(
   "dumtools_create_project",
   {
     title: "Créer un projet GTB",
-    description: `Crée un nouveau projet GTB vide (valeurs par défaut), éventuellement pré-rempli.
+    description: `Crée un projet GTB rattaché à une affaire (obligatoire — pas de projet orphelin).
 
-Args : nom? (string), clientNom? (string — rattaché/créé dans le référentiel), numeroWhy? (réf. WhySoft), header? (en-tête « CLIENT - SITE »).
+Args : clientNom (requis), numeroWhy (réf. WhySoft, requis) — l'affaire est retrouvée par son n° Why, ou créée si elle n'existe pas ; nom? (string), header? (en-tête « CLIENT - SITE »).
 
-Retourne : { id } du projet créé. Enchaîner avec dumtools_update_project_rows pour saisir les points.`,
+Erreur si l'affaire ne peut être résolue (client + n° Why manquants). Retourne : { id }. Enchaîner avec dumtools_update_project_rows pour saisir les points.`,
     inputSchema: {
-      nom: z.string().optional().describe("Nom du projet"),
-      clientNom: z.string().optional().describe("Nom du client (rattaché au référentiel, créé si absent)"),
-      numeroWhy: z.string().optional().describe("Numéro d'affaire WhySoft"),
+      clientNom: z.string().min(1).describe("Nom du client (rattaché au référentiel, créé si absent) — requis"),
+      numeroWhy: z.string().min(1).describe("Numéro d'affaire WhySoft — requis (clé de rattachement à l'affaire)"),
+      nom: z.string().optional().describe("Nom du projet (automate)"),
       header: z.string().optional().describe("En-tête du document (ex. « MAIRIE DE X - CHAUFFERIE »)"),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },

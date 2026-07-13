@@ -42,6 +42,8 @@ import {
 import { pointsToRows, syncPoints } from "./derivation";
 import { affecterAuto, moduleIntegre, reconcilierModules } from "./affectation-auto";
 import { ListeTab } from "./liste-tab";
+import { RattacherAffaire } from "./boutons-affaire";
+import type { AffaireOption } from "./selecteur-affaire";
 import { AffectationTab } from "./affectation-tab";
 import { TestsTab } from "./tests-tab";
 import { Apercu } from "./apercu";
@@ -77,6 +79,7 @@ function reconcileInitial(p: Project, catalogue: Catalogue): Project {
 export function Editeur({
   id,
   initial,
+  affaires,
   catalogue,
   cataloguePoints,
   modeles,
@@ -90,6 +93,7 @@ export function Editeur({
     affaireNom: string | null;
     project: Project;
   };
+  affaires: AffaireOption[];
   catalogue: Catalogue;
   cataloguePoints: CatalogItem[];
   modeles: ModeleDef[];
@@ -328,12 +332,14 @@ export function Editeur({
 
       {tab === "projet" && (
         <ProjetTab
+          projetId={id}
           nom={nom}
           setNom={setNom}
           clientNom={clientNom}
           numeroWhy={initial.numeroWhy}
           chantierId={initial.chantierId}
           affaireNom={initial.affaireNom}
+          affaires={affaires}
           project={project}
           set={set}
         />
@@ -386,21 +392,25 @@ export function Editeur({
 // --- Onglet Projet ----------------------------------------------------------
 
 function ProjetTab({
+  projetId,
   nom,
   setNom,
   clientNom,
   numeroWhy,
   chantierId,
   affaireNom,
+  affaires,
   project,
   set,
 }: {
+  projetId: string;
   nom: string;
   setNom: (v: string) => void;
   clientNom: string;
   numeroWhy: string;
   chantierId: string | null;
   affaireNom: string | null;
+  affaires: AffaireOption[];
   project: Project;
   set: <K extends keyof Project>(key: K, value: Project[K]) => void;
 }) {
@@ -430,13 +440,13 @@ function ProjetTab({
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted">
-              Non rattaché à une affaire. Créez cet automate depuis une{" "}
-              <Link href="/affaires" className="text-brand hover:underline">
-                affaire
-              </Link>{" "}
-              pour l&apos;identifier (client, n° Why).
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-muted">
+                Non rattaché à une affaire — pas d&apos;identification (client, n° Why) et
+                sauvegarde kDrive indisponible. Rattachez-le à une affaire :
+              </p>
+              <RattacherAffaire projetId={projetId} affaires={affaires} />
+            </div>
           )}
         </Field>
         <Field label="En-tête (client - site)">

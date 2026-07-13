@@ -18,7 +18,7 @@ entités (Client, Affaire) et se rejoignent sur des **vues d'agrégation**.
 ```
 Client
   └── Affaire (= Chantier, clé = numéro Why)     ← LE pivot
-        ├── état : Devis / Commande / En cours / Livrée / Clôturée
+        ├── état : Devis / Commande / En cours / Livrée / Clôturée / Corbeille
         ├── identification : client + n° Why  (source de vérité)
         ├── plan réseau : Réseau 1 + Réseau 2 (partagé)
         │
@@ -34,12 +34,14 @@ Client
 | Champ | Rôle |
 |---|---|
 | `numeroWhy String? @unique` | **clé de résolution** : 1 n° Why = 1 affaire |
-| `etat EtatAffaire` | `DEVIS · COMMANDE · EN_COURS · LIVRE · CLOTURE` (défaut `DEVIS`) |
+| `etat EtatAffaire` | `DEVIS · COMMANDE · EN_COURS · LIVRE · CLOTURE · CORBEILLE` (défaut `DEVIS`) |
 | `clientId` | rattachement client (une affaire appartient à un client) |
 | `affectations` | relation inverse → les automates rattachés |
 
 L'enum **`EtatAffaire`** ne porte **que le workflow** — le **financier (prix, coûts)
-reste dans WhySoft** (référencé via le n° Why).
+reste dans WhySoft** (référencé via le n° Why). **`CORBEILLE`** = affaire mise de côté
+(perdue / erreur / doublon) : **masquée par défaut** du tableau de bord mais retrouvable,
+jamais supprimée (on l'y remet en changeant d'état).
 
 ### `AffectationProjet` (= un automate) — champ ajouté
 
@@ -80,8 +82,15 @@ ils sont **portés par l'affaire**, et les automates en héritent.
   que **son nom (rôle)** + les champs document (titre, version, date, en-tête).
 - **`sauverProjet`** ne persiste plus que `nom` + `data` (contenu technique).
 
-Un automate **non rattaché** (créé en direct via l'outil) affiche « Non rattaché
-à une affaire » et un lien pour passer par une affaire.
+**Affaire d'abord (strict)** — on **ne crée plus d'automate orphelin** :
+- Index Projet GTB : le bouton **« Nouveau projet »** ouvre un **sélecteur d'affaire**
+  (`selecteur-affaire.tsx` / `boutons-affaire.tsx`) → `creerProjetPourAffaire` (déjà
+  rattaché). L'ancienne action orpheline `creerProjet` a été supprimée.
+- **MCP** `dumtools_create_project` : `clientNom` + `numeroWhy` **requis** ; il **échoue**
+  si l'affaire ne peut être résolue (plus d'orphelin par API non plus).
+- **Orphelins hérités** : l'éditeur (`ProjetTab`) d'un automate non rattaché affiche un
+  bouton **« Rattacher à une affaire »** → `rattacherProjetAffaire` (pose client / n° Why
+  / `chantierId` sans toucher au contenu technique).
 
 ## 5. Multi-automate = approche « B »
 
@@ -108,8 +117,11 @@ historique devient l'IP du port 1, la 2e IP est ajoutée).
 
 ## 7. Écrans & routes
 
-- `/affaires` — **tableau de bord** : toutes les affaires (client, n° Why, état,
-  nb réalisations). Bouton **« Nouvelle affaire »** (`nouvelle-affaire.tsx`).
+- `/affaires` — **tableau de bord** : les affaires (client, n° Why, état, nb
+  réalisations). **Filtre par défaut = Devis + Commande + En cours** (actives) ; Livrée,
+  Clôturée et Corbeille sont masquées par défaut, retrouvables en cliquant leur puce
+  (puces aux couleurs des états). Bouton **« Nouvelle affaire »** (`nouvelle-affaire.tsx`).
+  L'entrée **« Affaires »** est aussi mise en avant sur l'**accueil**, au-dessus des outils.
 - `/affaires/[id]` — **fiche** : identité éditable + plan réseau + réalisations
   agrégées + « + Ajouter un automate ».
 - Entrée **« Affaires »** dans la sidebar (hub, à côté d'Accueil).
