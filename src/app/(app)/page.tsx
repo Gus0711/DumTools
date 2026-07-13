@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { ArrowRight, Briefcase } from "lucide-react";
+import { Badge } from "@/ui";
 import { FeaturedToolCard, ToolCard } from "@/components/tool-card";
 import { TOOLS } from "@/tools/registry";
 
@@ -35,6 +38,40 @@ export default function AccueilPage() {
             client — partagés avec toute l’équipe.
           </p>
         </div>
+      </section>
+
+      {/* Affaires — le pivot de la plateforme, au-dessus des outils. */}
+      <section aria-label="Affaires" className="mb-9">
+        <Link href="/affaires" className="group block">
+          <div className="relative overflow-hidden rounded-2xl border border-brand/25 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg">
+            <span aria-hidden className="rule-accent absolute inset-x-0 top-0 h-0.5" />
+            <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:gap-7 sm:p-7">
+              <div className="bg-brand-gradient relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
+                <span aria-hidden className="blueprint-grid absolute inset-0" />
+                <Briefcase className="relative h-9 w-9 text-white" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h2 className="font-display text-xl font-semibold tracking-tight text-fg">
+                    Affaires
+                  </h2>
+                  <Badge tone="accent">Point d&apos;entrée</Badge>
+                </div>
+                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                  Le pivot de la plateforme : une affaire par numéro Why, qui regroupe tout ce
+                  qui est produit pour un client à travers tous les outils. Client, n° Why et
+                  suivi partent d&apos;ici.
+                </p>
+              </div>
+
+              <span className="bg-brand text-brand-fg shadow-sm transition-colors group-hover:bg-brand-strong inline-flex shrink-0 items-center gap-2 self-start rounded-lg px-5 py-2.5 text-sm font-semibold sm:self-auto">
+                Voir les affaires
+                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </span>
+            </div>
+          </div>
+        </Link>
       </section>
 
       <div className="mb-4 flex items-center gap-3">

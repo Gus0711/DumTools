@@ -61,6 +61,9 @@ enum EtatAffaire {
   EN_COURS
   LIVRE
   CLOTURE
+  /// Corbeille : affaire mise de côté (perdue / erreur / doublon), masquée par
+  /// défaut du tableau de bord mais restant retrouvable.
+  CORBEILLE
 }
 
 /// Besoin en armoire électrique d'une affaire.

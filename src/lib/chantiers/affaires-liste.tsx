@@ -7,8 +7,8 @@ import { cn } from "@/lib/cn";
 import { Combobox, type ComboOption } from "@/ui";
 import type { EtatAffaire } from "@/generated/prisma/enums";
 import type { AffaireResume } from "./queries";
-import { ETATS_AFFAIRE } from "./etats";
-import { EtatBadge } from "./etat-badge";
+import { ETATS_ACTIFS, ETATS_AFFAIRE } from "./etats";
+import { EtatBadge, ETAT_TONE } from "./etat-badge";
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("fr-FR");
@@ -24,7 +24,9 @@ function norm(s: string): string {
 
 export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
   const [query, setQuery] = useState("");
-  const [etats, setEtats] = useState<Set<EtatAffaire>>(new Set());
+  // Par défaut : uniquement les affaires actives (Devis, Commande, En cours) —
+  // Livrée / Clôturée / Corbeille restent accessibles en cliquant leur puce.
+  const [etats, setEtats] = useState<Set<EtatAffaire>>(new Set(ETATS_ACTIFS));
   const [client, setClient] = useState("");
 
   // Clients réellement présents dans les affaires (pour l'autocomplétion).
@@ -59,10 +61,12 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
     });
   }
 
-  const filtreActif = query.trim() !== "" || etats.size > 0 || client !== "";
+  const etatsParDefaut =
+    etats.size === ETATS_ACTIFS.length && ETATS_ACTIFS.every((e) => etats.has(e));
+  const filtreActif = query.trim() !== "" || client !== "" || !etatsParDefaut;
   function reinitialiser() {
     setQuery("");
-    setEtats(new Set());
+    setEtats(new Set(ETATS_ACTIFS));
     setClient("");
   }
 
@@ -106,10 +110,11 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                 onClick={() => toggleEtat(e.value)}
                 aria-pressed={actif}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-all",
+                  ETAT_TONE[e.value],
                   actif
-                    ? "border-brand bg-brand/10 text-brand"
-                    : "border-border bg-surface text-muted hover:bg-surface-2",
+                    ? "border-current opacity-100"
+                    : "border-transparent opacity-45 hover:opacity-80",
                 )}
               >
                 {e.label}
