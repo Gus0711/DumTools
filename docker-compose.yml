@@ -52,16 +52,21 @@ services:
       # volumes persistants (sinon photos/pièces jointes perdues au
       # redéploiement, fiches en « fichier absent » 410). À sauvegarder avec
       # Postgres (voir scripts/backup-db.sh).
+      # ⚠️ TOUT nouvel outil stockant des binaires doit ajouter SA variable ET
+      # son volume ici, dans le même commit que son stockage.ts.
       VISITES_MEDIA_DIR: /data/visites-media
       NOTES_MEDIA_DIR: /data/notes-media
       # Médias des pages du Wiki (images collées, pièces jointes) — durables,
       # 100 % interne (aucune route publique). Même logique de sauvegarde.
       WIKI_MEDIA_DIR: /data/wiki-media
+      # Médias des réponses de formulaires (photos, signatures, dessins, audio).
+      FORMULAIRES_MEDIA_DIR: /data/formulaires-media
     volumes:
       - spool_data:/data/spool
       - visites_media:/data/visites-media
       - notes_media:/data/notes-media
       - wiki_media:/data/wiki-media
+      - formulaires_media:/data/formulaires-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -112,3 +117,4 @@ volumes:
   visites_media:
   notes_media:
   wiki_media:
+  formulaires_media:

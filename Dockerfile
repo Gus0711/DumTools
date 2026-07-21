@@ -32,6 +32,16 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
+# Points de montage des volumes persistants (spool kDrive + médias des outils).
+# Créés ET chown ICI, avant le USER : quand Docker monte un volume nommé sur un
+# chemin qui EXISTE dans l'image, il en recopie l'ownership. Sur un chemin
+# absent, il crée le dossier en root:root → l'app (utilisateur nextjs) ne peut
+# plus rien y écrire (EACCES silencieux à l'upload).
+# Tout nouveau volume déclaré dans docker-compose.yml doit être listé ici.
+RUN mkdir -p /data/spool /data/visites-media /data/notes-media /data/wiki-media \
+             /data/formulaires-media \
+ && chown -R nextjs:nodejs /data
+
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]
