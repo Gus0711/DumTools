@@ -13,6 +13,10 @@ export const ETATS_AFFAIRE: { value: EtatAffaire; label: string }[] = [
   { value: "CORBEILLE", label: "Corbeille" },
 ];
 
+/** Le cycle de vie proprement dit (Corbeille exclue : ce n'est pas une étape,
+ *  c'est une sortie de piste). Sert au fil d'étapes de la fiche Affaire. */
+export const CYCLE_AFFAIRE = ETATS_AFFAIRE.filter((e) => e.value !== "CORBEILLE");
+
 /** États affichés par défaut sur le tableau de bord (affaires « actives »). */
 export const ETATS_ACTIFS: EtatAffaire[] = ["DEVIS", "COMMANDE", "EN_COURS"];
 

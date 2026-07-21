@@ -35,7 +35,7 @@ export async function rattacherProjetAffaire(
   projetId: string,
   chantierId: string,
 ): Promise<void> {
-  await requireUserId();
+  const userId = await requireUserId();
   const affaire = await prisma.chantier.findUnique({
     where: { id: chantierId },
     select: { numeroWhy: true, clientId: true, client: { select: { nom: true } } },
@@ -48,6 +48,7 @@ export async function rattacherProjetAffaire(
       clientId: affaire.clientId,
       numeroWhy: affaire.numeroWhy,
       chantierId,
+      updatedById: userId,
     },
   });
   revalidatePath(BASE);
@@ -75,6 +76,7 @@ export async function creerProjetPourAffaire(chantierId: string): Promise<void> 
       numeroWhy: affaire.numeroWhy,
       chantierId,
       createdById: userId,
+      updatedById: userId,
       data: project as unknown as Prisma.InputJsonValue,
     },
     select: { id: true },
@@ -142,6 +144,7 @@ export async function creerProjetDepuisListe(formData: FormData): Promise<void> 
       numeroWhy: liste.numeroWhy,
       chantierId,
       createdById: userId,
+      updatedById: userId,
       data: project as unknown as Prisma.InputJsonValue,
     },
     select: { id: true },
@@ -159,7 +162,7 @@ export async function sauverProjet(
   id: string,
   data: SauverPayload,
 ): Promise<{ ok: true; updatedAt: string }> {
-  await requireUserId();
+  const userId = await requireUserId();
   // L'identification (client, n° Why, affaire) vit sur l'Affaire, pas ici :
   // on ne persiste que le nom (rôle de l'automate) et le contenu technique.
   const doc = await prisma.affectationProjet.update({
@@ -167,12 +170,77 @@ export async function sauverProjet(
     data: {
       nom: data.nom?.trim() || "Sans titre",
       data: data.project as unknown as Prisma.InputJsonValue,
+      updatedById: userId,
     },
     select: { updatedAt: true },
   });
   revalidatePath(BASE);
   revalidatePath("/affaires");
   return { ok: true, updatedAt: doc.updatedAt.toISOString() };
+}
+
+/** Mise à jour d'un point pendant la mise en service (statut + commentaire). */
+export type TestUpdate = { uid: string; testStatus?: string; testComment?: string };
+
+/**
+ * Action FINE de mise en service : applique seulement `testStatus`/`testComment`
+ * par `uid` sur `data.points`, sans toucher au reste du projet.
+ *
+ * Contrairement à `sauverProjet` (qui écrase tout le JSON et écraserait les
+ * modifs concurrentes), celle-ci est granulaire et **idempotente** : rejouer la
+ * même liste d'updates donne le même résultat. C'est le socle de la synchro
+ * offline (file de mutations rejouée au retour réseau), mais elle est aussi plus
+ * sûre en ligne (fenêtre de clobber réduite au strict champ mise en service).
+ */
+export async function enregistrerTestsPoints(
+  projetId: string,
+  updates: TestUpdate[],
+): Promise<{ ok: true; updatedAt: string; appliques: number }> {
+  const userId = await requireUserId();
+  if (updates.length === 0) {
+    const doc = await prisma.affectationProjet.findUnique({
+      where: { id: projetId },
+      select: { updatedAt: true },
+    });
+    if (!doc) throw new Error("Projet introuvable");
+    return { ok: true, updatedAt: doc.updatedAt.toISOString(), appliques: 0 };
+  }
+
+  // Lecture juste avant écriture (fenêtre de course minimale). On ne modifie que
+  // les champs de mise en service, jamais l'affectation ni la liste de points.
+  const current = await prisma.affectationProjet.findUnique({
+    where: { id: projetId },
+    select: { data: true },
+  });
+  if (!current) throw new Error("Projet introuvable");
+
+  const project = current.data as unknown as Project;
+  const byUid = new Map(updates.map((u) => [u.uid, u]));
+  let appliques = 0;
+  const points = (project.points ?? []).map((p) => {
+    const u = byUid.get(p.uid);
+    if (!u) return p;
+    appliques += 1;
+    return {
+      ...p,
+      ...(u.testStatus !== undefined ? { testStatus: u.testStatus } : {}),
+      ...(u.testComment !== undefined ? { testComment: u.testComment } : {}),
+    };
+  });
+
+  const doc = await prisma.affectationProjet.update({
+    where: { id: projetId },
+    // updatedById = celui qui SYNCHRONISE (la file offline ne transporte pas
+    // l'auteur de la saisie terrain) — voir src/lib/offline/mise-en-service.ts.
+    data: {
+      data: { ...project, points } as unknown as Prisma.InputJsonValue,
+      updatedById: userId,
+    },
+    select: { updatedAt: true },
+  });
+  revalidatePath(BASE);
+  revalidatePath("/affaires");
+  return { ok: true, updatedAt: doc.updatedAt.toISOString(), appliques };
 }
 
 export async function supprimerProjet(id: string): Promise<void> {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Cpu, Printer } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Cpu, Printer, Smartphone } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import { moduleDisplayTitle, type Module, type Point, type Project } from "./model";
@@ -17,10 +18,12 @@ export function TestsTab({
   project,
   patch,
   modules,
+  projetId,
 }: {
   project: Project;
   patch: (fn: (p: Project) => Project) => void;
   modules: Module[];
+  projetId?: string;
 }) {
   const points = useMemo(
     () =>
@@ -104,6 +107,15 @@ export function TestsTab({
           >
             <ChevronsDownUp className="h-3.5 w-3.5" /> Tout replier
           </button>
+          {projetId && (
+            <Link
+              href={`/outils/affectation-es/${projetId}/mise-en-service`}
+              className="inline-flex items-center gap-1.5 rounded-md border border-brand/40 bg-brand/10 px-2.5 py-1.5 text-xs font-semibold text-brand transition-colors hover:bg-brand/15"
+              title="Écran mobile utilisable hors-ligne (chaufferie, armoire sans réseau)"
+            >
+              <Smartphone className="h-3.5 w-3.5" /> Mode terrain (hors-ligne)
+            </Link>
+          )}
           <Button size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4" /> Imprimer le rapport
           </Button>
@@ -159,7 +171,15 @@ export function TestsTab({
                                 {p.repere}
                               </span>
                             </td>
-                            <td className="cell-wrap cell-title !font-normal">{p.designation}</td>
+                            <td className="cell-wrap cell-title !font-normal">
+                              {p.designation}
+                              {/* Texte libre saisi dans la liste de points — aide au technicien. */}
+                              {p.source && (
+                                <span className="mt-0.5 block text-xs font-normal text-muted">
+                                  {p.source}
+                                </span>
+                              )}
+                            </td>
                             <td>
                               <select
                                 value={status}

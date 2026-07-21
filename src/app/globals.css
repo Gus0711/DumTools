@@ -378,3 +378,44 @@
     break-after: auto;
   }
 }
+
+/* --- Îlot terrain (visites) : micro-animations --------------------------- *
+ * Entrée d'un point en mode « Dérouler » et pulsation d'appel à l'action.
+ * Désactivées si l'utilisateur préfère réduire les animations. */
+@keyframes terrain-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes terrain-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.anim-item-in {
+  animation: terrain-item-in 0.22s ease-out;
+}
+
+.anim-pop {
+  animation: terrain-pop 0.3s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-item-in,
+  .anim-pop {
+    animation: none;
+  }
+}

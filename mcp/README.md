@@ -77,14 +77,39 @@ Ajouter dans `claude_desktop_config.json` (adapter le chemin absolu) :
 }
 ```
 
-## Brancher un client distant (transport HTTP + jeton par utilisateur)
+## Brancher un client distant (transport HTTP)
 
 Le transport **stdio** impose que le client tourne sur **la même machine** que le
-serveur. Pour brancher un **Claude Desktop sur un autre poste** (ex. Windows), on
-lance le serveur en **HTTP streamable**, protégé par un **jeton personnel par
-utilisateur**.
+serveur. Pour un **Claude Desktop sur un autre poste**, on lance le serveur en
+**HTTP streamable** (`./mcp/serve-http.sh`). Deux façons de s'authentifier :
 
-### Authentification — jeton par compte `User`
+1. **« Ajouter un connecteur personnalisé » (OAuth)** — la voie recommandée,
+   voir ci-dessous : connexion avec son compte DumTools dans le navigateur.
+2. **Jeton personnel + pont `mcp-remote`** — l'ancienne voie, toujours acceptée.
+
+### « Ajouter un connecteur personnalisé » (Claude Desktop / claude.ai, OAuth)
+
+Le serveur implémente le flux OAuth du spec MCP (`mcp/oauth.mts`) : découverte
+(`/.well-known/*`), enregistrement dynamique des clients, `/authorize` (page de
+connexion DumTools), `/token` (code + PKCE S256, usage unique), `/revoke`.
+**Identité = le compte DumTools** (email + mot de passe, comptes actifs) ;
+chaque appareil reçoit **son** jeton (table `McpToken`, hash SHA-256, révocation
+= suppression de la ligne). Les écritures sont créditées à l'utilisateur connecté.
+
+Prérequis : le serveur doit être joignable **en HTTPS** par le poste client —
+en pratique via le tunnel Cloudflare : hostname public `dumtoolsmcp.datagtb.com`
+→ `http://localhost:8787`, et `MCP_PUBLIC_URL=https://dumtoolsmcp.datagtb.com`
+(défaut de `serve-http.sh`).
+
+Côté Claude Desktop : **Paramètres → Connecteurs → Ajouter un connecteur
+personnalisé** → URL `https://dumtoolsmcp.datagtb.com/mcp` → le navigateur s'ouvre sur
+la page de connexion DumTools → autoriser. C'est tout.
+
+Révoquer un appareil : supprimer sa ligne `McpToken` (table visible dans
+Adminer/Prisma Studio, colonnes `client` + `lastUsedAt` pour s'y retrouver) ;
+désactiver le compte coupe tous ses jetons d'un coup.
+
+### Authentification — jeton par compte `User` (voie `mcp-remote`)
 
 Chaque requête HTTP doit porter un en-tête `Authorization: Bearer <jeton>`. Le
 jeton est rattaché à un compte `User` (colonne `mcpTokenHash` = SHA-256 du jeton,
@@ -115,7 +140,9 @@ TRANSPORT=http MCP_HTTP_PORT=8787 npx tsx mcp/server.mts
 `MCP_HTTP_PORT` (défaut 8787), `MCP_HTTP_HOST` (défaut `0.0.0.0`). En mode HTTP,
 `MCP_USER_EMAIL` est ignoré (c'est le jeton qui identifie l'utilisateur).
 
-Script prêt : `./mcp/serve-http.sh`.
+Script prêt : `./mcp/serve-http.sh`. **Démarrage automatique** : `npm run dev`
+et `scripts/serve-prod.sh` le lancent tous les deux (et l'arrêtent avec eux) ;
+s'il tourne déjà sur le port, le script s'efface sans erreur.
 
 Vérifier depuis le poste distant (navigateur) : `http://<IP>:8787/health` doit
 renvoyer `{"ok":true,...}`. Sinon, pare-feu : `sudo ufw allow 8787/tcp`.
@@ -163,12 +190,14 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 | `dumtools_list_projects` | liste des projets GTB (résumés) |
 | `dumtools_get_project` | projet complet (rows, points affectés, modules, réseaux) |
 | `dumtools_list_affaires` | tableau de bord des affaires (Chantier, 1 par n° Why) |
-| `dumtools_get_affaire` | fiche affaire : automates + documents rattachés, état, besoin armoire |
+| `dumtools_get_affaire` | fiche affaire : automates + documents + notes rattachés, état, besoin armoire |
 | `dumtools_list_clients` | référentiel client + nb de réalisations |
 | `dumtools_get_client` | fiche client agrégée (projets GTB + documents rattachés) |
 | `dumtools_list_catalog` | catalogue de points + modèles de saisie |
 | `dumtools_list_materiel` | base matériel (automates + modules Distech) |
 | `dumtools_recommend_controller` | recommandation d'automate (depuis un projet ou un besoin saisi) |
+| `dumtools_list_notes` | notes d'affaire (résumés, filtrables par affaire) |
+| `dumtools_get_note` | note complète, contenu rendu en **markdown** |
 
 **Écriture**
 
@@ -180,12 +209,28 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 | `dumtools_update_project_meta` | modifie l'identification (nom, client, N° Why → re-rattache l'affaire) | idempotent |
 | `dumtools_update_project_rows` | remplace la liste de points → re-dérive + ré-affecte | destructif |
 | `dumtools_set_project_controller` | choisit l'automate → réconcilie modules + ré-affecte | idempotent |
+| `dumtools_add_module` | ajoute un module d'extension/communication → ré-affecte | — |
+| `dumtools_remove_module` | retire un module (par numéro) → ré-affecte | destructif |
+| `dumtools_set_project_power` | définit l'alimentation (none / integrated / 230V) | idempotent |
 | `dumtools_upsert_catalog_point` | ajoute/édite un point du catalogue | idempotent |
 | `dumtools_delete_project` | supprime un projet | destructif |
+| `dumtools_create_note` | crée une note rattachée à une affaire existante (markdown initial) | — |
+| `dumtools_update_note` | remplace titre/contenu (markdown), anti-collision par version | — |
+| `dumtools_share_note` | active/révoque le lien public `/n/[jeton]` d'une note | idempotent |
+| `dumtools_delete_note` | supprime une note (+ médias sur disque) | destructif |
 
 `update_project_rows` attend la liste **complète** des lignes : appeler d'abord
 `get_project`, conserver l'`id` des lignes existantes (préserve leur affectation et
 leur suivi de mise en service), modifier, puis renvoyer le tout.
+
+**Notes & markdown** — le contenu des notes s'échange en markdown
+(`mcp/notes-markdown.mts`) : à la lecture, les blocs métier sont rendus en
+équivalents (table de données → table markdown, HTML embarqué → bloc de code
+` ```html `, carte lien → lien) ; à l'écriture, le markdown redevient des blocs
+standard (une table markdown → tableau riche). `update_note` remplace TOUT le
+contenu et échoue proprement en cas d'édition concurrente (relire puis
+réappliquer). Le partage public s'appuie sur `APP_URL` (défaut
+`https://dumtools.datagtb.com`) pour construire l'URL.
 
 ## ⚠️ Base partagée / prod
 

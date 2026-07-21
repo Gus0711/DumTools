@@ -31,6 +31,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Logs runtime des scripts de service (serve-prod.sh / serve-http.sh)
+.serve-*.log
+
 # env files (can opt-in for committing if needed)
 .env*
 
@@ -52,3 +55,12 @@ next-env.d.ts
 
 # Spool transitoire de l'outil Documents (GED) — jamais committé
 .spool/
+
+# Médias locaux des outils (binaires durables, hors git)
+.visites-media/
+.notes-media/
+.wiki-media/
+.formulaires-media/
+
+# Clients OAuth du serveur MCP (enregistrement dynamique) — jamais committé
+mcp/.oauth-clients.json

@@ -99,6 +99,55 @@ async function main() {
   console.log(
     `✔ Base matériel : +${automates.count} automates, +${modules.count} modules`,
   );
+
+  // Rubriques thématiques du Wiki (base de connaissances interne). Upsert par
+  // slug : re-seed idempotent, et un libellé/icône ajusté ici est repris. Les
+  // couleurs sont des CLÉS de teinte (résolues en classes côté UI), pas des #hex.
+  const RUBRIQUES = [
+    {
+      slug: "administration",
+      nom: "Administration",
+      icon: "Building2",
+      couleur: "brand",
+      description: "Procédures internes, RH, gestion, documents administratifs.",
+    },
+    {
+      slug: "commerce",
+      nom: "Commerce",
+      icon: "BadgeEuro",
+      couleur: "accent",
+      description: "Devis, relation client, offres et méthodes commerciales.",
+    },
+    {
+      slug: "dev-automatisme",
+      nom: "Dev-Automatisme",
+      icon: "CircuitBoard",
+      couleur: "ao",
+      description: "Programmation GTB, scripts, automates, supervision Niagara/Distech.",
+    },
+    {
+      slug: "chantier",
+      nom: "Chantier",
+      icon: "HardHat",
+      couleur: "do",
+      description: "Déroulé de chantier, mise en service, interventions terrain.",
+    },
+    {
+      slug: "armoire",
+      nom: "Armoire",
+      icon: "Server",
+      couleur: "com",
+      description: "Câblage, armoires électriques, choix et montage du matériel.",
+    },
+  ];
+  for (const [i, r] of RUBRIQUES.entries()) {
+    await prisma.wikiRubrique.upsert({
+      where: { slug: r.slug },
+      update: { nom: r.nom, icon: r.icon, couleur: r.couleur, description: r.description, ordre: i },
+      create: { ...r, ordre: i },
+    });
+  }
+  console.log(`✔ Wiki : ${RUBRIQUES.length} rubriques prêtes`);
 }
 
 main()

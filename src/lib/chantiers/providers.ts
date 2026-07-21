@@ -2,6 +2,8 @@ import "server-only";
 import { TOOLS } from "@/tools/registry";
 import { listerPourChantier as affectationPourChantier } from "@/tools/affectation-es/queries";
 import { listerPourChantier as documentsPourChantier } from "@/tools/documents/queries";
+import { listerPourChantier as visitesPourChantier } from "@/tools/visites/queries";
+import { listerPourChantier as notesPourChantier } from "@/tools/notes/queries";
 import type { ClientArtefact, ClientRealisation } from "@/lib/clients/types";
 
 /* =============================================================================
@@ -24,18 +26,25 @@ type ChantierProvider = (chantierId: string) => Promise<ClientArtefact[]>;
 
 const PROVIDERS: Record<string, ChantierProvider> = {
   "affectation-es": affectationPourChantier,
+  visites: visitesPourChantier,
+  notes: notesPourChantier,
   documents: documentsPourChantier,
 };
 
-/** Artefacts d'une affaire, tous outils confondus, du + récent au + ancien. */
+/**
+ * Artefacts d'une affaire, tous outils confondus, du + récent au + ancien.
+ * `exclure` = ids d'outils déjà présentés dans une section dédiée de la fiche
+ * Affaire (Projet GTB, Notes, Documents) — sinon ils y figureraient deux fois.
+ */
 export async function listerRealisationsAffaire(
   chantierId: string,
+  exclure: string[] = [],
 ): Promise<ClientRealisation[]> {
   const out: ClientRealisation[] = [];
   const results = await Promise.all(
     TOOLS.map(async (tool) => {
       const provider = PROVIDERS[tool.id];
-      if (!provider) return [] as ClientRealisation[];
+      if (!provider || exclure.includes(tool.id)) return [] as ClientRealisation[];
       const items = await provider(chantierId);
       return items.map((a) => ({ ...a, toolId: tool.id, toolNom: tool.nom }));
     }),

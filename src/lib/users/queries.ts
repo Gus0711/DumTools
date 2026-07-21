@@ -31,3 +31,12 @@ export async function listerUtilisateurs(): Promise<UtilisateurRow[]> {
   });
   return users.map(({ mcpTokenHash, ...u }) => ({ ...u, aJetonMcp: mcpTokenHash != null }));
 }
+
+/** Utilisateurs actifs, pour l'assignation (tâches d'affaire, etc.). */
+export async function listerUtilisateursActifs(): Promise<{ id: string; nom: string }[]> {
+  return prisma.user.findMany({
+    where: { actif: true },
+    orderBy: { nom: "asc" },
+    select: { id: true, nom: true },
+  });
+}

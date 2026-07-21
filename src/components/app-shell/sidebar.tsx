@@ -6,10 +6,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Briefcase, Building2, Home, SlidersHorizontal, Tags, Users, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { TOOLS } from "@/tools/registry";
+import { TOOLS_AFFAIRE, TOOLS_NAV } from "@/tools/registry";
 import { useShell } from "./shell-context";
 
-export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function Sidebar({
+  isAdmin = false,
+  nbTaches = 0,
+}: {
+  isAdmin?: boolean;
+  /** Tâches qui me sont assignées et pas terminées → pastille sur « Affaires ». */
+  nbTaches?: number;
+}) {
   const pathname = usePathname();
   const { navOpen, setNavOpen } = useShell();
 
@@ -18,10 +25,20 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
     setNavOpen(false);
   }, [pathname, setNavOpen]);
 
+  // Projet GTB, Notes et Documents n'y figurent pas : ce sont des outils
+  // « d'affaire » (portee: "affaire"), on y entre par la fiche Affaire.
   const items = [
     { href: "/", nom: "Accueil", icon: Home },
-    { href: "/affaires", nom: "Affaires", icon: Briefcase },
-    ...TOOLS.map((t) => ({ href: t.href, nom: t.nom, icon: t.icon })),
+    // « Affaires » reste allumé dans les outils d'affaire : on y est entré par
+    // une affaire, la nav doit le refléter.
+    {
+      href: "/affaires",
+      nom: "Affaires",
+      icon: Briefcase,
+      aussi: TOOLS_AFFAIRE.map((t) => t.href),
+      pastille: nbTaches,
+    },
+    ...TOOLS_NAV.map((t) => ({ href: t.href, nom: t.nom, icon: t.icon })),
   ];
 
   const configItems = [
@@ -130,13 +147,22 @@ function NavLink({
   nom,
   icon: Icon,
   pathname,
+  aussi = [],
+  pastille = 0,
 }: {
   href: string;
   nom: string;
   icon: LucideIcon;
   pathname: string;
+  /** Préfixes de route qui allument aussi cette entrée. */
+  aussi?: string[];
+  /** Compteur affiché à droite (masqué si 0). */
+  pastille?: number;
 }) {
-  const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const active =
+    href === "/"
+      ? pathname === "/"
+      : pathname.startsWith(href) || aussi.some((p) => pathname.startsWith(p));
   return (
     <Link
       href={href}
@@ -152,6 +178,14 @@ function NavLink({
       )}
       <Icon className={cn("h-4.5 w-4.5 shrink-0", active && "text-sidebar-accent")} />
       <span className="truncate">{nom}</span>
+      {pastille > 0 && (
+        <span
+          title={`${pastille} tâche${pastille > 1 ? "s" : ""} qui ${pastille > 1 ? "me sont assignées" : "m'est assignée"}`}
+          className="ml-auto inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-sidebar-accent px-1.5 py-0.5 text-[11px] font-semibold leading-none tabular-nums text-brand"
+        >
+          {pastille > 99 ? "99+" : pastille}
+        </span>
+      )}
     </Link>
   );
 }

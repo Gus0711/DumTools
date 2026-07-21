@@ -205,6 +205,7 @@ function BorneTable({
           <thead>
             <tr>
               <th>Désignation</th>
+              <th className="w-56">Texte libre</th>
               <th className="w-20">Borne</th>
               <th className="w-28">Signal</th>
               {isOut && <th className="w-28">Relais</th>}
@@ -225,6 +226,10 @@ function BorneTable({
                 <tr key={p.uid} className={cn(incompatible && "bg-danger/5")}>
                   <td className="cell-wrap cell-title !font-normal">
                     {p.designation || <span className="text-subtle">—</span>}
+                  </td>
+                  {/* Texte libre de la liste de points — rappel, la saisie reste là-bas. */}
+                  <td className="cell-wrap text-muted">
+                    {p.source || <span className="text-subtle">—</span>}
                   </td>
                   <td>
                     {p.repere ? (

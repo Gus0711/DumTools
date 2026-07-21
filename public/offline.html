@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hors ligne — DumTools</title>
+<style>
+  /* Page statique autonome (servie par le service worker sans réseau) —
+     couleurs alignées sur la charte (primitives brand). */
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f5f6fa;
+    color: #1c2033;
+  }
+  main { text-align: center; padding: 2rem; max-width: 26rem; }
+  .logo { font-weight: 800; font-size: 1.25rem; color: #2b3a8f; margin-bottom: 1rem; }
+  h1 { font-size: 1.1rem; margin: 0 0 .5rem; }
+  p { color: #5b6178; font-size: .95rem; line-height: 1.5; margin: 0 0 1.25rem; }
+  a.btn {
+    display: inline-block;
+    background: #2b3a8f;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: .95rem;
+    padding: .65rem 1.4rem;
+    border-radius: .5rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14161f; color: #e8eaf2; }
+    p { color: #9aa0b5; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="logo">DumTools</div>
+  <h1>Cette page n'est pas disponible hors ligne</h1>
+  <p>
+    Seul le <strong>mode terrain</strong> des visites fonctionne sans réseau,
+    et il doit avoir été ouvert au moins une fois en ligne sur cet appareil.
+    Vos saisies terrain sont conservées et se synchroniseront au retour du réseau.
+  </p>
+  <a class="btn" href="/outils/visites/terrain">Ouvrir le mode terrain</a>
+</main>
+</body>
+</html>

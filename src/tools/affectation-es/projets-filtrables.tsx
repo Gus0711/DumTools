@@ -2,14 +2,24 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { CircuitBoard, Search } from "lucide-react";
+import { CircuitBoard, Search, Unlink } from "lucide-react";
 import { Input } from "@/ui";
+import { cn } from "@/lib/cn";
 import { SupprimerProjet } from "./supprimer-projet";
 import type { ProjetResume } from "./queries";
 
-export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
+export function ProjetsFiltrables({
+  projets,
+  orphelinsParDefaut = false,
+}: {
+  projets: ProjetResume[];
+  /** Ouvre la liste déjà filtrée sur les projets sans affaire (?sans-affaire=1). */
+  orphelinsParDefaut?: boolean;
+}) {
   const [recherche, setRecherche] = useState("");
   const [client, setClient] = useState("");
+  const [orphelinsSeuls, setOrphelinsSeuls] = useState(orphelinsParDefaut);
+  const nbOrphelins = projets.filter((p) => p.orphelin).length;
 
   const clients = useMemo(
     () =>
@@ -22,6 +32,7 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
   const filtres = useMemo(() => {
     const q = recherche.trim().toLowerCase();
     return projets.filter((p) => {
+      if (orphelinsSeuls && !p.orphelin) return false;
       if (client && p.clientNom.trim() !== client) return false;
       if (!q) return true;
       return (
@@ -31,7 +42,7 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
         (p.auteur ?? "").toLowerCase().includes(q)
       );
     });
-  }, [projets, recherche, client]);
+  }, [projets, recherche, client, orphelinsSeuls]);
 
   return (
     <>
@@ -58,6 +69,25 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
             </option>
           ))}
         </select>
+        {/* Rattrapage : un projet sans affaire n'apparaît sur aucune fiche
+            Affaire ni Client — cet écran est le seul moyen de le retrouver. */}
+        {nbOrphelins > 0 && (
+          <button
+            type="button"
+            onClick={() => setOrphelinsSeuls((v) => !v)}
+            aria-pressed={orphelinsSeuls}
+            className={cn(
+              "inline-flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm font-medium shadow-sm transition-colors",
+              orphelinsSeuls
+                ? "border-accent/50 bg-accent/12 text-accent"
+                : "border-border bg-surface text-muted hover:bg-surface-2",
+            )}
+          >
+            <Unlink className="h-4 w-4" />
+            Sans affaire
+            <span className="tabular-nums">({nbOrphelins})</span>
+          </button>
+        )}
       </div>
 
       {filtres.length === 0 ? (
@@ -90,6 +120,15 @@ export function ProjetsFiltrables({ projets }: { projets: ProjetResume[] }) {
                       <CircuitBoard className="h-4 w-4 shrink-0 text-subtle" />
                       {p.nom}
                     </Link>
+                    {p.orphelin && (
+                      <span
+                        title="Non rattaché à une affaire — ouvrez le projet pour le rattacher."
+                        className="ml-2 inline-flex items-center gap-1 rounded bg-accent/12 px-1.5 py-0.5 text-xs font-medium text-accent"
+                      >
+                        <Unlink className="h-3 w-3" />
+                        Sans affaire
+                      </span>
+                    )}
                   </td>
                   <td data-label="Client" className="cell-wrap">{p.clientNom || "—"}</td>
                   <td data-label="N° Why">

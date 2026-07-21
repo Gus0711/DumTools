@@ -33,11 +33,15 @@ export default async function Page({
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-8 md:px-10">
+      {/* Retour à l'affaire : c'est d'elle qu'on vient (les documents sont
+          toujours rattachés à une affaire). */}
       <Link
-        href="/outils/documents"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
+        href={`/affaires/${chantierId}`}
+        className="group mb-4 inline-flex min-w-0 items-center gap-1.5 text-sm text-muted hover:text-fg"
       >
-        <ArrowLeft className="h-4 w-4" /> Toutes les affaires
+        <ArrowLeft className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
+        <Briefcase className="h-3.5 w-3.5 shrink-0" />
+        <span className="min-w-0 truncate">{affaire.nom}</span>
       </Link>
 
       <header className="mb-6">

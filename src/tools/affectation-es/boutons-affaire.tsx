@@ -2,27 +2,13 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Link2, Plus } from "lucide-react";
-import { creerProjetPourAffaire, rattacherProjetAffaire } from "./actions";
+import { Link2 } from "lucide-react";
+import { rattacherProjetAffaire } from "./actions";
 import { SelecteurAffaire, type AffaireOption } from "./selecteur-affaire";
 
-/** Index Projet GTB : créer un automate en passant d'abord par une affaire. */
-export function NouveauProjet({ affaires }: { affaires: AffaireOption[] }) {
-  const [pending, start] = useTransition();
-  return (
-    <SelecteurAffaire
-      affaires={affaires}
-      pending={pending}
-      triggerLabel="Nouveau projet"
-      triggerIcon={<Plus className="h-4 w-4" />}
-      onChoisir={(id) =>
-        start(async () => {
-          await creerProjetPourAffaire(id);
-        })
-      }
-    />
-  );
-}
+/* La création d'un automate se fait UNIQUEMENT depuis la fiche Affaire
+   (bouton « Ajouter un automate ») : un projet sans affaire n'a pas de sens.
+   L'index Projet GTB est une vue de recherche, sans bouton de création. */
 
 /** Éditeur : rattacher un automate orphelin à une affaire (a posteriori). */
 export function RattacherAffaire({

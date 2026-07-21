@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently --kill-others-on-fail -n next,mcp -c cyan,yellow \"next dev\" \"./mcp/serve-http.sh\"",
+    "dev:app": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -15,8 +16,14 @@
     "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@blocknote/code-block": "^0.51.4",
+    "@blocknote/core": "^0.51.4",
+    "@blocknote/mantine": "^0.51.4",
+    "@blocknote/react": "^0.51.4",
+    "@blocknote/server-util": "^0.51.4",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@zxing/browser": "^0.2.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "html2canvas-pro": "^2.2.3",
@@ -38,6 +45,7 @@
     "@types/pdfmake": "^0.3.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.3",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",

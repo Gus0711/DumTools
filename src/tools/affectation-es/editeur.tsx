@@ -9,6 +9,7 @@ import {
   Check,
   Cpu,
   FileText,
+  Hash,
   Loader2,
   Plus,
   Trash2,
@@ -115,7 +116,9 @@ export function Editeur({
     startDelete(async () => {
       try {
         await supprimerProjet(id);
-        router.push("/outils/affectation-es");
+        router.push(
+          initial.chantierId ? `/affaires/${initial.chantierId}` : "/outils/affectation-es",
+        );
       } catch {
         alert("La suppression a échoué.");
       }
@@ -244,147 +247,185 @@ export function Editeur({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 md:px-10">
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <Link
-          href="/outils/affectation-es"
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-        >
-          <ArrowLeft className="h-4 w-4" /> Projets
-        </Link>
-        <div className="flex items-center gap-3">
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2">
-            {importState.kind === "loading" ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+    <div className="relative">
+      {/* ---- Barre de chrome (sticky) — même patron que l'éditeur de Notes :
+              d'où l'on vient (affaire · client · n° Why) à gauche, actions à
+              droite, toujours visible pendant le travail. ------------------- */}
+      <div className="sticky top-0 z-30 border-b border-border-soft bg-page/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-6 py-2 md:px-10">
+          {/* Retour à l'affaire — le point d'entrée du projet. Repli sur l'index
+              uniquement pour un projet orphelin (non rattaché). */}
+          <Link
+            href={initial.chantierId ? `/affaires/${initial.chantierId}` : "/outils/affectation-es"}
+            title={
+              initial.chantierId
+                ? `Retour à l'affaire ${initial.affaireNom ?? ""}`.trim()
+                : "Retour aux projets"
+            }
+            className="group inline-flex min-w-0 items-center gap-1.5 text-sm text-muted hover:text-fg"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
+            {initial.chantierId ? (
+              <>
+                <Briefcase className="h-3.5 w-3.5 shrink-0" />
+                <span className="min-w-0 truncate">{initial.affaireNom || "Affaire"}</span>
+              </>
             ) : (
+              "Projets"
+            )}
+          </Link>
+          {/* Identification, comme sur la note : client puis n° Why. */}
+          {clientNom && (
+            <>
+              <span className="hidden text-subtle sm:inline">·</span>
+              <span className="hidden min-w-0 truncate text-sm text-muted sm:inline">
+                {clientNom}
+              </span>
+            </>
+          )}
+          {initial.numeroWhy && (
+            <span className="hidden shrink-0 items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg md:inline-flex">
+              <Hash className="h-3 w-3 text-subtle" />
+              {initial.numeroWhy}
+            </span>
+          )}
+
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2">
+              {importState.kind === "loading" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">Importer .gfx</span>
+              <input
+                type="file"
+                accept=".gfx,application/zip"
+                className="hidden"
+                disabled={importState.kind === "loading"}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleGfx(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2">
               <Upload className="h-4 w-4" />
-            )}
-            Importer .gfx
-            <input
-              type="file"
-              accept=".gfx,application/zip"
-              className="hidden"
-              disabled={importState.kind === "loading"}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleGfx(f);
-                e.target.value = "";
-              }}
-            />
-          </label>
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-2">
-            <Upload className="h-4 w-4" />
-            Importer PDF
-            <input
-              type="file"
-              accept=".pdf,application/pdf"
-              className="hidden"
-              disabled={importState.kind === "loading"}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handlePdf(f);
-                e.target.value = "";
-              }}
-            />
-          </label>
-          <SaveState state={save} />
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="inline-flex items-center gap-1.5 rounded-md border border-danger/30 px-3 py-1.5 text-sm font-medium text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
-          >
-            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Supprimer
-          </button>
+              <span className="hidden sm:inline">Importer PDF</span>
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                className="hidden"
+                disabled={importState.kind === "loading"}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePdf(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <SaveState state={save} />
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="inline-flex items-center gap-1.5 rounded-md border border-danger/30 px-3 py-1.5 text-sm font-medium text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              <span className="hidden sm:inline">Supprimer</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {importState.kind === "error" && (
-        <div className="mb-4 flex items-start gap-2 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
-          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {importState.msg}
-        </div>
-      )}
-      {importState.kind === "done" && (
-        <div className="mb-4 flex items-start gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
-          <Check className="mt-0.5 h-4 w-4 shrink-0" /> Import GFX réussi — {importState.msg}
-        </div>
-      )}
+      <div className="mx-auto max-w-6xl px-6 pb-10 pt-5 md:px-10">
+        {importState.kind === "error" && (
+          <div className="mb-4 flex items-start gap-2 rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" /> {importState.msg}
+          </div>
+        )}
+        {importState.kind === "done" && (
+          <div className="mb-4 flex items-start gap-2 rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+            <Check className="mt-0.5 h-4 w-4 shrink-0" /> Import GFX réussi — {importState.msg}
+          </div>
+        )}
 
-      {/* Onglets */}
-      <div className="mb-5 flex flex-wrap gap-1 border-b border-border">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={cn(
-              "-mb-px border-b-2 px-3.5 py-2 text-sm font-medium transition-colors",
-              tab === t.id
-                ? "border-brand text-brand"
-                : "border-transparent text-muted hover:text-fg",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+        {/* Onglets */}
+        <div className="mb-5 flex flex-wrap gap-1 border-b border-border">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={cn(
+                "-mb-px border-b-2 px-3.5 py-2 text-sm font-medium transition-colors",
+                tab === t.id
+                  ? "border-brand text-brand"
+                  : "border-transparent text-muted hover:text-fg",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "projet" && (
+          <ProjetTab
+            projetId={id}
+            nom={nom}
+            setNom={setNom}
+            clientNom={clientNom}
+            numeroWhy={initial.numeroWhy}
+            chantierId={initial.chantierId}
+            affaireNom={initial.affaireNom}
+            affaires={affaires}
+            project={project}
+            set={set}
+          />
+        )}
+
+        {tab === "modules" && (
+          <AutomateModulesTab
+            project={project}
+            set={set}
+            patch={patch}
+            catalogue={catalogue}
+            modules={modules}
+            onPickAutomate={appliquerProposition}
+            onChooseController={choisirAutomate}
+          />
+        )}
+
+        {tab === "liste" && (
+          <ListeTab
+            project={project}
+            nom={nom}
+            clientNom={clientNom}
+            chantierId={initial.chantierId}
+            setRows={setListeRows}
+            onKdriveSaved={(m) => setProject((p) => ({ ...p, kdrive: m }))}
+            cataloguePoints={cataloguePoints}
+            modeles={modeles}
+          />
+        )}
+
+        {tab === "affectation" && (
+          <AffectationTab project={project} patch={patch} modules={modules} />
+        )}
+
+        {tab === "tests" && <TestsTab project={project} patch={patch} modules={modules} projetId={id} />}
+
+        {tab === "apercu" && (
+          <Apercu
+            project={project}
+            modules={modules}
+            catalogue={catalogue}
+            chantierId={initial.chantierId}
+            onKdriveSaved={(m) => setProject((p) => ({ ...p, kdriveApercu: m }))}
+          />
+        )}
       </div>
-
-      {tab === "projet" && (
-        <ProjetTab
-          projetId={id}
-          nom={nom}
-          setNom={setNom}
-          clientNom={clientNom}
-          numeroWhy={initial.numeroWhy}
-          chantierId={initial.chantierId}
-          affaireNom={initial.affaireNom}
-          affaires={affaires}
-          project={project}
-          set={set}
-        />
-      )}
-
-      {tab === "modules" && (
-        <AutomateModulesTab
-          project={project}
-          set={set}
-          patch={patch}
-          catalogue={catalogue}
-          modules={modules}
-          onPickAutomate={appliquerProposition}
-          onChooseController={choisirAutomate}
-        />
-      )}
-
-      {tab === "liste" && (
-        <ListeTab
-          project={project}
-          nom={nom}
-          clientNom={clientNom}
-          chantierId={initial.chantierId}
-          setRows={setListeRows}
-          onKdriveSaved={(m) => setProject((p) => ({ ...p, kdrive: m }))}
-          cataloguePoints={cataloguePoints}
-          modeles={modeles}
-        />
-      )}
-
-      {tab === "affectation" && (
-        <AffectationTab project={project} patch={patch} modules={modules} />
-      )}
-
-      {tab === "tests" && <TestsTab project={project} patch={patch} modules={modules} />}
-
-      {tab === "apercu" && (
-        <Apercu
-          project={project}
-          modules={modules}
-          catalogue={catalogue}
-          chantierId={initial.chantierId}
-          onKdriveSaved={(m) => setProject((p) => ({ ...p, kdriveApercu: m }))}
-        />
-      )}
     </div>
   );
 }

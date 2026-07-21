@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CircleCheck, Cpu, FileStack, FolderOpen, Hash, Layers, Plus, TriangleAlert } from "lucide-react";
+import { Cpu, FileStack, FolderOpen, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
 import { Button } from "@/ui";
-import { getAffaire } from "@/lib/chantiers/queries";
+import { auth } from "@/auth";
+import { getAffaire, listerTaches } from "@/lib/chantiers/queries";
 import { listerClients } from "@/lib/clients/queries";
+import { listerUtilisateursActifs } from "@/lib/users/queries";
 import { listerRealisationsAffaire } from "@/lib/chantiers/providers";
+import { TOOLS_AFFAIRE } from "@/tools/registry";
+import { calculerJalons } from "@/lib/chantiers/jalons";
+import { FriseCycle } from "@/lib/chantiers/frise-cycle";
 import { AffaireFicheHeader } from "@/lib/chantiers/affaire-fiche-header";
+import { TachesKanban } from "@/lib/chantiers/taches-kanban";
 import { DOSSIER_SCHEMA_ARMOIRE } from "@/lib/chantiers/armoire";
 import { creerProjetPourAffaire } from "@/tools/affectation-es/actions";
 import { listerProjetsAffaire, type AvancementTests } from "@/tools/affectation-es/queries";
 import { listerDocuments, type DocResume } from "@/tools/documents/queries";
 import { CATEGORIES, STATUT_LABEL, STATUT_TON, formatTaille } from "@/tools/documents/model";
+import { DepotRapide } from "@/tools/documents/depot-rapide";
+import { listerNotesAffaire } from "@/tools/notes/queries";
+import { creerNotePourAffaire } from "@/tools/notes/actions";
 
 export async function generateMetadata({
   params,
@@ -75,12 +84,27 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const affaire = await getAffaire(id);
   if (!affaire) notFound();
 
-  const [projets, documents, realisations, clients] = await Promise.all([
-    listerProjetsAffaire(id),
-    listerDocuments(id),
-    listerRealisationsAffaire(id),
-    listerClients(),
-  ]);
+  const [projets, documents, notes, realisations, clients, taches, utilisateurs, session] =
+    await Promise.all([
+      listerProjetsAffaire(id),
+      listerDocuments(id),
+      listerNotesAffaire(id),
+      // Projet GTB / Notes / Documents ont leur section dédiée ci-dessous :
+      // on les exclut de l'agrégat pour ne pas les lister deux fois.
+      listerRealisationsAffaire(id, TOOLS_AFFAIRE.map((t) => t.id)),
+      listerClients(),
+      listerTaches(id),
+      listerUtilisateursActifs(),
+      auth(),
+    ]);
+
+  // Frise du cycle (ROADMAP §3) : jalons dérivés des artefacts déjà chargés.
+  const jalons = await calculerJalons({
+    chantierId: id,
+    besoinArmoire: affaire.besoinArmoire,
+    projets,
+    documents,
+  });
 
   // Fichiers regroupés par dossier kDrive (= catégorie), dossiers vides masqués,
   // dans l'ordre canonique des CATEGORIES.
@@ -107,26 +131,30 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         clients={clients.map((c) => c.nom)}
       />
 
-      {/* ---- Contrôle « schéma d'armoire » (si nouvelle armoire à fabriquer) */}
-      {besoinNouvelleArmoire &&
-        (schemaArmoireOk ? (
-          <div className="-mt-4 flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 px-4 py-2.5 text-sm text-success">
-            <CircleCheck className="h-4 w-4 shrink-0" />
-            <span>
-              Nouvelle armoire à fabriquer — schéma d&apos;armoire présent
-              {nbSchemasArmoire > 1 ? ` (${nbSchemasArmoire} fichiers)` : ""} dans le
-              dossier « {DOSSIER_SCHEMA_ARMOIRE} ».
-            </span>
-          </div>
-        ) : (
-          <div className="-mt-4 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
-            <TriangleAlert className="h-4 w-4 shrink-0" />
-            <span>
-              Nouvelle armoire à fabriquer — <strong>schéma d&apos;armoire manquant</strong> :
-              déposez-le dans le dossier « {DOSSIER_SCHEMA_ARMOIRE} » des documents.
-            </span>
-          </div>
-        ))}
+      {/* ---- Avancement technique (frise des 7 étapes du cycle) ----------- */}
+      <div className="-mt-4">
+        <FriseCycle jalons={jalons} />
+      </div>
+
+      {/* ---- Alerte « schéma d'armoire manquant » : la frise dit l'état, ce
+              bandeau dit quoi FAIRE. Rien quand tout va bien. --------------- */}
+      {besoinNouvelleArmoire && !schemaArmoireOk && (
+        <div className="-mt-6 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+          <TriangleAlert className="h-4 w-4 shrink-0" />
+          <span>
+            Nouvelle armoire à fabriquer — <strong>schéma d&apos;armoire manquant</strong> :
+            déposez-le dans le dossier « {DOSSIER_SCHEMA_ARMOIRE} » des documents.
+          </span>
+        </div>
+      )}
+
+      {/* ---- Tâches (todo kanban de l'affaire) ----------------------------- */}
+      <TachesKanban
+        chantierId={id}
+        taches={taches}
+        utilisateurs={utilisateurs}
+        moiId={session?.user?.id ?? null}
+      />
 
       {/* ---- Projet GTB (automates de l'affaire) --------------------------- */}
       <section>
@@ -188,17 +216,75 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         )}
       </section>
 
+      {/* ---- Notes (documents riches de l'affaire) ------------------------- */}
+      <section>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <SectionTitle icon={<NotebookPen className="h-4 w-4 text-muted" />} count={notes.length}>
+            Notes
+          </SectionTitle>
+          <form
+            action={async () => {
+              "use server";
+              await creerNotePourAffaire(id);
+            }}
+          >
+            <Button type="submit" size="sm" variant="outline">
+              <Plus className="h-4 w-4" /> Nouvelle note
+            </Button>
+          </form>
+        </div>
+
+        {notes.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-muted">
+            Aucune note. Cliquez sur « Nouvelle note » pour ouvrir un document
+            rattaché à cette affaire.
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+            <table className="table-cards w-full border-collapse text-sm">
+              <tbody>
+                {notes.map((n) => (
+                  <tr
+                    key={n.id}
+                    className="border-b border-border-soft last:border-0 hover:bg-surface-2"
+                  >
+                    <td className="cell-card-title px-4 py-2.5">
+                      <Link
+                        href={`/outils/notes/${n.id}`}
+                        className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
+                      >
+                        <span className="min-w-0 truncate">{n.titre}</span>
+                        {n.partagee && (
+                          <Globe
+                            className="h-3.5 w-3.5 shrink-0 text-success"
+                            aria-label="Partagée publiquement"
+                          />
+                        )}
+                      </Link>
+                    </td>
+                    <td data-label="Détail" className="px-4 py-2.5 text-muted">{n.resume}</td>
+                    <td data-label="Auteur" className="px-4 py-2.5 whitespace-nowrap text-muted">
+                      {n.auteur ?? "—"}
+                    </td>
+                    <td data-label="Modifiée" className="px-4 py-2.5 whitespace-nowrap text-muted">
+                      {fmtDate(n.updatedAt)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       {/* ---- Fichiers kDrive (sections par dossier) ------------------------ */}
       <section>
-        <div className="mb-3">
-          <SectionTitle icon={<FolderOpen className="h-4 w-4 text-muted" />} count={documents.length}>
-            Fichiers kDrive
-          </SectionTitle>
-        </div>
+        <DepotRapide chantierId={id} count={documents.length} />
 
         {parDossier.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center text-muted">
-            Aucun fichier déposé pour cette affaire.
+            Aucun fichier déposé pour cette affaire. Cliquez sur « Déposer un
+            fichier » pour en ajouter un sans quitter l&apos;affaire.
           </div>
         ) : (
           <div className="space-y-4">
@@ -219,12 +305,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                         className="border-b border-border-soft last:border-0 hover:bg-surface-2"
                       >
                         <td className="cell-card-title px-4 py-2.5">
-                          <Link
-                            href={`/outils/documents/${id}`}
+                          {/* Le nom ouvre LE fichier (spool ou kDrive), pas la
+                              page de dépôt — même route que la liste Documents. */}
+                          <a
+                            href={`/api/documents/${f.id}/download`}
+                            target="_blank"
+                            rel="noreferrer"
                             className="font-medium text-fg hover:text-brand"
                           >
                             {f.nom}
-                          </Link>
+                          </a>
                         </td>
                         <td data-label="Taille" className="px-4 py-2.5 whitespace-nowrap tabular-nums text-muted">
                           {formatTaille(f.taille)}
@@ -252,22 +342,19 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         )}
       </section>
 
-      {/* ---- Réalisations (agrégat tous outils) --------------------------- */}
-      <section>
-        <div className="mb-3">
-          <SectionTitle icon={<FileStack className="h-4 w-4 text-muted" />} count={realisations.length}>
-            Réalisations
-          </SectionTitle>
-          <p className="mt-1 text-xs text-subtle">
-            Vue agrégée de tout ce qui est rattaché à l&apos;affaire, tous outils confondus.
-          </p>
-        </div>
-
-        {realisations.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-muted">
-            Rien n&apos;est encore rattaché à cette affaire.
+      {/* ---- Autres réalisations (agrégat des outils SANS section dédiée) -- */}
+      {realisations.length > 0 && (
+        <section>
+          <div className="mb-3">
+            <SectionTitle icon={<FileStack className="h-4 w-4 text-muted" />} count={realisations.length}>
+              Autres réalisations
+            </SectionTitle>
+            <p className="mt-1 text-xs text-subtle">
+              Ce qui est rattaché à l&apos;affaire par les autres outils (visites…) — les
+              automates, notes et fichiers ont leur section ci-dessus.
+            </p>
           </div>
-        ) : (
+
           <div className="overflow-x-auto rounded-lg border border-border bg-surface">
             <table className="table-cards w-full border-collapse text-sm">
               <thead>
@@ -313,8 +400,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               </tbody>
             </table>
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

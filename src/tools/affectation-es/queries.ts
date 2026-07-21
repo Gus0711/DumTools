@@ -27,6 +27,9 @@ export interface ProjetResume {
   auteur: string | null;
   nbPoints: number;
   nbModules: number;
+  /** Non rattaché à une affaire (chantierId null) — invisible de toute fiche
+   *  Affaire/Client : cet index est le seul endroit d'où le récupérer. */
+  orphelin: boolean;
 }
 
 export async function listerProjets(): Promise<ProjetResume[]> {
@@ -45,8 +48,14 @@ export async function listerProjets(): Promise<ProjetResume[]> {
       auteur: p.createdBy?.nom ?? null,
       nbPoints: nbPoints(data),
       nbModules: nbModules(data),
+      orphelin: p.chantierId == null,
     };
   });
+}
+
+/** Nombre de projets non rattachés à une affaire (0 = rien à rattraper). */
+export async function compterProjetsOrphelins(): Promise<number> {
+  return prisma.affectationProjet.count({ where: { chantierId: null } });
 }
 
 /** Transforme des projets d'affectation en artefacts (fiche client / affaire). */

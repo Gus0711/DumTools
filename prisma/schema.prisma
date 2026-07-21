@@ -19,20 +19,56 @@ enum Role {
 }
 
 model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
-  nom          String
-  passwordHash String
-  role         Role         @default(MEMBRE)
-  actif        Boolean      @default(true)
+  id                    String              @id @default(cuid())
+  email                 String              @unique
+  nom                   String
+  passwordHash          String
+  role                  Role                @default(MEMBRE)
+  actif                 Boolean             @default(true)
   /// SHA-256 (hex) du jeton d'accès MCP de l'utilisateur (jamais le jeton en
   /// clair). Null = aucun jeton actif. Voir scripts/mcp-token.mts.
-  mcpTokenHash String?      @unique
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  pointsLists  PointsList[]
-  affectations AffectationProjet[]
-  documents    Document[]
+  mcpTokenHash          String?             @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  pointsLists           PointsList[]
+  affectations          AffectationProjet[] @relation("AffectationCreee")
+  documents             Document[]
+  visites               Visite[]            @relation("VisiteCreee")
+  taches                TacheAffaire[]
+  notes                 Note[]              @relation("NoteCreee")
+  mcpTokens             McpToken[]
+  modemScans            ModemScan[]
+  wikiPages             WikiPage[]          @relation("WikiPageCreee")
+  formulaires           Formulaire[]
+  formulaireReponses    FormulaireReponse[]
+  /// Dernière modification humaine (fil d'activité de l'accueil) — voir
+  /// `updatedById` sur chaque modèle. Les écritures techniques (synchro kDrive,
+  /// propagation de dénormalisation, réordonnancement) n'y touchent pas.
+  chantiersModifies     Chantier[]          @relation("ChantierModifie")
+  affectationsModifiees AffectationProjet[] @relation("AffectationModifiee")
+  notesModifiees        Note[]              @relation("NoteModifiee")
+  visitesModifiees      Visite[]            @relation("VisiteModifiee")
+  wikiPagesModifiees    WikiPage[]          @relation("WikiPageModifiee")
+}
+
+/// Jeton d'accès MCP émis par le flux OAuth du serveur MCP (« Ajouter un
+/// connecteur personnalisé » de Claude Desktop / claude.ai) : l'utilisateur se
+/// connecte avec son compte DumTools dans le navigateur, chaque appareil reçoit
+/// son jeton. Hash SHA-256 uniquement (jamais le clair) ; révocation =
+/// suppression de la ligne. Distinct du jeton « legacy » unique
+/// User.mcpTokenHash (scripts/mcp-token.mts), toujours accepté.
+model McpToken {
+  id        String @id @default(cuid())
+  tokenHash String @unique
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Nom du client OAuth d'origine (ex. « Claude ») — pour s'y retrouver.
+  client    String @default("")
+
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  @@index([userId])
 }
 
 /// Référentiel client partagé, central à la plateforme. Chaque outil relie sa
@@ -40,14 +76,16 @@ model User {
 /// qui a été fait pour lui, à travers tous les outils (voir
 /// src/lib/clients/providers.ts).
 model Client {
-  id           String              @id @default(cuid())
-  nom          String              @unique
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  chantiers    Chantier[]
-  pointsLists  PointsList[]
-  affectations AffectationProjet[]
-  documents    Document[]
+  id            String              @id @default(cuid())
+  nom           String              @unique
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  chantiers     Chantier[]
+  pointsLists   PointsList[]
+  affectations  AffectationProjet[]
+  documents     Document[]
+  visites       Visite[]
+  notes         Note[]
   /// Nom EXACT du dossier de ce client sur kDrive, s'il diffère de `nom` (accents,
   /// casse, suffixe juridique…). Null = on utilise `nom` (après normalisation).
   /// Sert à la résolution du chemin kDrive (voir src/lib/kdrive).
@@ -72,6 +110,13 @@ enum BesoinArmoire {
   INTEGRATION
   /// Fabrication d'une nouvelle armoire électrique (schéma d'armoire attendu).
   NOUVELLE
+}
+
+/// État d'une tâche (todo) d'affaire.
+enum EtatTache {
+  A_FAIRE
+  EN_COURS
+  TERMINEE
 }
 
 /// État de synchronisation d'un document vers kDrive.
@@ -99,12 +144,12 @@ enum PolitiqueConflit {
 /// tous les outils. Chaque outil pointe vers lui via `chantierId` ; la fiche
 /// Affaire agrège les artefacts (voir src/lib/chantiers/providers.ts).
 model Chantier {
-  id        String      @id @default(cuid())
-  nom       String
-  reference String?
+  id            String         @id @default(cuid())
+  nom           String
+  reference     String?
   /// Référence de l'affaire dans WhySoft (CRM) — clé naturelle de résolution.
-  numeroWhy String?     @unique
-  etat      EtatAffaire @default(DEVIS)
+  numeroWhy     String?        @unique
+  etat          EtatAffaire    @default(DEVIS)
   /// Besoin en armoire électrique : intégration dans l'existant vs fabrication
   /// d'une nouvelle armoire. Null = non défini. Si NOUVELLE, la fiche vérifie
   /// la présence d'un schéma d'armoire dans les documents (dossier « Armoire »).
@@ -112,19 +157,51 @@ model Chantier {
   /// Année de rangement kDrive (racine `chantier/{année}/…`). Null pour les
   /// affaires antérieures à la GED → on retombe sur l'année de `createdAt`
   /// (le chemin kDrive ne casse jamais). Éditable sur la fiche affaire.
-  annee     Int?
+  annee         Int?
   /// Cache de l'`id` du dossier d'affaire résolu sur kDrive (évite de re-naviguer
   /// l'arbo à chaque dépôt). Voir src/lib/kdrive/resolution.
-  kdriveDirId String?
-  clientId  String
-  client    Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  kdriveDirId   String?
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  /// Auteur de la dernière modification HUMAINE (fil d'activité). Null = jamais
+  /// modifiée depuis l'ajout du champ, ou modifiée par une écriture technique.
+  updatedById   String?
+  updatedBy     User?          @relation("ChantierModifie", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  affectations AffectationProjet[]
-  documents    Document[]
+  affectations       AffectationProjet[]
+  documents          Document[]
+  visites            Visite[]
+  taches             TacheAffaire[]
+  notes              Note[]
+  scans              ModemScan[]
+  formulaireReponses FormulaireReponse[]
 
   @@index([clientId])
+}
+
+/// Tâche (todo) d'une affaire — kanban « À faire / En cours / Terminé » de la
+/// fiche affaire. Assignable à un utilisateur (l'index sur assigneId prépare la
+/// future vue transverse « Mes tâches »).
+model TacheAffaire {
+  id    String    @id @default(cuid())
+  titre String
+  etat  EtatTache @default(A_FAIRE)
+  /// Position dans sa colonne (drag & drop) : tri croissant, insertion au point
+  /// médian des voisins — pas de renumérotation globale à chaque déplacement.
+  ordre Float
+
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  assigneId  String?
+  assigne    User?    @relation(fields: [assigneId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chantierId])
+  @@index([assigneId])
 }
 
 // ---- Outil « Liste de Points GTB » -----------------------------------------
@@ -250,13 +327,146 @@ model AffectationProjet {
   chantier    Chantier? @relation(fields: [chantierId], references: [id], onDelete: SetNull)
   data        Json      @default("{}")
   createdById String?
-  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy   User?     @relation("AffectationCreee", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  /// Auteur de la dernière modification humaine (fil d'activité).
+  updatedById String?
+  updatedBy   User?     @relation("AffectationModifiee", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@index([createdById])
   @@index([clientId])
   @@index([chantierId])
+}
+
+// ---- Outil « Visites de chantier » -------------------------------------------
+
+/// Type d'une visite — chaque type correspond à une étape du cycle de l'affaire
+/// (voir docs/ROADMAP.md §1) et porte son modèle de checklist « ne rien oublier »
+/// (src/tools/visites/modeles-defaut.ts).
+enum TypeVisite {
+  RELEVE
+  SUIVI
+  RECEPTION
+  MAINTENANCE
+}
+
+/// Une visite de chantier — premier outil TERRAIN (local-first / offline).
+/// ⚠️ `id` est un UUID généré CÔTÉ CLIENT : une visite peut naître 100 % hors-ligne
+/// (dans l'armoire, sans réseau) puis être poussée au retour du signal. Le serveur
+/// reçoit des upserts idempotents — « dernier gagne » par visite via l'horodatage
+/// terrain `data.updatedTs`. Le contenu (checklist, réserves, notes, méta médias)
+/// vit en JSON `data` : type VisiteData dans src/tools/visites/model.ts.
+model Visite {
+  id    String     @id
+  type  TypeVisite @default(RELEVE)
+  titre String     @default("")
+  date  DateTime   @default(now())
+
+  // --- rattachement (souple : une visite née hors-ligne peut être rattachée après) ---
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientNom  String    @default("")
+  numeroWhy  String?
+
+  data        Json     @default("{}")
+  createdById String?
+  createdBy   User?    @relation("VisiteCreee", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  /// Auteur de la dernière modification humaine (fil d'activité).
+  updatedById String?
+  updatedBy   User?   @relation("VisiteModifiee", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  medias VisiteMedia[]
+
+  @@index([chantierId])
+  @@index([clientId])
+}
+
+/// Média d'une visite (photo compressée / note vocale). Le binaire vit sur le
+/// disque de la VM (VISITES_MEDIA_DIR, hors public/) et est servi par la route
+/// authentifiée /api/visites/media/[id]. `id` = UUID client → upload idempotent
+/// (re-tenter un envoi ne duplique jamais).
+model VisiteMedia {
+  id       String @id
+  visiteId String
+  visite   Visite @relation(fields: [visiteId], references: [id], onDelete: Cascade)
+  /// photo | audio
+  type     String @default("photo")
+  mimeType String @default("application/octet-stream")
+  taille   Int    @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier  String
+
+  createdAt DateTime @default(now())
+
+  @@index([visiteId])
+}
+
+// ---- Outil « Notes » ---------------------------------------------------------
+
+/// Une note d'affaire — document riche type Notion/Coda (texte, tables de
+/// données typées, fichiers, embeds HTML…). Le contenu est le JSON de
+/// l'éditeur BlockNote (tableau de blocs) : voir src/tools/notes/model.ts.
+model Note {
+  id           String  @id @default(cuid())
+  titre        String  @default("Nouvelle note")
+  /// Document BlockNote (tableau de blocs).
+  contenu      Json    @default("[]")
+  /// Anti-collision : incrémentée à chaque save ; un save fondé sur une version
+  /// périmée est refusé (deux collègues sur la même note → pas d'écrasement
+  /// silencieux). Voir sauverNote.
+  version      Int     @default(1)
+  /// Jeton de partage public : lecture seule via /n/[jeton], SANS session
+  /// (l'app est exposée sur internet). Null = privée. Révocation = remise à null.
+  jetonPartage String? @unique
+
+  // --- rattachement (Affaire obligatoire — « affaire d'abord ») ---
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  /// Client dénormalisé (dérivé de l'affaire) pour la fiche client.
+  clientId   String?
+  client     Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  numeroWhy  String?
+
+  createdById String?
+  createdBy   User?    @relation("NoteCreee", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  /// Auteur de la dernière modification humaine (fil d'activité).
+  updatedById String?
+  updatedBy   User?   @relation("NoteModifiee", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  medias NoteMedia[]
+
+  @@index([chantierId])
+  @@index([clientId])
+}
+
+/// Média d'une note (image collée/téléversée, pièce jointe). Le binaire vit sur
+/// le disque de la VM (NOTES_MEDIA_DIR, hors public/), servi par la route
+/// authentifiée /api/notes/media/[id] — ou, pour une note partagée, par la
+/// route publique scopée au jeton /api/public/notes/[jeton]/media/[id].
+/// `id` = UUID généré côté client → upload idempotent.
+model NoteMedia {
+  id       String @id
+  noteId   String
+  note     Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  /// Nom de fichier d'origine (affichage / téléchargement).
+  nom      String @default("")
+  mimeType String @default("application/octet-stream")
+  taille   Int    @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier  String
+
+  createdAt DateTime @default(now())
+
+  @@index([noteId])
 }
 
 // ---- Outil « Documents » (GED) ---------------------------------------------
@@ -268,22 +478,22 @@ model AffectationProjet {
 /// est l'ANCRE : renommer l'affaire ne déplace rien, l'id continue de pointer.
 /// Voir src/lib/kdrive et la note mémoire ged-documents-kdrive.
 model Document {
-  id           String   @id @default(cuid())
+  id        String @id @default(cuid())
   /// Nom de fichier d'origine (avec extension).
-  nom          String
+  nom       String
   /// Catégorie = sous-dossier kDrive (liste fermée, voir CATEGORIES dans model.ts).
-  categorie    String
-  mimeType     String   @default("application/octet-stream")
+  categorie String
+  mimeType  String @default("application/octet-stream")
   /// Taille en octets (max applicatif : 500 Mo).
-  taille       Int      @default(0)
+  taille    Int    @default(0)
 
   // --- rattachement (Affaire obligatoire) ---
-  chantierId   String
-  chantier     Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
   /// Client dénormalisé (dérivé de l'affaire) pour la fiche client.
-  clientId     String?
-  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  numeroWhy    String?
+  clientId   String?
+  client     Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  numeroWhy  String?
 
   // --- localisation ---
   /// Chemin du tampon transitoire sur la VM (présent tant que non SYNC, sinon null).
@@ -292,7 +502,7 @@ model Document {
   kdriveFileId String?
   /// Chemin logique kDrive calculé au dépôt (info / reconstruction), ex.
   /// « chantier/2026/Client A/2026-0142 - Réf/Prog/fichier.gfx ».
-  kdrivePath   String   @default("")
+  kdrivePath   String  @default("")
 
   // --- synchronisation ---
   statutSync       StatutSync       @default(EN_ATTENTE)
@@ -301,12 +511,289 @@ model Document {
   tentatives       Int              @default(0)
   syncError        String?
 
-  createdById  String?
-  createdBy    User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([chantierId])
   @@index([clientId])
   @@index([statutSync])
+}
+
+/// ToolGus — inventaire matériel scanné : QR d'un modem Teltonika (RUT…), au
+/// format « WIFI: » enrichi (S/P/SN/I/M/U/PW/B). Outil personnel AUTONOME :
+/// volontairement non rattaché à une affaire/un client.
+model ModemScan {
+  id        String  @id @default(cuid())
+  /// Contenu brut du QR, conservé pour re-parsing éventuel.
+  raw       String
+  /// Réseau WiFi / SSID (clé S).
+  ssid      String?
+  /// Numéro de série (clé SN).
+  serie     String?
+  /// IMEI (clé I).
+  imei      String?
+  /// Adresse MAC (clé M).
+  mac       String?
+  /// Mot de passe WiFi (clé P).
+  wifiPass  String?
+  /// Identifiant admin (clé U).
+  adminUser String?
+  /// Mot de passe admin (clé PW).
+  adminPass String?
+  /// Lot de fabrication (clé B).
+  lot       String?
+  /// Type de sécurité WiFi (clé T).
+  wifiType  String?
+  /// Symbologie du code scanné (qr_code, ean_13, code_128…). null = saisi/inconnu.
+  /// Un scan sans champ matériel (serie/imei/mac) est un code « générique ».
+  format    String?
+  /// Note libre saisie après le scan.
+  note      String  @default("")
+
+  // --- regroupement / rattachement (optionnels) ---
+  /// Affaire de rattachement (regroupe des scans, ex. sondes LoRa d'un chantier).
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+  /// Groupe libre : regroupement sans affaire (ex. « Sondes LoRa bât. A »).
+  /// À ne pas confondre avec `lot` (= lot de fabrication du modem, clé B du QR).
+  groupe     String?
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([chantierId])
+}
+
+// ---- Outil « Wiki » (base de connaissances interne) ------------------------
+// Savoir d'entreprise DURABLE et transverse (procédures, savoir-faire GTB,
+// méthodes), NON rattaché à une affaire — contrairement aux Notes. Réutilise le
+// moteur d'édition BlockNote des Notes. Organisation à 2 niveaux : rubrique →
+// pages. Recherche plein-texte Postgres (colonne `recherche` tsvector générée +
+// index GIN, ajoutée par migration SQL brute — voir la migration outil_wiki).
+
+/// Rubrique thématique du wiki (Administration, Commerce, Dev-Automatisme,
+/// Chantier, Armoire…). Table seedée mais MODIFIABLE (pas un enum en dur) : on
+/// peut en ajouter/renommer sans migration.
+model WikiRubrique {
+  id          String @id @default(cuid())
+  /// Slug stable, segment d'URL `/outils/wiki/{slug}`.
+  slug        String @unique
+  nom         String
+  description String @default("")
+  /// Nom d'icône lucide (résolu côté UI, ex. "Building2", "Wrench").
+  icon        String @default("BookText")
+  /// Rôle de teinte sémantique de la carte (ex. "brand", "accent").
+  couleur     String @default("brand")
+  ordre       Int    @default(0)
+
+  pages WikiPage[]
+
+  @@index([ordre])
+}
+
+/// Page de wiki — document riche BlockNote (même contenu que les Notes). Le
+/// versioning `version` est un verrou optimiste anti-collision (cf. sauverPage),
+/// pas un historique. `texte` = texte brut extrait du contenu + noms de tags,
+/// il alimente la colonne de recherche plein-texte `recherche`.
+model WikiPage {
+  id        String                   @id @default(cuid())
+  titre     String                   @default("Nouvelle page")
+  /// Document BlockNote (tableau de blocs).
+  contenu   Json                     @default("[]")
+  /// Anti-collision : incrémentée à chaque save ; un save fondé sur une version
+  /// périmée est refusé (deux collègues sur la même page → pas d'écrasement).
+  version   Int                      @default(1)
+  /// Résumé / description court de la page (saisi par l'auteur), affiché sur les
+  /// listes et les résultats de recherche. Vide = on retombe sur un extrait du
+  /// contenu. Inclus dans `texte` (donc cherchable).
+  resume    String                   @default("")
+  /// Texte brut du contenu (résumé + contenu + noms de tags), recalculé à chaque
+  /// save. Alimente la colonne générée `recherche` (tsvector) — jamais affiché tel quel.
+  texte     String                   @default("")
+  /// Facette structurée des tags : slugs normalisés (minuscule, dé-accentué,
+  /// canonique — cf. slugTag) dénormalisés depuis WikiPageTag à chaque save. Sépare
+  /// le monde « tag = filtre d'ensemble » (ET/OU/SANS via @> / && / NOT sur ce
+  /// tableau, index GIN) du monde « pertinence texte » (`recherche`). La source de
+  /// vérité d'affichage reste WikiTag/WikiPageTag (libellé + couleur). Nommé
+  /// `tagSlugs` (et pas `tags` comme dans le doc) car `tags` est déjà la relation.
+  tagSlugs  String[]                 @default([])
+  /// Recherche plein-texte : colonne tsvector GÉNÉRÉE (french, titre pondéré A +
+  /// texte pondéré B) + index GIN, ajoutée hors Prisma par la migration SQL brute.
+  /// Déclarée ici pour éviter la dérive ; jamais sélectionnée par le client
+  /// (interrogée uniquement en $queryRaw).
+  recherche Unsupported("tsvector")?
+
+  rubriqueId String
+  rubrique   WikiRubrique @relation(fields: [rubriqueId], references: [id], onDelete: Restrict)
+
+  /// Arborescence de pages (façon Notion) : parent DANS LA MÊME rubrique
+  /// (invariant tenu côté action ; changer une page de rubrique déplace la page
+  /// ET tout son sous-arbre). Une page qui a des enfants est un « dossier » — pas
+  /// de type distinct. `onDelete: Restrict` : supprimer un parent est refusé tant
+  /// qu'il a des enfants → `supprimerPage` remonte d'abord les enfants d'un cran.
+  /// `ordre` = tri manuel entre frères (glisser-déposer).
+  parentId String?
+  parent   WikiPage?  @relation("WikiArbre", fields: [parentId], references: [id], onDelete: Restrict)
+  enfants  WikiPage[] @relation("WikiArbre")
+  ordre    Int        @default(0)
+
+  createdById String?
+  createdBy   User?    @relation("WikiPageCreee", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  /// Auteur de la dernière modification humaine (fil d'activité).
+  updatedById String?
+  updatedBy   User?   @relation("WikiPageModifiee", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  tags   WikiPageTag[]
+  medias WikiMedia[]
+
+  @@index([rubriqueId])
+  @@index([parentId])
+  @@index([updatedAt])
+  /// Filtre à facettes ET/OU/SANS sur les tags (opérateurs @> / && sur text[]).
+  @@index([tagSlugs], type: Gin)
+}
+
+/// Tag transverse du wiki (taxonomie gérée : couleur, renommage global). Les
+/// noms sont uniques ; la saisie propose les tags existants pour éviter les
+/// doublons.
+model WikiTag {
+  id      String @id @default(cuid())
+  nom     String @unique
+  couleur String @default("#a855f7")
+
+  pages     WikiPageTag[]
+  createdAt DateTime      @default(now())
+}
+
+/// Association N-N page ⇄ tag.
+model WikiPageTag {
+  pageId String
+  page   WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    WikiTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([pageId, tagId])
+  @@index([tagId])
+}
+
+/// Média d'une page de wiki (image collée, pièce jointe). Binaire durable sur le
+/// disque de la VM (WIKI_MEDIA_DIR, hors public/), servi par la route
+/// AUTHENTIFIÉE /api/wiki/media/[id] — le wiki est 100 % interne (aucune route
+/// publique). `id` = UUID généré côté client → upload idempotent. Calqué sur
+/// NoteMedia.
+model WikiMedia {
+  id       String   @id
+  pageId   String
+  page     WikiPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  nom      String   @default("")
+  mimeType String   @default("application/octet-stream")
+  taille   Int      @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier  String
+
+  createdAt DateTime @default(now())
+
+  @@index([pageId])
+}
+
+// ---- Outil « Formulaires » (ToolGus — form builder façon Kizeo) ------------
+// Outil PERSO AUTONOME (comme le Scanner) : volontairement NON rattaché à un
+// client / non inscrit dans PROVIDERS. Deux niveaux : la DÉFINITION (Formulaire,
+// champs éditables par n'importe qui) et les RÉPONSES collectées (terrain,
+// local-first / offline, calquées sur Visite). Invariant clé : chaque réponse
+// FIGE un snapshot du schéma → modifier un formulaire n'altère jamais la lecture
+// des réponses déjà collectées (data.schemaSnapshot). Types : model.ts.
+
+/// Un formulaire personnalisable. La définition des champs (tableau ordonné de
+/// ChampDef) vit en JSON `schema` — voir SchemaFormulaire dans
+/// src/tools/formulaires/model.ts. `version` est un verrou optimiste
+/// anti-collision (cf. sauverFormulaire), pas un historique.
+model Formulaire {
+  id           String    @id @default(cuid())
+  nom          String    @default("Nouveau formulaire")
+  description  String    @default("")
+  /// Espace perso propriétaire (slug, ex. "gus") — miroir de Tool.proprietaire.
+  proprietaire String    @default("gus")
+  /// Définition ordonnée des champs (tableau de ChampDef). Voir model.ts.
+  schema       Json      @default("[]")
+  /// Anti-collision : incrémentée à chaque save de la définition ; un save fondé
+  /// sur une version périmée est refusé (deux éditeurs → pas d'écrasement).
+  version      Int       @default(1)
+  /// Publié = proposé au remplissage terrain. Un brouillon reste éditable sans
+  /// être visible des remplisseurs.
+  publie       Boolean   @default(false)
+  /// Date de première mise à disposition (passage brouillon → publié). Persiste
+  /// ensuite (dépublier ne l'efface pas).
+  publieLe     DateTime?
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reponses FormulaireReponse[]
+
+  @@index([proprietaire])
+  @@index([createdById])
+  @@index([updatedAt])
+}
+
+/// Une réponse (soumission) à un formulaire — TERRAIN, local-first / offline,
+/// calqué sur Visite. ⚠️ `id` = UUID généré CÔTÉ CLIENT : une réponse peut naître
+/// 100 % hors-ligne puis être poussée au retour du signal (upsert idempotent,
+/// « dernier gagne » par `data.updatedTs`). Le schéma effectif est FIGÉ dans
+/// `data.schemaSnapshot` (lecture stable même si le formulaire a changé depuis).
+/// Valeurs + snapshot + méta médias en JSON `data` : type ReponseData (model.ts).
+model FormulaireReponse {
+  id                String     @id
+  formulaireId      String
+  formulaire        Formulaire @relation(fields: [formulaireId], references: [id], onDelete: Cascade)
+  /// Version de la définition au moment du remplissage (info / diagnostic ;
+  /// le schéma effectif reste figé dans data.schemaSnapshot).
+  formulaireVersion Int        @default(1)
+  /// Libellé lisible de la réponse (dérivé d'un champ « titre » ou de la date).
+  titre             String     @default("")
+
+  // --- rattachement optionnel (une réponse née hors-ligne peut être rattachée après) ---
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+
+  data        Json     @default("{}")
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  medias FormulaireMedia[]
+
+  @@index([formulaireId])
+  @@index([chantierId])
+}
+
+/// Média d'une réponse (photo, signature PNG, pièce jointe). Binaire sur le
+/// disque de la VM (FORMULAIRES_MEDIA_DIR, hors public/), servi par la route
+/// authentifiée /api/formulaires/media/[id]. `id` = UUID client → upload
+/// idempotent. Calqué sur VisiteMedia.
+model FormulaireMedia {
+  id        String            @id
+  reponseId String
+  reponse   FormulaireReponse @relation(fields: [reponseId], references: [id], onDelete: Cascade)
+  /// photo | signature | fichier
+  type      String            @default("photo")
+  mimeType  String            @default("application/octet-stream")
+  taille    Int               @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier   String
+
+  createdAt DateTime @default(now())
+
+  @@index([reponseId])
 }

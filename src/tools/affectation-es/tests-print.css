@@ -186,6 +186,13 @@
 }
 .tests-report .rep-table .mono { font-family: "Courier New", monospace; font-size: 8pt; }
 .tests-report .rep-table .comment-cell { white-space: pre-line; color: #33465a; }
+/* Texte libre issu de la liste de points, sous la désignation. */
+.tests-report .rep-table .point-note {
+  display: block;
+  font-size: 7pt;
+  font-style: italic;
+  color: #5d7285;
+}
 .tests-report .rep-table tr.st-ok td { background: #f3fbf6; }
 .tests-report .rep-table tr.st-defaut td { background: #fff5f5; }
 

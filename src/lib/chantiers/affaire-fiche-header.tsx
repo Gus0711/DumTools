@@ -3,11 +3,11 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, Hash, Loader2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Hash, Loader2, Trash2, TriangleAlert } from "lucide-react";
 import { Button, Combobox, Input, Label, type ComboOption } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { BesoinArmoire, EtatAffaire } from "@/generated/prisma/enums";
-import { ETATS_AFFAIRE } from "./etats";
+import { CYCLE_AFFAIRE } from "./etats";
 import { BESOINS_ARMOIRE } from "./armoire";
 import { changerBesoinArmoire, changerEtatAffaire, modifierAffaire } from "./actions";
 
@@ -120,27 +120,14 @@ export function AffaireFicheHeader({
           </div>
         </div>
 
+        {/* Cycle de vie — où en est l'affaire, et un clic pour l'avancer. */}
+        <div className="mt-4 space-y-1">
+          <span className="text-xs font-medium text-muted">Cycle de l&apos;affaire</span>
+          <CycleAffaire etat={etat} pending={pending} onChanger={changerEtat} />
+        </div>
+
         <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
           <div className="flex flex-wrap items-end gap-3">
-            <label className="space-y-1">
-              <span className="text-xs font-medium text-muted">État</span>
-              <select
-                value={etat}
-                onChange={(e) => changerEtat(e.target.value as EtatAffaire)}
-                disabled={pending}
-                className={cn(
-                  "block h-9 w-40 rounded-md border border-border bg-surface px-2.5 text-sm text-fg",
-                  "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
-                )}
-              >
-                {ETATS_AFFAIRE.map((e) => (
-                  <option key={e.value} value={e.value}>
-                    {e.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
             <label className="space-y-1">
               <span className="text-xs font-medium text-muted">Besoin armoire</span>
               <select
@@ -176,6 +163,86 @@ export function AffaireFicheHeader({
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Fil d'étapes du cycle de vie : Devis → Commande → En cours → Livrée →
+ * Clôturée. Les étapes franchies sont pleines, l'étape courante est mise en
+ * évidence, les suivantes restent en creux — et chacune est cliquable pour
+ * avancer (ou revenir) d'un coup. La Corbeille n'est pas une étape : c'est un
+ * bouton à part, en bout de fil.
+ */
+function CycleAffaire({
+  etat,
+  pending,
+  onChanger,
+}: {
+  etat: EtatAffaire;
+  pending: boolean;
+  onChanger: (e: EtatAffaire) => void;
+}) {
+  const corbeille = etat === "CORBEILLE";
+  const courant = CYCLE_AFFAIRE.findIndex((e) => e.value === etat);
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto pb-0.5">
+        {CYCLE_AFFAIRE.map((e, i) => {
+          const estCourant = e.value === etat;
+          const franchie = !corbeille && courant >= 0 && i < courant;
+          return (
+            <div key={e.value} className="flex shrink-0 items-center gap-1">
+              {i > 0 && (
+                <ChevronRight
+                  className={cn("h-3.5 w-3.5", franchie ? "text-brand/50" : "text-subtle/60")}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => !estCourant && onChanger(e.value)}
+                disabled={pending || estCourant}
+                aria-current={estCourant ? "step" : undefined}
+                title={estCourant ? `Étape actuelle : ${e.label}` : `Passer en « ${e.label} »`}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors",
+                  estCourant
+                    ? "border-brand bg-brand text-brand-fg font-semibold shadow-sm"
+                    : franchie
+                      ? "border-brand/30 bg-brand/10 text-brand hover:bg-brand/15"
+                      : "border-border bg-surface text-muted hover:bg-surface-2 hover:text-fg",
+                  pending && "opacity-60",
+                )}
+              >
+                {franchie && <Check className="h-3.5 w-3.5" />}
+                {e.label}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onChanger(corbeille ? "EN_COURS" : "CORBEILLE")}
+        disabled={pending}
+        title={
+          corbeille
+            ? "Sortir de la corbeille (repasse en « En cours »)"
+            : "Mettre l'affaire à la corbeille (perdue, doublon, erreur)"
+        }
+        className={cn(
+          "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors",
+          corbeille
+            ? "border-danger bg-danger/12 font-semibold text-danger"
+            : "border-border bg-surface text-subtle hover:bg-surface-2 hover:text-danger",
+          pending && "opacity-60",
+        )}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+        Corbeille
+      </button>
     </div>
   );
 }

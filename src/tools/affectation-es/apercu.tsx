@@ -229,7 +229,17 @@ function IoTable({
           return (
             <tr key={ch} className={incompatible ? "io-row-incompatible" : undefined}>
               <td>{ch}</td>
-              <td className={p ? "" : "free-cell"}>{p ? pointLabel(p, !!project.include_references) : "Libre"}</td>
+              <td className={p ? "" : "free-cell"}>
+                {p ? (
+                  <>
+                    <span className="point-label">{pointLabel(p, !!project.include_references)}</span>
+                    {/* Texte libre de la liste de points, en 2e ligne discrète. */}
+                    {p.source && <span className="point-note">{p.source}</span>}
+                  </>
+                ) : (
+                  "Libre"
+                )}
+              </td>
               <td className="old-wire-cell"></td>
               <td className="old-wire-cell"></td>
               <td>

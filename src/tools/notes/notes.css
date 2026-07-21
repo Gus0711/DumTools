@@ -1,0 +1,251 @@
+/* Aligne BlockNote (thème Mantine) sur la charte DumTools : on ne fait que
+ * re-pointer les variables --bn-* vers les tokens SÉMANTIQUES (semantic.css) —
+ * aucun #hex ici, et le thème sombre suit automatiquement data-theme.
+ * Scopé sous .note-doc pour ne toucher aucun autre écran. */
+
+.note-doc .bn-container {
+  --bn-font-family: inherit;
+  --bn-colors-editor-text: var(--fg);
+  --bn-colors-editor-background: transparent;
+  --bn-colors-menu-text: var(--fg);
+  --bn-colors-menu-background: var(--surface);
+  --bn-colors-tooltip-text: var(--fg);
+  --bn-colors-tooltip-background: var(--surface-2);
+  --bn-colors-hovered-text: var(--fg);
+  --bn-colors-hovered-background: var(--surface-2);
+  --bn-colors-selected-text: var(--brand-fg);
+  --bn-colors-selected-background: var(--brand);
+  --bn-colors-disabled-text: var(--subtle);
+  --bn-colors-disabled-background: var(--surface-2);
+  --bn-colors-border: var(--border);
+  --bn-colors-side-menu: var(--subtle);
+  --bn-border-radius: 8px;
+}
+
+/* L'éditeur occupe la largeur du gabarit note (marge pour poignées de blocs). */
+.note-doc .bn-editor {
+  padding-inline: 54px 24px;
+  line-height: 1.65;
+}
+
+/* Sur téléphone, la gouttière des poignées se resserre (l'écran est compté). */
+@media (max-width: 640px) {
+  .note-doc .bn-editor {
+    padding-inline: 42px 12px;
+  }
+}
+
+/* Respiration en fin de document : on peut toujours défiler au-delà du dernier
+ * bloc pour écrire « au milieu de l'écran » (l'aperçu/lecture n'en a pas besoin). */
+.note-doc:not(.note-doc-lecture) .bn-editor {
+  padding-bottom: 22vh;
+}
+
+/* Rythme vertical : un titre marque le début d'une section, on lui redonne de
+ * l'air au-dessus (BlockNote espace tous les blocs uniformément). */
+.note-doc .bn-block-outer:not(:first-child):has(> .bn-block > .bn-block-content[data-content-type="heading"]) {
+  margin-top: 0.9em;
+}
+
+/* Navigation par le sommaire / Ctrl+S : la cible s'arrête sous la barre de
+ * chrome sticky au lieu de disparaître dessous. */
+.note-doc .bn-block-outer {
+  scroll-margin-top: 96px;
+}
+
+/* Le code parle la mono de la charte (JetBrains Mono), pas celle de Mantine. */
+.note-doc :is(code, pre) {
+  font-family: var(--font-mono);
+}
+
+/* --- Bloc de code REPLIABLE (blocs/code-repliable.tsx) -----------------------
+ * On greffe une barre d'en-tête (chevron + sélecteur de langage natif déplacé
+ * dedans) au-dessus du <pre>. Le bloc de code est toujours sombre : l'en-tête
+ * s'accorde à ce fond, indépendamment du thème clair/sombre de l'app. */
+.note-doc .code-repliable-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 6px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #cfcfcf;
+  font-size: 0.8em;
+  user-select: none;
+}
+.note-doc .code-repliable-btn {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.note-doc .code-repliable-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+.note-doc .code-repliable-chevron {
+  display: inline-flex;
+}
+.note-doc .code-repliable-chevron svg {
+  transition: transform 0.15s ease;
+}
+/* Déplié : le chevron pointe vers le bas ; replié : vers la droite. */
+.note-doc .code-repliable-header[data-collapsed="false"] .code-repliable-chevron svg {
+  transform: rotate(90deg);
+}
+.note-doc .code-repliable-info {
+  opacity: 0.85;
+}
+/* Replié : plus de <pre> dessous → l'en-tête referme les coins du bloc. */
+.note-doc .code-repliable-header[data-collapsed="true"] {
+  border-radius: 8px;
+}
+.note-doc .bn-block-content[data-content-type="codeBlock"] > pre[data-collapsed="true"] {
+  display: none;
+}
+/* Le sélecteur de langage natif, une fois déplacé dans l'en-tête, perd le
+ * positionnement absolu du cœur : on le rend discret mais toujours lisible. */
+.note-doc .code-repliable-header select {
+  border: none;
+  background: transparent;
+  color: #cfcfcf;
+  font: inherit;
+  cursor: pointer;
+  opacity: 0.75;
+}
+.note-doc .code-repliable-header select:hover,
+.note-doc .code-repliable-header select:focus {
+  opacity: 1;
+  outline: none;
+}
+.note-doc .code-repliable-header select option {
+  color: #000;
+}
+
+/* Séparateur & saut de page : traits accordés au thème (le cœur BlockNote pose
+ * un gris fixe #7d797a, illisible tel quel sur le thème sombre). */
+.note-doc [data-content-type="divider"] hr {
+  border-top-color: var(--border);
+}
+.note-doc [data-content-type="pageBreak"] > div {
+  border-top-color: var(--border);
+}
+
+/* Menu « / » : le thème Mantine ne pose ni hauteur max ni overflow sur la
+ * liste — en bas de page elle débordait de l'écran sans pouvoir défiler.
+ * Sélecteur NON scopé (le menu est portalé dans <body>, hors .note-doc) —
+ * sans risque : seul l'outil Notes utilise BlockNote. */
+.bn-suggestion-menu {
+  max-height: min(48vh, 420px);
+  overflow-y: auto;
+}
+
+/* Vue lecture seule (aperçu, page publique, impression) : pas de gouttière de
+ * poignées, le document colle au gabarit. */
+.note-doc-lecture .bn-editor {
+  padding-inline: 0;
+}
+
+/* --- Micro-animations (popovers de l'outil : partage, menu ⋯, bannières) ----- */
+@keyframes note-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-note-pop {
+  animation: note-pop-in 0.14s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-note-pop {
+    animation: none;
+  }
+}
+
+/* --- Aperçu / impression ---------------------------------------------------------
+ * L'aperçu enveloppe la note dans .print-root (patron global, globals.css) ;
+ * comme les autres outils, on révèle la « feuille » à l'écran dans un fond
+ * atelier. Les couleurs papier sont l'exception #hex sanctionnée (print). */
+@media screen {
+  .note-print.print-root {
+    display: block;
+    background: var(--surface-2);
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+  .note-print .note-sheet {
+    width: 210mm;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    color: #16202b;
+    padding: 15mm;
+    box-shadow: 0 2px 12px rgba(16, 32, 43, 0.18);
+    box-sizing: border-box;
+  }
+}
+
+.note-print .note-sheet-entete {
+  border-bottom: 2px solid #2b3a8f;
+  padding-bottom: 4mm;
+  margin-bottom: 6mm;
+}
+.note-print .note-sheet-titre {
+  font-size: 20pt;
+  font-weight: 700;
+  color: #16202b;
+}
+.note-print .note-sheet-meta {
+  margin-top: 1.5mm;
+  font-size: 9.5pt;
+  color: #405268;
+}
+
+/* Document imprimable (aperçu écran + impression + capture PDF html2canvas) :
+ * le code est TOUJOURS complet. Le repli est une commodité d'écran, jamais un
+ * tronquage de l'artefact imprimé — on masque l'en-tête de repli et on force le
+ * <pre> visible même si le bloc a été enregistré replié. */
+.note-print .code-repliable-header {
+  display: none !important;
+}
+.note-print .bn-block-content[data-content-type="codeBlock"] > pre[data-collapsed="true"] {
+  display: block !important;
+}
+
+@media print {
+  /* Le saut de page agit (page-break-after, CSS du cœur BlockNote) mais son
+   * pointillé d'édition ne doit pas s'imprimer. */
+  .note-doc [data-content-type="pageBreak"] > div {
+    border-top: none;
+  }
+  .note-print .note-sheet {
+    width: auto;
+    padding: 0;
+    box-shadow: none;
+    background: #fff;
+    color: #16202b;
+  }
+  .note-doc-lecture .bn-editor {
+    color: #16202b;
+  }
+  .note-doc-lecture .bn-block-outer,
+  .note-doc-lecture iframe {
+    break-inside: avoid;
+  }
+  .note-print * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -31,7 +31,7 @@ export const INPUT_SIGNALS = ["T", "PT1000", "NI1000", "10K Type II", "10K Type 
 export const OUTPUT_SIGNALS = ["0-10V", "4-20mA", "PWM", "D"];
 /** COM : protocoles de communication (bus / réseau) — le « signal » d'un point
  *  communicant. Pas de borne physique associée (exclu du total E/S). */
-export const COM_SIGNALS = ["Modbus RTU", "Modbus TCP", "BACnet MS/TP", "BACnet IP", "M-Bus", "LoRaWAN", "KNX"];
+export const COM_SIGNALS = ["Modbus RTU", "Modbus TCP", "BACnet MS/TP", "BACnet IP", "M-Bus", "LoRaWAN", "KNX", "TCP/IP"];
 
 /** Signaux proposés pour un type d'E/S (entrées ↔ INPUT, sorties ↔ OUTPUT, COM ↔ protocoles). */
 export function signalsForType(type: IoType | string): string[] {

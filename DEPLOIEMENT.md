@@ -11,8 +11,13 @@ npm install
 docker compose -f docker-compose.dev.yml up -d   # Postgres (port 5433)
 npm run db:migrate            # applique les migrations
 npm run db:seed               # crée l'admin (admin@dumortier02.fr / changeme)
-npm run dev                   # http://localhost:3000
+npm run dev                   # app (http://localhost:3000) + serveur MCP (:8787)
 ```
+
+`npm run dev` lance **aussi le serveur MCP HTTP** (connecteur Claude Desktop,
+port 8787) via `concurrently` — logs préfixés `[next]` / `[mcp]`, Ctrl+C arrête
+les deux. Si le MCP tourne déjà (autre terminal, prod locale), il s'efface tout
+seul. App seule : `npm run dev:app`.
 
 Scripts utiles : `npm run db:studio` (explorateur DB), `npm run db:generate`.
 
@@ -29,6 +34,32 @@ uniquement) sur http://localhost:8081. Connexion pré-remplie :
 
 Alternative à `npm run db:studio` (Prisma Studio) : Adminer donne un accès SQL
 brut, Prisma Studio une vue orientée modèles.
+
+## Prod locale (usage quotidien / tunnel Cloudflare)
+
+`next dev` compile chaque route à la première visite (plusieurs secondes par
+écran) : pénible pour l'usage quotidien, et le service worker offline y est
+désactivé. Pour **utiliser** l'app (et la servir aux collègues via le tunnel
+sur le port 3000), servir le **build de production** sur la même base Postgres
+que le dev (port 5433) :
+
+```bash
+scripts/serve-prod.sh --build   # build + sert sur :3000 (LAN + tunnel)
+scripts/serve-prod.sh           # re-sert le dernier build (démarrage instantané)
+```
+
+Le script démarre **aussi le serveur MCP HTTP** (port 8787, tunnel
+`dumtoolsmcp.datagtb.com`) et l'arrête avec lui — un seul lanceur pour l'usage
+quotidien : app + connecteur Claude Desktop.
+
+- Réponses en ~10–150 ms (routes précompilées), « Ready in 0ms ».
+- SW offline actif (indispensable pour les tests device Visites / mise en service).
+- Les binaires restent dans le projet (`.visites-media/`, `.notes-media/`,
+  `.wiki-media/`, `.spool/`) — le script ancre les variables d'env, rien ne vit
+  dans `.next/standalone` (effacé à chaque build).
+- ⚠️ Un build est une **photo du code** : après une modif, relancer avec
+  `--build`. Pour développer pendant que la prod locale tourne :
+  `PORT=3001 npm run dev`.
 
 ## Production (VM Proxmox)
 

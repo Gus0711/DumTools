@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 
 /* Les polices sont exposées sous les noms de variables attendus par globals.css
  * (--font-sans-app / --font-mono-app / --font-display-app), pas en dur dans le CSS.
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#2b3a8f",
 };
 
 export default function RootLayout({
@@ -45,7 +47,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <RegisterServiceWorker />
+        {children}
+      </body>
     </html>
   );
 }

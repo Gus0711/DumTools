@@ -1,9 +1,10 @@
 import { LogOut, UserCircle2 } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { BoutonRecherche } from "@/components/recherche/bouton-recherche";
 import { MobileMenuButton } from "./mobile-menu-button";
 
-/** Barre supérieure : thème + utilisateur connecté + déconnexion. */
+/** Barre supérieure : recherche globale + thème + utilisateur + déconnexion. */
 export async function Header() {
   const session = await auth();
   const nom = session?.user?.name ?? session?.user?.email ?? "Utilisateur";
@@ -12,6 +13,8 @@ export async function Header() {
     <header className="flex h-14 shrink-0 items-center justify-end gap-1.5 border-b border-border bg-surface/80 px-4 backdrop-blur">
       {/* Ouverture du tiroir de navigation (mobile). Repousse le reste à droite. */}
       <MobileMenuButton />
+
+      <BoutonRecherche />
 
       <ThemeToggle />
 

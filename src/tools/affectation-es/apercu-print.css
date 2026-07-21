@@ -304,7 +304,24 @@
 .affectation-doc .io-table td:first-child { width: 12mm; text-align: center; }
 .affectation-doc .io-table th:last-child,
 .affectation-doc .io-table td:last-child { width: 23mm; text-align: center; }
-.affectation-doc .io-table td:nth-child(2) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.affectation-doc .io-table td:nth-child(2) { overflow: hidden; }
+/* Désignation sur une ligne (tronquée), texte libre en 2e ligne discrète. */
+.affectation-doc .io-table td .point-label {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.affectation-doc .io-table td .point-note {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 6.4pt;
+  line-height: 1.15;
+  color: #5d7285;
+  font-style: italic;
+}
 .affectation-doc .free-cell { color: #999; font-style: italic; }
 /* Borne dont le signal est incompatible (ex. sortie 0-10V sur borne triac DO). */
 .affectation-doc .io-row-incompatible td { background: #fdeaea; }

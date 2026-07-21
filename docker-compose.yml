@@ -48,8 +48,20 @@ services:
       KDRIVE_DRIVE_ID: ${KDRIVE_DRIVE_ID:-}
       KDRIVE_ROOT_DIR_ID: ${KDRIVE_ROOT_DIR_ID:-}
       KDRIVE_API_VERSION: ${KDRIVE_API_VERSION:-3}
+      # Médias des outils Visites et Notes : binaires DURABLES sur la VM →
+      # volumes persistants (sinon photos/pièces jointes perdues au
+      # redéploiement, fiches en « fichier absent » 410). À sauvegarder avec
+      # Postgres (voir scripts/backup-db.sh).
+      VISITES_MEDIA_DIR: /data/visites-media
+      NOTES_MEDIA_DIR: /data/notes-media
+      # Médias des pages du Wiki (images collées, pièces jointes) — durables,
+      # 100 % interne (aucune route publique). Même logique de sauvegarde.
+      WIKI_MEDIA_DIR: /data/wiki-media
     volumes:
       - spool_data:/data/spool
+      - visites_media:/data/visites-media
+      - notes_media:/data/notes-media
+      - wiki_media:/data/wiki-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -97,3 +109,6 @@ volumes:
   caddy_data:
   caddy_config:
   spool_data:
+  visites_media:
+  notes_media:
+  wiki_media:

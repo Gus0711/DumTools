@@ -1,8 +1,47 @@
 # À FAIRE — Mise en service hors-ligne (PWA + synchro différée)
 
-> Statut : **plan validé, non implémenté.** Objectif : pouvoir remplir l'onglet
-> **Mise en service** sans réseau (chaufferie en sous-sol) puis **synchroniser**
-> automatiquement au retour du signal.
+> Statut : **socle implémenté (2026-07-13), à tester sur device.** Objectif :
+> remplir l'onglet **Mise en service** sans réseau (chaufferie en sous-sol) puis
+> **synchroniser** automatiquement au retour du signal.
+>
+> Décisions prises avec Augustin : **device de dev = Android** (collègues iPhone →
+> on code pour le plancher iOS) ; **V1 = mise en service seule** (l'affectation
+> reste en ligne, un changement terrain se note en commentaire).
+>
+> 🗺️ Ces tests device sont le **P0 de [`ROADMAP.md`](ROADMAP.md)** et valent
+> aussi **Phase 0a de l'outil Visites** ([`VISITES.md`](VISITES.md) §7) — un
+> seul cycle de validation pour les deux outils terrain.
+
+## ✅ Ce qui est fait (session 2026-07-13)
+
+- **Action fine** `enregistrerTestsPoints(projetId, updates[])` — granulaire,
+  idempotente, n'écrase que `testStatus`/`testComment` par `uid`
+  (`src/tools/affectation-es/actions.ts`). Remplace le clobber du projet entier.
+- **Kit offline réutilisable** `src/lib/offline/` (aucune dépendance ajoutée) :
+  - `idb.ts` — wrapper IndexedDB minimal (base `dumtools-offline`).
+  - `mise-en-service.ts` — snapshot local + file de mutations + rejeu groupé.
+  - `use-online.ts` (`useSyncExternalStore`) + `use-mise-en-service.ts` (hook écran).
+  - `src/components/offline/sync-indicator.tsx` — bandeau d'état de synchro.
+- **Îlot Mise en service offline** : route
+  `/outils/affectation-es/[id]/mise-en-service` (server = snapshot léger) +
+  composant client `mise-en-service-offline.tsx` (mobile, gros boutons OK/Défaut).
+  Bouton **« Mode terrain (hors-ligne) »** depuis l'onglet Mise en service en ligne.
+- **PWA installable** : `src/app/manifest.ts` (→ `/manifest.webmanifest`),
+  `public/icon.svg`, `public/sw.js` (SW hand-rolled network-first, jamais d'auth
+  cachée), `RegisterServiceWorker` monté dans le root layout (no-op hors HTTPS),
+  exclusions ajoutées dans `src/proxy.ts`.
+- Vérifs : `tsc` OK, `eslint` OK, `next build` OK, manifest/sw/icône servis en 200
+  sans auth, route mise en service protégée (redirige login).
+
+## ⚠️ Reste à faire / à valider sur device
+
+- **Service worker = HTTPS obligatoire** : ne s'enregistre PAS en `http://192.168…`.
+  Tester l'installation PWA + « app fermée puis rouverte hors-ligne » via
+  **Caddy/HTTPS** (prod Docker) ou `localhost`. En dev LAN http, seul le cœur
+  IndexedDB (écrire/synchroniser depuis un onglet ouvert) est testable.
+- **Icônes PNG 192/512 + `apple-touch-icon`** (le SVG suffit au spike, pas idéal iOS).
+- **Sessions JWT plus longues** pour l'usage terrain (éviter l'expiration offline).
+- **Test réel sur un iPhone de collègue** avant de généraliser (quotas, permissions).
 
 ## Contexte & contrainte
 
@@ -95,6 +134,37 @@ phase ultérieure optionnelle.
   avec file non vide.
 - **Docker/prod** : servir le SW et le manifest correctement (headers, scope),
   vérifier avec Caddy.
+
+## 🧪 Procédure de test (à dérouler avec Augustin)
+
+### A. Cœur local-first — testable MAINTENANT en dev (LAN http, sans SW)
+1. `docker compose -f docker-compose.dev.yml up -d` (postgres) puis `npm run dev`.
+2. Se connecter, ouvrir un projet **Affectation E/S** qui a des points affectés
+   (un automate choisi), onglet **Mise en service** → cliquer
+   **« Mode terrain (hors-ligne) »**. L'écran mobile s'affiche.
+3. DevTools (F12) → onglet **Network** → passer **Offline**. Le bandeau doit
+   afficher **« Hors-ligne »**.
+4. Cocher **OK/Défaut** sur des points + écrire un commentaire. Le bandeau compte
+   **« N modification(s) en attente ⏳ »**. Vérifier dans DevTools → **Application →
+   IndexedDB → dumtools-offline** que `mes-queue` se remplit.
+5. **Recharger la page hors-ligne** : les saisies sont toujours là (relues depuis
+   IndexedDB). ✔ persistance.
+6. Repasser **Online**. Le bandeau passe à **« Synchronisation… »** puis
+   **« À jour »**. Recharger le projet en ligne : les statuts sont bien en base.
+7. Bonus conflit : couper le réseau, modifier un point, couper l'onglet, rouvrir,
+   resynchroniser → « dernier gagne » par point, aucune perte.
+
+### B. Installation PWA + offline complet — nécessite HTTPS (Caddy prod)
+1. Déployer via `docker-compose.yml` (Caddy fournit le HTTPS) ou tester sur
+   `https://localhost`.
+2. **Android/Chrome** : ouvrir le site → menu ⋮ → **« Installer l'application »**.
+   Vérifier l'icône DumTools sur l'écran d'accueil, lancement en plein écran.
+3. Ouvrir le **Mode terrain** une fois **en ligne** (pré-charge le snapshot).
+4. **Mode avion**, **fermer** l'app, la **rouvrir** : la page doit se charger
+   (grâce au SW) et rester éditable. Saisir → tout part en IndexedDB.
+5. Désactiver le mode avion : synchro auto, bandeau « À jour ».
+6. Refaire le tour sur un **iPhone/Safari** d'un collègue (Partager → « Sur l'écran
+   d'accueil ») pour cadrer les limites iOS.
 
 ## Repères code (existants à réutiliser / adapter)
 

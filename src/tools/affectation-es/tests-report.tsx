@@ -179,7 +179,10 @@ export function RapportTests({
                 <tr key={p.uid} className={info.cls}>
                   <td className="mono">{p.repere || "—"}</td>
                   <td>{p.direction === "input" ? "Entrée" : "Sortie"}</td>
-                  <td>{p.designation}</td>
+                  <td>
+                    {p.designation}
+                    {p.source && <span className="point-note">{p.source}</span>}
+                  </td>
                   <td>{signal || "—"}</td>
                   <td>
                     <span className={`badge ${info.cls}`}>{info.label}</span>

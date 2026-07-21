@@ -8,9 +8,13 @@ import { Prisma } from "@/generated/prisma/client";
 import { EtatAffaire, BesoinArmoire } from "@/generated/prisma/enums";
 import { resoudreClientId } from "@/lib/clients/queries";
 
-async function requireUser(): Promise<void> {
+/** Id de l'utilisateur courant — sert aussi à tracer l'auteur de la dernière
+ *  modification (`updatedById`, fil d'activité de l'accueil). */
+async function requireUserId(): Promise<string> {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Non authentifié");
+  const id = session?.user?.id;
+  if (!id) throw new Error("Non authentifié");
+  return id;
 }
 
 /** Crée une affaire (Chantier) rattachée à un client. Le numéro Why est optionnel
@@ -21,7 +25,7 @@ export async function creerAffaire(p: {
   clientNom: string;
   numeroWhy: string;
 }): Promise<void> {
-  await requireUser();
+  const userId = await requireUserId();
   const nom = p.nom.trim();
   const numeroWhy = p.numeroWhy.trim() || null;
   if (!nom) throw new Error("Nom de l'affaire requis");
@@ -31,7 +35,7 @@ export async function creerAffaire(p: {
   let affaire: { id: string };
   try {
     affaire = await prisma.chantier.create({
-      data: { nom, numeroWhy, clientId },
+      data: { nom, numeroWhy, clientId, updatedById: userId },
       select: { id: true },
     });
   } catch (e) {
@@ -54,7 +58,7 @@ export async function modifierAffaire(
   id: string,
   p: { nom: string; clientNom: string; numeroWhy: string },
 ): Promise<void> {
-  await requireUser();
+  const userId = await requireUserId();
   const nom = p.nom.trim();
   if (!nom) throw new Error("Nom requis");
   const clientNom = p.clientNom.trim();
@@ -63,7 +67,10 @@ export async function modifierAffaire(
   const numeroWhy = p.numeroWhy.trim() || null;
 
   try {
-    await prisma.chantier.update({ where: { id }, data: { nom, clientId, numeroWhy } });
+    await prisma.chantier.update({
+      where: { id },
+      data: { nom, clientId, numeroWhy, updatedById: userId },
+    });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")
       throw new Error("Une affaire existe déjà avec ce numéro Why");
@@ -82,8 +89,8 @@ export async function modifierAffaire(
 }
 
 export async function changerEtatAffaire(id: string, etat: EtatAffaire): Promise<void> {
-  await requireUser();
-  await prisma.chantier.update({ where: { id }, data: { etat } });
+  const userId = await requireUserId();
+  await prisma.chantier.update({ where: { id }, data: { etat, updatedById: userId } });
   revalidate(id);
 }
 
@@ -92,7 +99,10 @@ export async function changerBesoinArmoire(
   id: string,
   besoinArmoire: BesoinArmoire | null,
 ): Promise<void> {
-  await requireUser();
-  await prisma.chantier.update({ where: { id }, data: { besoinArmoire } });
+  const userId = await requireUserId();
+  await prisma.chantier.update({
+    where: { id },
+    data: { besoinArmoire, updatedById: userId },
+  });
   revalidate(id);
 }
