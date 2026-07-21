@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
-import { Role } from "@/generated/prisma/enums";
+import { ProfilNdf, Role } from "@/generated/prisma/enums";
 
 const CONFIG = "/configuration/utilisateurs";
 
@@ -21,6 +21,15 @@ async function requireAdmin(): Promise<string> {
 
 function normaliserRole(v: unknown): Role {
   return v === Role.ADMIN ? Role.ADMIN : Role.MEMBRE;
+}
+
+/** Profil « notes de frais ». Tout ce qui n'est pas un profil connu vaut
+ *  « aucun » : la personne n'établit pas de note de frais et l'outil le lui dit
+ *  plutôt que de lui présenter des rubriques au hasard. */
+function normaliserProfilNdf(v: unknown): ProfilNdf | null {
+  if (v === ProfilNdf.TECHNICIEN) return ProfilNdf.TECHNICIEN;
+  if (v === ProfilNdf.DIRECTION_RA) return ProfilNdf.DIRECTION_RA;
+  return null;
 }
 
 /** Nombre d'administrateurs encore actifs hormis `saufId`. Garde-fou anti-lockout. */
@@ -63,6 +72,7 @@ export async function modifierUtilisateur(p: {
   nom: string;
   role: string;
   actif: boolean;
+  profilNdf?: string | null;
 }) {
   await requireAdmin();
   const nom = p.nom.trim();
@@ -81,7 +91,12 @@ export async function modifierUtilisateur(p: {
 
   await prisma.user.update({
     where: { id: p.id },
-    data: { nom, role, actif: p.actif },
+    data: {
+      nom,
+      role,
+      actif: p.actif,
+      profilNdf: normaliserProfilNdf(p.profilNdf),
+    },
   });
   revalidatePath(CONFIG);
 }

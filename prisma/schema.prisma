@@ -41,6 +41,10 @@ model User {
   wikiPages             WikiPage[]          @relation("WikiPageCreee")
   formulaires           Formulaire[]
   formulaireReponses    FormulaireReponse[]
+  /// Notes de frais — voir enum ProfilNdf. Null = n'en établit pas.
+  profilNdf             ProfilNdf?
+  depensesFrais         DepenseFrais[]      @relation("DepenseFraisCreee")
+  notesFraisMois        NoteFraisMois[]
   /// Dernière modification humaine (fil d'activité de l'accueil) — voir
   /// `updatedById` sur chaque modèle. Les écritures techniques (synchro kDrive,
   /// propagation de dénormalisation, réordonnancement) n'y touchent pas.
@@ -177,6 +181,7 @@ model Chantier {
   notes              Note[]
   scans              ModemScan[]
   formulaireReponses FormulaireReponse[]
+  depensesFrais      DepenseFrais[]
 
   @@index([clientId])
 }
@@ -796,4 +801,139 @@ model FormulaireMedia {
   createdAt DateTime @default(now())
 
   @@index([reponseId])
+}
+
+/// Profil « notes de frais » d'un utilisateur. Détermine À LA FOIS les rubriques
+/// proposées à la saisie et le gabarit Excel produit — la personne ne choisit
+/// jamais son modèle. Null = n'établit pas de note de frais : l'outil ne lui
+/// propose rien (tout le monde n'en fait pas).
+enum ProfilNdf {
+  TECHNICIEN
+  DIRECTION_RA
+}
+
+/// Rubrique d'une dépense. Chaque valeur correspond à UNE colonne de l'un des
+/// deux gabarits Excel (voir docs/NDF.md §4) — d'où le découpage par profil :
+/// un technicien ne verra jamais REPAS_AFFAIRES, un RA jamais ENTRETIEN_VEHICULE.
+enum CategorieFrais {
+  /// Les deux profils — transport, péage, parking.
+  TRANSPORT
+  /// Les deux profils — essence / gazole.
+  CARBURANT
+  /// Les deux profils — achats divers (y compris nuit d'hôtel d'un RA).
+  ACHATS_DIVERS
+  /// TECHNICIEN — restaurant ou hôtel, seul.
+  REPAS_HOTEL_SEUL
+  /// TECHNICIEN — restaurant ou hôtel, accompagné.
+  REPAS_HOTEL_ACCOMPAGNE
+  /// TECHNICIEN — entretien du véhicule de service.
+  ENTRETIEN_VEHICULE
+  /// DIRECTION_RA — repas d'affaires avec invités (colonnes « Coûts », « Nbre
+  /// invités Fareneït », « Noms des sociétés ET des invités »).
+  REPAS_AFFAIRES
+  /// DIRECTION_RA — consommations.
+  CONSOMMATIONS
+}
+
+/// Une dépense professionnelle, saisie au fil de l'eau (souvent sur téléphone,
+/// au moment de payer). C'est l'unité atomique de l'outil : la « note de frais »
+/// mensuelle n'est qu'un récap agrégé, pas une entité de saisie.
+///
+/// ⚠️ RÈGLE CENTRALE : une dépense SANS justificatif n'entre pas dans le récap
+/// mensuel. Elle reste visible dans la zone « en attente », rattrapable à tout
+/// moment — on ne bloque jamais la saisie, on ne transmet que du complet.
+///
+/// Cloisonnement : `createdById` est OBLIGATOIRE et toute lecture y est filtrée.
+/// Aucune requête de l'outil ne renvoie les dépenses d'autrui, ADMIN compris.
+model DepenseFrais {
+  /// UUID généré côté client (upload de justificatif idempotent, et prêt pour
+  /// une saisie hors-ligne ultérieure).
+  id             String         @id
+  /// Date réelle de la dépense (celle du ticket).
+  date           DateTime       @db.Date
+  categorie      CategorieFrais
+  /// En CENTIMES : pas de flottant, pas de Decimal à sérialiser vers le client.
+  montantCents   Int
+  /// TVA lue sur le justificatif, en centimes. Optionnelle, jamais calculée
+  /// (les tickets mélangent les taux). Reportée telle quelle dans l'Excel.
+  tvaCents       Int?
+  descriptif     String         @default("")
+  /// N° d'affaire tel qu'il ira dans l'Excel. Saisie libre assumée : toutes les
+  /// affaires ne sont pas dans la plateforme, et une dépense peut n'en avoir
+  /// aucune.
+  numeroAffaire  String         @default("")
+  /// Rattachement fort quand l'affaire EXISTE dans la plateforme (choisie dans
+  /// la liste). Purement informatif en v1 : pas de remontée sur la fiche Affaire.
+  chantierId     String?
+  chantier       Chantier?      @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+  /// REPAS_AFFAIRES uniquement — colonnes K et P:Q du gabarit Direction/RA.
+  nbInvites      Int?
+  invites        String         @default("")
+  /// Période d'imputation « YYYY-MM ». Vaut le mois de `date`, SAUF rattrapage :
+  /// un justificatif ajouté après transmission du mois d'origine reporte la
+  /// dépense sur le premier mois encore ouvert (un fichier déjà remis n'est
+  /// jamais invalidé). Recalculée quand la dépense devient complète.
+  periode        String
+  /// Trace du report : mois d'origine quand `periode` en diffère (affiché à
+  /// l'écran et rappelé dans le descriptif de l'Excel).
+  periodeOrigine String?
+  /// « manuelle » aujourd'hui ; « ocr » quand l'extraction automatique sera
+  /// branchée. Posé dès maintenant pour éviter une migration plus tard.
+  saisieSource   String         @default("manuelle")
+  /// Réponse brute du moteur d'extraction, conservée pour diagnostic. Vide tant
+  /// que l'OCR n'est pas branché.
+  ocrBrut        Json?
+
+  createdById String
+  createdBy   User     @relation("DepenseFraisCreee", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  justificatifs JustificatifFrais[]
+
+  @@index([createdById, periode])
+  @@index([createdById, date])
+  @@index([chantierId])
+}
+
+/// Justificatif d'une dépense (photo de ticket, PDF de facture). Binaire sur le
+/// disque de la VM (NDF_MEDIA_DIR, hors public/), servi par la route
+/// /api/ndf/media/[id] qui VÉRIFIE LA PROPRIÉTÉ (données financières
+/// nominatives — contrairement aux autres routes média de la plateforme, qui se
+/// contentent de vérifier la session). `id` = UUID client → upload idempotent.
+model JustificatifFrais {
+  id        String       @id
+  depenseId String
+  depense   DepenseFrais @relation(fields: [depenseId], references: [id], onDelete: Cascade)
+  mimeType  String       @default("application/octet-stream")
+  taille    Int          @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier   String
+  /// Nom d'origine (utile pour un PDF de facture déposé depuis un PC).
+  nomOrigine String      @default("")
+
+  createdAt DateTime @default(now())
+
+  @@index([depenseId])
+}
+
+/// État d'un mois pour une personne. Créée à la première génération / au premier
+/// marquage : son absence signifie « mois jamais transmis ». Ne porte AUCUN
+/// montant — les totaux se recalculent toujours depuis les dépenses, il ne peut
+/// donc pas y avoir de désaccord entre le récap et ses lignes.
+model NoteFraisMois {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// « YYYY-MM ».
+  periode     String
+  /// Horodatage de la remise à la compta. Null = pas encore transmise. La note
+  /// reste rouvrable et régénérable après coup.
+  transmiseLe DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, periode])
+  @@index([userId])
 }

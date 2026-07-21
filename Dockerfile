@@ -39,7 +39,7 @@ COPY --from=builder /app/public ./public
 # plus rien y écrire (EACCES silencieux à l'upload).
 # Tout nouveau volume déclaré dans docker-compose.yml doit être listé ici.
 RUN mkdir -p /data/spool /data/visites-media /data/notes-media /data/wiki-media \
-             /data/formulaires-media \
+             /data/formulaires-media /data/ndf-media \
  && chown -R nextjs:nodejs /data
 
 USER nextjs

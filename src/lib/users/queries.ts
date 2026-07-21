@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import type { Role } from "@/generated/prisma/enums";
+import type { ProfilNdf, Role } from "@/generated/prisma/enums";
 
 /** Ligne d'utilisateur pour l'écran d'administration (sans le hash). */
 export interface UtilisateurRow {
@@ -9,6 +9,9 @@ export interface UtilisateurRow {
   nom: string;
   role: Role;
   actif: boolean;
+  /** Profil « notes de frais » — null = n'en établit pas. Détermine les
+   *  rubriques de saisie et le gabarit Excel produit. */
+  profilNdf: ProfilNdf | null;
   /** L'utilisateur a-t-il un jeton d'accès MCP actif ? */
   aJetonMcp: boolean;
   createdAt: Date;
@@ -24,6 +27,7 @@ export async function listerUtilisateurs(): Promise<UtilisateurRow[]> {
       nom: true,
       role: true,
       actif: true,
+      profilNdf: true,
       mcpTokenHash: true,
       createdAt: true,
       updatedAt: true,

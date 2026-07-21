@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CircuitBoard, ClipboardCheck, ClipboardList, FlaskConical, FolderOpen, Library, NotebookPen, ScanLine } from "lucide-react";
+import { CircuitBoard, ClipboardCheck, ClipboardList, FlaskConical, FolderOpen, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
 
 /* =============================================================================
  * REGISTRE D'OUTILS
@@ -114,6 +114,16 @@ export const TOOLS: Tool[] = [
       "Construis tes propres formulaires (façon Kizeo) : glisser-déposer des champs (texte, nombre, choix, date, photo, signature, GPS), puis remplis-les sur le terrain — même sans réseau. Réponses collectées, exportables et rattachables à une affaire.",
     icon: ClipboardList,
     href: "/perso/gus/formulaires",
+    status: "disponible",
+    proprietaire: "gus",
+  },
+  {
+    id: "notes-de-frais",
+    nom: "Notes de frais",
+    description:
+      "Photographie ton ticket au moment de payer, l'outil s'occupe du reste : à la fin du mois, la note de frais est déjà écrite. Excel au format habituel + tous les justificatifs numérotés en un seul PDF.",
+    icon: Receipt,
+    href: "/perso/gus/notes-de-frais",
     status: "disponible",
     proprietaire: "gus",
   },

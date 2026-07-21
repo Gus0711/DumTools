@@ -61,12 +61,16 @@ services:
       WIKI_MEDIA_DIR: /data/wiki-media
       # Médias des réponses de formulaires (photos, signatures, dessins, audio).
       FORMULAIRES_MEDIA_DIR: /data/formulaires-media
+      # Justificatifs de notes de frais (photos de tickets, PDF de factures) :
+      # pièces comptables, à conserver 6 ans → volume + sauvegarde obligatoires.
+      NDF_MEDIA_DIR: /data/ndf-media
     volumes:
       - spool_data:/data/spool
       - visites_media:/data/visites-media
       - notes_media:/data/notes-media
       - wiki_media:/data/wiki-media
       - formulaires_media:/data/formulaires-media
+      - ndf_media:/data/ndf-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,3 +122,4 @@ volumes:
   notes_media:
   wiki_media:
   formulaires_media:
+  ndf_media:

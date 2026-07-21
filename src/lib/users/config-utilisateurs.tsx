@@ -27,7 +27,13 @@ import {
   revoquerJetonMcp,
 } from "./actions";
 
-type EditDraft = { id: string; nom: string; role: string; actif: boolean };
+type EditDraft = {
+  id: string;
+  nom: string;
+  role: string;
+  actif: boolean;
+  profilNdf: string;
+};
 type CreateDraft = { nom: string; email: string; motDePasse: string; role: string };
 
 const selectCls =
@@ -264,6 +270,21 @@ export function ConfigUtilisateurs({
                       <option value="MEMBRE">Membre</option>
                       <option value="ADMIN">Administrateur</option>
                     </select>
+                    {/* Profil « notes de frais » : détermine les rubriques de
+                        saisie ET le gabarit Excel produit. « Aucune » = la
+                        personne n'établit pas de note de frais. */}
+                    <select
+                      value={edit.profilNdf}
+                      onChange={(e) =>
+                        setEdit({ ...edit, profilNdf: e.target.value })
+                      }
+                      className={selectCls}
+                      title="Profil « notes de frais »"
+                    >
+                      <option value="">Notes de frais : aucune</option>
+                      <option value="TECHNICIEN">NDF : technicien</option>
+                      <option value="DIRECTION_RA">NDF : direction / RA</option>
+                    </select>
                     <label className="flex items-center gap-1.5 text-sm text-fg">
                       <input
                         type="checkbox"
@@ -289,6 +310,14 @@ export function ConfigUtilisateurs({
                     <span className="hidden text-xs font-medium text-muted sm:inline">
                       {u.role === "ADMIN" ? "Administrateur" : "Membre"}
                     </span>
+                    {u.profilNdf && (
+                      <span
+                        className="hidden rounded bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium text-accent-fg sm:inline"
+                        title="Profil « notes de frais »"
+                      >
+                        {u.profilNdf === "TECHNICIEN" ? "NDF tech." : "NDF dir./RA"}
+                      </span>
+                    )}
                     <Button
                       size="icon"
                       variant="ghost"
@@ -324,7 +353,13 @@ export function ConfigUtilisateurs({
                       variant="ghost"
                       aria-label="Modifier"
                       onClick={() => {
-                        setEdit({ id: u.id, nom: u.nom, role: u.role, actif: u.actif });
+                        setEdit({
+                          id: u.id,
+                          nom: u.nom,
+                          role: u.role,
+                          actif: u.actif,
+                          profilNdf: u.profilNdf ?? "",
+                        });
                         setReset(null);
                       }}
                     >
