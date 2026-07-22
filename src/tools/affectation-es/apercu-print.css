@@ -469,6 +469,88 @@
 .affectation-doc .recap-table td .cell-libre { color: #9aa7b3; font-style: italic; }
 .affectation-doc .recap-table td .recap-nonaff { color: #b23030; font-weight: 700; }
 
+/* --- Mode PORTRAIT (mise en page dédiée) --------------------------------- *
+ * Le document est nativement paysage (schémas à bornes larges). En portrait, on
+ * ne pivote ni ne réduit : on RÉ-AGENCE. Les grilles 2 colonnes (schéma | tableaux)
+ * passent en 1 colonne empilée — le schéma AU-DESSUS des tableaux — et les images
+ * larges sont ramenées à la largeur portrait. Overrides scopés `.portrait` ; le
+ * DOM des composants de page ne change pas (leur ordre est déjà schéma → tableaux).
+ * html2canvas capture ces pages telles quelles → l'aperçu écran = le PDF. */
+
+.affectation-doc.portrait .print-page {
+  width: 210mm;
+  height: 297mm;
+}
+
+/* Page automate : boîte réseau au-dessus, photo matériel dessous. */
+.affectation-doc.portrait .controller-content,
+.affectation-doc.portrait .controller-content.with-photo {
+  grid-template-columns: 1fr;
+  gap: 7mm;
+  height: 226mm;
+  align-items: start;
+}
+/* Photos empilées SOUS la boîte réseau : hauteurs réduites pour que la boîte +
+   les deux visuels tiennent sans mordre sur le pied de page. */
+.affectation-doc.portrait .controller-photo { gap: 2mm; }
+.affectation-doc.portrait .controller-photo .controller-main { max-width: 78mm; max-height: 58mm; }
+.affectation-doc.portrait .controller-photo .power-main { max-width: 66mm; max-height: 44mm; }
+
+/* Page module : schéma à bornes empilé au-dessus des tableaux E/S. */
+.affectation-doc.portrait .module-plan,
+.affectation-doc.portrait .module-plan.with-photo {
+  grid-template-columns: 1fr;
+  height: 234mm;
+  gap: 5mm;
+}
+/* Schéma volontairement compact en portrait : seule la PHOTO rétrécit, les
+   bornes (labels + pins, tailles fixes) restent lisibles. On libère ainsi ~145 mm
+   pour les deux tableaux E/S — sinon les sorties se retrouvent rognées. */
+/* Schéma volontairement compact en portrait : seule la PHOTO rétrécit, les
+   bornes (labels + pins, tailles fixes) restent lisibles. On libère ainsi ~147 mm
+   pour les deux tableaux E/S — sinon les sorties se retrouvent rognées. */
+.affectation-doc.portrait .module-figure {
+  height: 82mm;
+  grid-template-rows: auto 38mm auto;
+  margin-top: 0;
+}
+.affectation-doc.portrait .module-figure.module-16di {
+  height: 78mm;
+  grid-template-rows: auto 32mm auto;
+}
+.affectation-doc.portrait .print-module-photo { height: 38mm; }
+.affectation-doc.portrait .print-module-photo img { max-height: 36mm; max-width: 105mm; }
+.affectation-doc.portrait .module-figure.module-16di .print-module-photo { height: 32mm; }
+.affectation-doc.portrait .module-figure.module-16di .print-module-photo img { max-height: 30mm; }
+.affectation-doc.portrait .module-table-area { height: 147mm; }
+/* Tableaux E/S un cran plus compacts en portrait pour absorber toutes les lignes
+   (un module 8UI/6UO = 14 lignes) sans rogner. */
+.affectation-doc.portrait .module-table-area .io-table { font-size: 6.9pt; }
+.affectation-doc.portrait .module-table-area .io-table th,
+.affectation-doc.portrait .module-table-area .io-table td { padding: 0.9mm 1.3mm; }
+
+/* Pages automate à E/S intégrées : tableaux empilés, schéma ramené à la largeur. */
+.affectation-doc.portrait .integrated-table-page .integrated-table-grid {
+  grid-template-columns: 1fr;
+  height: 234mm;
+}
+.affectation-doc.portrait .integrated-diagram-page .integrated-controller-plan {
+  height: 234mm;
+  grid-template-rows: auto minmax(150mm, 1fr) auto;
+}
+.affectation-doc.portrait .integrated-diagram-page .integrated-controller-photo img {
+  max-width: 184mm;
+  max-height: 165mm;
+}
+
+/* Page module de communication. */
+.affectation-doc.portrait .comm-plan { height: 234mm; }
+.affectation-doc.portrait .comm-photo img { max-height: 150mm; max-width: 170mm; }
+
+/* Couverture : ramener les blocs larges dans la largeur portrait. */
+.affectation-doc.portrait .cover-title { max-width: 175mm; font-size: 21pt; }
+.affectation-doc.portrait .company-block { width: 170mm; }
+
 /* --- Aperçu à l'écran : pages mises à l'échelle -------------------------- */
 @media screen {
   .affectation-doc.print-root {
@@ -482,6 +564,18 @@
     margin: 0 auto 16px;
     box-shadow: 0 2px 12px rgba(16, 32, 43, 0.18);
     zoom: 0.62;
+  }
+  /* Pendant la génération PDF (apercu-pdf.ts) : pages à taille RÉELLE (zoom 1) —
+     html2canvas rend mal les éléments `zoom`és. La racine est sortie du flux
+     (fixed, hors écran) côté JS, donc ce plein format ne se voit pas. */
+  .affectation-doc.pdf-capturing.print-root {
+    background: #fff;
+    padding: 0;
+  }
+  .affectation-doc.pdf-capturing.print-root .print-page {
+    zoom: 1;
+    margin: 0;
+    box-shadow: none;
   }
 }
 

@@ -1,12 +1,13 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useRef, type ReactNode } from "react";
-import { Printer } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
+import { Loader2, Printer, RectangleHorizontal, RectangleVertical } from "lucide-react";
 import { Button } from "@/ui";
+import { cn } from "@/lib/cn";
 import "./apercu-print.css";
 import { fnv1a } from "@/tools/liste-points/hash";
-import { genererApercuPdf } from "./apercu-pdf";
+import { genererApercuPdf, type OrientationApercu } from "./apercu-pdf";
 import { BoutonSauvegardeKdrive } from "./sauvegarder-kdrive";
 import { powerSupplyInfo } from "./catalog";
 import { MODULE_IMAGES } from "./images";
@@ -72,6 +73,36 @@ function moduleImage(catalogue: Catalogue, m: Module): string {
 }
 
 // --- En-tête / pied / pastille (communs à toutes les pages) ---------------
+
+/** Segment d'un sélecteur d'orientation (paysage / portrait). */
+function OrientationBtn({
+  actif,
+  onClick,
+  icon,
+  label,
+}: {
+  actif: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={actif}
+      className={cn(
+        "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition",
+        actif
+          ? "bg-brand text-brand-fg"
+          : "bg-surface text-muted hover:bg-surface-2 hover:text-fg",
+      )}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
 
 function DocHeader({ project }: { project: Project }) {
   return (
@@ -537,6 +568,9 @@ export function Apercu({
   onKdriveSaved: (m: KdriveMarker) => void;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [orientation, setOrientation] = useState<OrientationApercu>("landscape");
+  const [impression, setImpression] = useState(false);
+  const [erreurImpr, setErreurImpr] = useState("");
   const ordered = [...modules].filter((m) => !isCommunicationType(m)).sort(moduleSort);
   const integratedModules = ordered.filter(isIntegratedControllerType);
   const extensionModules = ordered.filter((m) => !isIntegratedControllerType(m));
@@ -582,30 +616,88 @@ export function Apercu({
 
   const title = project.document_title;
 
+  /**
+   * Impression = génération du PDF (chemin FIABLE, WYSIWYG) puis ouverture dans un
+   * nouvel onglet où l'utilisateur imprime/enregistre. On n'utilise PAS
+   * window.print() : il est cassé sur ce document (voir apercu-pdf.ts).
+   */
+  async function imprimer() {
+    if (!rootRef.current || impression) return;
+    setImpression(true);
+    setErreurImpr("");
+    try {
+      const blob = await genererApercuPdf(rootRef.current, orientation);
+      const url = URL.createObjectURL(blob);
+      const onglet = window.open(url, "_blank");
+      if (!onglet) {
+        // Popup bloquée → repli sur un téléchargement.
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `Affectation E-S — ${project.name || "document"}.pdf`;
+        a.click();
+      }
+      // Laisser le temps à l'onglet/à la visionneuse de charger le blob.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      setErreurImpr(e instanceof Error ? e.message : "Génération du PDF impossible.");
+    } finally {
+      setImpression(false);
+    }
+  }
+
   return (
     <div>
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         {commModules.length > 0 && (
           <div className="text-sm text-muted">
             Modules de communication : {commModules.map((m) => `ECY-${m.type}`).join(", ")}
           </div>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          {/* Choix d'orientation : agit sur l'aperçu écran ET le PDF (même DOM). */}
+          <div
+            className="inline-flex overflow-hidden rounded-lg border border-border"
+            role="group"
+            aria-label="Orientation du document"
+          >
+            <OrientationBtn
+              actif={orientation === "landscape"}
+              onClick={() => setOrientation("landscape")}
+              icon={<RectangleHorizontal className="h-4 w-4" />}
+              label="Paysage"
+            />
+            <OrientationBtn
+              actif={orientation === "portrait"}
+              onClick={() => setOrientation("portrait")}
+              icon={<RectangleVertical className="h-4 w-4" />}
+              label="Portrait"
+            />
+          </div>
+
           <BoutonSauvegardeKdrive
             chantierId={chantierId}
             nomFichier={`Affectation E-S — ${project.name || project.header || "projet"} — ${new Date().toISOString().slice(0, 10)}.pdf`}
             currentHash={hashApercu(project)}
             marker={project.kdriveApercu}
-            genererPdf={() => genererApercuPdf(rootRef.current as HTMLElement)}
+            genererPdf={() => genererApercuPdf(rootRef.current as HTMLElement, orientation)}
             onSaved={onKdriveSaved}
           />
-          <Button size="sm" onClick={() => window.print()}>
-            <Printer className="h-4 w-4" /> Imprimer le document
+          <Button size="sm" onClick={imprimer} disabled={impression}>
+            {impression ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Printer className="h-4 w-4" />
+            )}
+            Imprimer le document
           </Button>
         </div>
       </div>
+      {erreurImpr && <div className="mb-3 text-sm text-danger">{erreurImpr}</div>}
 
-      <div ref={rootRef} className="print-root affectation-doc">
+      <div
+        ref={rootRef}
+        className={cn("print-root affectation-doc", orientation === "portrait" && "portrait")}
+      >
         {/* Couverture */}
         <section className="print-page cover-page">
           <DocHeader project={project} />
