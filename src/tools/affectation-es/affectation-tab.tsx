@@ -1,12 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
-import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, Wand2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Printer,
+  Wand2,
+} from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import { INPUT_SIGNALS, OUTPUT_SIGNALS } from "./catalog";
 import { signalLabel } from "@/tools/liste-points/model";
 import { affecterAuto } from "./affectation-auto";
+import { ApercuAffectation } from "./apercu-affectation";
 import {
   allowedModules,
   channelCount,
@@ -41,12 +48,24 @@ export function AffectationTab({
   const nonAffectes = points.filter((p) => p.module == null || p.channel == null).length;
   const incompatibles = points.filter(borneIncompatible).length;
 
+  const [apercuOuvert, setApercuOuvert] = useState(false);
+
   const update = (uid: string, patchPoint: Partial<Point>) =>
     patch((p) => ({
       ...p,
       points: (p.points ?? []).map((pt) => (pt.uid === uid ? { ...pt, ...patchPoint } : pt)),
     }));
   const reaffecter = () => patch((p) => ({ ...p, points: affecterAuto(p) }));
+
+  if (apercuOuvert) {
+    return (
+      <ApercuAffectation
+        project={project}
+        modules={modules}
+        onFermer={() => setApercuOuvert(false)}
+      />
+    );
+  }
 
   if (points.length === 0) {
     return (
@@ -69,7 +88,10 @@ export function AffectationTab({
         {incompatibles > 0 && (
           <StatPill label="Bornes incompatibles" value={incompatibles} tone="danger" />
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setApercuOuvert(true)}>
+            <Printer className="h-4 w-4" /> Aperçu / Impression
+          </Button>
           <Button size="sm" onClick={reaffecter}>
             <Wand2 className="h-4 w-4" /> Ré-affecter automatiquement
           </Button>

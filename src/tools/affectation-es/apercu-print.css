@@ -412,6 +412,63 @@
   color: #405268;
 }
 
+/* --- Page récapitulative d'affectation (tableau E/S synthétique) --------- */
+.affectation-doc .recap-intro {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 6mm;
+  margin: 3mm 7mm 3mm;
+}
+.affectation-doc .recap-intro h1 {
+  margin: 0;
+  font-size: 15pt;
+  font-weight: 700;
+  color: #214866;
+}
+.affectation-doc .recap-intro .recap-sub {
+  margin-top: 1mm;
+  font-size: 9pt;
+  color: #2e5574;
+}
+.affectation-doc .recap-intro .recap-meta {
+  font-size: 8.5pt;
+  color: #405268;
+  text-align: right;
+  line-height: 1.55;
+}
+.affectation-doc .recap-intro .recap-meta b { color: #214866; }
+.affectation-doc .recap-intro .recap-warn { color: #b23030; font-weight: 700; }
+
+.affectation-doc .recap-body {
+  height: 172mm;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+  padding: 0 7mm;
+  overflow: hidden;
+}
+.affectation-doc .recap-page.first .recap-body { height: 158mm; }
+
+.affectation-doc .recap-table { font-size: 7.6pt; }
+.affectation-doc .recap-table .recap-suite { font-weight: 400; opacity: 0.85; }
+/* Largeurs pilotées par le colgroup (table-layout: fixed) : on neutralise les
+   largeurs par défaut de .io-table sur 1re/dernière colonne. */
+.affectation-doc .recap-table th:first-child,
+.affectation-doc .recap-table td:first-child { width: auto; }
+.affectation-doc .recap-table th:last-child,
+.affectation-doc .recap-table td:last-child { width: auto; }
+.affectation-doc .recap-table col.c-rep { width: 17mm; }
+.affectation-doc .recap-table col.c-lib { width: 58mm; }
+.affectation-doc .recap-table col.c-sig { width: 22mm; }
+.affectation-doc .recap-table col.c-rel { width: 24mm; }
+.affectation-doc .recap-table col.c-mod { width: 50mm; }
+.affectation-doc .recap-table col.c-can { width: 15mm; }
+.affectation-doc .recap-table td.recap-rep,
+.affectation-doc .recap-table td.recap-can { text-align: center; }
+.affectation-doc .recap-table td .cell-libre { color: #9aa7b3; font-style: italic; }
+.affectation-doc .recap-table td .recap-nonaff { color: #b23030; font-weight: 700; }
+
 /* --- Aperçu à l'écran : pages mises à l'échelle -------------------------- */
 @media screen {
   .affectation-doc.print-root {
