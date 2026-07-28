@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { createReactBlockSpec, type ReactCustomBlockRenderProps } from "@blocknote/react";
+import { cn } from "@/lib/cn";
 import {
   TYPE_COLONNE_LABEL,
   tableVide,
@@ -43,6 +44,20 @@ const config = {
     data: { default: "" },
   },
   content: "none" as const,
+};
+
+/* Largeur de colonne par TYPE. Avant, toutes les colonnes valaient `1fr` : une
+ * table « Qté / Matériel » étalait la quantité sur 600 px et le « 1 », ferré à
+ * droite de sa colonne, se retrouvait à un demi-écran de l'article qu'il
+ * comptait. Une colonne fait maintenant la largeur de ce qu'elle contient —
+ * seul le texte s'étire, et jamais au-delà d'une longueur de ligne lisible. */
+const LARGEUR_COLONNE: Record<TypeColonne, string> = {
+  case: "3rem",
+  nombre: "minmax(4.5rem, 7rem)",
+  date: "minmax(7rem, 9.5rem)",
+  choix: "minmax(6rem, 11rem)",
+  url: "minmax(8rem, 18rem)",
+  texte: "minmax(9rem, 24rem)",
 };
 
 function parseTable(raw: string): TableDonnees {
@@ -173,44 +188,69 @@ function TableDonneesBloc({ block, editor }: ReactCustomBlockRenderProps<typeof 
 
   // Toutes les rangées partagent le même gabarit de colonnes (grille CSS).
   const gabarit = {
-    gridTemplateColumns: `repeat(${table.colonnes.length}, minmax(8rem, 1fr))${
-      editable ? " 2.25rem" : ""
-    }`,
+    gridTemplateColumns: `${table.colonnes
+      .map((c) => LARGEUR_COLONNE[c.type] ?? LARGEUR_COLONNE.texte)
+      .join(" ")}${editable ? " 2.25rem" : ""}`,
   };
 
-  return (
-    <div className="w-full" contentEditable={false}>
-      <div className="mb-1.5 flex items-center gap-2">
-        <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface px-2 py-1">
-          <Search className="h-3.5 w-3.5 text-subtle" />
-          <input
-            value={filtre}
-            onChange={(e) => setFiltre(e.target.value)}
-            placeholder="Filtrer…"
-            className="w-28 bg-transparent text-xs text-fg outline-none placeholder:text-subtle"
-          />
-          {filtre && (
-            <button type="button" onClick={() => setFiltre("")} aria-label="Effacer le filtre">
-              <X className="h-3 w-3 text-subtle hover:text-fg" />
-            </button>
-          )}
-        </div>
-        <span className="text-xs tabular-nums text-subtle">
-          {lignesVisibles.length}/{table.lignes.length} ligne{table.lignes.length > 1 ? "s" : ""}
-        </span>
-      </div>
+  // Le filtre n'apparaît que quand il sert : sur une table de 4 lignes, une
+  // barre de recherche est du bruit, pas un outil.
+  const avecFiltre = table.lignes.length >= 6 || filtre !== "";
+  // La première colonne qui n'est pas un nombre porte le libellé « Total » —
+  // un « Σ » seul en pied de tableau ne dit pas de quoi il est la somme.
+  const colonneLibelleTotal = table.colonnes.find((c) => c.type !== "nombre")?.id;
 
-      <div className="overflow-x-auto border border-hairline bg-surface">
+  return (
+    /* Le cadre fait la largeur de SES colonnes, pas celle du document : une
+       table à deux colonnes courtes reste une table à deux colonnes courtes. */
+    <div className="w-fit min-w-72 max-w-full" contentEditable={false}>
+      <div className="border border-hairline bg-surface">
+        {/* Entête du cadre : le filtre et le compte appartiennent au tableau,
+            ils ne flottent plus au-dessus de lui. */}
+        <div className="flex items-center gap-2 border-b border-hairline bg-surface-2 px-2.5 py-1.5">
+          {avecFiltre ? (
+            <>
+              <Search className="h-3.5 w-3.5 shrink-0 text-subtle" />
+              <input
+                value={filtre}
+                onChange={(e) => setFiltre(e.target.value)}
+                placeholder="Filtrer…"
+                className="w-28 min-w-0 flex-1 bg-transparent text-xs text-fg outline-none placeholder:text-subtle"
+              />
+              {filtre && (
+                <button type="button" onClick={() => setFiltre("")} aria-label="Effacer le filtre">
+                  <X className="h-3 w-3 text-subtle hover:text-fg" />
+                </button>
+              )}
+            </>
+          ) : (
+            <span className="stamp">Table</span>
+          )}
+          <span className="stamp ml-auto shrink-0 tabular-nums">
+            {filtre
+              ? `${lignesVisibles.length}/${table.lignes.length}`
+              : `${table.lignes.length} ligne${table.lignes.length > 1 ? "s" : ""}`}
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
         <div role="table" className="min-w-fit text-sm">
           {/* --- en-têtes --- */}
-          <div role="row" className="grid border-b border-border bg-surface-2" style={gabarit}>
+          <div role="row" className="grid border-b border-hairline bg-surface-2" style={gabarit}>
             {table.colonnes.map((col, i) => (
-              <div key={col.id} role="columnheader" className="relative min-w-0">
+              <div
+                key={col.id}
+                role="columnheader"
+                className={cn("relative min-w-0", i > 0 && "border-l border-border-soft")}
+              >
                 <div className="flex items-center">
                   <button
                     type="button"
                     onClick={() => basculerTri(col.id)}
-                    className="flex min-w-0 flex-1 items-center gap-1 px-2.5 py-1.5 text-left text-xs font-semibold text-fg hover:text-brand"
+                    className={cn(
+                      "stamp flex min-w-0 flex-1 items-center gap-1 px-2.5 py-2 hover:text-fg",
+                      col.type === "nombre" && "justify-end",
+                    )}
                     title="Trier"
                   >
                     <span className="truncate">{col.nom}</span>
@@ -327,11 +367,18 @@ function TableDonneesBloc({ block, editor }: ReactCustomBlockRenderProps<typeof 
             <div
               key={ligne.id}
               role="row"
-              className="group/ligne grid items-center border-b border-border-soft last:border-0"
+              className="group/ligne grid items-stretch border-b border-border-soft transition-colors last:border-0 hover:bg-surface-2/60"
               style={gabarit}
             >
-              {table.colonnes.map((col) => (
-                <div key={col.id} role="cell" className="min-w-0 px-1 py-0.5">
+              {table.colonnes.map((col, i) => (
+                <div
+                  key={col.id}
+                  role="cell"
+                  className={cn(
+                    "min-w-0 self-stretch px-1 py-1",
+                    i > 0 && "border-l border-border-soft",
+                  )}
+                >
                   <Cellule
                     colonne={col}
                     valeur={ligne.valeurs[col.id] ?? null}
@@ -360,34 +407,44 @@ function TableDonneesBloc({ block, editor }: ReactCustomBlockRenderProps<typeof 
             </div>
           )}
 
-          {/* --- totaux (colonnes nombre) --- */}
+          {/* --- totaux (colonnes nombre) ---
+              Chaque somme est ferrée comme sa colonne : sous les nombres, à
+              droite. Avant, elle était à gauche d'une colonne dont les valeurs
+              étaient à droite — on ne pouvait pas vérifier un total à l'œil. */}
           {totaux.size > 0 && (
-            <div role="row" className="grid border-t border-border bg-surface-2" style={gabarit}>
-              {table.colonnes.map((col) => (
+            <div role="row" className="grid border-t border-hairline bg-surface-2" style={gabarit}>
+              {table.colonnes.map((col, i) => (
                 <div
                   key={col.id}
-                  className="px-2.5 py-1 text-xs font-medium tabular-nums text-muted"
+                  className={cn(
+                    "px-2.5 py-1.5 text-xs font-semibold tabular-nums text-fg",
+                    i > 0 && "border-l border-border-soft",
+                    col.type === "nombre" ? "text-right" : "",
+                  )}
                 >
                   {totaux.has(col.id)
-                    ? `Σ ${Number(totaux.get(col.id)!.toFixed(6)).toLocaleString("fr-FR")}`
-                    : ""}
+                    ? Number(totaux.get(col.id)!.toFixed(6)).toLocaleString("fr-FR")
+                    : col.id === colonneLibelleTotal
+                      ? <span className="stamp">Total</span>
+                      : ""}
                 </div>
               ))}
               {editable && <div />}
             </div>
           )}
         </div>
-      </div>
+        </div>
 
-      {editable && (
-        <button
-          type="button"
-          onClick={ajouterLigne}
-          className="mt-1 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted hover:bg-surface-2 hover:text-fg"
-        >
-          <Plus className="h-3.5 w-3.5" /> Nouvelle ligne
-        </button>
-      )}
+        {editable && (
+          <button
+            type="button"
+            onClick={ajouterLigne}
+            className="flex w-full items-center gap-1.5 border-t border-hairline px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+          >
+            <Plus className="h-3.5 w-3.5" /> Nouvelle ligne
+          </button>
+        )}
+      </div>
     </div>
   );
 }

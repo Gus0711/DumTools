@@ -274,72 +274,84 @@ export function NoteEditeurImpl({ note, documents }: NoteEditeurProps) {
         </div>
       </div>
 
-      {/* ---- Document --------------------------------------------------------- */}
-      <div className="mx-auto max-w-4xl px-4 pb-10 pt-8 md:px-8">
-        <textarea
-          ref={champTitreRef}
-          value={titre}
-          rows={1}
-          onChange={(e) => {
-            const v = e.target.value.replace(/\n/g, " ");
-            setTitre(v);
-            titreRef.current = v;
-            planifierSave();
-          }}
-          onKeyDown={(e) => {
-            // Entrée ou ↓ : on descend dans le document (le titre reste une ligne logique).
-            if (e.key === "Enter" || e.key === "ArrowDown") {
-              e.preventDefault();
-              versLeDocument();
-            }
-          }}
-          placeholder="Sans titre"
-          aria-label="Titre de la note"
-          className="w-full resize-none overflow-hidden bg-transparent px-0 font-display text-3xl font-bold tracking-tight text-fg outline-none placeholder:text-subtle md:text-4xl"
-        />
-        <p className="mb-4 mt-1.5 text-xs text-subtle">
-          {note.auteur ? `Par ${note.auteur} · ` : ""}modifiée le {fmtDateHeure(dateModif)}
-        </p>
-
-        {erreurSuppression && (
-          <div className="anim-note-pop mb-4 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
-            <TriangleAlert className="h-4 w-4 shrink-0" />
-            La suppression a échoué — réessayez, ou vérifiez votre connexion.
-          </div>
-        )}
-
-        {etat === "conflit" && (
-          <div className="anim-note-pop mb-4 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
-            <TriangleAlert className="h-4 w-4 shrink-0" />
-            <span className="flex-1">
-              Cette note a été modifiée par quelqu&apos;un d&apos;autre pendant votre édition. Vos
-              dernières modifications ne sont <strong>pas enregistrées</strong> — rechargez pour
-              repartir de la version à jour.
-            </span>
-            <Button type="button" size="sm" variant="outline" onClick={() => window.location.reload()}>
-              Recharger
-            </Button>
-          </div>
-        )}
-
-        <div className="note-doc -mx-4 md:-mx-8">
-          <NotesContexte.Provider value={{ documents }}>
-            <BlockNoteView
-              editor={editor}
-              theme={theme}
-              slashMenu={false}
-              onChange={() => {
+      {/* ---- Document ---------------------------------------------------------
+              La note est UNE FEUILLE posée sur le plan de travail — comme tout
+              contenu de l'appli. Sans elle, le texte flottait à même le fond
+              bleu : le document n'avait pas de corps. Le filet du signal AO
+              (violet des Notes) la coiffe, comme le cartouche des autres
+              écrans. La gouttière (`.note-gouttiere`) reprend exactement le
+              retrait des poignées de bloc de BlockNote : le titre se cale sur
+              le texte, au pixel. --------------------------------------------- */}
+      <div className="mx-auto max-w-4xl px-3 pb-16 pt-5 md:px-6 md:pt-6">
+        <article className="bloc signal-ao relative overflow-hidden pb-4 pt-7">
+          <span aria-hidden className="bg-signal absolute inset-x-0 top-0 h-[3px]" />
+          <div className="note-gouttiere">
+            <textarea
+              ref={champTitreRef}
+              value={titre}
+              rows={1}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\n/g, " ");
+                setTitre(v);
+                titreRef.current = v;
                 planifierSave();
-                majTitres();
               }}
-            >
-              <SuggestionMenuController
-                triggerCharacter="/"
-                getItems={async (query) => filterSuggestionItems(itemsMenuSlash(editor), query)}
-              />
-            </BlockNoteView>
-          </NotesContexte.Provider>
-        </div>
+              onKeyDown={(e) => {
+                // Entrée ou ↓ : on descend dans le document (le titre reste une ligne logique).
+                if (e.key === "Enter" || e.key === "ArrowDown") {
+                  e.preventDefault();
+                  versLeDocument();
+                }
+              }}
+              placeholder="Sans titre"
+              aria-label="Titre de la note"
+              className="w-full resize-none overflow-hidden bg-transparent px-0 font-display text-3xl font-bold tracking-tight text-fg outline-none placeholder:text-subtle md:text-4xl"
+            />
+            <p className="mb-4 mt-1.5 text-xs text-subtle">
+              {note.auteur ? `Par ${note.auteur} · ` : ""}modifiée le {fmtDateHeure(dateModif)}
+            </p>
+
+            {erreurSuppression && (
+              <div className="anim-note-pop mb-4 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+                <TriangleAlert className="h-4 w-4 shrink-0" />
+                La suppression a échoué — réessayez, ou vérifiez votre connexion.
+              </div>
+            )}
+
+            {etat === "conflit" && (
+              <div className="anim-note-pop mb-4 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+                <TriangleAlert className="h-4 w-4 shrink-0" />
+                <span className="flex-1">
+                  Cette note a été modifiée par quelqu&apos;un d&apos;autre pendant votre édition. Vos
+                  dernières modifications ne sont <strong>pas enregistrées</strong> — rechargez pour
+                  repartir de la version à jour.
+                </span>
+                <Button type="button" size="sm" variant="outline" onClick={() => window.location.reload()}>
+                  Recharger
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div className="note-doc">
+            <NotesContexte.Provider value={{ documents }}>
+              <BlockNoteView
+                editor={editor}
+                theme={theme}
+                slashMenu={false}
+                onChange={() => {
+                  planifierSave();
+                  majTitres();
+                }}
+              >
+                <SuggestionMenuController
+                  triggerCharacter="/"
+                  getItems={async (query) => filterSuggestionItems(itemsMenuSlash(editor), query)}
+                />
+              </BlockNoteView>
+            </NotesContexte.Provider>
+          </div>
+        </article>
       </div>
 
       <SommaireNote titres={titres} onNaviguer={naviguerVersBloc} />

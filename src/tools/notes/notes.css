@@ -22,23 +22,45 @@
   --bn-border-radius: 8px;
 }
 
+/* --- LA GOUTTIÈRE -----------------------------------------------------------
+ * BlockNote réserve une marge à gauche du texte pour ses poignées de bloc. Le
+ * titre de la note et ses bandeaux vivent HORS de l'éditeur : sans une valeur
+ * partagée, ils se calaient 22px à gauche du corps du texte — un décalage qu'on
+ * ne sait pas nommer mais qu'on voit. `--note-gouttiere` est la seule source
+ * de vérité ; `.note-gouttiere` l'applique aux éléments hors éditeur. */
+.note-doc,
+.note-gouttiere {
+  --note-gouttiere: 54px;
+  --note-marge-droite: 40px;
+}
+
+.note-gouttiere {
+  padding-left: var(--note-gouttiere);
+  padding-right: var(--note-marge-droite);
+}
+
 /* L'éditeur occupe la largeur du gabarit note (marge pour poignées de blocs). */
 .note-doc .bn-editor {
-  padding-inline: 54px 24px;
+  padding-inline: var(--note-gouttiere) var(--note-marge-droite);
   line-height: 1.65;
 }
 
-/* Sur téléphone, la gouttière des poignées se resserre (l'écran est compté). */
+/* Sur téléphone, la gouttière se resserre (l'écran est compté). */
 @media (max-width: 640px) {
-  .note-doc .bn-editor {
-    padding-inline: 42px 12px;
+  .note-doc,
+  .note-gouttiere {
+    --note-gouttiere: 40px;
+    --note-marge-droite: 16px;
   }
 }
 
 /* Respiration en fin de document : on peut toujours défiler au-delà du dernier
- * bloc pour écrire « au milieu de l'écran » (l'aperçu/lecture n'en a pas besoin). */
+ * bloc pour écrire « au milieu de l'écran ». Plus courte depuis que la note est
+ * posée sur une feuille : 22vh de blanc en bas de feuille se lisaient comme un
+ * bug de mise en page, pas comme du confort. (L'aperçu/lecture n'en a pas
+ * besoin du tout.) */
 .note-doc:not(.note-doc-lecture) .bn-editor {
-  padding-bottom: 22vh;
+  padding-bottom: 14vh;
 }
 
 /* Rythme vertical : un titre marque le début d'une section, on lui redonne de
@@ -56,6 +78,52 @@
 /* Le code parle la mono de la charte (JetBrains Mono), pas celle de Mantine. */
 .note-doc :is(code, pre) {
   font-family: var(--font-mono);
+}
+
+/* --- TABLEAUX NATIFS BLOCKNOTE ----------------------------------------------
+ * Ils parlent la même langue que les tables de l'appli (.data-table) : entête
+ * sur fond creusé, filets fins, cellules resserrées. Par défaut le cœur les
+ * rend en grille uniforme — aucune ligne d'entête, des cellules très hautes :
+ * un tableau de relevé y était illisible.
+ *
+ * On n'habille QUE : structure et balises restent celles de BlockNote (ses
+ * poignées de ligne/colonne s'y accrochent).
+ *
+ * ⚠️ On ne met PAS l'entête en petites capitales, contrairement au reste de
+ * l'appli : ici le texte a été tapé par quelqu'un et la note part chez le
+ * client. On ne transforme pas le contenu de l'utilisateur, on le met en
+ * valeur. */
+.note-doc [data-content-type="table"] table {
+  font-size: 0.94em;
+}
+
+.note-doc [data-content-type="table"] :is(th, td) {
+  border-color: var(--border-soft);
+  padding: 0.38rem 0.7rem;
+  vertical-align: top;
+}
+
+.note-doc [data-content-type="table"] th {
+  background-color: var(--surface-2);
+  border-color: var(--hairline);
+  border-bottom-color: var(--border);
+  text-align: left;
+  font-weight: 600;
+  color: var(--fg);
+  letter-spacing: 0.005em;
+}
+
+/* Les cellules d'un tableau ne portent pas le rythme vertical d'un paragraphe
+   de document : sinon chaque ligne fait 2,5 fois sa hauteur utile. */
+.note-doc [data-content-type="table"] :is(th, td) > p {
+  line-height: 1.42;
+}
+
+/* Une photo ou un schéma est une PIÈCE POSÉE sur la feuille, pas un fond
+ * perdu : un filet fin lui donne un bord, comme à un tirage collé sur un plan.
+ * (Pas d'ombre — rien ne flotte, cf. la charte.) */
+.note-doc .bn-visual-media {
+  border: 1px solid var(--hairline);
 }
 
 /* --- Bloc de code REPLIABLE (blocs/code-repliable.tsx) -----------------------
@@ -217,6 +285,19 @@
  * le code est TOUJOURS complet. Le repli est une commodité d'écran, jamais un
  * tronquage de l'artefact imprimé — on masque l'en-tête de repli et on force le
  * <pre> visible même si le bloc a été enregistré replié. */
+/* Sur la feuille papier, l'entête de tableau ne peut pas suivre le thème de
+ * l'écran : en thème sombre, `--surface-2` poserait un bandeau anthracite en
+ * travers d'une page blanche. Teintes papier figées (exception #hex sanctionnée
+ * pour l'impression, comme au-dessus). */
+.note-print [data-content-type="table"] th {
+  background-color: #eef2f7;
+  color: #16202b;
+  border-color: #c3cedd;
+}
+.note-print [data-content-type="table"] :is(th, td) {
+  border-color: #d3dbe6;
+}
+
 .note-print .code-repliable-header {
   display: none !important;
 }

@@ -85,6 +85,29 @@ quel (`unknown[]`), seul l'éditeur (qui possède le schéma) le type.
   `notes.css` re-pointe les variables `--bn-*` vers les tokens sémantiques
   (aucun `#hex` hors zones print).
 
+### Habillage (passe visuelle 2026-07-28)
+
+Trois choses rendaient l'outil « fade » — corrigées :
+
+- **La note n'avait pas de feuille.** Le document était posé à même le fond bleu
+  de la page, alors que tout le reste de l'appli pose son contenu sur une
+  surface blanche. L'éditeur enveloppe désormais titre + corps dans un `.bloc`
+  coiffé du filet du signal **AO** (le violet des Notes).
+- **La gouttière était désaccordée.** BlockNote réserve une marge à gauche du
+  texte pour ses poignées ; le titre, hors éditeur, se calait 22 px plus à
+  gauche. `--note-gouttiere` (`notes.css`) est la source unique, appliquée à
+  l'éditeur **et** à `.note-gouttiere` (titre, méta, bandeaux).
+- **Les tableaux étalaient leurs colonnes.** Le bloc `tableDonnees` posait
+  `repeat(N, minmax(8rem, 1fr))` : une table « Qté / Matériel » étirait la
+  quantité sur 600 px et le « 1 », ferré à droite, atterrissait à un demi-écran
+  de l'article qu'il comptait. La largeur suit maintenant le **type** de la
+  colonne (`LARGEUR_COLONNE`), le cadre fait la largeur de ses colonnes
+  (`w-fit`), le filtre et le compte sont entrés **dans** le cadre, et les
+  totaux sont ferrés comme leur colonne. Les tableaux **natifs** BlockNote
+  reçoivent en plus une entête teintée (`notes.css`) — sans passer le texte en
+  petites capitales : il a été tapé par quelqu'un et la note part chez le
+  client, on ne transforme pas son contenu.
+
 ### ⚠️ Pièges BlockNote appris à la dure
 
 - Ne **jamais rendre de balises `<table>/<td>/<th>`** dans un bloc custom :
