@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { CircuitBoard } from "lucide-react";
 import { Cartouche, EtatVide } from "@/ui";
 import { listerProjets } from "@/tools/affectation-es/queries";
 import { ProjetsFiltrables } from "@/tools/affectation-es/projets-filtrables";
@@ -29,7 +28,7 @@ export default async function Page({
       {projets.length === 0 ? (
         <div className="data-card">
           <EtatVide
-            icone={CircuitBoard}
+            dessin="automate"
             titre="Aucun automate pour l’instant"
             texte="Les automates se créent depuis la fiche d’une affaire, avec « Ajouter un automate »."
           />

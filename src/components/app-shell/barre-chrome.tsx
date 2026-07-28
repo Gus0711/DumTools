@@ -1,7 +1,10 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { classeSignal } from "@/tools/registry";
+import { teinteDeRoute } from "./nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DensityToggle } from "@/components/density-toggle";
 import { BoutonRecherche } from "@/components/recherche/bouton-recherche";
@@ -32,15 +35,30 @@ export function BarreChrome({
   onDeconnexion: () => void;
 }) {
   const { ecran } = useEcran();
+  const pathname = usePathname();
   const ton = ecran?.etat?.ton ?? "neutre";
 
   return (
-    <header className="bg-chrome flex h-13 shrink-0 items-center gap-2 border-b border-chrome-border pl-3 pr-2 md:h-12 md:pl-4">
+    <header
+      className={cn(
+        "bg-chrome relative flex h-13 shrink-0 items-center gap-2 border-b border-chrome-border pl-3 pr-2 md:h-12 md:pl-4",
+        classeSignal(teinteDeRoute(pathname)),
+      )}
+    >
+      {/* Le filet de l'outil courant, sous la barre. Il se remet sous tension à
+          chaque changement de route (la clé force le rejeu) : on sait dans quel
+          outil on vient d'entrer avant même d'avoir lu le titre. */}
+      <span
+        key={pathname}
+        aria-hidden
+        className="anim-sweep absolute inset-x-0 bottom-0 h-[2px] bg-signal-lift"
+      />
+
       {/* Où suis-je. Le titre reste lisible même quand la page défile. */}
       <div className="flex min-w-0 flex-1 items-baseline gap-2.5">
         {ecran?.estampille && (
           <>
-            <span className="stamp hidden shrink-0 text-chrome-muted sm:block">
+            <span className="stamp hidden shrink-0 text-signal-lift/85 sm:block">
               {ecran.estampille}
             </span>
             <span aria-hidden className="hidden shrink-0 text-chrome-muted/50 sm:block">

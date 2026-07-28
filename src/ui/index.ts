@@ -11,6 +11,7 @@ export { Cartouche } from "./cartouche";
 export type { ChampCartouche } from "./cartouche";
 export { EnteteSection } from "./section";
 export { EtatVide } from "./etat-vide";
+export { Dessin, type NomDessin } from "./dessins";
 export { Stat } from "./stat";
 export { Chiffre, RangeeChiffres } from "./chiffre";
 export { JaugeES } from "./jauge-es";

@@ -1,68 +1,78 @@
-import { Check, CircleDashed, CircleDot, Minus } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { EtatJalon, Jalon } from "./jalons";
 
-/* Frise du cycle d'une affaire (docs/ROADMAP.md §3) — 7 étapes métier, état
- * dérivé des artefacts réels (voir jalons.ts). Purement informatif : rien n'est
- * cliquable ni cochable, c'est un miroir de l'état de l'affaire. */
+/* =============================================================================
+ * LE SYNOPTIQUE D'AVANCEMENT
+ * Le cycle d'une affaire (docs/ROADMAP.md §3) lu comme un schéma de principe :
+ * 7 voyants reliés par une piste. La piste est alimentée tant que le courant
+ * passe, pointillée au-delà — on voit jusqu'où l'affaire est allée sans avoir
+ * à compter les cases.
+ *
+ * L'état vient des artefacts réellement produits (voir jalons.ts) : rien n'est
+ * cliquable ni cochable, c'est un miroir. Et la couleur ne dit rien toute
+ * seule : chaque voyant porte son libellé, son détail en clair, et son état
+ * pour les lecteurs d'écran.
+ * ========================================================================== */
 
-const TON: Record<EtatJalon, { pastille: string; texte: string; icone: typeof Check }> = {
-  fait: {
-    pastille: "border-success/40 bg-success/12 text-success",
-    texte: "text-fg",
-    icone: Check,
-  },
-  encours: {
-    pastille: "border-accent/45 bg-accent/12 text-accent",
-    texte: "text-fg",
-    icone: CircleDot,
-  },
-  attente: {
-    pastille: "border-border bg-surface-2 text-subtle",
-    texte: "text-muted",
-    icone: CircleDashed,
-  },
-  sansobjet: {
-    pastille: "border-dashed border-border bg-transparent text-subtle",
-    texte: "text-subtle",
-    icone: Minus,
-  },
+const TON: Record<EtatJalon, { led: string; libelle: string; etatLu: string }> = {
+  fait: { led: "led-on", libelle: "text-fg", etatLu: "terminé" },
+  encours: { led: "led-cur", libelle: "text-fg", etatLu: "en cours" },
+  attente: { led: "", libelle: "text-muted", etatLu: "en attente" },
+  sansobjet: { led: "led-na", libelle: "text-subtle", etatLu: "sans objet" },
 };
 
+/** Un jalon « sous tension » : le courant y est passé, ou y passe. */
+function alimente(j: Jalon) {
+  return j.etat === "fait" || j.etat === "encours";
+}
+
 export function FriseCycle({ jalons }: { jalons: Jalon[] }) {
+  // Jusqu'où le courant va : le dernier jalon alimenté. Au-delà, la piste reste
+  // pointillée même si un jalon isolé plus loin est déjà fait — c'est une
+  // progression qu'on lit, pas une somme de cases.
+  const dernierAlimente = jalons.reduce((n, j, i) => (alimente(j) ? i : n), -1);
+  const faits = jalons.filter((j) => j.etat === "fait").length;
+
   return (
-    <section aria-label="Avancement technique de l'affaire" className="bloc overflow-hidden">
+    <section
+      aria-label="Avancement technique de l'affaire"
+      // Le synoptique parle des E/S : il porte le bleu du signal AI.
+      className="signal-ai bloc overflow-hidden"
+    >
       <div className="bloc-entete flex-wrap items-baseline gap-x-2">
         <h2 className="font-display text-sm font-semibold text-fg">Avancement</h2>
         <p className="text-xs text-subtle">
           déduit de ce qui a réellement été produit — rien à cocher
         </p>
+        <p className="ref ml-auto text-signal">
+          {faits}/{jalons.length}
+        </p>
       </div>
 
-      <ol className="grid grid-cols-2 gap-px bg-border sm:grid-cols-4 lg:grid-cols-7">
-        {jalons.map((j) => {
-          const ton = TON[j.etat];
-          const Icone = ton.icone;
-          return (
-            <li key={j.cle} className="flex items-start gap-2.5 bg-surface px-3 py-3">
-              <span
-                className={cn(
-                  "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border",
-                  ton.pastille,
-                )}
-              >
-                <Icone className="h-3.5 w-3.5" />
-              </span>
-              <span className="min-w-0">
-                <span className={cn("block truncate text-sm font-medium", ton.texte)}>
-                  {j.libelle}
+      <div className="relative">
+        {/* La lueur qui parcourt la frise à l'ouverture : la mise sous tension.
+            Une seule passe — c'est le seul endroit de l'appli où on se le
+            permet, et c'est pour ça qu'on la remarque. */}
+        <span aria-hidden className="syn-courant" />
+
+        <ol className="synoptique [--syn-n:7]">
+          {jalons.map((j, i) => {
+            const ton = TON[j.etat];
+            return (
+              <li key={j.cle} className={cn("syn-etape", i < dernierAlimente && "syn-vive")}>
+                <span aria-hidden className={cn("led mt-1 sm:mt-0", ton.led)} />
+                <span className="min-w-0">
+                  <span className={cn("block truncate text-sm font-medium", ton.libelle)}>
+                    {j.libelle}
+                    <span className="sr-only"> — {ton.etatLu}</span>
+                  </span>
+                  <span className="block text-xs leading-snug text-subtle">{j.detail}</span>
                 </span>
-                <span className="block text-xs leading-snug text-subtle">{j.detail}</span>
-              </span>
-            </li>
-          );
-        })}
-      </ol>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </section>
   );
 }

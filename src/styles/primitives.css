@@ -10,6 +10,7 @@
   /* --- Bleu marine (marque) — teintes exactes du logo (#003765) ------------ */
   --navy-025: #f3f7fb;
   --navy-050: #e4edf6;
+  --navy-060: #dae6f2; /* plan de travail : le bleu du papier calque */
   --navy-100: #c6d8e9;
   --navy-200: #9ab8d4;
   --navy-300: #4d7398;
@@ -77,4 +78,6 @@
   --dur-2: 200ms; /* apparition d'un élément                   */
   --dur-3: 320ms; /* mise en place d'un bloc                   */
   --dur-4: 520ms; /* balayage de signature (filet laiton)      */
+  --dur-5: 1100ms; /* le courant qui parcourt un synoptique     */
+  --dur-pouls: 2.4s; /* respiration d'une LED en service        */
 }

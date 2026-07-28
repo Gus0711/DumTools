@@ -1,6 +1,6 @@
 import { cn } from "@/lib/cn";
 import type { EtatAffaire } from "@/generated/prisma/enums";
-import { etatLabel } from "./etats";
+import { CYCLE_AFFAIRE, etatLabel } from "./etats";
 
 /** Ton (fond + texte) par état — partagé par le badge et les puces de filtre. */
 export const ETAT_TONE: Record<EtatAffaire, string> = {
@@ -33,6 +33,41 @@ export function EtatBadge({ etat, className }: { etat: EtatAffaire; className?: 
     >
       <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", ETAT_POINT[etat])} />
       {etatLabel(etat)}
+    </span>
+  );
+}
+
+/* =============================================================================
+ * LE SYNOPTIQUE MINIATURE
+ * Le même schéma que la frise de la fiche Affaire, réduit à cinq voyants : où
+ * en est l'affaire dans son cycle commercial, lisible dans une ligne de
+ * tableau. L'affaire est le pivot de la plateforme, elle porte donc le laiton
+ * et non un signal E/S.
+ *
+ * Purement redondant : il accompagne TOUJOURS le badge d'état, qui porte le
+ * libellé. Corbeille exclue — ce n'est pas une étape, c'est une sortie de
+ * piste, et l'afficher comme un 6ᵉ voyant laisserait croire à une fin de cycle.
+ * ========================================================================== */
+export function SynoptiqueMini({ etat, className }: { etat: EtatAffaire; className?: string }) {
+  if (etat === "CORBEILLE") return null;
+  const rang = CYCLE_AFFAIRE.findIndex((e) => e.value === etat);
+
+  return (
+    <span
+      aria-hidden
+      title={`Cycle : ${etatLabel(etat)} (${rang + 1}/${CYCLE_AFFAIRE.length})`}
+      className={cn("signal-accent inline-flex shrink-0 items-center gap-[3px]", className)}
+    >
+      {CYCLE_AFFAIRE.map((e, i) => (
+        <span
+          key={e.value}
+          className={cn(
+            "led h-[7px] w-[7px]",
+            i < rang && "led-on",
+            i === rang && "led-cur",
+          )}
+        />
+      ))}
     </span>
   );
 }

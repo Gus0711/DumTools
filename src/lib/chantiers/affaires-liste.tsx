@@ -8,7 +8,7 @@ import { Combobox, EtatVide, type ComboOption } from "@/ui";
 import type { EtatAffaire } from "@/generated/prisma/enums";
 import type { AffaireResume } from "./queries";
 import { ETATS_ACTIFS, ETATS_AFFAIRE } from "./etats";
-import { EtatBadge, ETAT_TONE } from "./etat-badge";
+import { EtatBadge, ETAT_TONE, SynoptiqueMini } from "./etat-badge";
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("fr-FR");
@@ -84,7 +84,7 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
     return (
       <div className="bloc">
         <EtatVide
-          icone={Briefcase}
+          dessin="pochette"
           titre="Aucune affaire pour l'instant"
           texte="Renseignez un numéro Why dans un outil (Projet GTB, par exemple) et l'affaire se crée toute seule — ou créez-la directement depuis le bouton ci-dessus."
         />
@@ -224,7 +224,10 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                     )}
                   </td>
                   <td data-label="État">
-                    <EtatBadge etat={a.etat} />
+                    <span className="inline-flex items-center gap-2.5">
+                      <EtatBadge etat={a.etat} />
+                      <SynoptiqueMini etat={a.etat} className="hidden lg:inline-flex" />
+                    </span>
                   </td>
                   <td data-label="Réalisations" className="cell-num">
                     {a.nbRealisations}

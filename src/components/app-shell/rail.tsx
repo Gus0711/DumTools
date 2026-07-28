@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { classeSignal } from "@/tools/registry";
 import { entreesNav, type EntreeNav } from "./nav";
 
 /* =============================================================================
@@ -70,6 +71,7 @@ function Bouton({
   pathname,
   aussi = [],
   pastille = 0,
+  teinte,
 }: EntreeNav & { pathname: string }) {
   const actif =
     href === "/"
@@ -83,15 +85,18 @@ function Bouton({
       aria-current={actif ? "page" : undefined}
       className={cn(
         "group relative flex h-10 w-10 items-center justify-center rounded transition-colors duration-150",
+        // Le signal de l'outil, remonté en clarté : le bâti est sombre dans
+        // les deux thèmes, l'ocre DI y serait illisible tel quel.
+        classeSignal(teinte),
         actif
-          ? "bg-white/10 text-white"
+          ? "bg-white/10 text-signal-lift"
           : "text-chrome-muted hover:bg-chrome-hover hover:text-chrome-fg",
       )}
     >
       {actif && (
         <span
           aria-hidden
-          className="anim-rail absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r bg-chrome-accent"
+          className="anim-rail absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r bg-signal-lift"
         />
       )}
       <Icon className="h-5 w-5" />

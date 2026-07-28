@@ -7,6 +7,7 @@ import { LogOut, MoreHorizontal, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DensityToggle } from "@/components/density-toggle";
+import { classeSignal } from "@/tools/registry";
 import { entreesNav, type EntreeNav } from "./nav";
 
 /* =============================================================================
@@ -91,6 +92,7 @@ function Onglet({
   icon: Icon,
   aussi = [],
   pastille = 0,
+  teinte,
   pathname,
 }: EntreeNav & { pathname: string }) {
   const actif =
@@ -104,11 +106,12 @@ function Onglet({
       aria-current={actif ? "page" : undefined}
       className={cn(
         "relative flex flex-1 flex-col items-center justify-center gap-1 py-2 transition-colors",
-        actif ? "text-white" : "text-chrome-muted active:bg-chrome-hover",
+        classeSignal(teinte),
+        actif ? "text-signal-lift" : "text-chrome-muted active:bg-chrome-hover",
       )}
     >
       {actif && (
-        <span aria-hidden className="absolute inset-x-4 top-0 h-[3px] rounded-b bg-chrome-accent" />
+        <span aria-hidden className="absolute inset-x-4 top-0 h-[3px] rounded-b bg-signal-lift" />
       )}
       <span className="relative">
         <Icon className="h-5 w-5" />

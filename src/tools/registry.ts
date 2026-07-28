@@ -16,6 +16,33 @@ export const STATUS_LABEL: Record<ToolStatus, string> = {
   planifie: "Planifié",
 };
 
+/* =============================================================================
+ * LE SIGNAL D'UN OUTIL
+ * La maison a déjà une langue couleur : les 5 signaux E/S (AI·DI·AO·DO·COM),
+ * imprimés tels quels sur les documents remis au client. Plutôt que d'inventer
+ * une palette d'outils, chaque outil hérite du signal qui lui ressemble — et
+ * l'appli se repère à la couleur au lieu d'être uniformément grise :
+ *
+ *   AI  bleu      Projet GTB   les entrées/sorties, le cœur du métier
+ *   DI  ambre     Visites      ce que le terrain fait remonter
+ *   AO  violet    Notes        ce qu'on écrit, ce qu'on émet
+ *   DO  vert      Documents    le livrable qui sort
+ *   COM turquoise Wiki         le bus de connaissance, partagé par tous
+ *
+ * La couleur ne porte jamais l'information seule : elle double toujours une
+ * icône et un libellé (voir la note de <JaugeES>).
+ * ========================================================================== */
+export type SignalOutil = "ai" | "di" | "ao" | "do" | "com";
+
+/** Les 5 signaux, plus les deux teintes qui ne sont pas des E/S : le laiton du
+ *  pivot (l'affaire) et le marine de la marque (accueil, référentiels). */
+export type Teinte = SignalOutil | "accent" | "brand";
+
+/** Classe à poser sur un conteneur pour teinter tout ce qu'il contient. */
+export function classeSignal(teinte: Teinte | undefined): string {
+  return `signal-${teinte ?? "brand"}`;
+}
+
 export interface Tool {
   /** Identifiant stable (slug), sert aussi de segment d'URL. */
   id: string;
@@ -25,6 +52,8 @@ export interface Tool {
   /** Route sous /outils. Par défaut `/outils/{id}`. */
   href: string;
   status: ToolStatus;
+  /** Signal E/S dont l'outil hérite sa couleur (voir SignalOutil ci-dessus). */
+  signal?: SignalOutil;
   /** Rôles autorisés ; undefined = accessible à tous les utilisateurs. */
   roles?: string[];
   /**
@@ -53,6 +82,7 @@ export const TOOLS: Tool[] = [
     icon: CircuitBoard,
     href: "/outils/affectation-es",
     status: "disponible",
+    signal: "ai",
     portee: "affaire",
   },
   {
@@ -63,6 +93,7 @@ export const TOOLS: Tool[] = [
     icon: ClipboardCheck,
     href: "/outils/visites",
     status: "disponible",
+    signal: "di",
   },
   {
     id: "notes",
@@ -72,6 +103,7 @@ export const TOOLS: Tool[] = [
     icon: NotebookPen,
     href: "/outils/notes",
     status: "disponible",
+    signal: "ao",
     portee: "affaire",
   },
   {
@@ -84,6 +116,7 @@ export const TOOLS: Tool[] = [
     // préfixe de route (dépôts sur /outils/documents/[affaire]).
     href: "/outils/documents",
     status: "disponible",
+    signal: "do",
     portee: "affaire",
   },
   {
@@ -94,6 +127,7 @@ export const TOOLS: Tool[] = [
     icon: Library,
     href: "/outils/wiki",
     status: "disponible",
+    signal: "com",
   },
 
   /* ---- Espaces perso (proprietaire défini → hors accueil/nav) ---------- */
@@ -105,6 +139,7 @@ export const TOOLS: Tool[] = [
     icon: ScanLine,
     href: "/perso/gus/modems",
     status: "disponible",
+    signal: "ai",
     proprietaire: "gus",
   },
   {
@@ -115,6 +150,7 @@ export const TOOLS: Tool[] = [
     icon: ClipboardList,
     href: "/perso/gus/formulaires",
     status: "disponible",
+    signal: "di",
     proprietaire: "gus",
   },
   {
@@ -125,6 +161,7 @@ export const TOOLS: Tool[] = [
     icon: Receipt,
     href: "/perso/gus/notes-de-frais",
     status: "disponible",
+    signal: "do",
     proprietaire: "gus",
   },
 ];

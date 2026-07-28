@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
+import { Compteur } from "./compteur";
 
 /* =============================================================================
  * LE CHIFFRE
@@ -39,7 +40,12 @@ export function Chiffre({
   const contenu = (
     <>
       <span className="stamp block">{label}</span>
-      <span className={cn("chiffre mt-2 block", petit && "chiffre-sm", TON[ton])}>{valeur}</span>
+      <span className={cn("chiffre mt-2 block", petit && "chiffre-sm", TON[ton])}>
+        {/* Un compteur se cale comme une aiguille. Les valeurs déjà composées
+            (« 12/40 », « il y a 3 j ») restent telles quelles : elles ne se
+            comptent pas. */}
+        {typeof valeur === "number" ? <Compteur valeur={valeur} /> : valeur}
+      </span>
       {detail && <span className="mt-1.5 block text-xs text-muted">{detail}</span>}
     </>
   );

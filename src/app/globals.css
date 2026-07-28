@@ -46,6 +46,12 @@
   --color-io-do:  var(--io-do);
   --color-io-com: var(--io-com);
 
+  /* Le signal de l'outil courant : `text-signal`, `bg-signal/12`, `border-signal`
+     suivent la classe .signal-* posée par le composant. Sur le bâti sombre,
+     utiliser la variante -lift (remontée en clarté). */
+  --color-signal:      var(--signal);
+  --color-signal-lift: var(--signal-lift);
+
   --color-cartouche:   var(--cartouche);
   --color-cartouche-2: var(--cartouche-2);
   --color-rail:        var(--rail);
@@ -174,9 +180,21 @@
 
   /* Voile de lumière sur une grande surface marine : de la profondeur, pas
      un motif. (L'ancienne trame « papier quadrillé » a été retirée : à petite
-     échelle elle ne lisait pas, à grande échelle elle salissait.) */
+     échelle elle ne lisait pas, à grande échelle elle salissait.)
+     ⚠️ Ne se combine PAS avec .bg-brand-gradient sur le même élément : les
+     deux écrivent background-image, la dernière déclarée gagne et on obtient
+     un voile sur du blanc. Sur un calque au-dessus (position absolute), ou
+     alors .plaque-brand ci-dessous. */
   .voile-brand {
     background-image: var(--voile-brand);
+  }
+
+  /* La plaque marine : LA grande surface de marque d'un écran — une par page,
+     jamais deux. Fond dégradé + voile de lumière empilés en une seule
+     déclaration, donc sans le piège ci-dessus. */
+  .plaque-brand {
+    background-color: var(--brand-strong);
+    background-image: var(--voile-brand), var(--grad-brand);
   }
 
   /* Filet d'accent laiton — liseré de signature (haut de cartouche, de carte). */
@@ -191,6 +209,151 @@
   }
   .rule-signal-v {
     background-image: var(--grad-signal-v);
+  }
+
+  /* --- Le repère de signal ------------------------------------------------ *
+   * Chaque outil porte un des 5 signaux. Poser .signal-xx sur un conteneur
+   * réécrit --signal pour tout ce qu'il contient : `text-signal`, `bg-signal/12`,
+   * `border-signal` suivent, sans qu'un composant n'écrive jamais de couleur en
+   * dur. La variante --signal-lift sert au bâti sombre (rail, chrome). */
+  .signal-ai  { --signal: var(--io-ai);  --signal-lift: var(--io-ai-lift); }
+  .signal-di  { --signal: var(--io-di);  --signal-lift: var(--io-di-lift); }
+  .signal-ao  { --signal: var(--io-ao);  --signal-lift: var(--io-ao-lift); }
+  .signal-do  { --signal: var(--io-do);  --signal-lift: var(--io-do-lift); }
+  .signal-com { --signal: var(--io-com); --signal-lift: var(--io-com-lift); }
+  /* Le pivot (l'affaire) n'est pas un signal : c'est le laiton. */
+  .signal-accent { --signal: var(--accent); --signal-lift: var(--chrome-accent); }
+  .signal-brand  { --signal: var(--brand);  --signal-lift: var(--chrome-fg); }
+
+  /* --- La LED ------------------------------------------------------------- *
+   * Le voyant d'une carte d'automate : éteint, sous tension, ou hors service.
+   * Elle ne dit jamais rien toute seule — un libellé l'accompagne toujours. */
+  .led {
+    position: relative;
+    display: block;
+    height: 0.6rem;
+    width: 0.6rem;
+    flex: none;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background-color: var(--surface-2);
+    transition: background-color var(--t-hover) var(--ease),
+      box-shadow var(--t-hover) var(--ease);
+  }
+  /* Sous tension : la LED est allumée et diffuse un halo court. */
+  .led-on {
+    border-color: transparent;
+    background-color: var(--signal);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--signal) 22%, transparent);
+  }
+  /* En cours : même allumage, mais elle respire. */
+  .led-cur {
+    border-color: transparent;
+    background-color: var(--signal);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--signal) 30%, transparent);
+    animation: pouls var(--dur-pouls) var(--ease-calm) infinite;
+  }
+  /* Sans objet : le voyant n'est pas câblé. */
+  .led-na {
+    border-style: dashed;
+    background-color: transparent;
+  }
+
+  /* --- Le synoptique ------------------------------------------------------ *
+   * Le cycle d'une affaire lu comme un schéma de principe : des voyants reliés
+   * par une piste. La piste est pleine tant que le courant passe, pointillée
+   * au-delà. Au chargement, une lueur la parcourt une fois — c'est la mise
+   * sous tension, et c'est le seul endroit de l'appli où on se le permet.
+   * Au téléphone la piste bascule à la verticale : même schéma, tourné d'un
+   * quart de tour, comme un bornier debout. */
+  .synoptique {
+    display: grid;
+    gap: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .syn-etape {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.55rem 0.9rem;
+  }
+  /* La piste — vertical par défaut (téléphone), entre le voyant et le suivant. */
+  .syn-etape::before {
+    content: "";
+    position: absolute;
+    left: calc(0.9rem + 0.3rem - 1px);
+    top: 1.55rem;
+    bottom: -0.2rem;
+    width: 2px;
+    background-image: linear-gradient(
+      180deg,
+      var(--piste, var(--rail-soft)) 0 60%,
+      transparent 60% 100%
+    );
+    background-size: 100% 7px;
+  }
+  .syn-etape:last-child::before {
+    display: none;
+  }
+  /* Piste alimentée : trait plein, à la couleur du signal. */
+  .syn-vive::before {
+    --piste: var(--signal);
+    background-image: linear-gradient(180deg, var(--signal), var(--signal));
+  }
+
+  @media (min-width: 640px) {
+    .synoptique {
+      grid-template-columns: repeat(var(--syn-n, 7), minmax(0, 1fr));
+    }
+    .syn-etape {
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.85rem 0.75rem 0.8rem;
+    }
+    /* La piste part du bord du voyant et court jusqu'au voyant suivant. Les
+       voyants sont calés à gauche de leur colonne (au-dessus de leur libellé,
+       qui est lui aussi ferré à gauche) : une piste centrée sur la colonne
+       passerait à côté d'eux. `right: -0.75rem` = le padding gauche de la
+       colonne suivante, donc exactement le bord de son voyant. */
+    .syn-etape::before {
+      left: 1.6rem;
+      right: -0.75rem;
+      top: calc(0.85rem + 0.3rem - 1px);
+      bottom: auto;
+      width: auto;
+      height: 2px;
+      background-image: linear-gradient(
+        90deg,
+        var(--piste, var(--rail-soft)) 0 60%,
+        transparent 60% 100%
+      );
+      background-size: 7px 100%;
+    }
+    .syn-vive::before {
+      background-image: linear-gradient(90deg, var(--signal), var(--signal));
+    }
+  }
+
+  /* La lueur qui parcourt la portion alimentée, une seule fois à l'ouverture. */
+  .syn-courant {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .syn-courant::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    width: 40%;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--accent) 26%, transparent),
+      transparent
+    );
+    animation: courant var(--dur-5) var(--ease-calm) both;
   }
 
   /* --- Typographie de service -------------------------------------------- *
@@ -592,6 +755,29 @@
   }
 }
 
+/* Respiration d'une LED en service. Lente et faible : un voyant qui respire,
+   pas un gyrophare. */
+@keyframes pouls {
+  0%, 100% {
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--signal) 30%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--signal) 8%, transparent);
+  }
+}
+
+/* Le courant qui parcourt un synoptique à l'ouverture — une seule passe. */
+@keyframes courant {
+  from { transform: translateX(-110%); }
+  to   { transform: translateX(320%); }
+}
+
+/* Une barre proportionnelle qui se remplit depuis zéro. */
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to   { transform: none; }
+}
+
 /* Balayage de chargement (squelettes). */
 @keyframes shimmer {
   from { background-position: 200% 0; }
@@ -666,6 +852,17 @@
     animation: shimmer 1.4s linear infinite;
   }
 
+  /* Les segments d'une jauge poussent depuis zéro, dans l'ordre AI→COM :
+     on VOIT la répartition se composer, au lieu de la trouver déjà là. */
+  .jauge-anim > span {
+    transform-origin: left;
+    animation: grow-x var(--t-block) var(--ease) both;
+  }
+  .jauge-anim > span:nth-child(2) { animation-delay: 55ms; }
+  .jauge-anim > span:nth-child(3) { animation-delay: 110ms; }
+  .jauge-anim > span:nth-child(4) { animation-delay: 165ms; }
+  .jauge-anim > span:nth-child(5) { animation-delay: 220ms; }
+
   /* Pression : le bouton s'enfonce d'un cheveu. */
   .press {
     transition: transform var(--t-hover) var(--ease);
@@ -685,11 +882,19 @@
   .anim-item-in,
   .anim-pop,
   .skeleton,
-  .stagger > * {
+  .stagger > *,
+  .jauge-anim > span,
+  .led-cur,
+  .syn-courant::after {
     animation: none;
   }
   .anim-sweep {
     transform: none;
+  }
+  /* La lueur du synoptique ne se contente pas de s'arrêter : elle disparaît.
+     Immobile, elle laisserait une tache claire en travers de la frise. */
+  .syn-courant {
+    display: none;
   }
 }
 
@@ -711,6 +916,14 @@
      typographique fixe, quel que soit le réglage de densité de l'écran. */
   html {
     font-size: 16px;
+  }
+  /* Rien ne bouge sur du papier : une jauge saisie en cours de course
+     s'imprimerait tronquée, un voyant en pulsation avec un halo aléatoire. */
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
   /* On masque l'appli (visibility garde le flux) et on révèle l'impression. */
   body * {

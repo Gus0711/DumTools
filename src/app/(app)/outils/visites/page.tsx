@@ -39,7 +39,7 @@ export default async function Page() {
       {visites.length === 0 ? (
         <div className="data-card">
           <EtatVide
-            icone={ClipboardCheck}
+            dessin="armoire"
             titre="Aucune visite synchronisée"
             texte="Les visites se saisissent sur le téléphone, en mode terrain — elles remontent ici dès qu'il y a du réseau."
             action={

@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import { Chiffre, EtatVide, RangeeChiffres } from "@/ui";
 import { auth } from "@/auth";
+import { cn } from "@/lib/cn";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { EspacePersoCard } from "@/components/espace-perso-card";
-import { TOOLS_AFFAIRE, TOOLS_NAV, espacesPersoActifs } from "@/tools/registry";
+import { TOOLS_AFFAIRE, TOOLS_NAV, classeSignal, espacesPersoActifs } from "@/tools/registry";
 import { listerAffaires, listerMesTaches } from "@/lib/chantiers/queries";
 import { activiteRecente, LIBELLE_ACTIVITE, type TypeActivite } from "@/lib/activite/queries";
 import { ETATS_ACTIFS } from "@/lib/chantiers/etats";
@@ -61,19 +62,24 @@ export default async function AccueilPage() {
       <TitreEcran titre="Poste de travail" />
 
       {/* --- L'ouverture : qui, quel jour, et l'état de la maison en chiffres.
-              Pas de carte, pas d'ombre : une planche posée à plat. -------- */}
+              LA surface marine de l'écran — une par page, jamais deux : c'est
+              la couleur de la maison, elle ne se dilue pas. Les compteurs se
+              posent dessous en feuilles blanches. --------------------------- */}
       <section className="anim-rise mb-6">
-        <div className="bloc flex flex-wrap items-end justify-between gap-x-8 gap-y-4 px-4 py-5 md:px-6 md:py-6">
+        <div className="bloc plaque-brand relative flex flex-wrap items-center justify-between gap-x-8 gap-y-5 overflow-hidden border-transparent px-4 py-5 md:px-6 md:py-6">
+          {/* Les 5 signaux en tête d'écran : la signature, à sa place. */}
+          <span aria-hidden className="rule-signal anim-sweep absolute inset-x-0 top-0 h-[3px]" />
+
           <div className="min-w-0">
-            <p className="stamp">{jour}</p>
-            <h1 className="mt-2 font-display text-[clamp(1.8rem,1.1rem+2.2vw,2.9rem)] font-bold leading-none tracking-[-0.035em] text-fg">
+            <p className="stamp text-white/55">{jour}</p>
+            <h1 className="mt-2 font-display text-[clamp(1.8rem,1.1rem+2.2vw,2.9rem)] font-bold leading-none tracking-[-0.035em] text-white">
               {nom ? `Bonjour ${prenom(nom)}` : "La boîte à outils de la GTB"}
             </h1>
           </div>
 
           <Link
             href="/affaires"
-            className="group bg-brand text-brand-fg press inline-flex w-full items-center justify-center gap-2.5 px-5 py-3.5 text-sm font-semibold transition-colors hover:bg-brand-strong sm:w-auto sm:py-3"
+            className="group bg-accent text-accent-fg press inline-flex w-full items-center justify-center gap-2.5 px-5 py-3.5 text-sm font-semibold transition-colors hover:bg-accent-strong sm:w-auto sm:py-3"
           >
             Ouvrir les affaires
             <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
@@ -122,7 +128,7 @@ export default async function AccueilPage() {
         >
           {recentes.length === 0 ? (
             <EtatVide
-              icone={Briefcase}
+              dessin="pochette"
               titre="Aucune affaire"
               texte="Une affaire naît d'un numéro Why. Créez la première pour démarrer."
               action={
@@ -172,7 +178,7 @@ export default async function AccueilPage() {
         <Journal icone={History} titre="Activité récente" mention="tous outils">
           {activite.length === 0 ? (
             <EtatVide
-              icone={History}
+              dessin="touret"
               titre="Rien n'a encore bougé"
               texte="Dès qu'un projet, une note ou une visite est enregistré, il apparaît ici."
             />
@@ -289,22 +295,25 @@ function Journal({
   );
 }
 
-/** Case d'outil : un carreau de la planche, pas une carte qui flotte. */
+/** Case d'outil : un carreau de la planche, pas une carte qui flotte.
+ *  Chaque outil porte son signal E/S (voir `SignalOutil` dans le registre) —
+ *  c'est ce qui fait qu'on reconnaît le Wiki au turquoise et les Visites à
+ *  l'ambre avant d'avoir lu leur nom. */
 function CaseOutil({ tool }: { tool: (typeof TOOLS_NAV)[number] }) {
-  const { icon: Icon, nom, description, href, status } = tool;
+  const { icon: Icon, nom, description, href, status, signal } = tool;
   const ouvrable = status !== "planifie";
 
   const contenu = (
     <>
       <div className="flex items-start gap-3">
-        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand transition-colors group-hover:text-accent-strong" />
+        <Icon className="text-signal mt-0.5 h-5 w-5 shrink-0" />
         <div className="min-w-0">
           <h3 className="font-display text-base font-semibold tracking-tight text-fg">{nom}</h3>
           <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>
         </div>
       </div>
       {ouvrable ? (
-        <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-brand">
+        <span className="text-signal mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em]">
           Ouvrir
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
         </span>
@@ -314,20 +323,22 @@ function CaseOutil({ tool }: { tool: (typeof TOOLS_NAV)[number] }) {
     </>
   );
 
-  const classes =
-    "bloc group relative flex flex-col justify-between p-4 transition-colors duration-150";
+  const classes = cn(
+    "bloc group relative flex flex-col justify-between p-4 transition-colors duration-150",
+    classeSignal(signal),
+  );
 
   return ouvrable ? (
-    <Link href={href} className={`${classes} hover:bg-surface-2`}>
-      {/* Le filet laiton se met sous tension au survol. */}
+    <Link href={href} className={cn(classes, "hover:bg-surface-2")}>
+      {/* Le filet du signal se met sous tension au survol. */}
       <span
         aria-hidden
-        className="rule-accent absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
+        className="bg-signal absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
       />
       {contenu}
     </Link>
   ) : (
-    <div className={`${classes} opacity-60`}>{contenu}</div>
+    <div className={cn(classes, "opacity-60")}>{contenu}</div>
   );
 }
 

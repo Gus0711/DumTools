@@ -58,8 +58,10 @@ export function JaugeES({
       </div>
 
       {/* Barre proportionnelle. Le filet de 2px entre segments est du fond de
-          surface : sans lui, deux teintes voisines se soudent visuellement. */}
-      <div className="jauge" role="img" aria-label={resume(presents)}>
+          surface : sans lui, deux teintes voisines se soudent visuellement.
+          Les segments poussent depuis zéro, dans l'ordre AI→COM : on voit la
+          répartition se composer au lieu de la trouver déjà là. */}
+      <div className="jauge jauge-anim" role="img" aria-label={resume(presents)}>
         {presents.map((s) => (
           <span
             key={s.type}

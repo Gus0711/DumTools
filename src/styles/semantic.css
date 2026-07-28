@@ -11,8 +11,13 @@
  * ========================================================================== */
 
 :root {
-  /* Surfaces */
-  --page:       var(--neutral-150);
+  /* Surfaces.
+     Le plan de travail n'est pas un gris de bureautique : c'est le bleu pâle
+     du papier calque, assez présent pour que les feuilles blanches s'y posent
+     au lieu de s'y fondre. (Testé en gris chaud : il jurait avec la rampe de
+     neutres froids des feuilles — le bleu est à la fois plus juste
+     métier et plus cohérent.) */
+  --page:       var(--navy-060);
   --surface:    var(--neutral-0);
   --surface-2:  var(--neutral-50);
   --surface-3:  var(--neutral-150);
@@ -52,6 +57,25 @@
   --io-ao:  var(--es-ao);
   --io-do:  var(--es-do);
   --io-com: var(--es-com);
+
+  /* Mêmes signaux remontés en clarté — pour tout ce qui se pose sur le BÂTI
+     (rail, barre de chrome), qui est sombre dans les deux thèmes. Le DI ocre
+     à #b4690e y serait illisible. */
+  --io-ai-lift:  var(--es-ai-lift);
+  --io-di-lift:  var(--es-di-lift);
+  --io-ao-lift:  var(--es-ao-lift);
+  --io-do-lift:  var(--es-do-lift);
+  --io-com-lift: var(--es-com-lift);
+
+  /* --- Le signal courant --------------------------------------------------- *
+   * Chaque outil de la plateforme hérite d'un des 5 signaux E/S : c'est la
+   * langue couleur de la maison (elle est imprimée sur les documents clients),
+   * on s'en sert pour teinter le rail, la barre de chrome et la case d'accueil
+   * de l'outil. `--signal` est réécrit par les classes .signal-* ; sans elles,
+   * on retombe sur la marque. La couleur ne porte JAMAIS l'information seule —
+   * elle double toujours une icône ou un libellé. */
+  --signal:      var(--brand);
+  --signal-lift: var(--chrome-accent);
 
   /* --- Cartouche : le bloc d'identification en tête de page ---------------- *
    * Repris du cartouche d'un plan / schéma électrique : fond légèrement
