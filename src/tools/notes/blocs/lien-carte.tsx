@@ -47,7 +47,7 @@ function LienCarte({ block, editor }: ReactCustomBlockRenderProps<typeof config>
 
   if (edition) {
     return (
-      <div className="w-full rounded-lg border border-border bg-surface p-3" contentEditable={false}>
+      <div className="w-full border border-hairline bg-surface p-3" contentEditable={false}>
         <div className="mb-2 flex items-center gap-1 text-xs">
           {(["url", "document"] as const).map((g) => (
             <button
@@ -126,7 +126,7 @@ function LienCarte({ block, editor }: ReactCustomBlockRenderProps<typeof config>
         href={url}
         target="_blank"
         rel="noreferrer noopener"
-        className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 no-underline transition-colors hover:bg-surface-2"
+        className="flex items-center gap-3 border border-hairline bg-surface px-3 py-2.5 no-underline transition-colors hover:bg-surface-2"
       >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-soft">
           <Icone className="h-4 w-4 text-brand" />

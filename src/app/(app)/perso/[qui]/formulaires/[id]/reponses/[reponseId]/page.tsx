@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { getTool } from "@/tools/registry";
 import { getReponse } from "@/tools/formulaires/queries";
 import { ReponseVue } from "@/tools/formulaires/reponse-vue";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export const metadata: Metadata = { title: "Réponse · ToolGus" };
 
@@ -25,5 +26,10 @@ export default async function Page({
   const isAdmin = session?.user?.role === "ADMIN";
   if (!isAdmin && reponse.createdById !== session?.user?.id) notFound();
 
-  return <ReponseVue qui={qui} reponse={reponse} estAdmin={isAdmin} />;
+  return (
+    <>
+      <TitreEcran estampille="Réponse" titre={reponse.formulaireNom ?? "Réponse"} />
+      <ReponseVue qui={qui} reponse={reponse} estAdmin={isAdmin} />
+    </>
+  );
 }

@@ -10,13 +10,14 @@ import {
   NotebookPen,
   type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@/ui";
+import { Chiffre, EtatVide, RangeeChiffres } from "@/ui";
 import { auth } from "@/auth";
-import { FeaturedToolCard, ToolCard } from "@/components/tool-card";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { EspacePersoCard } from "@/components/espace-perso-card";
 import { TOOLS_AFFAIRE, TOOLS_NAV, espacesPersoActifs } from "@/tools/registry";
 import { listerAffaires, listerMesTaches } from "@/lib/chantiers/queries";
 import { activiteRecente, LIBELLE_ACTIVITE, type TypeActivite } from "@/lib/activite/queries";
+import { ETATS_ACTIFS } from "@/lib/chantiers/etats";
 import { EtatBadge } from "@/lib/chantiers/etat-badge";
 import { MesTaches } from "@/lib/chantiers/mes-taches";
 import { fmtRelatif } from "@/lib/dates";
@@ -31,177 +32,178 @@ const ICONE_ACTIVITE: Record<TypeActivite, LucideIcon> = {
   wiki: Library,
 };
 
+/** « Augustin Duhant » → « Augustin ». */
+function prenom(nom: string) {
+  return nom.split(/[\s.@]+/)[0] ?? nom;
+}
+
 export default async function AccueilPage() {
   const session = await auth();
   const [affaires, mesTaches, activite] = await Promise.all([
     listerAffaires(),
     session?.user?.id ? listerMesTaches(session.user.id) : Promise.resolve([]),
-    activiteRecente(8),
+    activiteRecente(9),
   ]);
-  // Les affaires actives les plus récemment touchées (Corbeille exclue).
-  const recentes = affaires.filter((a) => a.etat !== "CORBEILLE").slice(0, 5);
+  const recentes = affaires.filter((a) => a.etat !== "CORBEILLE").slice(0, 6);
+  const actives = affaires.filter((a) => ETATS_ACTIFS.includes(a.etat));
+  const realisations = affaires.reduce((n, a) => n + a.nbRealisations, 0);
+
+  const nom = session?.user?.name ?? session?.user?.email ?? "";
+  const jour = new Date().toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8 md:px-10 md:py-10">
-      {/* Bandeau marine « plan d'architecte » — signature de la maison, réduit
-          au minimum : l'accueil est un tableau de bord, pas une page vitrine. */}
-      <section className="bg-brand-gradient text-brand-fg relative mb-6 overflow-hidden rounded-xl shadow-sm">
-        <div aria-hidden className="blueprint-grid pointer-events-none absolute inset-0" />
-        {/* Filet de signaux E/S — la « langue » couleur du métier. */}
-        <div aria-hidden className="absolute inset-x-0 top-0 flex h-0.5">
-          <span className="flex-1 bg-io-ai" />
-          <span className="flex-1 bg-io-di" />
-          <span className="flex-1 bg-io-ao" />
-          <span className="flex-1 bg-io-do" />
-          <span className="flex-1 bg-io-com" />
-        </div>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <TitreEcran titre="Poste de travail" />
 
-        <div className="relative flex flex-wrap items-baseline gap-x-3 gap-y-1 px-5 py-3.5 md:px-6">
-          <h1 className="font-display text-lg font-bold tracking-tight text-white md:text-xl">
-            La boîte à outils de la GTB
-          </h1>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sidebar-muted">
-            Groupe Fareneït · Dumortier
-          </p>
-        </div>
-      </section>
-
-      {/* Affaires — le pivot de la plateforme, au-dessus des outils. */}
-      <section aria-label="Affaires" className="mb-9">
-        <Link href="/affaires" className="group block">
-          <div className="relative overflow-hidden rounded-2xl border border-brand/25 bg-surface shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/50 hover:shadow-lg">
-            <span aria-hidden className="rule-accent absolute inset-x-0 top-0 h-0.5" />
-            <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:gap-7 sm:p-7">
-              <div className="bg-brand-gradient relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl shadow-md">
-                <span aria-hidden className="blueprint-grid absolute inset-0" />
-                <Briefcase className="relative h-9 w-9 text-white" />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <h2 className="font-display text-xl font-semibold tracking-tight text-fg">
-                    Affaires
-                  </h2>
-                  <Badge tone="accent">Point d&apos;entrée</Badge>
-                </div>
-                <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-                  Le pivot de la plateforme : une affaire par numéro Why, qui regroupe tout ce
-                  qui est produit pour un client à travers tous les outils. Client, n° Why et
-                  suivi partent d&apos;ici.
-                </p>
-                {/* Les outils « d'affaire » vivent ici : on les annonce plutôt que
-                    de leur donner une carte à part (on ne les crée jamais seuls). */}
-                <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-subtle">
-                  <span>Depuis une affaire :</span>
-                  {TOOLS_AFFAIRE.map((t) => (
-                    <span
-                      key={t.id}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-surface-2 px-2 py-1 font-medium text-muted"
-                    >
-                      <t.icon className="h-3.5 w-3.5 text-subtle" />
-                      {t.nom}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <span className="bg-brand text-brand-fg shadow-sm transition-colors group-hover:bg-brand-strong inline-flex shrink-0 items-center gap-2 self-start rounded-lg px-5 py-2.5 text-sm font-semibold sm:self-auto">
-                Voir les affaires
-                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </span>
-            </div>
+      {/* --- L'ouverture : qui, quel jour, et l'état de la maison en chiffres.
+              Pas de carte, pas d'ombre : une planche posée à plat. -------- */}
+      <section className="anim-rise mb-6">
+        <div className="bloc flex flex-wrap items-end justify-between gap-x-8 gap-y-4 px-4 py-5 md:px-6 md:py-6">
+          <div className="min-w-0">
+            <p className="stamp">{jour}</p>
+            <h1 className="mt-2 font-display text-[clamp(1.8rem,1.1rem+2.2vw,2.9rem)] font-bold leading-none tracking-[-0.035em] text-fg">
+              {nom ? `Bonjour ${prenom(nom)}` : "La boîte à outils de la GTB"}
+            </h1>
           </div>
-        </Link>
+
+          <Link
+            href="/affaires"
+            className="group bg-brand text-brand-fg press inline-flex w-full items-center justify-center gap-2.5 px-5 py-3.5 text-sm font-semibold transition-colors hover:bg-brand-strong sm:w-auto sm:py-3"
+          >
+            Ouvrir les affaires
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <RangeeChiffres className="-mt-px">
+          <Chiffre
+            label="Affaires actives"
+            valeur={actives.length}
+            detail={`sur ${affaires.length} au total`}
+            href="/affaires"
+          />
+          <Chiffre
+            label="Mes tâches"
+            valeur={mesTaches.length}
+            ton={mesTaches.length > 0 ? "accent" : "neutre"}
+            detail={mesTaches.length > 0 ? "à traiter" : "rien en attente"}
+          />
+          <Chiffre
+            label="Réalisations"
+            valeur={realisations}
+            detail="tous outils confondus"
+          />
+          <Chiffre
+            label="Dernier mouvement"
+            valeur={activite[0] ? fmtRelatif(activite[0].date) : "—"}
+            detail={activite[0]?.titre}
+            petit
+          />
+        </RangeeChiffres>
       </section>
 
-      {/* Mes tâches — la seule chose à FAIRE sur cette page, donc en premier. */}
       {mesTaches.length > 0 && (
-        <div className="mb-9">
+        <section className="mb-6">
           <MesTaches taches={mesTaches} />
-        </div>
+        </section>
       )}
 
-      {/* Tableau de bord : où j'en étais / ce qui a bougé chez les autres. */}
-      <section aria-label="Tableau de bord" className="mb-9 grid gap-4 lg:grid-cols-2">
-        {/* --- Affaires récentes --- */}
-        <div className="data-card overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2.5">
-            <Briefcase className="h-4 w-4 text-muted" />
-            <h2 className="text-sm font-semibold text-fg">Affaires récentes</h2>
-            <Link
-              href="/affaires"
-              className="ml-auto text-xs text-muted transition-colors hover:text-fg"
-            >
-              Toutes →
-            </Link>
-          </div>
+      {/* --- Deux journaux côte à côte, bord à bord ------------------------ */}
+      <section aria-label="Tableau de bord" className="planche mb-6 lg:grid-cols-2">
+        <Journal
+          icone={Briefcase}
+          titre="Affaires récentes"
+          lien={{ href: "/affaires", label: "Toutes" }}
+        >
           {recentes.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-subtle">
-              Aucune affaire pour l&apos;instant.
-            </p>
+            <EtatVide
+              icone={Briefcase}
+              titre="Aucune affaire"
+              texte="Une affaire naît d'un numéro Why. Créez la première pour démarrer."
+              action={
+                <Link href="/affaires" className="text-sm font-semibold text-brand hover:underline">
+                  Créer une affaire →
+                </Link>
+              }
+            />
           ) : (
-            <ul className="divide-y divide-border-soft">
+            <ul className="stagger divide-y divide-hairline">
               {recentes.map((a) => (
                 <li key={a.id}>
                   <Link
                     href={`/affaires/${a.id}`}
-                    className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface-2"
+                    className="block px-4 py-3 transition-colors hover:bg-surface-2 sm:py-2.5"
                   >
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-fg">{a.nom}</span>
-                      <span className="block truncate text-xs text-muted">{a.clientNom}</span>
+                    <span className="flex items-baseline gap-3">
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-fg">
+                        {a.nom}
+                      </span>
+                      <span
+                        suppressHydrationWarning
+                        className="hidden shrink-0 text-xs tabular-nums text-subtle sm:block"
+                      >
+                        {fmtRelatif(a.updatedAt)}
+                      </span>
                     </span>
-                    <EtatBadge etat={a.etat} className="shrink-0" />
-                    <span
-                      suppressHydrationWarning
-                      className="w-20 shrink-0 text-right text-xs text-subtle"
-                    >
-                      {fmtRelatif(a.updatedAt)}
+                    <span className="mt-1 flex items-center gap-2">
+                      <span className="min-w-0 flex-1 truncate text-xs text-muted">
+                        {a.clientNom}
+                      </span>
+                      <EtatBadge etat={a.etat} className="shrink-0" />
+                      <span
+                        suppressHydrationWarning
+                        className="shrink-0 text-xs tabular-nums text-subtle sm:hidden"
+                      >
+                        {fmtRelatif(a.updatedAt)}
+                      </span>
                     </span>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
-        </div>
+        </Journal>
 
-        {/* --- Activité récente (tous outils) --- */}
-        <div className="data-card overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2.5">
-            <History className="h-4 w-4 text-muted" />
-            <h2 className="text-sm font-semibold text-fg">Activité récente</h2>
-            <span className="ml-auto text-xs text-subtle">tous outils</span>
-          </div>
+        <Journal icone={History} titre="Activité récente" mention="tous outils">
           {activite.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-subtle">
-              Rien n&apos;a encore été produit sur la plateforme.
-            </p>
+            <EtatVide
+              icone={History}
+              titre="Rien n'a encore bougé"
+              texte="Dès qu'un projet, une note ou une visite est enregistré, il apparaît ici."
+            />
           ) : (
-            <ul className="divide-y divide-border-soft">
+            <ul className="stagger divide-y divide-hairline">
               {activite.map((e) => {
                 const Icone = ICONE_ACTIVITE[e.type];
                 return (
                   <li key={`${e.type}:${e.id}`}>
                     <Link
                       href={e.href}
-                      className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface-2"
+                      className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-surface-2 sm:py-2.5"
                     >
-                      <Icone className="h-4 w-4 shrink-0 text-subtle" />
+                      <Icone className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-fg">
-                          {e.titre}
+                        <span className="flex items-baseline gap-3">
+                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">
+                            {e.titre}
+                          </span>
+                          <span
+                            suppressHydrationWarning
+                            className="shrink-0 text-xs tabular-nums text-subtle"
+                          >
+                            {fmtRelatif(e.date)}
+                          </span>
                         </span>
-                        <span className="block truncate text-xs text-muted">
+                        <span className="mt-0.5 block truncate text-xs text-muted">
                           {LIBELLE_ACTIVITE[e.type]}
                           {e.contexte ? ` · ${e.contexte}` : ""}
                           {e.auteur ? ` · ${e.auteur}` : ""}
                         </span>
-                      </span>
-                      <span
-                        suppressHydrationWarning
-                        className="w-20 shrink-0 text-right text-xs text-subtle"
-                      >
-                        {fmtRelatif(e.date)}
                       </span>
                     </Link>
                   </li>
@@ -209,44 +211,39 @@ export default async function AccueilPage() {
               })}
             </ul>
           )}
-        </div>
+        </Journal>
       </section>
 
-      <div className="mb-4 flex items-center gap-3">
-        <h2 className="text-lg font-semibold tracking-tight text-fg">Outils</h2>
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs text-subtle">
-          De nouveaux outils sont ajoutés au fil des besoins
-        </span>
+      {/* --- Les outils : une planche de cases, pas une grille de cartes --- */}
+      <Rang titre="Outils" mention="l'affaire est le point d'entrée — les outils s'y rattachent" />
+      <section
+        aria-label="Outils disponibles"
+        className="stagger planche mb-6 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {TOOLS_NAV.map((tool) => (
+          <CaseOutil key={tool.id} tool={tool} />
+        ))}
+      </section>
+
+      <div className="bloc mb-8 flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+        <span className="stamp">Depuis une affaire</span>
+        {TOOLS_AFFAIRE.map((t) => (
+          <span key={t.id} className="inline-flex items-center gap-1.5 text-sm text-muted">
+            <t.icon className="h-4 w-4 text-subtle" />
+            {t.nom}
+          </span>
+        ))}
+        <Link
+          href="/affaires"
+          className="ml-auto inline-flex min-h-[2.25rem] items-center text-sm font-semibold text-brand transition-colors hover:text-brand-strong sm:min-h-0"
+        >
+          Voir les affaires →
+        </Link>
       </div>
 
-      {TOOLS_NAV.length === 1 ? (
-        <section aria-label="Outils disponibles">
-          <FeaturedToolCard tool={TOOLS_NAV[0]} />
-        </section>
-      ) : (
-        <section
-          aria-label="Outils disponibles"
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {TOOLS_NAV.map((tool) => (
-            <ToolCard key={tool.id} tool={tool} />
-          ))}
-        </section>
-      )}
-
-      {/* Espaces perso — outils personnels, à l'écart des outils métier. */}
       {espacesPersoActifs().length > 0 && (
         <>
-          <div className="mt-9 mb-4 flex items-center gap-3">
-            <h2 className="text-lg font-semibold tracking-tight text-fg">
-              Espaces perso
-            </h2>
-            <span className="h-px flex-1 bg-border" />
-            <span className="text-xs text-subtle">
-              Les outils perso de chacun, accessibles à tous
-            </span>
-          </div>
+          <Rang titre="Espaces perso" mention="les outils de chacun, ouverts à tous" />
           <section aria-label="Espaces perso" className="space-y-4">
             {espacesPersoActifs().map((espace) => (
               <EspacePersoCard key={espace.slug} espace={espace} />
@@ -254,6 +251,95 @@ export default async function AccueilPage() {
           </section>
         </>
       )}
+    </div>
+  );
+}
+
+/** Journal : une liste posée dans un bloc, avec son entête estampillée. */
+function Journal({
+  icone: Icone,
+  titre,
+  lien,
+  mention,
+  children,
+}: {
+  icone: LucideIcon;
+  titre: string;
+  lien?: { href: string; label: string };
+  mention?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bloc">
+      <div className="bloc-entete">
+        <Icone className="h-4 w-4 text-brand" />
+        <span className="font-display text-sm font-semibold text-fg">{titre}</span>
+        {mention && <span className="stamp ml-auto">{mention}</span>}
+        {lien && (
+          <Link
+            href={lien.href}
+            className="ml-auto inline-flex min-h-[2.25rem] items-center text-xs font-medium text-muted transition-colors hover:text-brand sm:min-h-0"
+          >
+            {lien.label} →
+          </Link>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/** Case d'outil : un carreau de la planche, pas une carte qui flotte. */
+function CaseOutil({ tool }: { tool: (typeof TOOLS_NAV)[number] }) {
+  const { icon: Icon, nom, description, href, status } = tool;
+  const ouvrable = status !== "planifie";
+
+  const contenu = (
+    <>
+      <div className="flex items-start gap-3">
+        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-brand transition-colors group-hover:text-accent-strong" />
+        <div className="min-w-0">
+          <h3 className="font-display text-base font-semibold tracking-tight text-fg">{nom}</h3>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>
+        </div>
+      </div>
+      {ouvrable ? (
+        <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-brand">
+          Ouvrir
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+        </span>
+      ) : (
+        <span className="stamp mt-4 block">Bientôt disponible</span>
+      )}
+    </>
+  );
+
+  const classes =
+    "bloc group relative flex flex-col justify-between p-4 transition-colors duration-150";
+
+  return ouvrable ? (
+    <Link href={href} className={`${classes} hover:bg-surface-2`}>
+      {/* Le filet laiton se met sous tension au survol. */}
+      <span
+        aria-hidden
+        className="rule-accent absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
+      />
+      {contenu}
+    </Link>
+  ) : (
+    <div className={`${classes} opacity-60`}>{contenu}</div>
+  );
+}
+
+/** Titre de rang — le filet qui sépare deux familles de contenu. */
+function Rang({ titre, mention }: { titre: string; mention?: string }) {
+  return (
+    <div className="mb-3 flex items-center gap-3">
+      <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-fg">
+        {titre}
+      </h2>
+      <span aria-hidden className="h-px flex-1 bg-hairline" />
+      {mention && <span className="hidden text-xs text-subtle sm:block">{mention}</span>}
     </div>
   );
 }

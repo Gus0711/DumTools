@@ -251,7 +251,7 @@ export function RechercheAvanceeWiki({ catalogue }: { catalogue: OptionsRecherch
     <div className="grid gap-6 lg:grid-cols-[17rem_1fr]">
       {/* --- Facettes --- */}
       <aside className="lg:sticky lg:top-4 lg:self-start">
-        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="overflow-hidden border border-hairline bg-surface">
           <div className="flex items-center justify-between border-b border-border-soft px-4 py-3">
             <span className="text-sm font-semibold text-fg">Filtres</span>
             {aQuelqueChose && (
@@ -358,7 +358,7 @@ export function RechercheAvanceeWiki({ catalogue }: { catalogue: OptionsRecherch
             onChange={(e) => setQ(e.target.value)}
             placeholder="Mots-clés (titre, contenu…) — ou filtrez par tags"
             aria-label="Rechercher dans le wiki"
-            className="w-full rounded-xl border border-border bg-surface py-3 pl-11 pr-10 text-base text-fg shadow-sm outline-none transition-colors placeholder:text-subtle focus:border-brand"
+            className="w-full border border-hairline bg-surface py-3 pl-11 pr-10 text-base text-fg shadow-sm outline-none transition-colors placeholder:text-subtle focus:border-brand"
           />
           {pending && (
             <Loader2 className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-subtle" />
@@ -367,13 +367,13 @@ export function RechercheAvanceeWiki({ catalogue }: { catalogue: OptionsRecherch
 
         <div className="mt-4">
           {!actif ? (
-            <p className="rounded-lg border border-dashed border-border bg-surface px-4 py-10 text-center text-sm text-muted">
+            <p className="border border-dashed border-border bg-surface px-4 py-10 text-center text-sm text-muted">
               Tapez au moins 2 caractères ou choisissez un filtre pour lancer la recherche.
             </p>
           ) : resultats === null ? (
             <p className="px-1 text-sm text-subtle">Recherche…</p>
           ) : resultats.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-border bg-surface px-4 py-10 text-center text-sm text-muted">
+            <p className="border border-dashed border-border bg-surface px-4 py-10 text-center text-sm text-muted">
               Aucune page ne correspond à ces critères.
             </p>
           ) : (
@@ -382,7 +382,7 @@ export function RechercheAvanceeWiki({ catalogue }: { catalogue: OptionsRecherch
                 {resultats.length} résultat{resultats.length > 1 ? "s" : ""}
                 {resultats.length === 40 ? " (max)" : ""}
               </p>
-              <ul className="divide-y divide-border-soft overflow-hidden rounded-xl border border-border bg-surface">
+              <ul className="divide-y divide-border-soft overflow-hidden border border-hairline bg-surface">
                 {resultats.map((r) => (
                   <LigneResultat key={r.id} r={r} />
                 ))}

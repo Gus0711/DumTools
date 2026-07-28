@@ -37,7 +37,7 @@ function EmbedHtml({ block, editor }: ReactCustomBlockRenderProps<typeof config>
 
   if (edition) {
     return (
-      <div className="w-full rounded-lg border border-border bg-surface" contentEditable={false}>
+      <div className="w-full border border-hairline bg-surface" contentEditable={false}>
         <div className="flex items-center gap-2 border-b border-border-soft px-3 py-2">
           <Code2 className="h-4 w-4 text-brand" />
           <span className="text-sm font-medium text-fg">Page HTML embarquée</span>

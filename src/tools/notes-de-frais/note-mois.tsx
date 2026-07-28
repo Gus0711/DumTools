@@ -165,12 +165,12 @@ export function NoteMois({
 
       {/* ----------------------------------------------------------- lignes */}
       {vide ? (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center text-muted">
+        <div className="border border-dashed border-border bg-surface p-10 text-center text-muted">
           Rien sur ce mois. Les dépenses apparaissent ici dès qu&apos;elles ont
           un justificatif.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="overflow-hidden border border-hairline bg-surface">
           <table className="table-cards w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">

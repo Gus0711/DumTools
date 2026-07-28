@@ -6,6 +6,7 @@ import { getFormulaire } from "@/tools/formulaires/queries";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { Remplir } from "@/tools/formulaires/remplir";
 import type { RefOption } from "@/tools/formulaires/model";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export const metadata: Metadata = { title: "Remplir un formulaire · ToolGus" };
 
@@ -44,6 +45,9 @@ export default async function Page({
   }
 
   return (
+    <>
+      <TitreEcran estampille="Formulaire" titre={formulaire.nom} />
     <Remplir qui={qui} formulaire={formulaire} refAffaires={refAffaires} />
+    </>
   );
 }

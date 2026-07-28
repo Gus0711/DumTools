@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FileStack, Hash } from "lucide-react";
+import {FileStack, Hash} from "lucide-react";
 import { getClient } from "@/lib/clients/queries";
 import { listerRealisationsClient } from "@/lib/clients/providers";
 import { ClientFicheHeader } from "@/lib/clients/client-fiche-header";
+import { EnteteSection } from "@/ui";
 
 export async function generateMetadata({
   params,
@@ -32,25 +33,19 @@ export default async function Page({
   const realisations = await listerRealisationsClient(id);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
       <ClientFicheHeader id={client.id} nom={client.nom} />
 
       <section>
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-fg">
-          <FileStack className="h-4 w-4 text-muted" />
-          Réalisations
-          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums text-muted">
-            {realisations.length}
-          </span>
-        </h2>
+        <EnteteSection icone={FileStack} titre="Réalisations" compteur={realisations.length} />
 
         {realisations.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center text-muted">
+          <div className="border border-dashed border-border bg-surface p-12 text-center text-muted">
             Rien n’a encore été produit pour ce client. Créez un document dans un
             outil en le rattachant à ce client.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+          <div className="overflow-x-auto border border-hairline bg-surface">
             <table className="table-cards w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">

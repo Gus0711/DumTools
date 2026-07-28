@@ -1,18 +1,34 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 
 /* Les polices sont exposées sous les noms de variables attendus par globals.css
  * (--font-sans-app / --font-mono-app / --font-display-app), pas en dur dans le CSS.
- * Sans/mono : Geist (UI & données). Affichage : Space Grotesk (titres — caractère
- * « technique / dessin industriel », employé avec retenue). */
-const sans = Geist({ variable: "--font-sans-app", subsets: ["latin"] });
-const mono = Geist_Mono({ variable: "--font-mono-app", subsets: ["latin"] });
-const display = Space_Grotesk({
+ *
+ * Texte    : IBM Plex Sans — dessinée pour la documentation technique, grande
+ *            hauteur d'x, accents français nets. C'est elle qui porte la
+ *            lisibilité sur les longues journées d'écran.
+ * Titres   : Archivo — grotesque de signalétique, tracking resserré : le
+ *            libellé estampillé d'un cartouche de plan.
+ * Repères  : IBM Plex Mono — n° Why, bornes, folios, adresses IP, horodatages.
+ *            Même squelette que le texte, donc pas de rupture visuelle. */
+const sans = IBM_Plex_Sans({
+  variable: "--font-sans-app",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+const mono = IBM_Plex_Mono({
+  variable: "--font-mono-app",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+const display = Archivo({
   variable: "--font-display-app",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +43,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#2b3a8f",
+  themeColor: "#003765",
 };
 
 export default function RootLayout({
@@ -40,10 +56,11 @@ export default function RootLayout({
       className={`${sans.variable} ${mono.variable} ${display.variable} h-full`}
     >
       <head>
-        {/* Applique le thème mémorisé avant le premier rendu (anti-flash). */}
+        {/* Applique le thème ET la densité mémorisés avant le premier rendu :
+            sans ça, l'écran clignote (clair→sombre, compact→confort) au chargement. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('dumtools-theme');if(t==='dark'||t==='light'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`,
+            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('dumtools-theme');if(t==='dark'||t==='light'){d.setAttribute('data-theme',t);}var n=localStorage.getItem('dumtools-density');if(n==='compact'||n==='confort'){d.setAttribute('data-density',n);}}catch(e){}})();`,
           }}
         />
       </head>

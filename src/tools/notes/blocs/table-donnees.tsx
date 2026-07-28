@@ -200,7 +200,7 @@ function TableDonneesBloc({ block, editor }: ReactCustomBlockRenderProps<typeof 
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+      <div className="overflow-x-auto border border-hairline bg-surface">
         <div role="table" className="min-w-fit text-sm">
           {/* --- en-têtes --- */}
           <div role="row" className="grid border-b border-border bg-surface-2" style={gabarit}>

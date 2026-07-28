@@ -174,7 +174,7 @@ export function ReponseVue({
       </div>
 
       {/* ---- en-tête de document (thémé, non capturé) ---- */}
-      <div className="mb-4 flex items-start gap-4 rounded-xl border border-border bg-surface p-5 shadow-sm">
+      <div className="mb-4 flex items-start gap-4 border border-hairline bg-surface p-5 shadow-sm">
         <span className="hidden shrink-0 items-center rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-black/5 sm:flex">
           <img
             src="/logo-dumortier.png"

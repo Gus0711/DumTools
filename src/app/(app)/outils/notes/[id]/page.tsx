@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getNote } from "@/tools/notes/queries";
 import { listerDocuments } from "@/tools/documents/queries";
 import { NoteEditeur } from "@/tools/notes/editeur";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export async function generateMetadata({
   params,
@@ -23,6 +24,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const documents = await listerDocuments(note.chantierId);
 
   return (
+    <>
+      <TitreEcran estampille="Note" titre={note.titre} />
     <NoteEditeur
       note={{
         id: note.id,
@@ -39,5 +42,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       }}
       documents={documents.map((d) => ({ id: d.id, nom: d.nom, categorie: d.categorie }))}
     />
+    </>
   );
 }

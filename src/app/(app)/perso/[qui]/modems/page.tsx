@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, ScanLine } from "lucide-react";
+import { ScanLine } from "lucide-react";
 import { auth } from "@/auth";
+import { Cartouche } from "@/ui";
 import { getTool } from "@/tools/registry";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { listerScansModem } from "@/tools/modems/queries";
@@ -35,25 +35,21 @@ export default async function Page({
     }));
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
-      <Link
-        href={`/perso/${qui}`}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-      >
-        <ArrowLeft className="h-4 w-4" /> ToolGus
-      </Link>
-
-      <header className="mb-6">
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-fg">
-          <ScanLine className="h-6 w-6 text-subtle" />
-          Scanner
-        </h1>
-        <p className="mt-1 text-muted">
-          Vise n&apos;importe quel code (QR, code-barres) : il tombe dans le
-          tableau, partagé et exportable. Si c&apos;est un modem Teltonika, ses
-          infos matériel (série, IMEI, MAC, identifiants) sont extraites en plus.
-        </p>
-      </header>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="ToolGus · Espace perso"
+        retour={{ href: `/perso/${qui}`, label: "ToolGus" }}
+        titre={
+          <span className="flex items-center gap-2.5">
+            <ScanLine className="h-6 w-6 text-accent" />
+            Scanner
+          </span>
+        }
+        titreTexte="Scanner"
+        description="Visez n’importe quel code (QR, code-barres) : il tombe dans le tableau, partagé et exportable. Si c’est un modem Teltonika, ses infos matériel (série, IMEI, MAC, identifiants) sont extraites en plus."
+        champs={[{ label: "Scans enregistrés", valeur: scans.length, fort: true }]}
+        className="mb-6"
+      />
 
       <ScanModems
         scansInitiaux={scans}

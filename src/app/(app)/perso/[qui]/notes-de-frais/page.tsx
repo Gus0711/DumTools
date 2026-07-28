@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft, Receipt } from "lucide-react";
+import {Receipt} from "lucide-react";
 import { periodeDe, totalCents } from "@/tools/notes-de-frais/model";
 import {
   depensesDuMois,
@@ -9,6 +8,7 @@ import {
 } from "@/tools/notes-de-frais/queries";
 import { AccueilNdf } from "@/tools/notes-de-frais/accueil-ndf";
 import { garde } from "./garde";
+import { Cartouche } from "@/ui";
 
 export const metadata: Metadata = { title: "Notes de frais · ToolGus" };
 
@@ -28,30 +28,23 @@ export default async function Page({
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8 md:px-10">
-      <Link
-        href={`/perso/${qui}`}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-      >
-        <ArrowLeft className="h-4 w-4" /> ToolGus
-      </Link>
-
-      <header className="mb-6">
-        <h1 className="flex items-center gap-2.5 font-display text-2xl font-bold tracking-tight text-fg">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand">
-            <Receipt className="h-5 w-5" />
+    <div className="mx-auto max-w-3xl px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="ToolGus · Espace perso"
+        retour={{ href: `/perso/${qui}`, label: "ToolGus" }}
+        titre={
+          <span className="flex items-center gap-2.5">
+            <Receipt className="h-6 w-6 text-accent" />
+            Notes de frais
           </span>
-          Notes de frais
-        </h1>
-        <p className="mt-2 text-muted">
-          Photographie ton ticket au moment de payer. À la fin du mois, ta note
-          est déjà écrite — il ne reste qu&apos;à télécharger l&apos;Excel et le
-          PDF des justificatifs.
-        </p>
-      </header>
+        }
+        titreTexte="Notes de frais"
+        description="Photographie ton ticket au moment de payer. À la fin du mois, ta note est déjà écrite — il ne reste qu’à télécharger l’Excel et le PDF des justificatifs."
+        className="mb-6"
+      />
 
       {!profil ? (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-10 text-center">
+        <div className="border border-dashed border-border bg-surface p-10 text-center">
           <p className="font-medium text-fg">
             Aucun profil de note de frais n&apos;est associé à ton compte.
           </p>

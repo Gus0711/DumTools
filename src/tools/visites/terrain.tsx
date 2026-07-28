@@ -141,11 +141,11 @@ function ListeTerrain({
 
       {/* Visites présentes sur CET appareil. */}
       {!t.ready ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-muted">
+        <div className="border border-dashed border-border bg-surface p-8 text-center text-muted">
           Chargement…
         </div>
       ) : t.visites.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
+        <div className="border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
           Aucune visite sur cet appareil.
           <br />
           Créez-en une — ça marche même au fond d&apos;une chaufferie sans réseau.
@@ -290,7 +290,7 @@ function PanneauCreation({
         <button
           type="button"
           onClick={onAnnuler}
-          className="rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted hover:bg-surface-2"
+          className="border border-hairline bg-surface px-4 py-3 text-sm text-muted hover:bg-surface-2"
         >
           Annuler
         </button>

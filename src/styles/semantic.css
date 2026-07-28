@@ -1,20 +1,21 @@
 /* =============================================================================
  * ÉTAGE 2 — TOKENS SÉMANTIQUES (rôles)
- * On ne parle plus de "navy" ou "gold" mais de rôles : marque, surface, texte…
- * C'est CE que consomment les composants (via les utilitaires Tailwind générés
- * dans globals.css). Pour reskiner toute l'appli : ne toucher qu'ici.
+ * On ne parle plus de "navy" ou "gold" mais de rôles : marque, surface, texte,
+ * cartouche, rail, mouvement, densité. C'est CE que consomment les composants
+ * (via les utilitaires Tailwind générés dans globals.css).
+ * Pour reskiner toute l'appli : ne toucher qu'ici.
  *
  * Le thème sombre ne réécrit QUE ce fichier — jamais les primitives.
  * data-theme="light|dark" (posé par le sélecteur de thème) l'emporte sur la
- * préférence système.
+ * préférence système. data-density="confort|compact" règle l'échelle.
  * ========================================================================== */
 
 :root {
   /* Surfaces */
-  --page:       var(--neutral-100);
+  --page:       var(--neutral-150);
   --surface:    var(--neutral-0);
   --surface-2:  var(--neutral-50);
-  --surface-3:  var(--neutral-100);
+  --surface-3:  var(--neutral-150);
 
   /* Texte */
   --fg:         var(--neutral-900);
@@ -24,6 +25,8 @@
   /* Traits / séparateurs */
   --border:      var(--neutral-300);
   --border-soft: var(--neutral-200);
+  /* Filet de cartouche : plus fin que --border, c'est le trait d'un plan. */
+  --hairline:    var(--neutral-300);
 
   /* Marque (bleu marine) */
   --brand:        var(--navy-700);
@@ -40,6 +43,7 @@
   /* États */
   --danger:  var(--red-600);
   --success: var(--green-600);
+  --warning: var(--amber-500);
   --ring:    var(--navy-700);
 
   /* Métier E/S (mêmes rôles, réutilisés par tous les outils) */
@@ -49,43 +53,113 @@
   --io-do:  var(--es-do);
   --io-com: var(--es-com);
 
+  /* --- Cartouche : le bloc d'identification en tête de page ---------------- *
+   * Repris du cartouche d'un plan / schéma électrique : fond légèrement
+   * distinct de la page, filets fins, libellés estampillés. */
+  --cartouche:        var(--neutral-0);
+  --cartouche-2:      var(--neutral-50);
+  --stamp:            var(--neutral-500); /* libellés petites capitales   */
+  --rail:             var(--gold-500);    /* rail d'accent (bornier)      */
+  --rail-soft:        var(--neutral-300);
+
   /* --- Signatures : dégradés, ombres & texture « plan » ------------------- *
    * Consommés via des utilitaires dédiés (globals.css), jamais en hex direct. */
-  --grad-brand:  linear-gradient(150deg, var(--navy-700) 0%, var(--navy-900) 78%);
+  --grad-brand:  linear-gradient(158deg, var(--navy-800) 0%, var(--navy-950) 88%);
   --grad-accent: linear-gradient(120deg, var(--gold-500) 0%, var(--gold-600) 100%);
-  --grid-line:   rgb(255 255 255 / 0.05); /* trait de la trame blueprint */
+  --grad-signal: linear-gradient(
+    90deg,
+    var(--io-ai) 0%, var(--io-ai) 20%,
+    var(--io-di) 20%, var(--io-di) 40%,
+    var(--io-ao) 40%, var(--io-ao) 60%,
+    var(--io-do) 60%, var(--io-do) 80%,
+    var(--io-com) 80%, var(--io-com) 100%
+  );
+  --grad-signal-v: linear-gradient(
+    180deg,
+    var(--io-ai) 0%, var(--io-ai) 20%,
+    var(--io-di) 20%, var(--io-di) 40%,
+    var(--io-ao) 40%, var(--io-ao) 60%,
+    var(--io-do) 60%, var(--io-do) 80%,
+    var(--io-com) 80%, var(--io-com) 100%
+  );
+  /* Voile de lumière : une source douce en haut à gauche, qui donne de la
+     profondeur à une grande surface marine sans y poser de motif. */
+  --voile-brand: radial-gradient(
+    120% 90% at 15% 0%,
+    rgb(255 255 255 / 0.10) 0%,
+    rgb(255 255 255 / 0.03) 45%,
+    transparent 75%
+  );
 
   /* Ombres douces, teintées marine (plus « posées » que le gris neutre). */
-  --elev-sm:   0 1px 2px rgb(20 29 40 / 0.06), 0 1px 1px rgb(20 29 40 / 0.04);
-  --elev-md:   0 4px 12px -2px rgb(20 29 40 / 0.10), 0 2px 6px -2px rgb(20 29 40 / 0.06);
-  --elev-lg:   0 18px 40px -12px rgb(20 29 40 / 0.22), 0 6px 16px -8px rgb(20 29 40 / 0.10);
+  --elev-sm:   0 1px 2px rgb(14 24 35 / 0.05), 0 1px 1px rgb(14 24 35 / 0.04);
+  --elev-md:   0 4px 12px -2px rgb(14 24 35 / 0.09), 0 2px 6px -2px rgb(14 24 35 / 0.06);
+  --elev-lg:   0 18px 40px -12px rgb(14 24 35 / 0.20), 0 6px 16px -8px rgb(14 24 35 / 0.10);
+
+  /* --- Chrome : le bâti de l'outil (rail + barre de contexte) ------------- *
+   * Toujours sombre, dans les deux thèmes : le bâti d'un logiciel d'atelier
+   * encadre le plan de travail, il n'en fait pas partie. */
+  --chrome:        var(--navy-950);
+  --chrome-2:      #0a1a28;
+  --chrome-fg:     #e6edf5;
+  --chrome-muted:  #7d95af;
+  --chrome-border: rgb(255 255 255 / 0.08);
+  --chrome-hover:  rgb(255 255 255 / 0.06);
+  --chrome-accent: var(--gold-500);
 
   /* Sidebar : contexte marine plein (texte clair sur fond de marque).
      Identique en thème clair et sombre. */
-  --sidebar:           var(--navy-900);
+  --sidebar:           var(--navy-950);
   --sidebar-fg:        #e2e9f2;
   --sidebar-muted:     #8ba3bd;
-  --sidebar-active-bg: rgb(255 255 255 / 0.09);
+  --sidebar-active-bg: rgb(255 255 255 / 0.08);
   --sidebar-active-fg: #ffffff;
   --sidebar-accent:    var(--gold-500);
-  --sidebar-hover:     rgb(255 255 255 / 0.06);
-  --sidebar-border:    rgb(255 255 255 / 0.1);
+  --sidebar-hover:     rgb(255 255 255 / 0.05);
+  --sidebar-border:    rgb(255 255 255 / 0.09);
+
+  /* --- Mouvement (rôles) -------------------------------------------------- */
+  --ease:      var(--ease-out);
+  --ease-calm: var(--ease-in-out);
+  --t-hover:   var(--dur-1);
+  --t-enter:   var(--dur-2);
+  --t-block:   var(--dur-3);
+  --t-sweep:   var(--dur-4);
+
+  /* --- Densité : « Confort » par défaut ----------------------------------- *
+   * --root-size pilote la taille de base de TOUTE l'interface (les rem
+   * suivent) ; les autres tokens ajustent ce que l'échelle seule ne règle pas
+   * (hauteur de ligne de table, cible tactile). */
+  --root-size:  16.5px;
+  --row-y:      0.72rem;
+  --control-h:  2.5rem;
+  --tap:        2.75rem;
 }
 
-/* --- Thème sombre : préférence système par défaut... --------------------- */
+:root[data-density="compact"] {
+  --root-size: 14.75px;
+  --row-y:     0.4rem;
+  --control-h: 2.25rem;
+  --tap:       2.25rem;
+}
+
+/* --- Thème sombre : préférence système par défaut... ---------------------- *
+ * Le bloc est volontairement dupliqué plus bas pour l'override explicite :
+ * garder les deux listes identiques à la virgule près. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --page:       #0b131c;
-    --surface:    #121e29;
-    --surface-2:  #182534;
-    --surface-3:  #1e2d3d;
+    --page:       #08111a;
+    --surface:    #101c27;
+    --surface-2:  #16232f;
+    --surface-3:  #1c2b39;
 
     --fg:         #e8edf3;
     --muted:      #9aa7b5;
     --subtle:     #6b7a8a;
 
-    --border:      #29394a;
-    --border-soft: #1f2d3b;
+    --border:      #27374a;
+    --border-soft: #1d2b3a;
+    --hairline:    #2c3d51;
 
     --brand:        #6f9dce;
     --brand-strong: #93bce4;
@@ -97,11 +171,30 @@
     --accent-soft:   #362a10;
     --accent-fg:     #120d02;
 
+    --danger:  var(--red-400);
+    --success: var(--green-400);
     --ring: #6f9dce;
 
-    --grad-brand:  linear-gradient(150deg, #10314f 0%, #081521 82%);
+    --io-ai:  var(--es-ai-lift);
+    --io-di:  var(--es-di-lift);
+    --io-ao:  var(--es-ao-lift);
+    --io-do:  var(--es-do-lift);
+    --io-com: var(--es-com-lift);
+
+    --cartouche:   #101c27;
+    --cartouche-2: #16232f;
+    --stamp:       #7b8b9c;
+    --rail:        #d9a326;
+    --rail-soft:   #27374a;
+
+    --grad-brand:  linear-gradient(158deg, #0d2740 0%, #050e17 88%);
     --grad-accent: linear-gradient(120deg, #d9a326 0%, #b7871a 100%);
-    --grid-line:   rgb(255 255 255 / 0.04);
+    --voile-brand: radial-gradient(
+      120% 90% at 15% 0%,
+      rgb(255 255 255 / 0.07) 0%,
+      rgb(255 255 255 / 0.02) 45%,
+      transparent 75%
+    );
 
     --elev-sm:   0 1px 2px rgb(0 0 0 / 0.4);
     --elev-md:   0 4px 14px -2px rgb(0 0 0 / 0.5);
@@ -111,17 +204,18 @@
 
 /* --- ...et override explicite quand l'utilisateur force le thème sombre --- */
 :root[data-theme="dark"] {
-  --page:       #0b131c;
-  --surface:    #121e29;
-  --surface-2:  #182534;
-  --surface-3:  #1e2d3d;
+  --page:       #08111a;
+  --surface:    #101c27;
+  --surface-2:  #16232f;
+  --surface-3:  #1c2b39;
 
   --fg:         #e8edf3;
   --muted:      #9aa7b5;
   --subtle:     #6b7a8a;
 
-  --border:      #29394a;
-  --border-soft: #1f2d3b;
+  --border:      #27374a;
+  --border-soft: #1d2b3a;
+  --hairline:    #2c3d51;
 
   --brand:        #6f9dce;
   --brand-strong: #93bce4;
@@ -133,11 +227,30 @@
   --accent-soft:   #362a10;
   --accent-fg:     #120d02;
 
+  --danger:  var(--red-400);
+  --success: var(--green-400);
   --ring: #6f9dce;
 
-  --grad-brand:  linear-gradient(150deg, #10314f 0%, #081521 82%);
+  --io-ai:  var(--es-ai-lift);
+  --io-di:  var(--es-di-lift);
+  --io-ao:  var(--es-ao-lift);
+  --io-do:  var(--es-do-lift);
+  --io-com: var(--es-com-lift);
+
+  --cartouche:   #101c27;
+  --cartouche-2: #16232f;
+  --stamp:       #7b8b9c;
+  --rail:        #d9a326;
+  --rail-soft:   #27374a;
+
+  --grad-brand:  linear-gradient(158deg, #0d2740 0%, #050e17 88%);
   --grad-accent: linear-gradient(120deg, #d9a326 0%, #b7871a 100%);
-  --grid-line:   rgb(255 255 255 / 0.04);
+  --voile-brand: radial-gradient(
+    120% 90% at 15% 0%,
+    rgb(255 255 255 / 0.07) 0%,
+    rgb(255 255 255 / 0.02) 45%,
+    transparent 75%
+  );
 
   --elev-sm:   0 1px 2px rgb(0 0 0 / 0.4);
   --elev-md:   0 4px 14px -2px rgb(0 0 0 / 0.5);

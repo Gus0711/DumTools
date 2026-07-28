@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: Promise<{ jeton: string
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-6 md:px-6 md:py-10">
-        <article className="rounded-xl border border-border bg-surface px-5 py-7 shadow-sm md:px-10 md:py-10">
+        <article className="border border-hairline bg-surface px-5 py-7 shadow-sm md:px-10 md:py-10">
           <h1 className="text-3xl font-bold tracking-tight text-fg md:text-4xl">{note.titre}</h1>
           <p className="mb-6 mt-2 border-b border-border-soft pb-5 text-xs text-subtle">
             Mise à jour le{" "}

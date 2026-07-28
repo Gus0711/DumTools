@@ -1,49 +1,80 @@
 /* =============================================================================
  * ÉTAGE 1 — PRIMITIVES
- * Palette brute Dumortier / Groupe Fareneït (extraite de existant/ListePts_GTB.html).
- * C'est le SEUL fichier où l'on écrit des valeurs de couleur en dur.
+ * Palette brute Dumortier / Groupe Fareneït (teintes du logo) + primitives de
+ * mouvement. C'est le SEUL fichier où l'on écrit des valeurs en dur.
  * On ne consomme jamais ces variables directement dans les composants :
  * elles ne sont référencées que par l'étage sémantique (semantic.css).
  * ========================================================================== */
 
 :root {
   /* --- Bleu marine (marque) — teintes exactes du logo (#003765) ------------ */
-  --navy-050: #e6edf4;
-  --navy-100: #c2d0de;
+  --navy-025: #f3f7fb;
+  --navy-050: #e4edf6;
+  --navy-100: #c6d8e9;
+  --navy-200: #9ab8d4;
   --navy-300: #4d7398;
   --navy-500: #17466f; /* palier intermédiaire (dégradés de marque) */
   --navy-700: #003765; /* couleur de marque principale (logo) */
   --navy-800: #002f54;
   --navy-900: #002138;
+  --navy-950: #05121d; /* fond « instrument » : sidebar, surfaces sombres */
 
   /* --- Or / laiton (accent) — teintes exactes du logo (#c79213) ------------ */
+  --gold-025: #fdf9ee;
   --gold-050: #f8efd6;
   --gold-100: #ecd39a;
   --gold-300: #dcb254;
   --gold-500: #c79213; /* accent principal (logo) */
   --gold-600: #a97d0d;
+  --gold-700: #8a6509;
 
-  /* --- Neutres (encre, surfaces, traits) — sous-ton froid « plan » --------- */
+  /* --- Neutres (encre, surfaces, traits) — sous-ton froid « papier plan » -- */
   --neutral-0:   #ffffff;
-  --neutral-50:  #f6f8fb;
-  --neutral-100: #eef1f6;
-  --neutral-200: #e6eaf1;
-  --neutral-300: #d7dde7;
-  --neutral-400: #bcc5d2;
-  --neutral-500: #8a94a3;
-  --neutral-600: #66717f;
-  --neutral-700: #3b4654;
-  --neutral-800: #232d3a;
-  --neutral-900: #141d28;
+  --neutral-50:  #f7f9fc;
+  --neutral-100: #edf1f7;
+  --neutral-150: #e5ebf3;
+  --neutral-200: #dfe6ef;
+  --neutral-300: #d2dae6;
+  --neutral-400: #b4c0cf;
+  --neutral-500: #8492a3;
+  --neutral-600: #5d6b7c;
+  --neutral-700: #3a4655;
+  --neutral-800: #212b38;
+  --neutral-900: #0e1823;
 
   /* --- États -------------------------------------------------------------- */
-  --red-600:   #c0392b;
-  --green-600: #1a8a4a;
+  --red-600:    #c0392b;
+  --red-400:    #f08076;
+  --green-600:  #1a8a4a;
+  --green-400:  #45c47c;
+  --amber-500:  #d08700;
 
-  /* --- Couleurs métier E/S (une teinte stable par type d'entrée/sortie) ---- */
-  --es-ai:  #1f6feb; /* entrée analogique */
-  --es-di:  #b4690e; /* entrée logique    */
-  --es-ao:  #7b41c9; /* sortie analogique */
-  --es-do:  #1a8a4a; /* sortie logique    */
+  /* --- Couleurs métier E/S (contractuelles : elles sont imprimées sur les
+   *     documents remis au client — ne jamais les modifier) ----------------- */
+  --es-ai:  #1f6feb; /* entrée analogique   */
+  --es-di:  #b4690e; /* entrée logique      */
+  --es-ao:  #7b41c9; /* sortie analogique   */
+  --es-do:  #1a8a4a; /* sortie logique      */
   --es-com: #0d8c97; /* bus / communication */
+
+  /* Mêmes signaux, remontés en clarté pour rester lisibles sur fond sombre.
+   * Réservés au thème sombre : le document imprimé garde les teintes ci-dessus. */
+  --es-ai-lift:  #5b9bff;
+  --es-di-lift:  #e0932b;
+  --es-ao-lift:  #ac81f0;
+  --es-do-lift:  #35b96a;
+  --es-com-lift: #2bc0cd;
+
+  /* --- Mouvement : courbes et durées de référence -------------------------- *
+   * Une seule famille de courbes pour toute l'appli : sortie franche et posée
+   * (démarrage rapide, arrivée amortie) — le geste d'un instrument, pas d'un
+   * rebond de jouet. */
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-hold:   cubic-bezier(0.34, 1.2, 0.64, 1); /* léger dépassement, rare */
+
+  --dur-1: 120ms; /* survol, pression : doit être imperceptible */
+  --dur-2: 200ms; /* apparition d'un élément                   */
+  --dur-3: 320ms; /* mise en place d'un bloc                   */
+  --dur-4: 520ms; /* balayage de signature (filet laiton)      */
 }

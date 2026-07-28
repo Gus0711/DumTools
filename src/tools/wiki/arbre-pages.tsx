@@ -195,7 +195,7 @@ export function ArbrePagesRubrique({
       </div>
 
       {noeuds.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center">
+        <div className="border border-dashed border-border bg-surface p-12 text-center">
           <FileText className="mx-auto h-8 w-8 text-subtle" />
           <p className="mt-3 text-muted">
             Aucune page dans cette rubrique. Créez la première avec « Nouvelle page ».
@@ -204,11 +204,11 @@ export function ArbrePagesRubrique({
       ) : resultats ? (
         /* --- Vue liste (recherche active) ------------------------------------ */
         resultats.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center">
+          <div className="border border-dashed border-border bg-surface p-12 text-center">
             <p className="text-muted">Aucune page ne correspond au filtre.</p>
           </div>
         ) : (
-          <ul className="overflow-hidden rounded-lg border border-border bg-surface">
+          <ul className="overflow-hidden border border-hairline bg-surface">
             {resultats.map((n) => (
               <li key={n.id} className="border-b border-border-soft last:border-0">
                 <Link
@@ -242,7 +242,7 @@ export function ArbrePagesRubrique({
       ) : (
         /* --- Vue arbre ------------------------------------------------------- */
         <div
-          className="overflow-hidden rounded-lg border border-border bg-surface"
+          className="overflow-hidden border border-hairline bg-surface"
           onDragOver={(e) => {
             // Zone « racine » : survol sous les lignes → déplacer à la fin des racines.
             if (drague && e.target === e.currentTarget) {

@@ -10,6 +10,7 @@ import {
 } from "@/tools/notes-de-frais/queries";
 import { NoteMois } from "@/tools/notes-de-frais/note-mois";
 import { gardeAvecProfil } from "../garde";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export async function generateMetadata({
   params,
@@ -41,6 +42,7 @@ export default async function Page({
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
+      <TitreEcran estampille="Notes de frais" titre={"Période"} />
       <Link
         href={`/perso/${qui}/notes-de-frais`}
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"

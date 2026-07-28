@@ -59,7 +59,14 @@ export function blocCodeRepliable(options: CodeBlockOptions): SpecCode {
     block: BlocRendu,
     editor: EditeurRendu,
   ): ResultatRendu {
-    const res = renderBase.call(this, block, editor);
+    // Le rendu natif parcourt TOUS les props du bloc et lit, pour chacun, son
+    // défaut dans SON propre propSchema — celui figé à la création du spec, qui
+    // ignore donc notre `collapsed`. Le lui passer ferait lire `undefined.default`
+    // et planterait tout bloc de code. On le retire donc de la copie qu'on lui
+    // transmet ; c'est nous qui gérons ce prop, juste en dessous.
+    const propsNatifs = { ...(block.props as Record<string, unknown>) };
+    delete propsNatifs.collapsed;
+    const res = renderBase.call(this, { ...block, props: propsNatifs } as BlocRendu, editor);
     // Après `wrapInBlockStructure`, `res.dom` est le <div.bn-block-content> ; le
     // <code> (contentDOM) est dans le <pre>, tous deux enfants de ce div.
     const contentEl = res.dom as HTMLElement;

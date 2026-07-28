@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { getTool } from "@/tools/registry";
 import { getFormulaire } from "@/tools/formulaires/queries";
 import { Builder } from "@/tools/formulaires/builder";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export const metadata: Metadata = { title: "Éditer un formulaire · ToolGus" };
 
@@ -23,5 +24,10 @@ export default async function Page({
   const formulaire = await getFormulaire(id);
   if (!formulaire) notFound();
 
-  return <Builder qui={qui} formulaire={formulaire} />;
+  return (
+    <>
+      <TitreEcran estampille="Formulaire · Construction" titre={formulaire.nom} />
+      <Builder qui={qui} formulaire={formulaire} />
+    </>
+  );
 }

@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Briefcase, Hash, Search, X } from "lucide-react";
+import { Briefcase, RotateCcw, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Combobox, type ComboOption } from "@/ui";
+import { Combobox, EtatVide, type ComboOption } from "@/ui";
 import type { EtatAffaire } from "@/generated/prisma/enums";
 import type { AffaireResume } from "./queries";
 import { ETATS_ACTIFS, ETATS_AFFAIRE } from "./etats";
@@ -19,7 +19,7 @@ function norm(s: string): string {
   return s
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[̀-ͯ]/g, "");
 }
 
 export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
@@ -37,6 +37,14 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
         .map((c) => ({ value: c })),
     [affaires],
   );
+
+  // Compte par état : une puce de filtre qui annonce ce qu'elle contient évite
+  // le clic « pour voir ».
+  const parEtat = useMemo(() => {
+    const m = new Map<EtatAffaire, number>();
+    for (const a of affaires) m.set(a.etat, (m.get(a.etat) ?? 0) + 1);
+    return m;
+  }, [affaires]);
 
   const filtrees = useMemo(() => {
     const q = norm(query.trim());
@@ -70,6 +78,20 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
     setClient("");
   }
 
+  // Base vide et liste filtrée vide sont deux situations différentes : la
+  // première appelle une création, la seconde un élargissement des filtres.
+  if (affaires.length === 0) {
+    return (
+      <div className="bloc">
+        <EtatVide
+          icone={Briefcase}
+          titre="Aucune affaire pour l'instant"
+          texte="Renseignez un numéro Why dans un outil (Projet GTB, par exemple) et l'affaire se crée toute seule — ou créez-la directement depuis le bouton ci-dessus."
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* --- Barre de recherche + filtres --- */}
@@ -83,8 +105,9 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Rechercher (nom, client, n° Why)…"
               className={cn(
-                "h-9 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-sm text-fg",
-                "placeholder:text-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
+                "h-9 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-sm text-fg shadow-sm",
+                "transition-[border-color,box-shadow] duration-150",
+                "placeholder:text-subtle hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
               )}
             />
           </div>
@@ -100,9 +123,10 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {ETATS_AFFAIRE.map((e) => {
             const actif = etats.has(e.value);
+            const n = parEtat.get(e.value) ?? 0;
             return (
               <button
                 key={e.value}
@@ -110,7 +134,8 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                 onClick={() => toggleEtat(e.value)}
                 aria-pressed={actif}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-all",
+                  "inline-flex min-h-[2.25rem] shrink-0 items-center gap-1.5 rounded-md border px-3 text-xs font-medium sm:min-h-0 sm:px-2.5 sm:py-1",
+                  "transition-[opacity,border-color,background-color] duration-150",
                   ETAT_TONE[e.value],
                   actif
                     ? "border-current opacity-100"
@@ -118,6 +143,7 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                 )}
               >
                 {e.label}
+                <span className="font-mono tabular-nums opacity-70">{n}</span>
               </button>
             );
           })}
@@ -126,67 +152,84 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
             <button
               type="button"
               onClick={reinitialiser}
-              className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs text-muted hover:text-fg"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs text-muted transition-colors hover:text-fg sm:px-2.5 sm:py-1"
             >
-              <X className="h-3.5 w-3.5" /> Réinitialiser
+              <RotateCcw className="h-3.5 w-3.5" /> Réinitialiser
             </button>
           )}
 
-          <span className="ml-auto text-xs tabular-nums text-subtle">
+          <span className="ml-auto hidden shrink-0 text-xs tabular-nums text-subtle sm:block">
             {filtrees.length} / {affaires.length} affaire{affaires.length > 1 ? "s" : ""}
           </span>
         </div>
+
+        {/* Au téléphone le compte sort du défilement horizontal : on doit
+            pouvoir le lire sans faire glisser les puces. */}
+        <p className="text-xs tabular-nums text-subtle sm:hidden">
+          {filtrees.length} / {affaires.length} affaire{affaires.length > 1 ? "s" : ""}
+        </p>
       </div>
 
       {/* --- Tableau --- */}
       {filtrees.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center text-muted">
-          Aucune affaire ne correspond aux filtres.
+        <div className="bloc">
+          <EtatVide
+            icone={Search}
+            titre="Aucune affaire ne correspond"
+            texte="Élargissez les états retenus, ou effacez la recherche."
+            action={
+              <button
+                type="button"
+                onClick={reinitialiser}
+                className="text-sm font-semibold text-brand hover:underline"
+              >
+                Réinitialiser les filtres
+              </button>
+            }
+          />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="table-cards w-full border-collapse text-sm">
+        <div className="bloc overflow-x-auto">
+          <table className="data-table table-cards">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                <th className="px-4 py-2.5 font-medium">Affaire</th>
-                <th className="px-4 py-2.5 font-medium">Client</th>
-                <th className="px-4 py-2.5 font-medium">N° Why</th>
-                <th className="px-4 py-2.5 font-medium">État</th>
-                <th className="px-4 py-2.5 font-medium">Réalisations</th>
-                <th className="px-4 py-2.5 font-medium">Modifié</th>
+              <tr>
+                <th>Affaire</th>
+                <th>Client</th>
+                <th>N° Why</th>
+                <th>État</th>
+                <th className="cell-num">Réal.</th>
+                <th>Modifié</th>
               </tr>
             </thead>
             <tbody>
               {filtrees.map((a) => (
-                <tr
-                  key={a.id}
-                  className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                >
-                  <td className="cell-card-title px-4 py-2.5">
+                <tr key={a.id}>
+                  <td className="cell-title cell-card-title cell-wrap">
                     <Link
                       href={`/affaires/${a.id}`}
-                      className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
+                      className="group inline-flex items-center gap-2 transition-colors hover:text-brand"
                     >
-                      <Briefcase className="h-4 w-4 text-subtle" />
+                      <Briefcase className="h-4 w-4 shrink-0 text-subtle transition-colors group-hover:text-brand" />
                       {a.nom}
                     </Link>
                   </td>
-                  <td data-label="Client" className="px-4 py-2.5 text-muted">{a.clientNom}</td>
-                  <td data-label="N° Why" className="px-4 py-2.5 text-muted">
+                  <td data-label="Client">{a.clientNom}</td>
+                  <td data-label="N° Why">
                     {a.numeroWhy ? (
-                      <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg">
-                        <Hash className="h-3 w-3 text-subtle" />
+                      <span className="ref rounded bg-surface-2 px-1.5 py-0.5 text-fg">
                         {a.numeroWhy}
                       </span>
                     ) : (
-                      "—"
+                      <span className="text-subtle">—</span>
                     )}
                   </td>
-                  <td data-label="État" className="px-4 py-2.5">
+                  <td data-label="État">
                     <EtatBadge etat={a.etat} />
                   </td>
-                  <td data-label="Réalisations" className="px-4 py-2.5 tabular-nums text-muted">{a.nbRealisations}</td>
-                  <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(a.updatedAt)}</td>
+                  <td data-label="Réalisations" className="cell-num">
+                    {a.nbRealisations}
+                  </td>
+                  <td data-label="Modifié">{fmtDate(a.updatedAt)}</td>
                 </tr>
               ))}
             </tbody>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { getPage, listerRubriquesMenu, listerTags } from "@/tools/wiki/queries";
 import { WikiEditeur } from "@/tools/wiki/editeur";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export async function generateMetadata({
   params,
@@ -31,6 +32,8 @@ export default async function Page({
   const estAdmin = session?.user?.role === "ADMIN";
 
   return (
+    <>
+      <TitreEcran estampille={`Wiki · ${page.rubriqueNom}`} titre={page.titre} />
     <WikiEditeur
       page={{
         id: page.id,
@@ -51,5 +54,6 @@ export default async function Page({
       tousLesTags={tags.map((t) => ({ nom: t.nom, couleur: t.couleur }))}
       estAdmin={estAdmin}
     />
+    </>
   );
 }

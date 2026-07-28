@@ -30,7 +30,7 @@ export async function MiroirKdrive({ chantierId }: { chantierId: string }) {
             <h3 className="mb-1.5 text-xs font-medium uppercase tracking-wide text-subtle">
               {g.dossier === "(racine)" ? "Dossier de l'affaire" : g.dossier}
             </h3>
-            <div className="overflow-hidden rounded-lg border border-border bg-surface">
+            <div className="overflow-hidden border border-hairline bg-surface">
               {g.fichiers.map((f) => (
                 <a
                   key={f.fileId}

@@ -273,7 +273,7 @@ export function SaisieDepense({
             inputMode="decimal"
             placeholder="0,00"
             autoComplete="off"
-            className="h-16 w-full rounded-xl border border-border bg-surface pr-12 pl-4 text-3xl font-semibold tabular-nums text-fg outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-16 w-full border border-hairline bg-surface pr-12 pl-4 text-3xl font-semibold tabular-nums text-fg outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
           <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-2xl text-muted">
             €
@@ -374,7 +374,7 @@ export function SaisieDepense({
 
       {/* ------------------------------------------ invités (repas d'affaires) */}
       {categorie && demandeInvites(categorie) && (
-        <section className="mb-6 rounded-xl border border-border bg-surface-2 p-4">
+        <section className="mb-6 border border-hairline bg-surface-2 p-4">
           <p className="mb-3 text-sm font-medium text-fg">
             Repas d&apos;affaires — la compta a besoin de savoir avec qui.
           </p>
@@ -468,7 +468,7 @@ function Vignette({
 }) {
   if (pdf) {
     return (
-      <div className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border border-border bg-surface-2 p-2 text-center">
+      <div className="flex aspect-square flex-col items-center justify-center gap-1 border border-hairline bg-surface-2 p-2 text-center">
         <FileText className="h-6 w-6 text-muted" />
         <span className="line-clamp-2 text-[10px] break-all text-muted">
           {nom || "PDF"}

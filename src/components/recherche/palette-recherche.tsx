@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { Kbd } from "@/ui";
 import { useShell } from "@/components/app-shell/shell-context";
 import { LIBELLE_TYPE, MIN_CARACTERES, type ResultatRecherche, type TypeResultat } from "@/lib/recherche/types";
 
@@ -62,6 +63,19 @@ export function PaletteRecherche() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setRechercheOuverte(!rechercheOuverte);
+        return;
+      }
+      // « / » ouvre aussi la recherche — mais jamais pendant qu'on écrit
+      // ailleurs, sinon on avale le caractère de l'utilisateur.
+      if (e.key === "/" && !rechercheOuverte && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const cible = e.target as HTMLElement | null;
+        const saisie =
+          cible?.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(cible?.tagName ?? "");
+        if (!saisie) {
+          e.preventDefault();
+          setRechercheOuverte(true);
+        }
       }
     }
     window.addEventListener("keydown", onKey);
@@ -178,9 +192,7 @@ export function PaletteRecherche() {
             aria-label="Rechercher"
             className="h-14 w-full bg-transparent text-base text-fg outline-none placeholder:text-subtle"
           />
-          <kbd className="hidden shrink-0 rounded border border-border bg-surface-2 px-1.5 py-0.5 text-[10px] font-medium text-subtle sm:block">
-            Esc
-          </kbd>
+          <Kbd className="hidden shrink-0 sm:inline-flex">Esc</Kbd>
         </div>
 
         {/* Résultats */}
@@ -247,14 +259,18 @@ export function PaletteRecherche() {
 
         {/* Aide clavier */}
         <div className="hidden items-center gap-4 border-t border-border bg-surface-2 px-4 py-2 text-[11px] text-subtle sm:flex">
-          <span>
-            <b className="font-semibold">↑ ↓</b> naviguer
+          <span className="inline-flex items-center gap-1.5">
+            <Kbd>↑</Kbd>
+            <Kbd>↓</Kbd> naviguer
           </span>
-          <span>
-            <b className="font-semibold">↵</b> ouvrir
+          <span className="inline-flex items-center gap-1.5">
+            <Kbd>↵</Kbd> ouvrir
           </span>
-          <span>
-            <b className="font-semibold">Esc</b> fermer
+          <span className="inline-flex items-center gap-1.5">
+            <Kbd>Esc</Kbd> fermer
+          </span>
+          <span className="ml-auto inline-flex items-center gap-1.5">
+            <Kbd>/</Kbd> rouvrir cette palette depuis n’importe où
           </span>
         </div>
       </div>

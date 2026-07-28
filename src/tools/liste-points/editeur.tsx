@@ -78,7 +78,7 @@ export function Editeur({
       </div>
 
       {/* Métadonnées du document */}
-      <div className="mb-4 grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-4 grid grid-cols-1 gap-3 border border-hairline bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="space-y-1">
           <span className="text-xs font-medium text-muted">Client</span>
           <Combobox

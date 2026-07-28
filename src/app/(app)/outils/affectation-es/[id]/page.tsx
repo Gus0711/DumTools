@@ -7,6 +7,7 @@ import {
   getCatalogue as getCataloguePoints,
   getModeles,
 } from "@/tools/liste-points/queries";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export default async function Page({
   params,
@@ -24,6 +25,8 @@ export default async function Page({
   if (!projet) notFound();
 
   return (
+    <>
+      <TitreEcran estampille="Projet GTB" titre={projet.nom} />
     <Editeur
       id={projet.id}
       initial={{
@@ -44,5 +47,6 @@ export default async function Page({
       cataloguePoints={cataloguePoints}
       modeles={modeles}
     />
+    </>
   );
 }

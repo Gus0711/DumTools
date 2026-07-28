@@ -78,7 +78,7 @@ export function TestsTab({
 
   if (points.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-muted">
+      <div className="border border-dashed border-border bg-surface p-10 text-center text-muted">
         Aucun point affecté à tester. Choisis un automate (onglet <b>Automate &amp; modules</b>) : les
         points de la <b>Liste de points</b> sont alors affectés aux bornes.
       </div>
@@ -225,7 +225,7 @@ export function TestsTab({
 
 function Stat({ label, value, tone = "text-fg" }: { label: string; value: number; tone?: string }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 shadow-sm">
+    <span className="inline-flex items-center gap-2 border border-hairline bg-surface px-3 py-1.5 shadow-sm">
       <span className="text-xs text-muted">{label}</span>
       <span className={cn("font-display text-base font-semibold leading-none tabular-nums", tone)}>
         {value}

@@ -9,6 +9,7 @@ import {
 } from "@/tools/notes-de-frais/queries";
 import { SaisieDepense } from "@/tools/notes-de-frais/saisie-depense";
 import { gardeAvecProfil } from "../../garde";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export const metadata: Metadata = { title: "Modifier une dépense · Notes de frais" };
 
@@ -31,6 +32,7 @@ export default async function Page({
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8 md:px-10">
+      <TitreEcran estampille="Notes de frais" titre={"Modifier une dépense"} />
       <Link
         href={`/perso/${qui}/notes-de-frais`}
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"

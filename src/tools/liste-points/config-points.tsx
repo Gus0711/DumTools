@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { Button } from "@/ui";
+import { Button, Cartouche } from "@/ui";
 import { cn } from "@/lib/cn";
 import { IO_TYPES, signalLabel, signalsForType, type IoType, type ModelePoint } from "./model";
 import type { ModeleRow, PointCatalogueRow } from "./queries";
@@ -38,17 +38,14 @@ export function ConfigPoints({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 md:px-10">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-fg">Points &amp; modèles</h1>
-          <p className="mt-1 text-sm text-muted">
-            Points suggérés (nom → type d&apos;E/S + signal) et modèles de saisie. Le signal
-            pré-affecte la bonne borne à l&apos;insertion. Partagés entre tous.
-          </p>
-        </div>
-        {pending && <Loader2 className="mt-1 h-5 w-5 animate-spin text-muted" />}
-      </div>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Configuration"
+        titre="Points &amp; modèles"
+        description="Points suggérés (nom → type d’E/S + signal) et modèles de saisie, partagés entre tous. Le signal pré-affecte la bonne borne à l’insertion."
+        actions={pending ? <Loader2 className="h-5 w-5 animate-spin text-muted" /> : null}
+        className="mb-6"
+      />
 
       {/* Catalogue de points ------------------------------------------------ */}
       <section className="mb-8">
@@ -71,7 +68,7 @@ export function ConfigPoints({
           />
         )}
 
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="overflow-x-auto border border-hairline bg-surface">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
@@ -170,7 +167,7 @@ export function ConfigPoints({
             ) : (
               <div
                 key={m.id}
-                className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2.5"
+                className="flex items-center gap-3 border border-hairline bg-surface px-4 py-2.5"
               >
                 <span className="font-medium text-fg">{m.nom}</span>
                 <span className="text-xs text-subtle">

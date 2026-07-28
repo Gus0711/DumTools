@@ -359,7 +359,7 @@ function OngletChecklist({
   const total = visite.data.sections.reduce((n, sec) => n + sec.items.length, 0);
   if (total === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
+      <p className="border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
         Cette visite n&apos;a pas de checklist.
       </p>
     );
@@ -755,7 +755,7 @@ function OngletReserves({
       </div>
 
       {visite.data.reserves.length === 0 && (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
+        <div className="border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
           Aucune réserve. Tout ce qui bloque ou devra être repris se note ici — les réserves
           ouvertes seront reportées dans la prochaine visite de l&apos;affaire.
         </div>

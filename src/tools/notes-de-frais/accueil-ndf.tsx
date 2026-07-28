@@ -102,7 +102,7 @@ export function AccueilNdf({
         <h2 className="mb-3 font-display text-lg font-semibold text-fg">
           Mes mois
         </h2>
-        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="overflow-hidden border border-hairline bg-surface">
           <table className="table-cards w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-surface-2 text-left text-xs tracking-wide text-muted uppercase">
@@ -230,7 +230,7 @@ function LigneEnAttente({
   const [, m, j] = depense.date.split("-");
 
   return (
-    <li className="rounded-lg border border-border bg-surface p-3">
+    <li className="border border-hairline bg-surface p-3">
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-2">

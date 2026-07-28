@@ -91,7 +91,7 @@ export function ProjetsFiltrables({
       </div>
 
       {filtres.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center">
+        <div className="border border-dashed border-border bg-surface p-12 text-center">
           <CircuitBoard className="mx-auto h-8 w-8 text-subtle" />
           <p className="mt-3 text-muted">Aucun projet ne correspond à la recherche.</p>
         </div>

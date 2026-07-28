@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import type { Project } from "./model";
+import type { IoType } from "@/tools/liste-points/model";
 import { pointsToRows } from "./derivation";
 import type { ClientArtefact } from "@/lib/clients/types";
 
@@ -109,9 +110,21 @@ export interface ProjetAffaireResume {
   controller: string;
   nbPoints: number;
   nbModules: number;
+  /** Répartition des E/S par type (AI/DI/AO/DO/COM), somme des lignes. */
+  es: Record<IoType, number>;
   tests: AvancementTests;
   updatedAt: Date;
   href: string;
+}
+
+/** Somme les compteurs E/S des lignes d'un projet (les `rows` de la liste). */
+function sommeES(data: Project | null): Record<IoType, number> {
+  const total: Record<IoType, number> = { AI: 0, DI: 0, AO: 0, DO: 0, COM: 0 };
+  for (const r of data?.rows ?? []) {
+    if (r.kind !== "point" || !r.io) continue;
+    for (const t of Object.keys(total) as IoType[]) total[t] += r.io[t] ?? 0;
+  }
+  return total;
 }
 
 /** Projets GTB (automates) d'une affaire, vue détaillée (E/S + mise en service). */
@@ -135,6 +148,7 @@ export async function listerProjetsAffaire(chantierId: string): Promise<ProjetAf
       controller: data?.controller ?? "",
       nbPoints: pts.length,
       nbModules: nbModules(data),
+      es: sommeES(data),
       tests,
       updatedAt: p.updatedAt,
       href: `/outils/affectation-es/${p.id}`,

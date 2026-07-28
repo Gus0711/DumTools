@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ClipboardCheck, Smartphone } from "lucide-react";
+import { Cartouche, EtatVide } from "@/ui";
 import { TYPE_LABEL, TYPE_TON } from "@/tools/visites/model";
 import { listerVisites } from "@/tools/visites/queries";
 import { cn } from "@/lib/cn";
@@ -17,62 +18,67 @@ export default async function Page() {
   const visites = await listerVisites();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
-      <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-fg">Visites de chantier</h1>
-          <p className="mt-1 text-muted">
-            Relevés avant chiffrage, suivis, réceptions et interventions SAV — avec
-            checklist guide, photos et notes vocales prises sur place, même sans réseau.
-          </p>
-        </div>
-        <Link
-          href="/outils/visites/terrain"
-          className="inline-flex shrink-0 items-center gap-2 self-start rounded-lg bg-brand px-5 py-2.5 text-sm font-semibold text-brand-fg shadow-sm transition-colors hover:bg-brand-strong sm:self-auto"
-        >
-          <Smartphone className="h-4 w-4" />
-          Mode terrain
-        </Link>
-      </header>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Terrain"
+        titre="Visites de chantier"
+        description="Relevés avant chiffrage, suivis, réceptions et interventions SAV — checklist guide, photos et notes vocales prises sur place, même sans réseau."
+        actions={
+          <Link
+            href="/outils/visites/terrain"
+            className="press inline-flex items-center gap-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-brand-fg shadow-sm transition-colors hover:bg-brand-strong"
+          >
+            <Smartphone className="h-4 w-4" />
+            Mode terrain
+          </Link>
+        }
+        champs={[{ label: "Visites synchronisées", valeur: visites.length, fort: true }]}
+        className="mb-6"
+      />
 
       {visites.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center text-muted">
-          Aucune visite synchronisée pour l&apos;instant. Ouvrez le{" "}
-          <Link href="/outils/visites/terrain" className="font-medium text-brand hover:underline">
-            mode terrain
-          </Link>{" "}
-          sur votre téléphone pour créer la première.
+        <div className="data-card">
+          <EtatVide
+            icone={ClipboardCheck}
+            titre="Aucune visite synchronisée"
+            texte="Les visites se saisissent sur le téléphone, en mode terrain — elles remontent ici dès qu'il y a du réseau."
+            action={
+              <Link
+                href="/outils/visites/terrain"
+                className="text-sm font-semibold text-brand hover:underline"
+              >
+                Ouvrir le mode terrain →
+              </Link>
+            }
+          />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
-          <table className="table-cards w-full border-collapse text-sm">
+        <div className="data-card overflow-x-auto">
+          <table className="data-table table-cards">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                <th className="px-4 py-2.5 font-medium">Visite</th>
-                <th className="px-4 py-2.5 font-medium">Type</th>
-                <th className="px-4 py-2.5 font-medium">Affaire</th>
-                <th className="px-4 py-2.5 font-medium">Client</th>
-                <th className="px-4 py-2.5 font-medium">N° Why</th>
-                <th className="px-4 py-2.5 font-medium">Avancement</th>
-                <th className="px-4 py-2.5 font-medium">Date</th>
+              <tr>
+                <th>Visite</th>
+                <th>Type</th>
+                <th>Affaire</th>
+                <th>Client</th>
+                <th>N° Why</th>
+                <th>Avancement</th>
+                <th>Date</th>
               </tr>
             </thead>
             <tbody>
               {visites.map((v) => (
-                <tr
-                  key={v.id}
-                  className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                >
-                  <td className="cell-card-title px-4 py-2.5">
+                <tr key={v.id}>
+                  <td className="cell-title cell-card-title cell-wrap">
                     <Link
                       href={`/outils/visites/${v.id}`}
-                      className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
+                      className="group inline-flex items-center gap-2 transition-colors hover:text-brand"
                     >
-                      <ClipboardCheck className="h-4 w-4 shrink-0 text-subtle" />
+                      <ClipboardCheck className="h-4 w-4 shrink-0 text-subtle transition-colors group-hover:text-brand" />
                       {v.titre}
                     </Link>
                   </td>
-                  <td data-label="Type" className="px-4 py-2.5">
+                  <td data-label="Type">
                     <span
                       className={cn(
                         "inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
@@ -82,19 +88,17 @@ export default async function Page() {
                       {TYPE_LABEL[v.type]}
                     </span>
                   </td>
-                  <td data-label="Affaire" className="px-4 py-2.5 text-muted">
-                    {v.chantierNom || "—"}
+                  <td data-label="Affaire">{v.chantierNom || "—"}</td>
+                  <td data-label="Client">{v.clientNom || "—"}</td>
+                  <td data-label="N° Why">
+                    {v.numeroWhy ? (
+                      <span className="ref">{v.numeroWhy}</span>
+                    ) : (
+                      <span className="text-subtle">—</span>
+                    )}
                   </td>
-                  <td data-label="Client" className="px-4 py-2.5 text-muted">
-                    {v.clientNom || "—"}
-                  </td>
-                  <td data-label="N° Why" className="px-4 py-2.5 text-muted">
-                    {v.numeroWhy ?? "—"}
-                  </td>
-                  <td data-label="Avancement" className="px-4 py-2.5 text-muted">{v.resume}</td>
-                  <td data-label="Date" className="px-4 py-2.5 tabular-nums text-muted">
-                    {formatDateFr(v.date)}
-                  </td>
+                  <td data-label="Avancement">{v.resume}</td>
+                  <td data-label="Date">{formatDateFr(v.date)}</td>
                 </tr>
               ))}
             </tbody>

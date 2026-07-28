@@ -6,6 +6,7 @@ import {
   getDocument,
   getModeles,
 } from "@/tools/liste-points/queries";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export default async function Page({
   params,
@@ -22,6 +23,8 @@ export default async function Page({
   if (!doc) notFound();
 
   return (
+    <>
+      <TitreEcran estampille="Liste de points" titre={doc.chantierNom || "Liste de points"} />
     <Editeur
       id={doc.id}
       initial={{
@@ -35,5 +38,6 @@ export default async function Page({
       catalogue={catalogue}
       modeles={modeles}
     />
+    </>
   );
 }

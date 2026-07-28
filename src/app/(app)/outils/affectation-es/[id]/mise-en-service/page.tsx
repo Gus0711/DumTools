@@ -3,6 +3,7 @@ import { getProjet } from "@/tools/affectation-es/queries";
 import { moduleDisplayTitle, type Module } from "@/tools/affectation-es/model";
 import { MiseEnServiceOffline } from "@/tools/affectation-es/mise-en-service-offline";
 import type { MesPoint } from "@/lib/offline/mise-en-service";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 /**
  * Route TERRAIN de la mise en service (îlot local-first / offline).
@@ -44,10 +45,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   }
 
   return (
+    <>
+      <TitreEcran estampille="Mise en service" titre={projet.nom} />
     <MiseEnServiceOffline
       snapshot={{ id: projet.id, nom: projet.nom, points }}
       moduleLabels={moduleLabels}
       retourHref={`/outils/affectation-es/${projet.id}`}
     />
+    </>
   );
 }

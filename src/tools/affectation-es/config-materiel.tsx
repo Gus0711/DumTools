@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, FileText, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { Button } from "@/ui";
+import { Button, Cartouche } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { AutomateRow, MaterielAdmin, ModuleRow } from "./catalogue-queries";
 import {
@@ -78,17 +78,14 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 md:px-10">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-fg">Base matériel</h1>
-          <p className="mt-1 text-sm text-muted">
-            Automates et modules Distech pilotant le sélecteur, la recommandation et l&apos;aperçu de
-            l&apos;outil Affectation E/S. Modifiable par tous.
-          </p>
-        </div>
-        {pending && <Loader2 className="mt-1 h-5 w-5 animate-spin text-muted" />}
-      </div>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Configuration"
+        titre="Base matériel"
+        description="Automates et modules Distech qui pilotent le sélecteur, la recommandation et l’aperçu du Projet GTB. Modifiable par tous."
+        actions={pending ? <Loader2 className="h-5 w-5 animate-spin text-muted" /> : null}
+        className="mb-6"
+      />
 
       {initial.vide && (
         <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-brand/30 bg-brand-soft px-4 py-3">
@@ -118,7 +115,7 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
             onCancel={() => setAutoDraft(null)}
           />
         )}
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="overflow-x-auto border border-hairline bg-surface">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
@@ -199,7 +196,7 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
             onCancel={() => setModDraft(null)}
           />
         )}
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="overflow-x-auto border border-hairline bg-surface">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">

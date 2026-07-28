@@ -16,7 +16,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { Button, Input, Label } from "@/ui";
+import { Button, Cartouche, Input, Label } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { UtilisateurRow } from "./queries";
 import {
@@ -102,17 +102,14 @@ export function ConfigUtilisateurs({
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-6 md:px-10">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold text-fg">Utilisateurs</h1>
-          <p className="mt-1 text-sm text-muted">
-            Comptes autorisés à se connecter à DumTools. Les administrateurs peuvent
-            gérer les comptes ; les membres accèdent aux outils.
-          </p>
-        </div>
-        {pending && <Loader2 className="mt-1 h-5 w-5 animate-spin text-muted" />}
-      </div>
+    <div className="mx-auto max-w-5xl px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Configuration"
+        titre="Utilisateurs"
+        description="Comptes autorisés à se connecter à DumTools. Les administrateurs gèrent les comptes ; les membres accèdent aux outils."
+        actions={pending ? <Loader2 className="h-5 w-5 animate-spin text-muted" /> : null}
+        className="mb-6"
+      />
 
       {erreur && (
         <div className="mb-4 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
@@ -137,7 +134,7 @@ export function ConfigUtilisateurs({
 
       {/* Formulaire de création --------------------------------------------- */}
       {creation && (
-        <div className="mb-4 rounded-lg border border-border bg-surface-2 p-4">
+        <div className="mb-4 border border-hairline bg-surface-2 p-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <Label>Nom</Label>

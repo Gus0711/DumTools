@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Cartouche } from "@/ui";
 import { listerNotes } from "@/tools/notes/queries";
 import { NotesIndex } from "@/tools/notes/index-notes";
 
@@ -9,15 +10,14 @@ export default async function Page() {
   const notes = await listerNotes();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-fg">Notes</h1>
-        <p className="mt-1 text-muted">
-          Toutes les notes, toutes affaires confondues — pour retrouver une note dont on ne
-          sait plus à quelle affaire elle appartient. Au quotidien, on les écrit et on les
-          ouvre depuis la fiche de l’affaire.
-        </p>
-      </header>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Vue transverse"
+        titre="Notes"
+        description="Toutes les notes, toutes affaires confondues — pour retrouver celle dont on ne sait plus à quelle affaire elle appartient. Au quotidien, on les écrit depuis la fiche de l’affaire."
+        champs={[{ label: "Notes", valeur: notes.length, fort: true }]}
+        className="mb-6"
+      />
 
       <NotesIndex notes={notes} />
     </div>

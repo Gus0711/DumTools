@@ -38,7 +38,7 @@ export function NouvelleAffaire({ clients }: { clients: string[] }) {
   }
 
   return (
-    <div className="w-full rounded-lg border border-border bg-surface-2 p-4">
+    <div className="w-full border border-hairline bg-surface-2 p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <Label>Nom de l&apos;affaire</Label>

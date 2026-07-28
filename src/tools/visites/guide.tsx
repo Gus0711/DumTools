@@ -197,7 +197,7 @@ export function ModeGuide({
             onChange={(e) => patchItem(it.id, { note: e.target.value })}
             rows={2}
             placeholder="Note…"
-            className="mt-4 w-full resize-y rounded-xl border border-border bg-surface px-3 py-2.5 text-sm leading-snug text-fg placeholder:text-subtle focus:border-brand focus:outline-none"
+            className="mt-4 w-full resize-y border border-hairline bg-surface px-3 py-2.5 text-sm leading-snug text-fg placeholder:text-subtle focus:border-brand focus:outline-none"
           />
         ) : (
           <button

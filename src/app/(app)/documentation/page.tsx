@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Download, ExternalLink, FileText } from "lucide-react";
+import {Download, ExternalLink, FileText} from "lucide-react";
+import { Cartouche, EtatVide } from "@/ui";
 
 export const metadata = { title: "Documentation Distech" };
 
@@ -23,26 +24,31 @@ export default function Page() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8 md:px-10">
-      <header className="mb-6">
-        <h1 className="text-xl font-semibold text-fg">Documentation Distech</h1>
-        <p className="mt-1 text-sm text-muted">
-          Fiches techniques des automates et modules ECLYPSE. Visualisation et téléchargement.
-        </p>
-      </header>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Référence constructeur"
+        titre="Documentation Distech"
+        description="Fiches techniques des automates et modules ECLYPSE, à consulter ou à télécharger."
+        champs={[{ label: "Fiches", valeur: fichiers.length, fort: true }]}
+        className="mb-6"
+      />
 
       {fichiers.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-muted">
-          Aucune fiche technique trouvée dans {REL_DIR}.
+        <div className="bloc">
+          <EtatVide
+            icone={FileText}
+            titre="Aucune fiche technique"
+            texte={`Rien n'a été trouvé dans ${REL_DIR}. Déposez-y les PDF constructeur.`}
+          />
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul className="stagger planche sm:grid-cols-2 lg:grid-cols-3">
           {fichiers.map((f) => {
             const url = encodeURI(`${BASE_URL}/${f}`);
             return (
               <li
                 key={f}
-                className="flex items-center gap-3 rounded-lg border border-border bg-surface p-4"
+                className="bloc flex items-center gap-3 p-4"
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-soft text-brand">
                   <FileText className="h-5 w-5" />

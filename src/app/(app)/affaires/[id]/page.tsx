@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Cpu, FileStack, FolderOpen, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
-import { Button } from "@/ui";
+import { Button, Chiffre, JaugeES, RangeeChiffres, type CompteES } from "@/ui";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
+import { etatLabel } from "@/lib/chantiers/etats";
 import { auth } from "@/auth";
 import { getAffaire, listerTaches } from "@/lib/chantiers/queries";
 import { listerClients } from "@/lib/clients/queries";
 import { listerUtilisateursActifs } from "@/lib/users/queries";
 import { listerRealisationsAffaire } from "@/lib/chantiers/providers";
-import { TOOLS_AFFAIRE } from "@/tools/registry";
+import type { EtatAffaire } from "@/generated/prisma/enums";
+import { TOOLS_AFFAIRE, getTool } from "@/tools/registry";
 import { calculerJalons } from "@/lib/chantiers/jalons";
 import { FriseCycle } from "@/lib/chantiers/frise-cycle";
 import { AffaireFicheHeader } from "@/lib/chantiers/affaire-fiche-header";
@@ -21,6 +24,8 @@ import { CATEGORIES, STATUT_LABEL, STATUT_TON, formatTaille } from "@/tools/docu
 import { DepotRapide } from "@/tools/documents/depot-rapide";
 import { listerNotesAffaire } from "@/tools/notes/queries";
 import { creerNotePourAffaire } from "@/tools/notes/actions";
+import { listerScansAffaire } from "@/tools/modems/queries";
+import { ScansAffaire } from "@/tools/modems/scans-affaire";
 
 export async function generateMetadata({
   params,
@@ -31,6 +36,16 @@ export async function generateMetadata({
   const affaire = await getAffaire(id);
   return { title: affaire ? `Affaire · ${affaire.nom}` : "Affaire" };
 }
+
+/** Teinte de la pastille d'état dans la barre de chrome. */
+const TON_ETAT: Record<EtatAffaire, "neutre" | "brand" | "accent" | "success" | "danger"> = {
+  DEVIS: "accent",
+  COMMANDE: "brand",
+  EN_COURS: "brand",
+  LIVRE: "success",
+  CLOTURE: "neutre",
+  CORBEILLE: "danger",
+};
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("fr-FR");
@@ -47,10 +62,12 @@ function SectionTitle({
   count: number;
 }) {
   return (
-    <h2 className="flex items-center gap-2 text-sm font-semibold text-fg">
+    <h2 className="flex items-center gap-2.5">
       {icon}
-      {children}
-      <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums text-muted">
+      <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
+        {children}
+      </span>
+      <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
         {count}
       </span>
     </h2>
@@ -84,11 +101,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const affaire = await getAffaire(id);
   if (!affaire) notFound();
 
-  const [projets, documents, notes, realisations, clients, taches, utilisateurs, session] =
+  const [projets, documents, notes, scans, realisations, clients, taches, utilisateurs, session] =
     await Promise.all([
       listerProjetsAffaire(id),
       listerDocuments(id),
       listerNotesAffaire(id),
+      listerScansAffaire(id),
       // Projet GTB / Notes / Documents ont leur section dédiée ci-dessous :
       // on les exclut de l'agrégat pour ne pas les lister deux fois.
       listerRealisationsAffaire(id, TOOLS_AFFAIRE.map((t) => t.id)),
@@ -119,8 +137,32 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const nbSchemasArmoire = documents.filter((d) => d.categorie === DOSSIER_SCHEMA_ARMOIRE).length;
   const schemaArmoireOk = nbSchemasArmoire > 0;
 
+  // Agrégats de l'affaire : ce qui se lit d'un coup d'œil en haut de fiche.
+  const nbModules = projets.reduce((n, p) => n + p.nbModules, 0);
+  const repartitionES: CompteES = projets.reduce<CompteES>((acc, p) => {
+    for (const [type, n] of Object.entries(p.es)) {
+      acc[type as keyof CompteES] = (acc[type as keyof CompteES] ?? 0) + n;
+    }
+    return acc;
+  }, {});
+  const totalES = Object.values(repartitionES).reduce((a, b) => a + b, 0);
+  const testsTotal = projets.reduce(
+    (acc, p) => ({
+      ok: acc.ok + p.tests.ok,
+      defaut: acc.defaut + p.tests.defaut,
+      nonTeste: acc.nonTeste + p.tests.nonTeste,
+      total: acc.total + p.tests.total,
+    }),
+    { ok: 0, defaut: 0, nonTeste: 0, total: 0 },
+  );
+
   return (
-    <div className="mx-auto max-w-5xl space-y-10 px-6 py-8 md:px-10">
+    <div className="mx-auto max-w-[1700px] space-y-8 px-4 py-5 md:px-7 md:py-7">
+      <TitreEcran
+        estampille="Affaire"
+        titre={affaire.nom}
+        etat={{ label: etatLabel(affaire.etat), ton: TON_ETAT[affaire.etat] }}
+      />
       <AffaireFicheHeader
         id={affaire.id}
         nom={affaire.nom}
@@ -131,8 +173,31 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         clients={clients.map((c) => c.nom)}
       />
 
+      {/* ---- Les chiffres de l'affaire, lisibles de loin ------------------ */}
+      <section className="-mt-4">
+        <RangeeChiffres>
+          <Chiffre label="Automates" valeur={projets.length} detail={`${nbModules} module${nbModules > 1 ? "s" : ""}`} />
+          <Chiffre label="E/S" valeur={totalES} detail="entrées / sorties déclarées" />
+          <Chiffre
+            label="Mise en service"
+            valeur={`${testsTotal.ok}/${testsTotal.total}`}
+            ton={testsTotal.defaut > 0 ? "danger" : testsTotal.total > 0 && testsTotal.ok === testsTotal.total ? "success" : "neutre"}
+            detail={testsTotal.defaut > 0 ? `${testsTotal.defaut} en défaut` : "points testés"}
+            petit
+          />
+          <Chiffre label="Documents" valeur={documents.length} detail={`${notes.length} note${notes.length > 1 ? "s" : ""} · ${scans.length} scan${scans.length > 1 ? "s" : ""}`} petit />
+        </RangeeChiffres>
+
+        {totalES > 0 && (
+          <div className="bloc -mt-px px-4 py-3.5 md:px-6">
+            <p className="stamp mb-2.5">Répartition des signaux</p>
+            <JaugeES compte={repartitionES} />
+          </div>
+        )}
+      </section>
+
       {/* ---- Avancement technique (frise des 7 étapes du cycle) ----------- */}
-      <div className="-mt-4">
+      <div>
         <FriseCycle jalons={jalons} />
       </div>
 
@@ -175,12 +240,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </div>
 
         {projets.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center text-muted">
+          <div className="border border-dashed border-border bg-surface p-12 text-center text-muted">
             Aucun automate. Cliquez sur « Ajouter un automate » pour créer un
             Projet GTB rattaché à cette affaire.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+          <div className="overflow-x-auto border border-hairline bg-surface">
             <table className="table-cards w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
@@ -235,12 +300,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         </div>
 
         {notes.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-muted">
+          <div className="border border-dashed border-border bg-surface p-8 text-center text-muted">
             Aucune note. Cliquez sur « Nouvelle note » pour ouvrir un document
             rattaché à cette affaire.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+          <div className="overflow-x-auto border border-hairline bg-surface">
             <table className="table-cards w-full border-collapse text-sm">
               <tbody>
                 {notes.map((n) => (
@@ -282,14 +347,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <DepotRapide chantierId={id} count={documents.length} />
 
         {parDossier.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center text-muted">
+          <div className="border border-dashed border-border bg-surface p-12 text-center text-muted">
             Aucun fichier déposé pour cette affaire. Cliquez sur « Déposer un
             fichier » pour en ajouter un sans quitter l&apos;affaire.
           </div>
         ) : (
           <div className="space-y-4">
             {parDossier.map((g) => (
-              <div key={g.dossier} className="overflow-hidden rounded-lg border border-border bg-surface">
+              <div key={g.dossier} className="overflow-hidden border border-hairline bg-surface">
                 <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2">
                   <FolderOpen className="h-4 w-4 text-brand" />
                   <span className="text-sm font-medium text-fg">{g.dossier}</span>
@@ -342,6 +407,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         )}
       </section>
 
+      {/* ---- Scans (outil Scanner) — masqué si l'affaire n'en a aucun ----- */}
+      {scans.length > 0 && (
+        <section>
+          <ScansAffaire
+            scans={scans}
+            affaireNom={affaire.nom}
+            hrefOutil={getTool("scan-modems")?.href ?? "/"}
+          />
+        </section>
+      )}
+
       {/* ---- Autres réalisations (agrégat des outils SANS section dédiée) -- */}
       {realisations.length > 0 && (
         <section>
@@ -355,7 +431,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+          <div className="overflow-x-auto border border-hairline bg-surface">
             <table className="table-cards w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">

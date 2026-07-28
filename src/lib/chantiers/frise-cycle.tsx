@@ -31,9 +31,9 @@ const TON: Record<EtatJalon, { pastille: string; texte: string; icone: typeof Ch
 
 export function FriseCycle({ jalons }: { jalons: Jalon[] }) {
   return (
-    <section aria-label="Avancement technique de l'affaire" className="data-card overflow-hidden">
-      <div className="flex flex-wrap items-baseline gap-x-2 border-b border-border bg-surface-2 px-4 py-2">
-        <h2 className="text-sm font-semibold text-fg">Avancement</h2>
+    <section aria-label="Avancement technique de l'affaire" className="bloc overflow-hidden">
+      <div className="bloc-entete flex-wrap items-baseline gap-x-2">
+        <h2 className="font-display text-sm font-semibold text-fg">Avancement</h2>
         <p className="text-xs text-subtle">
           déduit de ce qui a réellement été produit — rien à cocher
         </p>

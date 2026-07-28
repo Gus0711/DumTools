@@ -106,11 +106,11 @@ export function DocumentsListe({
       {bilan && <p className="mb-2 text-xs text-muted">{bilan}</p>}
 
       {docs.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-muted">
+        <div className="border border-dashed border-border bg-surface p-10 text-center text-muted">
           Aucun document. Déposez le premier ci-dessus.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+        <div className="overflow-x-auto border border-hairline bg-surface">
           <table className="table-cards w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">

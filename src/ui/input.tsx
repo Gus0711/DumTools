@@ -8,7 +8,7 @@ export const Input = forwardRef<
   <input
     ref={ref}
     className={cn(
-      "h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg",
+      "h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-3 text-sm text-fg",
       "shadow-sm transition-[border-color,box-shadow] duration-150",
       "hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
       "placeholder:text-subtle disabled:opacity-50",
@@ -19,13 +19,19 @@ export const Input = forwardRef<
 ));
 Input.displayName = "Input";
 
+/**
+ * Libellé de champ. Volontairement plus discret que la valeur saisie : dans un
+ * formulaire, c'est la donnée qu'on relit, pas son étiquette. (Les petites
+ * capitales `.stamp` restent réservées aux cartouches et aux entêtes de table,
+ * où les libellés tiennent en deux mots.)
+ */
 export function Label({
   className,
   ...props
 }: React.LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cn("text-sm font-medium text-fg", className)}
+      className={cn("block text-[0.8rem] font-semibold text-muted", className)}
       {...props}
     />
   );

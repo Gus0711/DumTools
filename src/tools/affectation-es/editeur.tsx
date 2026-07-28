@@ -835,7 +835,7 @@ function AutomateModulesTab({
 
 function Section({ titre, children }: { titre: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col rounded-xl border border-border bg-surface shadow-sm">
+    <div className="flex flex-col border border-hairline bg-surface">
       <div className="flex items-center gap-2.5 border-b border-border-soft px-5 py-3.5">
         {/* Filet laiton de signature. */}
         <span className="rule-accent h-4 w-1 rounded-full" />

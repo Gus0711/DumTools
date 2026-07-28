@@ -52,7 +52,7 @@ export function Depot({ chantierId }: { chantierId: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="border border-hairline bg-surface p-4">
       <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <div>
           <Label>Catégorie (sous-dossier kDrive)</Label>
@@ -76,7 +76,7 @@ export function Depot({ chantierId }: { chantierId: string }) {
           e.preventDefault();
           choisir(e.dataTransfer.files?.[0] ?? null);
         }}
-        className="mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface-2 px-4 py-8 text-center transition-colors hover:border-brand"
+        className="mt-3 flex cursor-pointer flex-col items-center justify-center gap-2 border border-dashed border-border bg-surface-2 px-4 py-8 text-center transition-colors hover:border-brand"
       >
         <CloudUpload className="h-7 w-7 text-subtle" />
         {fichier ? (

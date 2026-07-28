@@ -1077,7 +1077,7 @@ function ReglagesFormulaire({
       </label>
 
       {nbChamps === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border bg-surface-2 px-4 py-6 text-center">
+        <div className="flex flex-col items-center gap-2 border border-dashed border-border bg-surface-2 px-4 py-6 text-center">
           <MousePointerClick className="h-5 w-5 text-subtle" />
           <p className="text-xs text-muted">
             Ajoute un premier champ, puis sélectionne-le pour le régler ici.
@@ -1090,7 +1090,7 @@ function ReglagesFormulaire({
           </button>
         </div>
       ) : (
-        <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-xs text-muted">
+        <div className="flex items-start gap-2 border border-hairline bg-surface-2 px-3 py-2.5 text-xs text-muted">
           <MousePointerClick className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
           <span>
             Sélectionne un champ dans le rail pour le configurer, ou tape{" "}
@@ -1158,7 +1158,7 @@ function ReglagesChampComplet({
       )}
 
       {!presentation && champ.type !== "calcul" && (
-        <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-surface-2 px-3 py-2.5">
+        <label className="flex cursor-pointer items-center justify-between gap-3 border border-hairline bg-surface-2 px-3 py-2.5">
           <span className="flex items-center gap-2 text-sm text-fg">
             <Asterisk className="h-4 w-4 text-danger" />
             Obligatoire
@@ -1785,7 +1785,7 @@ function Indicateur() {
 
 function VideCanvas({ onAjouter }: { onAjouter: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center">
+    <div className="flex flex-col items-center gap-3 border border-dashed border-border bg-surface px-6 py-16 text-center">
       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-soft text-brand">
         <Plus className="h-5 w-5" />
       </div>

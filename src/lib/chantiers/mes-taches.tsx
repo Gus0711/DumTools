@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Circle, CircleCheck, CircleDot, ListTodo, TriangleAlert } from "lucide-react";
+import { ChevronDown, Circle, CircleCheck, CircleDot, ListTodo, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { EtatTache } from "@/generated/prisma/enums";
 import type { MaTacheRow } from "./taches";
@@ -34,31 +34,49 @@ const PASTILLE: Record<EtatTache, { icone: typeof Circle; cls: string; titre: st
   },
 };
 
+/** Ce qui est commencé passe devant ce qui n'est pas commencé ; ce qui vient
+ *  d'être terminé descend en bas sans disparaître (annulation possible). */
+const RANG: Record<EtatTache, number> = { EN_COURS: 0, A_FAIRE: 1, TERMINEE: 2 };
+
 /**
  * « Mes tâches » : les tâches ouvertes assignées à l'utilisateur courant, toutes
- * affaires confondues, groupées par affaire. Une tâche terminée ici reste
- * affichée barrée jusqu'au prochain chargement (feedback + annulation possible).
+ * affaires confondues.
+ *
+ * Volontairement BORNÉ : l'accueil doit répondre à « qu'est-ce que je fais
+ * maintenant », pas dérouler tout l'arriéré. On affiche les premières, le reste
+ * se déplie sur demande. Une ligne par tâche, l'affaire en suffixe — regrouper
+ * par affaire coûtait une ligne d'entête par groupe, soit presque autant de
+ * lignes que de tâches.
  */
-export function MesTaches({ taches: tachesInitiales }: { taches: MaTacheRow[] }) {
+export function MesTaches({
+  taches: tachesInitiales,
+  limite = 5,
+}: {
+  taches: MaTacheRow[];
+  /** Nombre de tâches visibles avant dépliage. */
+  limite?: number;
+}) {
   const [taches, setTaches] = useState(tachesInitiales);
   const [erreur, setErreur] = useState("");
+  const [tout, setTout] = useState(false);
 
-  const restantes = taches.filter((t) => t.etat !== "TERMINEE").length;
+  const enCours = taches.filter((t) => t.etat === "EN_COURS").length;
+  const aFaire = taches.filter((t) => t.etat === "A_FAIRE").length;
+  const restantes = enCours + aFaire;
 
-  // Groupes par affaire, dans l'ordre du serveur (affaires actives d'abord).
-  const groupes: { affaireId: string; affaireNom: string; clientNom: string; taches: MaTacheRow[] }[] =
-    [];
-  for (const t of taches) {
-    const g = groupes.find((x) => x.affaireId === t.affaireId);
-    if (g) g.taches.push(t);
-    else
-      groupes.push({
-        affaireId: t.affaireId,
-        affaireNom: t.affaireNom,
-        clientNom: t.clientNom,
-        taches: [t],
-      });
-  }
+  // Le tri est figé à l'affichage : une tâche qu'on vient de cocher ne doit pas
+  // sauter sous le curseur. (L'ordre se recalcule au prochain chargement.)
+  const [ordre] = useState(() =>
+    [...tachesInitiales]
+      .sort((a, b) => RANG[a.etat] - RANG[b.etat])
+      .map((t) => t.id),
+  );
+  const triees = ordre
+    .map((id) => taches.find((t) => t.id === id))
+    .filter((t): t is MaTacheRow => Boolean(t));
+
+  const visibles = tout ? triees : triees.slice(0, limite);
+  const masquees = triees.length - visibles.length;
 
   function cycler(id: string) {
     const tache = taches.find((t) => t.id === id);
@@ -74,58 +92,82 @@ export function MesTaches({ taches: tachesInitiales }: { taches: MaTacheRow[] })
   }
 
   return (
-    <section className="mb-6 rounded-lg border border-border bg-surface">
-      <div className="flex items-center gap-2 border-b border-border-soft px-4 py-2.5">
-        <ListTodo className="h-4 w-4 text-brand" />
-        <h2 className="text-sm font-semibold text-fg">Mes tâches</h2>
-        <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums text-muted">
+    <section className="bloc">
+      <div className="bloc-entete">
+        <ListTodo className="h-4 w-4 shrink-0 text-brand" />
+        <h2 className="font-display text-sm font-semibold text-fg">Mes tâches</h2>
+        <span className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
           {restantes}
         </span>
+        {/* La répartition dit d'un coup d'œil ce qui est déjà lancé. */}
+        {restantes > 0 && (
+          <span className="stamp hidden sm:block">
+            {enCours > 0 && `${enCours} en cours`}
+            {enCours > 0 && aFaire > 0 && " · "}
+            {aFaire > 0 && `${aFaire} à faire`}
+          </span>
+        )}
         {erreur && (
-          <span className="ml-2 flex items-center gap-1.5 text-sm text-danger">
-            <TriangleAlert className="h-4 w-4" /> {erreur}
+          <span className="ml-auto flex items-center gap-1.5 text-sm text-danger">
+            <TriangleAlert className="h-4 w-4 shrink-0" /> {erreur}
           </span>
         )}
       </div>
 
-      <div className="divide-y divide-border-soft">
-        {groupes.map((g) => (
-          <div key={g.affaireId} className="px-4 py-2.5">
-            <Link
-              href={`/affaires/${g.affaireId}`}
-              className="text-xs font-medium text-muted hover:text-brand"
-            >
-              {g.affaireNom} <span className="font-normal text-subtle">· {g.clientNom}</span>
-            </Link>
-            <ul className="mt-1">
-              {g.taches.map((t) => {
-                const p = PASTILLE[t.etat];
-                const Icone = p.icone;
-                return (
-                  <li key={t.id} className="flex items-center gap-2 py-0.5">
-                    <button
-                      type="button"
-                      onClick={() => cycler(t.id)}
-                      title={p.titre}
-                      className={cn("shrink-0 rounded-full transition-colors", p.cls)}
-                    >
-                      <Icone className="h-4 w-4" />
-                    </button>
-                    <span
-                      className={cn(
-                        "min-w-0 break-words text-sm text-fg",
-                        t.etat === "TERMINEE" && "text-muted line-through",
-                      )}
-                    >
-                      {t.titre}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </div>
+      <ul className="divide-y divide-hairline">
+        {visibles.map((t) => {
+          const p = PASTILLE[t.etat];
+          const Icone = p.icone;
+          return (
+            <li key={t.id} className="flex items-start gap-2.5 px-3 py-2 sm:px-4">
+              <button
+                type="button"
+                onClick={() => cycler(t.id)}
+                title={p.titre}
+                aria-label={p.titre}
+                className={cn(
+                  "-m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full p-1 transition-colors sm:h-7 sm:w-7",
+                  p.cls,
+                )}
+              >
+                <Icone className="h-4 w-4" />
+              </button>
+
+              <span className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1 sm:flex-row sm:items-baseline sm:gap-3">
+                <span
+                  className={cn(
+                    "min-w-0 flex-1 break-words text-sm text-fg",
+                    t.etat === "TERMINEE" && "text-muted line-through",
+                  )}
+                >
+                  {t.titre}
+                </span>
+                <Link
+                  href={`/affaires/${t.affaireId}`}
+                  title={`${t.affaireNom} · ${t.clientNom}`}
+                  className="shrink-0 truncate text-xs text-subtle transition-colors hover:text-brand sm:max-w-[14rem] sm:text-right"
+                >
+                  {t.affaireNom}
+                </Link>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+
+      {(masquees > 0 || tout) && (
+        <button
+          type="button"
+          onClick={() => setTout((v) => !v)}
+          aria-expanded={tout}
+          className="flex min-h-[2.75rem] w-full items-center justify-center gap-1.5 border-t border-hairline text-xs font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-brand sm:min-h-[2.25rem]"
+        >
+          {tout ? "Réduire" : `Afficher les ${masquees} autres`}
+          <ChevronDown
+            className={cn("h-3.5 w-3.5 transition-transform duration-200", tout && "rotate-180")}
+          />
+        </button>
+      )}
     </section>
   );
 }

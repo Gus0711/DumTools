@@ -61,7 +61,7 @@ export function RechercheWiki() {
           onChange={(e) => setQ(e.target.value)}
           placeholder="Rechercher dans tout le wiki…"
           aria-label="Rechercher dans le wiki"
-          className="w-full rounded-xl border border-border bg-surface py-3 pl-11 pr-10 text-base text-fg shadow-sm outline-none transition-colors placeholder:text-subtle focus:border-brand"
+          className="w-full border border-hairline bg-surface py-3 pl-11 pr-10 text-base text-fg shadow-sm outline-none transition-colors placeholder:text-subtle focus:border-brand"
         />
         {pending && (
           <Loader2 className="absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-subtle" />
@@ -73,11 +73,11 @@ export function RechercheWiki() {
           {resultats === null ? (
             <p className="px-1 text-sm text-subtle">Recherche…</p>
           ) : resultats.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-border bg-surface px-4 py-6 text-center text-sm text-muted">
+            <p className="border border-dashed border-border bg-surface px-4 py-6 text-center text-sm text-muted">
               Aucune page ne correspond à « {q.trim()} ».
             </p>
           ) : (
-            <ul className="divide-y divide-border-soft overflow-hidden rounded-xl border border-border bg-surface">
+            <ul className="divide-y divide-border-soft overflow-hidden border border-hairline bg-surface">
               {resultats.map((r) => (
                 <li key={r.id}>
                   <Link

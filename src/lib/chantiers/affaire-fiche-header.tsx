@@ -3,13 +3,31 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, ChevronRight, Hash, Loader2, Trash2, TriangleAlert } from "lucide-react";
-import { Button, Combobox, Input, Label, type ComboOption } from "@/ui";
+import { ArrowLeft, Check, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { Button, Combobox, type ComboOption } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { BesoinArmoire, EtatAffaire } from "@/generated/prisma/enums";
 import { CYCLE_AFFAIRE } from "./etats";
 import { BESOINS_ARMOIRE } from "./armoire";
 import { changerBesoinArmoire, changerEtatAffaire, modifierAffaire } from "./actions";
+
+/* =============================================================================
+ * IDENTIFICATION DE L'AFFAIRE
+ * Le nom en très grand, les références en dessous, le cycle en rail. Tout est
+ * éditable sur place — pas de mode « modifier » : on écrit là où on lit, et le
+ * bouton d'enregistrement n'apparaît que si quelque chose a bougé.
+ * ========================================================================== */
+
+/** Champ éditable « à plat » : ni boîte ni ombre, juste un filet sous la valeur. */
+const CHAMP_PLAT = cn(
+  "w-full rounded-none border-0 border-b border-transparent bg-transparent px-0 text-sm text-fg shadow-none",
+  // Au doigt, un champ de 34px se rate : on lui donne de la hauteur au
+  // téléphone, on la reprend à partir de sm où l'on est à la souris.
+  "min-h-[2.4rem] py-1.5 sm:min-h-0 sm:py-0.5",
+  "transition-[border-color] duration-150",
+  "hover:border-border focus:border-brand focus:outline-none focus:ring-0",
+  "placeholder:text-subtle",
+);
 
 export function AffaireFicheHeader({
   id,
@@ -77,89 +95,97 @@ export function AffaireFicheHeader({
   }
 
   return (
-    <div className="mb-6">
+    <div className="anim-rise">
       <Link
         href="/affaires"
-        className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
+        className="group -my-1 mb-1.5 inline-flex min-h-[2.5rem] items-center gap-1.5 py-1 text-sm text-muted transition-colors hover:text-fg sm:my-0 sm:mb-2.5 sm:min-h-0 sm:py-0"
       >
-        <ArrowLeft className="h-4 w-4" /> Affaires
+        <ArrowLeft className="h-4 w-4 transition-transform duration-150 group-hover:-translate-x-0.5" />
+        Affaires
       </Link>
 
-      <div className="rounded-lg border border-border bg-surface p-4">
-        <div className="grid gap-3 sm:grid-cols-4">
-          <div className="sm:col-span-2">
-            <Label>Nom de l&apos;affaire</Label>
-            <Input
+      <div className="bloc">
+        <span aria-hidden className="rule-signal anim-sweep absolute inset-x-0 top-0 z-10 h-[3px]" />
+
+        <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-start md:justify-between md:gap-x-8 md:px-6 md:pb-5 md:pt-6">
+          <div className="min-w-0 flex-1">
+            <p className="stamp">Affaire</p>
+            {/* Le nom EST le titre : on l'édite là où on le lit. Le plancher de
+                taille est bas pour que les noms longs tiennent au téléphone —
+                un champ de saisie ne sait pas passer à la ligne. */}
+            <input
               value={valNom}
               onChange={(e) => setValNom(e.target.value)}
-              className="mt-1 font-semibold"
+              aria-label="Nom de l'affaire"
+              className={cn(
+                CHAMP_PLAT,
+                "mt-1.5 font-display text-[clamp(1.15rem,0.75rem+2.1vw,2.6rem)] font-bold leading-tight tracking-[-0.03em]",
+              )}
             />
           </div>
-          <div>
-            <Label>Client</Label>
-            <div className="mt-1">
-              <Combobox
-                value={valClient}
-                onInput={setValClient}
-                onPick={(o) => setValClient(o.value)}
-                options={options}
-                placeholder="Client…"
-              />
-            </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {modifie && (
+              <Button size="sm" onClick={enregistrer} disabled={pending || !valide}>
+                {pending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+                Enregistrer
+              </Button>
+            )}
+            <BoutonCorbeille etat={etat} pending={pending} onChanger={changerEtat} />
           </div>
-          <div>
-            <Label className="inline-flex items-center gap-1">
-              <Hash className="h-3.5 w-3.5 text-subtle" /> N° Why
-            </Label>
-            <Input
+        </div>
+
+        {/* Rail du cycle — la barre de progression de l'affaire, pleine largeur. */}
+        <CycleAffaire etat={etat} pending={pending} onChanger={changerEtat} />
+
+        {/* Pavé de références. */}
+        <div className="flex flex-col border-t border-hairline bg-surface-2 sm:flex-row sm:flex-wrap">
+          <Champ label="Client" className="min-w-52 flex-1">
+            <Combobox
+              value={valClient}
+              onInput={setValClient}
+              onPick={(o) => setValClient(o.value)}
+              options={options}
+              placeholder="Client…"
+              inputClassName={CHAMP_PLAT}
+            />
+          </Champ>
+
+          <Champ label="N° Why" className="min-w-40">
+            <input
               value={valWhy}
               onChange={(e) => setValWhy(e.target.value)}
-              placeholder="W-2026-0203"
-              className="mt-1"
+              placeholder="26DM0289/T"
+              aria-label="Numéro Why"
+              className={cn(CHAMP_PLAT, "ref")}
             />
-          </div>
-        </div>
+          </Champ>
 
-        {/* Cycle de vie — où en est l'affaire, et un clic pour l'avancer. */}
-        <div className="mt-4 space-y-1">
-          <span className="text-xs font-medium text-muted">Cycle de l&apos;affaire</span>
-          <CycleAffaire etat={etat} pending={pending} onChanger={changerEtat} />
-        </div>
-
-        <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="space-y-1">
-              <span className="text-xs font-medium text-muted">Besoin armoire</span>
-              <select
-                value={besoinArmoire ?? ""}
-                onChange={(e) => changerArmoire(e.target.value)}
-                disabled={pending}
-                className={cn(
-                  "block h-9 w-44 rounded-md border border-border bg-surface px-2.5 text-sm text-fg",
-                  "focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
-                )}
-              >
-                <option value="">Non défini</option>
-                {BESOINS_ARMOIRE.map((b) => (
-                  <option key={b.value} value={b.value}>
-                    {b.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {modifie && (
-            <Button size="sm" onClick={enregistrer} disabled={pending || !valide}>
-              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Enregistrer
-            </Button>
-          )}
+          <Champ label="Besoin armoire" className="min-w-44" pourId="besoin-armoire">
+            <select
+              id="besoin-armoire"
+              value={besoinArmoire ?? ""}
+              onChange={(e) => changerArmoire(e.target.value)}
+              disabled={pending}
+              className={cn(CHAMP_PLAT, "cursor-pointer")}
+            >
+              <option value="">Non défini</option>
+              {BESOINS_ARMOIRE.map((b) => (
+                <option key={b.value} value={b.value}>
+                  {b.label}
+                </option>
+              ))}
+            </select>
+          </Champ>
         </div>
 
         {erreur && (
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-danger">
-            <TriangleAlert className="h-4 w-4" /> {erreur}
+          <p className="flex items-center gap-1.5 border-t border-hairline bg-danger/8 px-4 py-2 text-sm text-danger md:px-6">
+            <TriangleAlert className="h-4 w-4 shrink-0" /> {erreur}
           </p>
         )}
       </div>
@@ -167,12 +193,42 @@ export function AffaireFicheHeader({
   );
 }
 
+function Champ({
+  label,
+  pourId,
+  className,
+  children,
+}: {
+  label: string;
+  pourId?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "border-b border-hairline px-4 py-2.5 last:border-b-0",
+        "sm:border-b-0 sm:border-r sm:last:border-r-0 md:px-6",
+        className,
+      )}
+    >
+      {pourId ? (
+        <label className="stamp" htmlFor={pourId}>
+          {label}
+        </label>
+      ) : (
+        <span className="stamp">{label}</span>
+      )}
+      <div className="mt-0.5">{children}</div>
+    </div>
+  );
+}
+
 /**
- * Fil d'étapes du cycle de vie : Devis → Commande → En cours → Livrée →
- * Clôturée. Les étapes franchies sont pleines, l'étape courante est mise en
- * évidence, les suivantes restent en creux — et chacune est cliquable pour
- * avancer (ou revenir) d'un coup. La Corbeille n'est pas une étape : c'est un
- * bouton à part, en bout de fil.
+ * Cycle de vie en rail : Devis → Commande → En cours → Livrée → Clôturée.
+ * Chaque étape occupe la même largeur et se remplit quand elle est franchie —
+ * on lit l'avancement d'un coup d'œil, sans compter les pastilles. Chaque
+ * segment est cliquable pour avancer (ou revenir).
  */
 function CycleAffaire({
   etat,
@@ -187,62 +243,74 @@ function CycleAffaire({
   const courant = CYCLE_AFFAIRE.findIndex((e) => e.value === etat);
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto pb-0.5">
-        {CYCLE_AFFAIRE.map((e, i) => {
-          const estCourant = e.value === etat;
-          const franchie = !corbeille && courant >= 0 && i < courant;
-          return (
-            <div key={e.value} className="flex shrink-0 items-center gap-1">
-              {i > 0 && (
-                <ChevronRight
-                  className={cn("h-3.5 w-3.5", franchie ? "text-brand/50" : "text-subtle/60")}
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => !estCourant && onChanger(e.value)}
-                disabled={pending || estCourant}
-                aria-current={estCourant ? "step" : undefined}
-                title={estCourant ? `Étape actuelle : ${e.label}` : `Passer en « ${e.label} »`}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors",
-                  estCourant
-                    ? "border-brand bg-brand text-brand-fg font-semibold shadow-sm"
-                    : franchie
-                      ? "border-brand/30 bg-brand/10 text-brand hover:bg-brand/15"
-                      : "border-border bg-surface text-muted hover:bg-surface-2 hover:text-fg",
-                  pending && "opacity-60",
-                )}
-              >
-                {franchie && <Check className="h-3.5 w-3.5" />}
-                {e.label}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onChanger(corbeille ? "EN_COURS" : "CORBEILLE")}
-        disabled={pending}
-        title={
-          corbeille
-            ? "Sortir de la corbeille (repasse en « En cours »)"
-            : "Mettre l'affaire à la corbeille (perdue, doublon, erreur)"
-        }
-        className={cn(
-          "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors",
-          corbeille
-            ? "border-danger bg-danger/12 font-semibold text-danger"
-            : "border-border bg-surface text-subtle hover:bg-surface-2 hover:text-danger",
-          pending && "opacity-60",
-        )}
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-        Corbeille
-      </button>
+    <div className="flex snap-x snap-mandatory overflow-x-auto border-t border-hairline [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {CYCLE_AFFAIRE.map((e, i) => {
+        const estCourant = e.value === etat;
+        const franchie = !corbeille && courant >= 0 && i < courant;
+        return (
+          <button
+            key={e.value}
+            type="button"
+            onClick={() => !estCourant && onChanger(e.value)}
+            disabled={pending || estCourant}
+            aria-current={estCourant ? "step" : undefined}
+            title={estCourant ? `Étape actuelle : ${e.label}` : `Passer en « ${e.label} »`}
+            className={cn(
+              "group relative min-w-[7.5rem] shrink-0 snap-start border-r border-hairline px-2 py-3 text-center last:border-r-0 sm:min-w-0 sm:flex-1 sm:py-2.5",
+              "transition-colors duration-150",
+              estCourant
+                ? "bg-brand text-brand-fg"
+                : franchie
+                  ? "bg-brand/10 text-brand hover:bg-brand/15"
+                  : "text-subtle hover:bg-surface-2 hover:text-fg",
+              pending && "opacity-60",
+            )}
+          >
+            <span className="flex items-center justify-center gap-1.5 font-display text-[0.68rem] font-semibold uppercase tracking-[0.09em]">
+              {franchie && <Check className="h-3.5 w-3.5" />}
+              {e.label}
+            </span>
+            {estCourant && (
+              <span aria-hidden className="absolute inset-x-0 bottom-0 h-[3px] bg-accent" />
+            )}
+          </button>
+        );
+      })}
     </div>
+  );
+}
+
+/** La corbeille n'est pas une étape du cycle : c'est une sortie de piste. */
+function BoutonCorbeille({
+  etat,
+  pending,
+  onChanger,
+}: {
+  etat: EtatAffaire;
+  pending: boolean;
+  onChanger: (e: EtatAffaire) => void;
+}) {
+  const corbeille = etat === "CORBEILLE";
+  return (
+    <button
+      type="button"
+      onClick={() => onChanger(corbeille ? "EN_COURS" : "CORBEILLE")}
+      disabled={pending}
+      title={
+        corbeille
+          ? "Sortir de la corbeille (repasse en « En cours »)"
+          : "Mettre l'affaire à la corbeille (perdue, doublon, erreur)"
+      }
+      className={cn(
+        "inline-flex min-h-[2.25rem] shrink-0 items-center gap-1.5 border px-2.5 text-xs transition-colors duration-150 sm:min-h-0 sm:py-1.5",
+        corbeille
+          ? "border-danger bg-danger/12 font-semibold text-danger"
+          : "border-transparent text-subtle hover:border-border hover:text-danger",
+        pending && "opacity-60",
+      )}
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+      Corbeille
+    </button>
   );
 }

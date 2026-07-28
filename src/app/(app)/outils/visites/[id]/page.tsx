@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Mic } from "lucide-react";
+import {Mic} from "lucide-react";
 import {
   GRAVITE_LABEL,
   statsVisite,
@@ -14,6 +13,7 @@ import { getVisiteDetail } from "@/tools/visites/queries";
 import { FicheActionsVisite } from "@/tools/visites/fiche-actions";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { cn } from "@/lib/cn";
+import { Cartouche } from "@/ui";
 
 export const metadata: Metadata = { title: "Visite" };
 
@@ -98,17 +98,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const generaux = data.medias.filter((m) => !m.itemId && !m.reserveId && mediasRecus.has(m.id));
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-8 md:px-10">
-      <Link
-        href="/outils/visites"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Toutes les visites
-      </Link>
-
-      <header className="mb-6">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Visite de chantier"
+        retour={{ href: "/outils/visites", label: "Toutes les visites" }}
+        titre={visite.titre}
+        statut={
           <span
             className={cn(
               "inline-flex rounded px-1.5 py-0.5 text-xs font-medium",
@@ -117,23 +112,26 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           >
             {TYPE_LABEL[visite.type]}
           </span>
-          <h1 className="text-2xl font-bold tracking-tight text-fg">{visite.titre}</h1>
-        </div>
-        <p className="mt-1.5 text-sm text-muted">
-          {visite.chantierId ? (
-            <Link href={`/affaires/${visite.chantierId}`} className="font-medium text-brand hover:underline">
-              {visite.chantierNom || "Affaire"}
-            </Link>
-          ) : (
-            <span className="italic">Sans affaire</span>
-          )}
-          {visite.clientNom && <> · {visite.clientNom}</>}
-          {visite.numeroWhy && <> · Why {visite.numeroWhy}</>}
-          {" · "}
-          {visite.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })}
-          {visite.auteur && <> · par {visite.auteur}</>}
-        </p>
-        <p className="mt-1 text-sm text-subtle">
+        }
+        champs={[
+          { label: "Affaire", valeur: visite.chantierNom || "Sans affaire" },
+          { label: "Client", valeur: visite.clientNom },
+          { label: "N° Why", valeur: visite.numeroWhy, ref: true },
+          {
+            label: "Date",
+            valeur: visite.date.toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }),
+          },
+          { label: "Relevé par", valeur: visite.auteur },
+        ]}
+        className="mb-6"
+      />
+
+      <header className="mb-6">
+        <p className="text-sm text-subtle">
           {stats.renseignes}/{stats.total} points renseignés
           {stats.ko > 0 && <> · {stats.ko} KO</>}
           {stats.reservesOuvertes > 0 && <> · {stats.reservesOuvertes} réserve{stats.reservesOuvertes > 1 ? "s" : ""} ouverte{stats.reservesOuvertes > 1 ? "s" : ""}</>}
@@ -153,7 +151,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             }))}
         />
         {(data.participants || data.notes) && (
-          <div className="mt-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm">
+          <div className="mt-3 border border-hairline bg-surface px-4 py-3 text-sm">
             {data.participants && (
               <p>
                 <span className="font-medium text-fg">Participants :</span>{" "}
@@ -172,7 +170,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       {/* --- Checklist ---------------------------------------------------------- */}
       <section className="space-y-4">
         {data.sections.map((section) => (
-          <div key={section.id} className="overflow-hidden rounded-lg border border-border bg-surface">
+          <div key={section.id} className="overflow-hidden border border-hairline bg-surface">
             <h2 className="border-b border-border bg-surface-2 px-4 py-2 text-sm font-semibold text-fg">
               {section.titre}
             </h2>
@@ -222,7 +220,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
         ))}
         {data.sections.length === 0 && (
-          <p className="rounded-lg border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
+          <p className="border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
             Cette visite n&apos;a pas de checklist.
           </p>
         )}
@@ -239,7 +237,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </span>
         </h2>
         {data.reserves.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
+          <p className="border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
             Aucune réserve sur cette visite.
           </p>
         ) : (
@@ -247,7 +245,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             {data.reserves.map((r) => {
               const photos = partitionner(r.photoIds, mediasRecus);
               return (
-                <li key={r.id} className="rounded-lg border border-border bg-surface px-4 py-3">
+                <li key={r.id} className="border border-hairline bg-surface px-4 py-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={cn(

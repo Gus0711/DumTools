@@ -12,15 +12,26 @@ export const ETAT_TONE: Record<EtatAffaire, string> = {
   CORBEILLE: "bg-danger/10 text-danger",
 };
 
+/** Pastille de statut : la couleur seule ne suffit pas, le point la redouble. */
+const ETAT_POINT: Record<EtatAffaire, string> = {
+  DEVIS: "bg-accent",
+  COMMANDE: "bg-brand",
+  EN_COURS: "bg-io-ai",
+  LIVRE: "bg-success",
+  CLOTURE: "bg-subtle",
+  CORBEILLE: "bg-danger",
+};
+
 export function EtatBadge({ etat, className }: { etat: EtatAffaire; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium",
         ETAT_TONE[etat],
         className,
       )}
     >
+      <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full", ETAT_POINT[etat])} />
       {etatLabel(etat)}
     </span>
   );

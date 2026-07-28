@@ -202,7 +202,7 @@ export function RowsEditor({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+      <div className="overflow-x-auto border border-hairline bg-surface">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border text-xs uppercase tracking-wide text-subtle">
@@ -336,7 +336,7 @@ export function RowsEditor({
       </div>
 
       {/* Totaux */}
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border border-hairline bg-surface px-4 py-3 text-sm">
         <div className="flex flex-wrap items-center gap-3">
           {IO_TYPES.map((t) => (
             <span key={t} className="inline-flex items-center gap-1.5">

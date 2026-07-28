@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CircuitBoard } from "lucide-react";
+import { Cartouche, EtatVide } from "@/ui";
 import { listerProjets } from "@/tools/affectation-es/queries";
 import { ProjetsFiltrables } from "@/tools/affectation-es/projets-filtrables";
 
@@ -16,23 +17,22 @@ export default async function Page({
   const projets = await listerProjets();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8 md:px-10">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-fg">Projet GTB</h1>
-        <p className="mt-1 text-muted">
-          Vue transverse de tous les automates, toutes affaires confondues — pour retrouver
-          un projet quand on ne sait plus à quelle affaire il appartient. Au quotidien, on y
-          entre par la fiche de l’affaire.
-        </p>
-      </header>
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille="Vue transverse"
+        titre="Projet GTB"
+        description="Tous les automates, toutes affaires confondues — pour retrouver un projet quand on ne sait plus à quelle affaire il appartient. Au quotidien, on y entre par la fiche de l’affaire."
+        champs={[{ label: "Automates", valeur: projets.length, fort: true }]}
+        className="mb-6"
+      />
 
       {projets.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border bg-surface p-12 text-center">
-          <CircuitBoard className="mx-auto h-8 w-8 text-subtle" />
-          <p className="mt-3 text-muted">
-            Aucun projet pour l’instant. Les automates se créent depuis la fiche d’une
-            affaire (« Ajouter un automate »).
-          </p>
+        <div className="data-card">
+          <EtatVide
+            icone={CircuitBoard}
+            titre="Aucun automate pour l’instant"
+            texte="Les automates se créent depuis la fiche d’une affaire, avec « Ajouter un automate »."
+          />
         </div>
       ) : (
         <ProjetsFiltrables projets={projets} orphelinsParDefaut={sansAffaire} />

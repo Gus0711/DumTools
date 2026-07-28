@@ -179,10 +179,12 @@ export function TachesKanban({
   return (
     <section>
       <div className="mb-3">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-fg">
-          <ListTodo className="h-4 w-4 text-muted" />
-          Tâches
-          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums text-muted">
+        <h2 className="flex items-center gap-2.5">
+          <ListTodo className="h-4 w-4 text-brand" />
+          <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
+            Tâches
+          </span>
+          <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
             {ouvertes}
           </span>
         </h2>
@@ -209,7 +211,7 @@ export function TachesKanban({
               onDragLeave={quitter}
               onDrop={(e) => deposer(e, col.etat)}
               className={cn(
-                "flex flex-col rounded-lg border bg-surface-2/50 transition-colors",
+                "flex flex-col border bg-surface-2/50 transition-colors",
                 enSurvol ? "border-brand/50" : "border-border",
               )}
             >

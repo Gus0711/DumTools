@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ListChecks, Pencil } from "lucide-react";
+import {ListChecks, Pencil} from "lucide-react";
 import { auth } from "@/auth";
 import { getTool } from "@/tools/registry";
 import {
@@ -9,6 +9,7 @@ import {
   listerReponsesMatrice,
 } from "@/tools/formulaires/queries";
 import { IndexReponses } from "@/tools/formulaires/index-reponses";
+import { Cartouche } from "@/ui";
 
 export const metadata: Metadata = { title: "Réponses · ToolGus" };
 
@@ -36,27 +37,19 @@ export default async function Page({
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8 md:px-10">
-      <Link
-        href={`/perso/${qui}/formulaires`}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-fg"
-      >
-        <ArrowLeft className="h-4 w-4" /> Mes formulaires
-      </Link>
-
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-fg">
-            {isAdmin ? formulaire.nom : `Mes réponses — ${formulaire.nom}`}
-          </h1>
-          <p className="mt-1 text-muted">
-            {reponses.length} réponse{reponses.length > 1 ? "s" : ""}
-            {isAdmin
-              ? ` collectée${reponses.length > 1 ? "s" : ""}.`
-              : " à ton nom."}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
+      <Cartouche
+        estampille={isAdmin ? "Formulaire · Réponses" : "Mes réponses"}
+        retour={{ href: `/perso/${qui}/formulaires`, label: "Mes formulaires" }}
+        titre={isAdmin ? formulaire.nom : `Mes réponses — ${formulaire.nom}`}
+        description={
+          isAdmin
+            ? `${reponses.length} réponse${reponses.length > 1 ? "s" : ""} collectée${reponses.length > 1 ? "s" : ""}.`
+            : `${reponses.length} réponse${reponses.length > 1 ? "s" : ""} à ton nom.`
+        }
+        champs={[{ label: "Réponses", valeur: reponses.length, fort: true }]}
+        actions={
+          <>
           {isAdmin && (
             <Link
               href={`/perso/${qui}/formulaires/${id}/edit`}
@@ -71,8 +64,10 @@ export default async function Page({
           >
             <ListChecks className="h-3.5 w-3.5" /> Remplir
           </Link>
-        </div>
-      </header>
+          </>
+        }
+        className="mb-6"
+      />
 
       <IndexReponses
         qui={qui}

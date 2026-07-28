@@ -15,13 +15,16 @@
   --color-page:       var(--page);
   --color-surface:    var(--surface);
   --color-surface-2:  var(--surface-2);
+  --color-surface-3:  var(--surface-3);
 
   --color-fg:     var(--fg);
   --color-muted:  var(--muted);
   --color-subtle: var(--subtle);
+  --color-stamp:  var(--stamp);
 
   --color-border:      var(--border);
   --color-border-soft: var(--border-soft);
+  --color-hairline:    var(--hairline);
 
   --color-brand:        var(--brand);
   --color-brand-strong: var(--brand-strong);
@@ -35,6 +38,7 @@
 
   --color-danger:  var(--danger);
   --color-success: var(--success);
+  --color-warning: var(--warning);
 
   --color-io-ai:  var(--io-ai);
   --color-io-di:  var(--io-di);
@@ -42,7 +46,17 @@
   --color-io-do:  var(--io-do);
   --color-io-com: var(--io-com);
 
-  --color-surface-3: var(--surface-3);
+  --color-cartouche:   var(--cartouche);
+  --color-cartouche-2: var(--cartouche-2);
+  --color-rail:        var(--rail);
+
+  --color-chrome:        var(--chrome);
+  --color-chrome-2:      var(--chrome-2);
+  --color-chrome-fg:     var(--chrome-fg);
+  --color-chrome-muted:  var(--chrome-muted);
+  --color-chrome-border: var(--chrome-border);
+  --color-chrome-hover:  var(--chrome-hover);
+  --color-chrome-accent: var(--chrome-accent);
 
   --color-sidebar:           var(--sidebar);
   --color-sidebar-fg:        var(--sidebar-fg);
@@ -58,11 +72,11 @@
   --shadow-md: var(--elev-md);
   --shadow-lg: var(--elev-lg);
 
-  /* Rayons & typo */
-  --radius-sm: 6px;
-  --radius-md: 9px;
-  --radius-lg: 13px;
-  --radius-xl: 18px;
+  /* Rayons — resserrés : on dessine un plan, pas un galet. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
 
   --font-sans: var(--font-sans-app), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display-app), var(--font-sans-app), ui-sans-serif, system-ui, sans-serif;
@@ -77,6 +91,9 @@
 
   html {
     color-scheme: light dark;
+    /* Échelle d'interface pilotée par le réglage de densité (Confort/Compact).
+       Tout le reste étant en rem, l'interface entière suit. */
+    font-size: var(--root-size);
   }
 
   body {
@@ -87,11 +104,12 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Les titres portent la police d'affichage (Space Grotesk) — caractère
-     « technique » ; réglages resserrés pour un rendu net et posé. */
+  /* Les titres portent la police d'affichage (Archivo) — grotesque de
+     signalétique, tracking resserré : un libellé estampillé, pas un titre de
+     magazine. */
   :where(h1, h2, h3, .font-display) {
     font-family: var(--font-display);
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
   }
 
   /* Chiffres alignés partout (données techniques : compteurs, E/S, dates). */
@@ -140,11 +158,13 @@
   }
 }
 
-/* --- Signatures visuelles (utilitaires : aucun hex dans les composants) ---- *
- * On centralise ici les dégradés de marque et la trame « plan d'architecte ».
+/* =============================================================================
+ * SIGNATURES VISUELLES — le vocabulaire du schéma électrique
+ * Cartouche, filets de signal, rails, blocs. Aucun hex ici : tout vient de
+ * l'étage sémantique.
  * ========================================================================== */
 @layer components {
-  /* Dégradé marine de marque (sidebar, en-têtes héros…). */
+  /* --- Fonds & filets de marque ------------------------------------------ */
   .bg-brand-gradient {
     background-image: var(--grad-brand);
   }
@@ -152,29 +172,186 @@
     background-image: var(--grad-accent);
   }
 
-  /* Trame fine « blueprint » — se superpose à un fond marine.
-     Couleur des traits pilotée par --grid-line (thème). */
-  .blueprint-grid {
-    background-image:
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size: 26px 26px;
-    background-position: -1px -1px;
+  /* Voile de lumière sur une grande surface marine : de la profondeur, pas
+     un motif. (L'ancienne trame « papier quadrillé » a été retirée : à petite
+     échelle elle ne lisait pas, à grande échelle elle salissait.) */
+  .voile-brand {
+    background-image: var(--voile-brand);
   }
 
-  /* Filet d'accent laiton — liseré de signature (haut de carte, entête). */
+  /* Filet d'accent laiton — liseré de signature (haut de cartouche, de carte). */
   .rule-accent {
     background-image: var(--grad-accent);
   }
 
+  /* Filet « signaux » — les 5 types d'E/S dans l'ordre AI·DI·AO·DO·COM.
+     C'est la langue couleur de la maison, réduite à un trait. */
+  .rule-signal {
+    background-image: var(--grad-signal);
+  }
+  .rule-signal-v {
+    background-image: var(--grad-signal-v);
+  }
+
+  /* --- Typographie de service -------------------------------------------- *
+   * .stamp : le libellé d'un cartouche — petites capitales tracées.
+   * .ref   : une référence technique (n° Why, borne, folio, IP) — toujours
+   *          en mono, parce qu'on la lit caractère par caractère. */
+  .stamp {
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--stamp);
+    line-height: 1.2;
+  }
+
+  .ref {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Le cartouche ------------------------------------------------------- *
+   * Bloc d'identification en tête de page, repris du cartouche d'un schéma :
+   * cadre au trait fin, filet de signal en haut, libellés estampillés. */
+  .cartouche {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    background-color: var(--cartouche);
+  }
+
+  /* Ligne de champs d'un cartouche : libellé au-dessus, valeur en dessous,
+     séparés par des filets verticaux comme sur un plan. */
+  .cartouche-champs {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--hairline);
+    background-color: var(--cartouche-2);
+  }
+  .cartouche-champs > * {
+    padding: 0.5rem 0.9rem;
+    border-right: 1px solid var(--hairline);
+  }
+  .cartouche-champs > *:last-child {
+    border-right: 0;
+  }
+  /* Au téléphone, les champs s'empilent : le filet passe donc dessous, sinon
+     le trait vertical du dernier champ d'une ligne pend dans le vide. */
+  @media (max-width: 639.98px) {
+    .cartouche-champs > * {
+      width: 100%;
+      border-right: 0;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .cartouche-champs > *:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  /* --- LA PLANCHE --------------------------------------------------------- *
+   * Le plan de travail n'est pas une pile de cartes flottantes : c'est une
+   * planche technique. Blocs à angles droits, délimités au trait fin, posés
+   * bord à bord. Aucune ombre — une ombre, c'est un objet qui flotte, et rien
+   * ne flotte sur un plan. (Les ombres restent réservées à ce qui survole
+   * VRAIMENT le plan : menus, palettes, listes déroulantes.) */
+  .bloc {
+    position: relative;
+    border: 1px solid var(--hairline);
+    background-color: var(--surface);
+  }
+
+  /* Entête de bloc : estampille + filet, fond légèrement creusé. */
+  .bloc-entete {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid var(--hairline);
+    background-color: var(--surface-2);
+    padding: 0.5rem 0.9rem;
+  }
+
+  /* Grille de planche : des blocs qui se touchent, séparés par UN seul trait
+     (les bordures se recouvrent grâce à la marge négative). */
+  .planche {
+    display: grid;
+    gap: 0;
+    /* Colonne bornée par défaut : sans `minmax(0, …)`, une piste `auto` prend
+       la largeur de son contenu le plus long et le bloc déborde de l'écran
+       (le contenu se fait alors couper, puisque le conteneur masque le
+       débordement). Les `grid-cols-*` de Tailwind, posés aux points de rupture,
+       reprennent la main — ils utilisent déjà minmax(0, 1fr). */
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .planche > * {
+    margin-right: -1px;
+    margin-bottom: -1px;
+  }
+
+  /* --- Le chiffre --------------------------------------------------------- *
+   * Une donnée qu'on doit lire depuis l'autre bout de l'atelier. Elle porte
+   * TOUJOURS son libellé estampillé au-dessus : un chiffre nu ne veut rien
+   * dire. */
+  .chiffre {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    font-size: clamp(1.9rem, 1.2rem + 2.2vw, 3.1rem);
+    color: var(--fg);
+  }
+  .chiffre-sm {
+    font-size: clamp(1.35rem, 1rem + 1.1vw, 1.9rem);
+  }
+
+  /* --- Jauge de signaux --------------------------------------------------- *
+   * Barres proportionnelles pour les E/S. Les teintes E/S sont contractuelles
+   * (elles sont imprimées sur les documents remis au client) : deux d'entre
+   * elles — DO vert et COM turquoise — sont trop proches pour être distinguées
+   * à la couleur seule. Chaque segment porte donc SON libellé ; la couleur ne
+   * fait que redoubler l'information, elle ne la porte jamais. Un filet de
+   * 2px de fond sépare les segments pour qu'ils ne se fondent pas l'un dans
+   * l'autre. */
+  .jauge {
+    display: flex;
+    height: 0.5rem;
+    gap: 2px;
+    overflow: hidden;
+  }
+  .jauge > span {
+    min-width: 2px;
+  }
+
+  /* --- Rail (bornier) ----------------------------------------------------- *
+   * Repère vertical à gauche d'une liste ou d'une section : le rail DIN sur
+   * lequel viennent se clipser les éléments. */
+  .rail {
+    position: relative;
+    padding-left: 1.15rem;
+  }
+  .rail::before {
+    content: "";
+    position: absolute;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    left: 0.28rem;
+    width: 2px;
+    border-radius: 1px;
+    background-color: var(--rail-soft);
+  }
+
   /* --- Tables « qualité instrument » ------------------------------------- *
    * Conteneur + table cohérents pour toutes les listes de l'appli.
-   * Entête collante teintée, lignes aérées, survol net, filet fin. */
+   * Entête collante teintée, lignes aérées, survol net, filet fin.
+   * La hauteur de ligne suit le réglage de densité (--row-y). */
   .data-card {
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--border);
+    border: 1px solid var(--hairline);
     background-color: var(--surface);
-    box-shadow: var(--elev-sm);
     overflow: hidden;
   }
 
@@ -190,20 +367,20 @@
     top: 0;
     z-index: 1;
     background-color: var(--surface-2);
-    border-bottom: 1px solid var(--border);
-    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--hairline);
+    padding: 0.55rem 1rem;
     text-align: left;
     font-family: var(--font-display);
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--stamp);
     white-space: nowrap;
   }
 
   .data-table tbody td {
-    padding: 0.7rem 1rem;
+    padding: var(--row-y) 1rem;
     border-bottom: 1px solid var(--border-soft);
     color: var(--muted);
     vertical-align: middle;
@@ -221,13 +398,15 @@
     border-bottom: 0;
   }
 
-  /* Survol de ligne : léger voile + liseré marine à gauche (repère de scan). */
+  /* Survol de ligne : voile léger + rail laiton à gauche (repère de scan). */
   .data-table tbody tr {
-    transition: background-color 0.12s ease, box-shadow 0.12s ease;
+    transition:
+      background-color var(--t-hover) var(--ease),
+      box-shadow var(--t-hover) var(--ease);
   }
   .data-table tbody tr:hover {
     background-color: color-mix(in oklab, var(--brand-soft) 55%, var(--surface));
-    box-shadow: inset 3px 0 0 var(--accent);
+    box-shadow: inset 3px 0 0 var(--rail);
   }
 
   /* Cellule « titre » — lien de première colonne, plus affirmé. */
@@ -312,11 +491,11 @@
       content: attr(data-label);
       flex: 0 0 auto;
       font-family: var(--font-display);
-      font-size: 0.66rem;
+      font-size: 0.64rem;
       font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
-      color: var(--subtle);
+      color: var(--stamp);
       text-align: left;
     }
     /* Cellules sans libellé (actions, cellule-titre) : pas de préfixe. */
@@ -343,6 +522,177 @@
   }
 }
 
+/* =============================================================================
+ * MOUVEMENT — « mise sous tension »
+ * Une seule idée : à l'ouverture, l'écran s'alimente. Les blocs montent d'un
+ * cran, le filet laiton balaie, les listes se remplissent en cascade courte.
+ * Rien ne rebondit, rien ne clignote, rien ne dure plus d'une demi-seconde.
+ * Tout est désactivé si le système demande moins d'animations (bloc en fin).
+ * ========================================================================== */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes sweep-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Îlot terrain (visites) : entrée d'un point en mode « Dérouler ». */
+@keyframes terrain-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Pulsation d'appel à l'action (validation, compteur qui s'incrémente). */
+@keyframes terrain-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Rail qui se clipse : le repère d'élément actif dans la navigation. */
+@keyframes grow-y {
+  from {
+    opacity: 0;
+    transform: scaleY(0.15);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Balayage de chargement (squelettes). */
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@layer components {
+  /* Entrée d'un bloc : le geste par défaut de l'appli. */
+  .anim-rise {
+    animation: rise var(--t-block) var(--ease) both;
+  }
+  .anim-fade {
+    animation: fade-in var(--t-enter) var(--ease) both;
+  }
+  .anim-slide-left {
+    animation: slide-left var(--t-enter) var(--ease) both;
+  }
+
+  /* Filet laiton qui « se met sous tension » de gauche à droite. */
+  .anim-sweep {
+    transform-origin: left;
+    animation: sweep-x var(--t-sweep) var(--ease) both;
+  }
+
+  /* Rail d'élément actif : il se clipse sur son support. */
+  .anim-rail {
+    transform-origin: center;
+    animation: grow-y var(--t-enter) var(--ease) both;
+  }
+
+  /* Entrée de page : posée sur le conteneur de contenu, rejouée à chaque
+     navigation (la clé de route force le remontage). */
+  .anim-page {
+    animation: rise var(--t-block) var(--ease) both;
+  }
+
+  /* Cascade courte : les 10 premiers enfants entrent l'un après l'autre,
+     le reste arrive groupé (une liste de 300 lignes ne défile pas pendant
+     6 secondes). */
+  .stagger > * {
+    animation: rise var(--t-block) var(--ease) both;
+  }
+  .stagger > *:nth-child(1)  { animation-delay: 0ms; }
+  .stagger > *:nth-child(2)  { animation-delay: 26ms; }
+  .stagger > *:nth-child(3)  { animation-delay: 52ms; }
+  .stagger > *:nth-child(4)  { animation-delay: 78ms; }
+  .stagger > *:nth-child(5)  { animation-delay: 104ms; }
+  .stagger > *:nth-child(6)  { animation-delay: 130ms; }
+  .stagger > *:nth-child(7)  { animation-delay: 156ms; }
+  .stagger > *:nth-child(8)  { animation-delay: 182ms; }
+  .stagger > *:nth-child(9)  { animation-delay: 208ms; }
+  .stagger > *:nth-child(n + 10) { animation-delay: 234ms; }
+
+  .anim-item-in {
+    animation: terrain-item-in 0.22s var(--ease);
+  }
+
+  .anim-pop {
+    animation: terrain-pop 0.3s var(--ease);
+  }
+
+  /* Squelette de chargement — remplace l'écran blanc pendant une navigation. */
+  .skeleton {
+    border-radius: var(--radius-sm);
+    background-image: linear-gradient(
+      90deg,
+      var(--surface-2) 25%,
+      var(--surface-3) 37%,
+      var(--surface-2) 63%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  /* Pression : le bouton s'enfonce d'un cheveu. */
+  .press {
+    transition: transform var(--t-hover) var(--ease);
+  }
+  .press:active {
+    transform: translateY(1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-rise,
+  .anim-fade,
+  .anim-slide-left,
+  .anim-sweep,
+  .anim-rail,
+  .anim-page,
+  .anim-item-in,
+  .anim-pop,
+  .skeleton,
+  .stagger > * {
+    animation: none;
+  }
+  .anim-sweep {
+    transform: none;
+  }
+}
+
 /* --- Impression : n'afficher que .print-root, en pleine page A4 ----------- */
 .print-root {
   display: none;
@@ -356,6 +706,11 @@
   html,
   body {
     background: #fff !important;
+  }
+  /* L'impression est un document, pas une interface : on repasse à une base
+     typographique fixe, quel que soit le réglage de densité de l'écran. */
+  html {
+    font-size: 16px;
   }
   /* On masque l'appli (visibility garde le flux) et on révèle l'impression. */
   body * {
@@ -376,46 +731,5 @@
   }
   .print-page:last-child {
     break-after: auto;
-  }
-}
-
-/* --- Îlot terrain (visites) : micro-animations --------------------------- *
- * Entrée d'un point en mode « Dérouler » et pulsation d'appel à l'action.
- * Désactivées si l'utilisateur préfère réduire les animations. */
-@keyframes terrain-item-in {
-  from {
-    opacity: 0;
-    transform: translateX(16px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes terrain-pop {
-  0% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.anim-item-in {
-  animation: terrain-item-in 0.22s ease-out;
-}
-
-.anim-pop {
-  animation: terrain-pop 0.3s ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .anim-item-in,
-  .anim-pop {
-    animation: none;
   }
 }

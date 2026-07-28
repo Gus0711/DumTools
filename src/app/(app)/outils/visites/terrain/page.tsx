@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getVisitePourTerrain, snapshotAffairesPourTerrain } from "@/tools/visites/queries";
 import { TerrainVisites } from "@/tools/visites/terrain";
+import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 
 export const metadata: Metadata = { title: "Visites — mode terrain" };
 
@@ -25,5 +26,10 @@ export default async function Page({
     snapshotAffairesPourTerrain(),
     ouvrir && UUID_RE.test(ouvrir) ? getVisitePourTerrain(ouvrir) : Promise.resolve(null),
   ]);
-  return <TerrainVisites initialAffaires={affaires} importer={importer} />;
+  return (
+    <>
+      <TitreEcran estampille="Visites" titre={"Mode terrain"} />
+      <TerrainVisites initialAffaires={affaires} importer={importer} />
+    </>
+  );
 }

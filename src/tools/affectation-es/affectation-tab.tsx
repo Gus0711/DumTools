@@ -69,7 +69,7 @@ export function AffectationTab({
 
   if (points.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-muted">
+      <div className="border border-dashed border-border bg-surface p-10 text-center text-muted">
         Aucune E/S. Saisis les points dans l&apos;onglet <b>Liste de points</b> ; ils apparaîtront ici
         pour affectation aux bornes.
       </div>
