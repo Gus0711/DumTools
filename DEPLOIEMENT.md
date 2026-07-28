@@ -55,7 +55,8 @@ quotidien : app + connecteur Claude Desktop.
 - Réponses en ~10–150 ms (routes précompilées), « Ready in 0ms ».
 - SW offline actif (indispensable pour les tests device Visites / mise en service).
 - Les binaires restent dans le projet (`.visites-media/`, `.notes-media/`,
-  `.wiki-media/`, `.spool/`) — le script ancre les variables d'env, rien ne vit
+  `.wiki-media/`, `.formulaires-media/`, `.ndf-media/`, `.scans-media/`,
+  `.spool/`) — le script ancre les variables d'env, rien ne vit
   dans `.next/standalone` (effacé à chaque build).
 - ⚠️ Un build est une **photo du code** : après une modif, relancer avec
   `--build`. Pour développer pendant que la prod locale tourne :

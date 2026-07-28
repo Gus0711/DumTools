@@ -2,12 +2,13 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useRef, useState, type ReactNode } from "react";
-import { Loader2, Printer, RectangleHorizontal, RectangleVertical } from "lucide-react";
+import { Loader2, Printer } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
 import "./apercu-print.css";
 import { fnv1a } from "@/tools/liste-points/hash";
 import { genererApercuPdf, type OrientationApercu } from "./apercu-pdf";
+import { SelecteurOrientation } from "./selecteur-orientation";
 import { BoutonSauvegardeKdrive } from "./sauvegarder-kdrive";
 import { powerSupplyInfo } from "./catalog";
 import { MODULE_IMAGES } from "./images";
@@ -73,36 +74,6 @@ function moduleImage(catalogue: Catalogue, m: Module): string {
 }
 
 // --- En-tête / pied / pastille (communs à toutes les pages) ---------------
-
-/** Segment d'un sélecteur d'orientation (paysage / portrait). */
-function OrientationBtn({
-  actif,
-  onClick,
-  icon,
-  label,
-}: {
-  actif: boolean;
-  onClick: () => void;
-  icon: ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={actif}
-      className={cn(
-        "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition",
-        actif
-          ? "bg-brand text-brand-fg"
-          : "bg-surface text-muted hover:bg-surface-2 hover:text-fg",
-      )}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
 
 function DocHeader({ project }: { project: Project }) {
   return (
@@ -655,24 +626,7 @@ export function Apercu({
         )}
         <div className="ml-auto flex flex-wrap items-center gap-2">
           {/* Choix d'orientation : agit sur l'aperçu écran ET le PDF (même DOM). */}
-          <div
-            className="inline-flex overflow-hidden rounded-lg border border-border"
-            role="group"
-            aria-label="Orientation du document"
-          >
-            <OrientationBtn
-              actif={orientation === "landscape"}
-              onClick={() => setOrientation("landscape")}
-              icon={<RectangleHorizontal className="h-4 w-4" />}
-              label="Paysage"
-            />
-            <OrientationBtn
-              actif={orientation === "portrait"}
-              onClick={() => setOrientation("portrait")}
-              icon={<RectangleVertical className="h-4 w-4" />}
-              label="Portrait"
-            />
-          </div>
+          <SelecteurOrientation orientation={orientation} onChange={setOrientation} />
 
           <BoutonSauvegardeKdrive
             chantierId={chantierId}

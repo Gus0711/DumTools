@@ -64,6 +64,9 @@ services:
       # Justificatifs de notes de frais (photos de tickets, PDF de factures) :
       # pièces comptables, à conserver 6 ans → volume + sauvegarde obligatoires.
       NDF_MEDIA_DIR: /data/ndf-media
+      # Photos prises depuis le Scanner (installation d'un modem, plaque
+      # illisible, réserve) — rattachées à un scan, donc à une affaire.
+      SCANS_MEDIA_DIR: /data/scans-media
     volumes:
       - spool_data:/data/spool
       - visites_media:/data/visites-media
@@ -71,6 +74,7 @@ services:
       - wiki_media:/data/wiki-media
       - formulaires_media:/data/formulaires-media
       - ndf_media:/data/ndf-media
+      - scans_media:/data/scans-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -123,3 +127,4 @@ volumes:
   wiki_media:
   formulaires_media:
   ndf_media:
+  scans_media:

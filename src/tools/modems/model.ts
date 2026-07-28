@@ -101,8 +101,18 @@ export function estModem(info: ModemInfo): boolean {
   return Boolean(info.serie || info.imei || info.mac);
 }
 
+/** `format` d'une **ligne photo** : une observation sans code-barres (`raw` vide),
+ *  créée quand on photographie sans avoir rien scanné (armoire, plaque illisible). */
+export const FORMAT_PHOTO = "photo";
+
+/** Vrai si la ligne n'est pas un code scanné mais une photo seule. */
+export function estLignePhoto(l: { format: string | null; raw: string }): boolean {
+  return l.format === FORMAT_PHOTO && l.raw === "";
+}
+
 /** Libellés des symbologies (BarcodeDetector / ZXing, normalisés en minuscules). */
 export const FORMAT_LABEL: Record<string, string> = {
+  [FORMAT_PHOTO]: "Photo",
   qr_code: "QR",
   data_matrix: "DataMatrix",
   aztec: "Aztec",

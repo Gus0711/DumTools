@@ -41,6 +41,7 @@ export NOTES_MEDIA_DIR="$PWD/.notes-media"
 export WIKI_MEDIA_DIR="$PWD/.wiki-media"
 export FORMULAIRES_MEDIA_DIR="$PWD/.formulaires-media"
 export NDF_MEDIA_DIR="$PWD/.ndf-media"
+export SCANS_MEDIA_DIR="$PWD/.scans-media"
 export DOCUMENTS_SPOOL_DIR="$PWD/.spool"
 # Derrière le tunnel Cloudflare / le LAN : faire confiance à l'en-tête Host.
 export AUTH_TRUST_HOST=true

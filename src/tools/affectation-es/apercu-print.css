@@ -440,15 +440,19 @@
 .affectation-doc .recap-intro .recap-meta b { color: #214866; }
 .affectation-doc .recap-intro .recap-warn { color: #b23030; font-weight: 700; }
 
+/* Hauteur = tout l'espace sous l'en-tête MOINS la bande du logo Dumortier
+   (absolu, bas à gauche : il mordrait sur les dernières lignes d'un tableau
+   qui descend jusqu'en bas de page). Toute modification doit être reportée
+   dans GABARIT (apercu-affectation.tsx), qui pagine en millimètres. */
 .affectation-doc .recap-body {
-  height: 172mm;
+  height: 162mm;
   display: flex;
   flex-direction: column;
   gap: 4mm;
   padding: 0 7mm;
   overflow: hidden;
 }
-.affectation-doc .recap-page.first .recap-body { height: 158mm; }
+.affectation-doc .recap-page.first .recap-body { height: 148mm; }
 
 .affectation-doc .recap-table { font-size: 7.6pt; }
 .affectation-doc .recap-table .recap-suite { font-weight: 400; opacity: 0.85; }
@@ -550,6 +554,24 @@
 /* Couverture : ramener les blocs larges dans la largeur portrait. */
 .affectation-doc.portrait .cover-title { max-width: 175mm; font-size: 21pt; }
 .affectation-doc.portrait .company-block { width: 170mm; }
+
+/* Tableau récapitulatif : page plus HAUTE (donc plus de lignes — voir CAPACITE
+   dans apercu-affectation.tsx) mais plus ÉTROITE → colonnes fixes resserrées et
+   police d'un cran plus petite. Largeur utile = 210 - 2×13 (page) - 2×7 (corps)
+   = 170 mm ; les colonnes fixes en consomment 117 (sorties) et la désignation
+   prend le reste. */
+.affectation-doc.portrait .recap-body { height: 246mm; }
+.affectation-doc.portrait .recap-page.first .recap-body { height: 232mm; }
+.affectation-doc.portrait .recap-table { font-size: 6.9pt; }
+.affectation-doc.portrait .recap-table th,
+.affectation-doc.portrait .recap-table td { padding: 1mm 1.2mm; }
+.affectation-doc.portrait .recap-table col.c-rep { width: 13mm; }
+.affectation-doc.portrait .recap-table col.c-lib { width: 30mm; }
+.affectation-doc.portrait .recap-table col.c-sig { width: 17mm; }
+.affectation-doc.portrait .recap-table col.c-rel { width: 15mm; }
+.affectation-doc.portrait .recap-table col.c-mod { width: 32mm; }
+.affectation-doc.portrait .recap-table col.c-can { width: 10mm; }
+.affectation-doc.portrait .recap-intro h1 { font-size: 13pt; }
 
 /* --- Aperçu à l'écran : pages mises à l'échelle -------------------------- */
 @media screen {

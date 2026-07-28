@@ -565,13 +565,50 @@ model ModemScan {
   /// À ne pas confondre avec `lot` (= lot de fabrication du modem, clé B du QR).
   groupe     String?
 
+  /// Horodatage du scan **sur l'appareil**, distinct de `createdAt` (= écriture
+  /// en base). Les deux divergent quand l'enregistrement échoue puis est relancé
+  /// (« Réessayer »), ou lors d'une saisie hors-ligne synchronisée plus tard.
+  /// C'est CE champ qui fait foi pour le classement par jour/semaine/mois/année.
+  scanneLe    DateTime @default(now())
+
   createdById String?
   createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  /// Photos rattachées (prises pendant le scan ou ajoutées après coup).
+  photos      ScanPhoto[]
+
   @@index([createdAt])
   @@index([chantierId])
+  @@index([scanneLe])
+  @@index([chantierId, scanneLe])
+}
+
+/// Photo rattachée à un scan : capture du flux caméra pendant le scan, ou ajout
+/// après coup depuis le tableau. Documente l'installation (où est posé le modem,
+/// une plaque illisible, une réserve…).
+///
+/// Une ligne SANS code (`raw = ""`, `format = "photo"`) est une **ligne photo** :
+/// une observation purement visuelle, sans code-barres — un mur de compteurs, une
+/// armoire. Elle vit dans le même tableau que les scans, avec les mêmes
+/// rattachements affaire/groupe et le même classement temporel.
+///
+/// Le binaire vit sur le disque de la VM (SCANS_MEDIA_DIR, hors public/), servi
+/// par la route authentifiée /api/scans/media/[id]. `id` = UUID = nom du fichier
+/// (sûr par construction, aucun chemin ne vient du client).
+model ScanPhoto {
+  id       String    @id
+  scanId   String
+  scan     ModemScan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  mimeType String    @default("image/jpeg")
+  taille   Int       @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier  String
+
+  createdAt DateTime @default(now())
+
+  @@index([scanId])
 }
 
 // ---- Outil « Wiki » (base de connaissances interne) ------------------------
