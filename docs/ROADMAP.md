@@ -24,8 +24,8 @@
 | # | Étape métier | Ce que DumTools couvre **aujourd'hui** | Ce qui **manque** | Doc de référence |
 |---|---|---|---|---|
 | 1 | **Visite de relevé** (avant chiffrage) | rien | Outil **Visites** — type `RELEVE` : checklist repérage, photos, notes vocales, offline | [`VISITES.md`](VISITES.md) |
-| 2 | **Étude & chiffrage** | Liste de points, catalogue & modèles, **reco automate**, base matériel (financier = WhySoft) | BOM matériel chiffrable au niveau affaire (cumul multi-automate) | [`AFFAIRES.md`](AFFAIRES.md) §9 |
-| 3 | **Fabrication armoire** | les données existent (`Project.points` : bornes, repères, modules) mais rien n'est exporté | **Pont WinRelais** (CSV `;` niveau 1) + BOM armoire | [`ARMOIRE-winrelais-pont.md`](ARMOIRE-winrelais-pont.md) |
+| 2 | **Étude & chiffrage** | Liste de points, catalogue & modèles, **reco automate**, base matériel — et depuis le 2026-07-28 la **BOM d'affaire dérivée** + les prix d'achat (Magasin) | ~~BOM matériel chiffrable au niveau affaire~~ ✅ | [`MAGASIN.md`](MAGASIN.md) |
+| 3 | **Fabrication armoire** | **Magasin** : réservation, préparation, sortie du matériel pour l'affaire | **Pont WinRelais** (CSV `;` niveau 1) — la BOM, elle, est faite | [`ARMOIRE-winrelais-pont.md`](ARMOIRE-winrelais-pont.md) |
 | 4 | **Programmation** | **Générer GFX** (squelette), GED Documents (backup `.gfx` sur l'affaire, miroir kDrive) | valider l'ouverture du squelette dans EC-gfxProgram ; import GFX/PDF piloté par la base matériel | [`A_FAIRE-base-materiel.md`](A_FAIRE-base-materiel.md) |
 | 5 | **Mise en service** | onglet Mise en service + rapport imprimable + **mode terrain offline (socle codé)** | **validation sur device** (HTTPS, Android, iPhone) — voir P0 | [`A_FAIRE-mise-en-service-offline.md`](A_FAIRE-mise-en-service-offline.md) |
 | 6 | **Mise à disposition supervision** | **rien — le trou complet du cycle** | dossier de livraison d'affaire, export des points pour la supervision, PV de réception signé | §4 ci-dessous (nouveau) |
@@ -43,6 +43,16 @@ trous à ouvrir ensuite : peu de code (les données existent déjà), beaucoup d
 > export PDF/kDrive/Markdown, **partage public par lien** (ex. consignes au
 > client). Voir [`NOTES.md`](NOTES.md).
 
+> 🆕 **Outil « Magasin » (implémenté 2026-07-28)** — référentiel produit (« mini
+> CRM » : double référence interne/fabricant, fournisseurs, tarifs, prix d'achat)
+> + gestion de stock (réception, sortie, retour, transfert, rebut, inventaire),
+> au clavier ou **au scan**. Le stock est la **somme des mouvements**, jamais une
+> quantité modifiée en place. Il ferme le chaînon **étape 2 → étape 3** : la BOM
+> d'une affaire est **dérivée** de ses projets GTB et de la nomenclature de ses
+> points, confrontée au stock, réservée puis sortie. Rôle `ACHATS` pour les prix.
+> Reste à faire : **le voir tourner** (navigateur, scan device) et amorcer les
+> données par import. Voir [`MAGASIN.md`](MAGASIN.md) §12.
+>
 > 🆕 **Outil transverse « Wiki » (implémenté 2026-07-16)** — base de connaissances
 > **interne d'entreprise** (savoir durable, non rattaché à une affaire) : rubriques
 > thématiques (Administration / Commerce / Dev-Automatisme / Chantier / Armoire),

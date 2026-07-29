@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Boxes,
   Briefcase,
   Building2,
   CircuitBoard,
@@ -33,6 +34,7 @@ const ICONE: Record<TypeResultat, LucideIcon> = {
   note: NotebookPen,
   visite: ClipboardCheck,
   wiki: Library,
+  produit: Boxes,
 };
 
 /** Ordre des groupes = ordre des clés de LIBELLE_TYPE. */

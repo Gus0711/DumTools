@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Cpu, FileStack, FolderOpen, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
+import { Boxes, Cpu, FileStack, FolderOpen, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
 import { Button, Chiffre, JaugeES, RangeeChiffres, type CompteES } from "@/ui";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { etatLabel } from "@/lib/chantiers/etats";
@@ -26,6 +26,8 @@ import { listerNotesAffaire } from "@/tools/notes/queries";
 import { creerNotePourAffaire } from "@/tools/notes/actions";
 import { listerScansAffaire } from "@/tools/modems/queries";
 import { ScansAffaire } from "@/tools/modems/scans-affaire";
+import { BlocMaterielAffaire } from "@/tools/magasin/bloc-affaire";
+import { peutVoirPrix } from "@/tools/magasin/model";
 
 export async function generateMetadata({
   params,
@@ -59,7 +61,8 @@ function SectionTitle({
 }: {
   icon: React.ReactNode;
   children: React.ReactNode;
-  count: number;
+  /** Omis quand la section n'a pas de compte à afficher (un « 0 » mentirait). */
+  count?: number;
 }) {
   return (
     <h2 className="flex items-center gap-2.5">
@@ -67,9 +70,11 @@ function SectionTitle({
       <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
         {children}
       </span>
-      <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
-        {count}
-      </span>
+      {count != null && (
+        <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
+          {count}
+        </span>
+      )}
     </h2>
   );
 }
@@ -405,6 +410,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             ))}
           </div>
         )}
+      </section>
+
+      {/* ---- Matériel (outil Magasin) — masqué si rien à dire ------------- */}
+      <section>
+        <div className="mb-3">
+          <SectionTitle icon={<Boxes className="h-4 w-4 text-muted" />}>Matériel</SectionTitle>
+          <p className="mt-1 text-xs text-subtle">
+            Besoin dérivé des projets GTB et des listes de points, confronté au stock du magasin.
+          </p>
+        </div>
+        <BlocMaterielAffaire chantierId={id} peutPrix={peutVoirPrix(session?.user?.role)} />
       </section>
 
       {/* ---- Scans (outil Scanner) — masqué si l'affaire n'en a aucun ----- */}

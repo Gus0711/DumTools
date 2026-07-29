@@ -15,6 +15,11 @@ datasource db {
 
 enum Role {
   ADMIN
+  /// Voit les prix d'achat, les tarifs fournisseurs et le coût matériel des
+  /// affaires ; peut importer le référentiel produit. Un cran entre MEMBRE et
+  /// ADMIN, qui n'ouvre AUCUN droit d'administration (comptes, suppressions).
+  /// Voir peutVoirPrix() dans src/tools/magasin/model.ts.
+  ACHATS
   MEMBRE
 }
 
@@ -53,6 +58,15 @@ model User {
   notesModifiees        Note[]              @relation("NoteModifiee")
   visitesModifiees      Visite[]            @relation("VisiteModifiee")
   wikiPagesModifiees    WikiPage[]          @relation("WikiPageModifiee")
+  /// Magasin — voir la section « Outil Magasin » en fin de schéma.
+  produitsCrees         Produit[]           @relation("ProduitCree")
+  produitsModifies      Produit[]           @relation("ProduitModifie")
+  codesBarresAppris     CodeBarreProduit[]
+  mouvementsStock       MouvementStock[]
+  inventairesOuverts    Inventaire[]
+  reservationsStock     ReservationStock[]
+  importsMagasin        ImportMagasin[]
+  depotsDetenus         Depot[]
 }
 
 /// Jeton d'accès MCP émis par le flux OAuth du serveur MCP (« Ajouter un
@@ -182,6 +196,10 @@ model Chantier {
   scans              ModemScan[]
   formulaireReponses FormulaireReponse[]
   depensesFrais      DepenseFrais[]
+  mouvementsStock    MouvementStock[]
+  reservationsStock  ReservationStock[]
+  lignesMateriel     LigneMaterielAffaire[]
+  exemplaires        Exemplaire[]
 
   @@index([clientId])
 }
@@ -239,6 +257,17 @@ model PointsList {
 /// point et s'enrichit quand un utilisateur ajoute un point personnalisé.
 model PointCatalog {
   id        String   @id @default(cuid())
+  /// Nomenclature : les produits qu'appelle physiquement ce point (une sonde de
+  /// gaine = sonde + doigt de gant + presse-étoupe). C'est ce qui rend la BOM
+  /// d'une affaire dérivable depuis la liste de points. Voir docs/MAGASIN.md §5.
+  nomenclature NomenclaturePoint[]
+  /// « Ce point ne demande aucun matériel » — décision posée À LA MAIN, point par
+  /// point (commande sur un contact déjà présent, report d'information, matériel
+  /// déjà en place…). ⚠️ JAMAIS déduit du type d'E/S : une DO peut parfaitement
+  /// appeler du matériel. Sert uniquement à distinguer « rien à fournir » de
+  /// « nomenclature pas encore renseignée », pour que la BOM cesse de le
+  /// signaler comme un trou. Réversible d'un clic.
+  sansMateriel Boolean  @default(false)
   nom       String   @unique
   type      String // AI | DI | AO | DO | COM
   /// Signal électrique par défaut (entrée : 0-10V/4-20mA/PT1000/D… ; sortie :
@@ -292,8 +321,15 @@ model AutomateModele {
   maxPoints     Int      @default(0)
   /// Lien vers la fiche technique (PDF public, ex. /materiel/Documentations_Distech/...).
   docUrl        String   @default("")
+  /// Article correspondant au magasin (prix, stock, fournisseurs). Null = pas
+  /// encore relié. La base matériel reste PUREMENT TECHNIQUE : le commerce et la
+  /// logistique vivent dans Produit (voir docs/MAGASIN.md §2).
+  produitId     String?
+  produit       Produit? @relation(fields: [produitId], references: [id], onDelete: SetNull)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([produitId])
 }
 
 /// Base matériel éditable — modèle de module d'extension / communication.
@@ -311,8 +347,13 @@ model ModuleModele {
   sortieCount Int      @default(0)
   /// Lien vers la fiche technique (PDF public).
   docUrl      String   @default("")
+  /// Article correspondant au magasin (voir AutomateModele.produitId).
+  produitId   String?
+  produit     Produit? @relation(fields: [produitId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([produitId])
 }
 
 /// Un projet d'affectation E/S (partagé). Le projet complet (infos chantier,
@@ -578,6 +619,10 @@ model ModemScan {
 
   /// Photos rattachées (prises pendant le scan ou ajoutées après coup).
   photos      ScanPhoto[]
+  /// Rapprochement facultatif avec le magasin : un modem scanné ici porte déjà
+  /// série / IMEI / MAC. Aucune fusion des deux tables — le Scanner reste un
+  /// outil perso autonome (voir docs/MAGASIN.md §4).
+  exemplaires Exemplaire[]
 
   @@index([createdAt])
   @@index([chantierId])
@@ -973,4 +1018,404 @@ model NoteFraisMois {
 
   @@unique([userId, periode])
   @@index([userId])
+}
+
+// ---- Outil « Magasin » (référentiel produit + stock) -----------------------
+// Cadrage complet : docs/MAGASIN.md.
+//
+// DEUX INVARIANTS portent tout le reste :
+//
+//  1. LE STOCK EST LA SOMME DES MOUVEMENTS. Aucune colonne « quantité en
+//     stock » modifiée en place. Une seule règle pour les six types :
+//     LA SOURCE DÉCRÉMENTE, LA DESTINATION INCRÉMENTE, la quantité est
+//     toujours positive. D'où : historique auditable, prix d'achat historisés
+//     gratuitement (l'historique des prix EST l'historique des réceptions), et
+//     un écart d'inventaire qui reste visible au lieu d'être corrigé en douce.
+//
+//  2. LA SÉRIALISATION EST OPPORTUNISTE : nombre d'exemplaires ≤ quantité du
+//     mouvement. 4 automates saisis au clavier = 0 exemplaire et un stock
+//     juste ; scannés boîte par boîte = 4 exemplaires. Jamais de saisie imposée.
+//
+// L'argent est en CENTIMES (Int), comme les notes de frais : pas de flottant,
+// pas de Decimal à sérialiser vers le client.
+
+/// Famille d'un produit. Sert au filtrage et au regroupement des impressions ;
+/// n'a AUCUNE incidence technique (les capacités E/S restent dans
+/// AutomateModele / ModuleModele).
+enum CategorieProduit {
+  AUTOMATE
+  MODULE
+  SONDE
+  VANNE
+  SERVOMOTEUR
+  RESEAU
+  ACCESSOIRE
+  AUTRE
+}
+
+enum TypeDepot {
+  ATELIER
+  VEHICULE
+  CHANTIER
+}
+
+/// Lieu où du stock peut se trouver. Le modèle porte la dimension « dépôt »
+/// depuis le premier jour parce qu'elle est pénible à rajouter après coup —
+/// même si l'usage livré n'en tient qu'un seul de vrai (l'atelier).
+model Depot {
+  id          String    @id @default(cuid())
+  nom         String    @unique
+  /// Code court affiché dans les tableaux (ATL, CAM-GUS…).
+  code        String    @unique
+  type        TypeDepot @default(ATELIER)
+  /// Véhicule rattaché à quelqu'un (informatif).
+  detenteurId String?
+  detenteur   User?     @relation(fields: [detenteurId], references: [id], onDelete: SetNull)
+  /// « Dortoir » : ce qui entre ici est considéré comme CONSOMMÉ — on n'y tient
+  /// aucun stock, il est exclu des disponibles et du rayon. C'est le réglage de
+  /// départ des camions (décision de cadrage). Le passer à false donne au
+  /// véhicule un vrai stock, sans migration ni reprise.
+  dortoir     Boolean   @default(false)
+  actif       Boolean   @default(true)
+  ordre       Int       @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mouvementsSource MouvementStock[] @relation("MouvementSource")
+  mouvementsDest   MouvementStock[] @relation("MouvementDestination")
+  inventaires      Inventaire[]
+  exemplaires      Exemplaire[]
+}
+
+/// L'article qu'on achète et qu'on stocke — le « mini CRM produit ».
+/// Distinct des modèles TECHNIQUES (AutomateModele / ModuleModele) qui, eux,
+/// décrivent des capacités d'E/S : deux vies, deux rythmes (voir docs/MAGASIN.md §2).
+model Produit {
+  id            String           @id @default(cuid())
+  /// Référence interne — la clé de la maison, imprimable en étiquette. Survit à
+  /// un changement de gamme ou de marque, contrairement à la réf. fabricant.
+  refInterne    String           @unique
+  /// Référence du fabricant (ECY-303, STP100-2…). Non unique : deux marques
+  /// peuvent se croiser, et une réf. fabricant peut être ré-attribuée.
+  refFabricant  String?
+  designation   String
+  marque        String?
+  categorie     CategorieProduit @default(AUTRE)
+  /// U | m | kg — unité de comptage affichée partout.
+  unite         String           @default("U")
+  /// On CAPTE le n° de série quand on l'a (scan, saisie), on ne l'EXIGE jamais.
+  serialisable  Boolean          @default(false)
+  /// Seuil de réapprovisionnement : en dessous, le produit remonte en tête du
+  /// rayon (« la liste de courses »). 0 = pas de seuil.
+  seuilMini     Int              @default(0)
+  /// Bac / étagère.
+  emplacement   String?
+  image         String           @default("")
+  docUrl        String           @default("")
+  /// Obsolescence : produit qui le remplace (self-relation).
+  remplaceParId String?
+  remplacePar   Produit?         @relation("ProduitRemplacement", fields: [remplaceParId], references: [id], onDelete: SetNull)
+  remplace      Produit[]        @relation("ProduitRemplacement")
+  actif         Boolean          @default(true)
+  note          String           @default("")
+
+  /// UN produit = UN fournisseur. Chez Dumortier le multi-fournisseur est assez
+  /// rare pour ne pas mériter une table de tarifs : elle coûtait un import en
+  /// deux passes, un aller-retour pour créer le fournisseur, et une notion de
+  /// « fournisseur préféré » à arbitrer. Le cas exceptionnel se note dans
+  /// `note`. Décision du 2026-07-29 (docs/MAGASIN.md §3).
+  fournisseurId  String?
+  fournisseur    Fournisseur? @relation(fields: [fournisseurId], references: [id], onDelete: SetNull)
+  /// La référence du produit CHEZ LUI (celle qui va sur le bon de commande).
+  refFournisseur String?
+  /// Prix d'achat annoncé, en centimes. Sert à chiffrer TANT QU'aucune réception
+  /// valorisée n'existe — ensuite c'est le prix réellement payé qui prime
+  /// (voir prixReference() dans queries.ts).
+  prixAchatCents Int?
+  /// Délai de livraison habituel pour CE produit, s'il diffère de celui du
+  /// fournisseur.
+  delaiJours     Int?
+
+  createdById String?
+  createdBy   User?    @relation("ProduitCree", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedById String?
+  updatedBy   User?    @relation("ProduitModifie", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
+
+  codes           CodeBarreProduit[]
+  mouvements      MouvementStock[]
+  exemplaires     Exemplaire[]
+  lignesInventaire LigneInventaire[]
+  nomenclature    NomenclaturePoint[]
+  reservations    ReservationStock[]
+  lignesMateriel  LigneMaterielAffaire[]
+  automates       AutomateModele[]
+  modules         ModuleModele[]
+
+  @@index([categorie])
+  @@index([refFabricant])
+  @@index([fournisseurId])
+}
+
+/// Un code lu au scan → un produit. Appris UNE fois, valable pour toujours :
+/// c'est ce qui fait qu'un magasin scanné tient dans la durée (le code du carton
+/// fournisseur n'est jamais notre référence).
+model CodeBarreProduit {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  /// Symbologie (ean_13, code_128, qr_code…), même vocabulaire que ModemScan.format.
+  format    String?
+  produitId String
+  produit   Produit @relation(fields: [produitId], references: [id], onDelete: Cascade)
+
+  /// Qui l'a appris et quand : un code mal associé doit pouvoir se retrouver.
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([produitId])
+}
+
+model Fournisseur {
+  id         String  @id @default(cuid())
+  nom        String  @unique
+  contact    String  @default("")
+  email      String  @default("")
+  tel        String  @default("")
+  /// Délai de livraison habituel, en jours (informatif).
+  delaiJours Int?
+  note       String  @default("")
+  actif      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  produits Produit[]
+}
+
+/// Les six façons dont du stock bouge. Le SENS n'est pas porté par le signe de
+/// la quantité (toujours positive) mais par les dépôts source/destination.
+enum TypeMouvement {
+  RECEPTION
+  SORTIE
+  RETOUR
+  TRANSFERT
+  REBUT
+  ECART
+}
+
+model MouvementStock {
+  id            String        @id @default(cuid())
+  type          TypeMouvement
+  produitId     String
+  produit       Produit       @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  /// TOUJOURS POSITIVE. Le sens vient des dépôts (invariant 1 en tête de section).
+  quantite      Int
+  depotSourceId String?
+  depotSource   Depot?        @relation("MouvementSource", fields: [depotSourceId], references: [id], onDelete: Restrict)
+  depotDestId   String?
+  depotDest     Depot?        @relation("MouvementDestination", fields: [depotDestId], references: [id], onDelete: Restrict)
+
+  /// Réceptions : prix unitaire réellement payé, en centimes. C'est CE champ qui
+  /// historise les prix d'achat et alimente le PMP — aucune table de prix à tenir.
+  prixUnitaireCents Int?
+  /// Réceptions : n° de la commande d'achat dans WhySoft. On RÉFÉRENCE la
+  /// commande, on ne la ressaisit pas (même principe que numeroWhy).
+  numeroAchat       String?
+
+  /// Sortie / retour au titre d'une affaire.
+  chantierId    String?
+  chantier      Chantier?   @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+  /// Écart issu d'une campagne d'inventaire.
+  inventaireId  String?
+  inventaire    Inventaire? @relation(fields: [inventaireId], references: [id], onDelete: SetNull)
+  note          String      @default("")
+
+  /// Horodatage du GESTE sur l'appareil, distinct de createdAt (= écriture en
+  /// base). Même raison que ModemScan.scanneLe : saisie différée, reprise après
+  /// échec. C'est ce champ qui fait foi pour l'historique.
+  faitLe      DateTime @default(now())
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  exemplairesEntres Exemplaire[] @relation("ExemplaireReception")
+  exemplairesSortis Exemplaire[] @relation("ExemplaireSortie")
+
+  @@index([produitId, faitLe])
+  @@index([produitId, depotDestId])
+  @@index([produitId, depotSourceId])
+  @@index([chantierId])
+  @@index([inventaireId])
+  @@index([faitLe])
+}
+
+enum EtatExemplaire {
+  EN_STOCK
+  SORTI
+  REBUT
+}
+
+/// Un exemplaire physique identifié par son n° de série. RAFFINEMENT FACULTATIF
+/// du stock (invariant 2) : sa présence donne la traçabilité « quel exemplaire
+/// est parti sur quel site », son absence n'empêche rien.
+model Exemplaire {
+  id          String         @id @default(cuid())
+  produitId   String
+  produit     Produit        @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  numeroSerie String
+  etat        EtatExemplaire @default(EN_STOCK)
+  depotId     String?
+  depot       Depot?         @relation(fields: [depotId], references: [id], onDelete: SetNull)
+  /// Affaire sur laquelle il est parti — la graine d'un futur « Parc installé ».
+  chantierId  String?
+  chantier    Chantier?      @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+
+  receptionId String?
+  reception   MouvementStock? @relation("ExemplaireReception", fields: [receptionId], references: [id], onDelete: SetNull)
+  sortieId    String?
+  sortie      MouvementStock? @relation("ExemplaireSortie", fields: [sortieId], references: [id], onDelete: SetNull)
+
+  /// Rapprochement facultatif avec un scan de l'outil Scanner (les modems y ont
+  /// déjà série / IMEI / MAC).
+  modemScanId String?
+  modemScan   ModemScan? @relation(fields: [modemScanId], references: [id], onDelete: SetNull)
+
+  note      String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([produitId, numeroSerie])
+  @@index([chantierId])
+  @@index([depotId])
+  @@index([numeroSerie])
+}
+
+enum EtatInventaire {
+  OUVERT
+  VALIDE
+  ANNULE
+}
+
+/// Campagne de comptage sur un dépôt. Sa VALIDATION génère les mouvements
+/// ECART correspondants : on ne corrige jamais une quantité en place, l'écart
+/// reste lisible dans l'historique (et c'est lui qui dit si le rituel tient).
+model Inventaire {
+  id          String         @id @default(cuid())
+  depotId     String
+  depot       Depot          @relation(fields: [depotId], references: [id], onDelete: Restrict)
+  etat        EtatInventaire @default(OUVERT)
+  libelle     String         @default("")
+  note        String         @default("")
+  ouvertLe    DateTime       @default(now())
+  valideLe    DateTime?
+  ouvertParId String?
+  ouvertPar   User?          @relation(fields: [ouvertParId], references: [id], onDelete: SetNull)
+
+  lignes     LigneInventaire[]
+  mouvements MouvementStock[]
+
+  @@index([depotId])
+}
+
+model LigneInventaire {
+  id           String     @id @default(cuid())
+  inventaireId String
+  inventaire   Inventaire @relation(fields: [inventaireId], references: [id], onDelete: Cascade)
+  produitId    String
+  produit      Produit    @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  /// Stock calculé à l'ouverture de la campagne (photo de référence).
+  theorique    Int
+  /// Null = pas encore compté (une campagne peut s'étaler).
+  compte       Int?
+
+  @@unique([inventaireId, produitId])
+  @@index([produitId])
+}
+
+/// Un point du catalogue appelle N produits : « Sonde T° gaine » = 1 sonde +
+/// 1 doigt de gant + 1 presse-étoupe. C'est le plus gros levier du magasin :
+/// la BOM d'une affaire se dérive de la liste de points, avant même le choix
+/// de l'automate.
+model NomenclaturePoint {
+  id             String       @id @default(cuid())
+  pointCatalogId String
+  pointCatalog   PointCatalog @relation(fields: [pointCatalogId], references: [id], onDelete: Cascade)
+  produitId      String
+  produit        Produit      @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  quantite       Int          @default(1)
+  /// Optionnel = proposé mais pas compté d'office dans la BOM.
+  optionnel      Boolean      @default(false)
+
+  @@unique([pointCatalogId, produitId])
+  @@index([produitId])
+}
+
+/// Complément de BOM saisi à la main sur une affaire : ce que la dérivation ne
+/// sait pas deviner. La partie automate / modules / points n'est JAMAIS recopiée
+/// ici — elle reste dérivée, donc toujours à jour.
+model LigneMaterielAffaire {
+  id         String   @id @default(cuid())
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  produitId  String
+  produit    Produit  @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  quantite   Int      @default(1)
+  note       String   @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([chantierId, produitId])
+  @@index([produitId])
+}
+
+enum EtatReservation {
+  RESERVEE
+  SERVIE
+  ANNULEE
+}
+
+/// Droit posé sur une quantité pour une affaire. Réserver ne déplace rien
+/// physiquement — c'est pourquoi ce n'est PAS un mouvement : le réservé se
+/// déduit du disponible, pas du stock.
+model ReservationStock {
+  id         String          @id @default(cuid())
+  produitId  String
+  produit    Produit         @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  chantierId String
+  chantier   Chantier        @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  quantite   Int
+  etat       EtatReservation @default(RESERVEE)
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([produitId])
+  @@index([chantierId])
+}
+
+/// Journal des imports (produits / stock initial / tarifs). Un import raté doit
+/// pouvoir se comprendre après coup : qui, quand, quel fichier, combien de
+/// lignes créées / mises à jour / rejetées.
+model ImportMagasin {
+  id          String   @id @default(cuid())
+  /// produits | stock | tarifs
+  genre       String
+  nomFichier  String   @default("")
+  nbLignes    Int      @default(0)
+  nbCreees    Int      @default(0)
+  nbMajs      Int      @default(0)
+  nbRejetees  Int      @default(0)
+  /// Motifs de rejet, ligne par ligne (JSON) — consultable depuis le journal.
+  rejets      Json     @default("[]")
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
 }

@@ -36,6 +36,14 @@ type EditDraft = {
 };
 type CreateDraft = { nom: string; email: string; motDePasse: string; role: string };
 
+/** Libellé des rôles. ACHATS est un cran entre membre et administrateur : il
+ *  ouvre les prix d'achat et le référentiel du magasin, rien d'autre. */
+const ROLE_LABEL: Record<string, string> = {
+  ADMIN: "Administrateur",
+  ACHATS: "Achats",
+  MEMBRE: "Membre",
+};
+
 const selectCls =
   "h-9 rounded-md border border-border bg-surface px-2.5 text-sm text-fg";
 
@@ -176,6 +184,7 @@ export function ConfigUtilisateurs({
                 className={cn(selectCls, "mt-1 w-full")}
               >
                 <option value="MEMBRE">Membre</option>
+                <option value="ACHATS">Achats</option>
                 <option value="ADMIN">Administrateur</option>
               </select>
             </div>
@@ -265,6 +274,7 @@ export function ConfigUtilisateurs({
                       className={selectCls}
                     >
                       <option value="MEMBRE">Membre</option>
+                      <option value="ACHATS">Achats</option>
                       <option value="ADMIN">Administrateur</option>
                     </select>
                     {/* Profil « notes de frais » : détermine les rubriques de
@@ -305,7 +315,7 @@ export function ConfigUtilisateurs({
                 ) : (
                   <>
                     <span className="hidden text-xs font-medium text-muted sm:inline">
-                      {u.role === "ADMIN" ? "Administrateur" : "Membre"}
+                      {ROLE_LABEL[u.role] ?? "Membre"}
                     </span>
                     {u.profilNdf && (
                       <span

@@ -20,7 +20,11 @@ async function requireAdmin(): Promise<string> {
 }
 
 function normaliserRole(v: unknown): Role {
-  return v === Role.ADMIN ? Role.ADMIN : Role.MEMBRE;
+  if (v === Role.ADMIN) return Role.ADMIN;
+  // ACHATS : voit les prix d'achat du magasin et gère le référentiel produit.
+  // N'ouvre AUCUN droit d'administration (voir src/tools/magasin/model.ts).
+  if (v === Role.ACHATS) return Role.ACHATS;
+  return Role.MEMBRE;
 }
 
 /** Profil « notes de frais ». Tout ce qui n'est pas un profil connu vaut

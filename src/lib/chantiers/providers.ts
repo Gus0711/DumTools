@@ -4,6 +4,7 @@ import { listerPourChantier as affectationPourChantier } from "@/tools/affectati
 import { listerPourChantier as documentsPourChantier } from "@/tools/documents/queries";
 import { listerPourChantier as visitesPourChantier } from "@/tools/visites/queries";
 import { listerPourChantier as notesPourChantier } from "@/tools/notes/queries";
+import { listerPourChantier as magasinPourChantier } from "@/tools/magasin/queries";
 import type { ClientArtefact, ClientRealisation } from "@/lib/clients/types";
 
 /* =============================================================================
@@ -29,6 +30,7 @@ const PROVIDERS: Record<string, ChantierProvider> = {
   visites: visitesPourChantier,
   notes: notesPourChantier,
   documents: documentsPourChantier,
+  magasin: magasinPourChantier,
 };
 
 /**

@@ -2,7 +2,14 @@
 // "server-only", pas de Prisma. La palette (composant client) les importe ici,
 // les requêtes vivent dans queries.ts.
 
-export type TypeResultat = "affaire" | "client" | "projet" | "note" | "visite" | "wiki";
+export type TypeResultat =
+  | "affaire"
+  | "client"
+  | "projet"
+  | "note"
+  | "visite"
+  | "wiki"
+  | "produit";
 
 export interface ResultatRecherche {
   type: TypeResultat;
@@ -22,6 +29,7 @@ export const LIBELLE_TYPE: Record<TypeResultat, string> = {
   note: "Notes",
   visite: "Visites",
   wiki: "Wiki",
+  produit: "Magasin",
 };
 
 /** Longueur minimale de la requête — en dessous, tout ressortirait. */

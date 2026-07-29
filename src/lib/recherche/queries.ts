@@ -33,7 +33,7 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
   if (requete.length < MIN_CARACTERES) return [];
   const contient = { contains: requete, mode: "insensitive" as const };
 
-  const [affaires, clients, projets, notes, visites, pagesWiki] = await Promise.all([
+  const [affaires, clients, projets, notes, visites, pagesWiki, produits] = await Promise.all([
     prisma.chantier.findMany({
       where: {
         OR: [{ nom: contient }, { numeroWhy: contient }, { client: { nom: contient } }],
@@ -76,6 +76,29 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
       take: PAR_SOURCE,
     }),
     rechercherPages(requete),
+    // Magasin : la référence interne, celle du fabricant, la désignation — et
+    // les codes-barres appris, pour retrouver un article depuis son carton.
+    prisma.produit.findMany({
+      where: {
+        OR: [
+          { refInterne: contient },
+          { refFabricant: contient },
+          { designation: contient },
+          { marque: contient },
+          { codes: { some: { code: contient } } },
+        ],
+      },
+      select: {
+        id: true,
+        refInterne: true,
+        designation: true,
+        marque: true,
+        emplacement: true,
+        actif: true,
+      },
+      orderBy: { refInterne: "asc" },
+      take: PAR_SOURCE,
+    }),
   ]);
 
   return [
@@ -120,6 +143,13 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
       titre: p.titre,
       sousTitre: p.rubriqueNom,
       href: `/outils/wiki/${p.rubriqueSlug}/${p.id}`,
+    })),
+    ...produits.map((p) => ({
+      type: "produit" as const,
+      id: p.id,
+      titre: `${p.refInterne} — ${p.designation}`,
+      sousTitre: contexte(p.marque, p.emplacement, p.actif ? null : "archivé"),
+      href: `/outils/magasin/produits/${p.id}`,
     })),
   ];
 }

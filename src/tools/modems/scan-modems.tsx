@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { Button, Combobox, Input, type ComboOption } from "@/ui";
+import { useLecteurCode } from "@/lib/scan/lecteur";
 import {
   estLignePhoto,
   estModem,
@@ -92,26 +93,10 @@ const OPTIONS_GROUPAGE: { cle: Groupage; label: string }[] = [
 /** Nombre de colonnes du tableau — sert au colSpan des en-têtes de groupe. */
 const NB_COLONNES = 14;
 
-/** Contrôles minimaux exposés par @zxing/browser (évite d'importer le type). */
-type ScannerControls = { stop: () => void };
-
-/* BarcodeDetector natif (non typé dans lib.dom) — typage minimal local. */
-type CodeDetecte = { rawValue: string; format?: string };
-interface DetecteurCodeBarres {
-  detect(source: CanvasImageSource): Promise<CodeDetecte[]>;
-}
-type CtorDetecteur = (new (opts?: {
-  formats?: string[];
-}) => DetecteurCodeBarres) & {
-  getSupportedFormats?: () => Promise<string[]>;
-};
-function getDetecteurNatif(): CtorDetecteur | null {
-  if (typeof window === "undefined") return null;
-  return (
-    (window as unknown as { BarcodeDetector?: CtorDetecteur }).BarcodeDetector ??
-    null
-  );
-}
+/* Le moteur de lecture (BarcodeDetector natif + repli ZXing, caméra, torche)
+ * vit désormais dans src/lib/scan/lecteur.ts : il est partagé avec le Magasin.
+ * Cet écran n'en garde que ce qui lui est propre — le parsing des modems, le
+ * tableau, les photos, les rattachements. */
 
 const fmtHeureSeule = new Intl.DateTimeFormat("fr-FR", {
   hour: "2-digit",
@@ -172,15 +157,9 @@ export function ScanModems({
   const [scans, setScans] = useState<Ligne[]>(
     scansInitiaux.map((s) => ({ ...s, statut: "ok" })),
   );
-  const [scanning, setScanning] = useState(false);
-  const [erreurCam, setErreurCam] = useState("");
   const [flash, setFlash] = useState<"ok" | "dup" | null>(null);
   const [dernier, setDernier] = useState<string>("");
   const [manuel, setManuel] = useState("");
-  const [moteur, setMoteur] = useState<string>("");
-  const [resolution, setResolution] = useState<string>("");
-  const [torcheDispo, setTorcheDispo] = useState(false);
-  const [torche, setTorche] = useState(false);
   const [copie, setCopie] = useState(false);
 
   // Contexte de rattachement des PROCHAINS scans (affaire + groupe).
@@ -213,12 +192,6 @@ export function ScanModems({
   const [visionneuse, setVisionneuse] = useState<{ url: string; photoId: string } | null>(null);
   const [, start] = useTransition();
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const controlsRef = useRef<ScannerControls | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const trackRef = useRef<MediaStreamTrack | null>(null);
-  const boucleRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scanningRef = useRef(false);
   const scansRef = useRef<Ligne[]>(scans);
   const lastRef = useRef<{ raw: string; t: number } | null>(null);
   const audioRef = useRef<AudioContext | null>(null);
@@ -487,6 +460,21 @@ export function ScanModems({
     [bip, montrerFlash, moiNom, persister, poser],
   );
 
+  /* Caméra + décodage : moteur partagé avec le Magasin (src/lib/scan). */
+  const {
+    videoRef,
+    scanning,
+    erreur: erreurCam,
+    moteur,
+    resolution,
+    torche,
+    torcheDispo,
+    demarrer,
+    arreter,
+    basculerTorche,
+    actifRef: scanningRef,
+  } = useLecteurCode(traiter);
+
   /** Crée une **ligne photo** (observation sans code) et la persiste. Renvoie
    *  son id temporaire, auquel la photo se rattache immédiatement. */
   const creerLigneLocalePhoto = useCallback((): string => {
@@ -577,7 +565,9 @@ export function ScanModems({
       }
     }
     ouvrirAppareilNatif();
-  }, [deposerPhoto, ouvrirAppareilNatif]);
+    // videoRef / scanningRef viennent du lecteur partagé : ce sont des refs
+    // stables, mais eslint ne peut plus le déduire depuis un hook externe.
+  }, [deposerPhoto, ouvrirAppareilNatif, scanningRef, videoRef]);
 
   /** Bouton d'ajout d'une ligne du tableau : toujours l'appareil natif (on
    *  documente après coup, la caméra de scan n'est plus forcément la bonne vue). */
@@ -605,145 +595,8 @@ export function ScanModems({
     [poser],
   );
 
-  /** Boucle de détection via BarcodeDetector natif (throttlée). */
-  const boucleNative = useCallback(
-    (detecteur: DetecteurCodeBarres) => {
-      const tick = async () => {
-        if (!scanningRef.current) return;
-        const v = videoRef.current;
-        if (v && v.readyState >= 2) {
-          try {
-            const codes = await detecteur.detect(v);
-            if (codes.length && codes[0].rawValue)
-              traiter(codes[0].rawValue, codes[0].format ?? null);
-          } catch {
-            /* frame non décodable : on continue */
-          }
-        }
-        if (scanningRef.current) boucleRef.current = setTimeout(tick, 120);
-      };
-      tick();
-    },
-    [traiter],
-  );
-
-  const demarrer = useCallback(async () => {
-    setErreurCam("");
-    try {
-      // Haute résolution + caméra arrière : indispensable pour un code dense.
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      });
-      streamRef.current = stream;
-      const video = videoRef.current!;
-      const track = stream.getVideoTracks()[0];
-      trackRef.current = track;
-
-      try {
-        const caps = track.getCapabilities?.() as
-          | (MediaTrackCapabilities & { focusMode?: string[]; torch?: boolean })
-          | undefined;
-        if (caps?.focusMode?.includes("continuous")) {
-          await track.applyConstraints({
-            advanced: [{ focusMode: "continuous" }],
-          } as unknown as MediaTrackConstraints);
-        }
-        setTorcheDispo(Boolean(caps?.torch));
-      } catch {
-        /* capacités non exposées : on ignore */
-      }
-
-      scanningRef.current = true;
-      const Detecteur = getDetecteurNatif();
-      let natifOk = false;
-      if (Detecteur) {
-        try {
-          const supportes = (await Detecteur.getSupportedFormats?.()) ?? [];
-          const formats = supportes.filter((f) => f && f !== "unknown");
-          if (formats.length) {
-            const detecteur = new Detecteur({ formats });
-            video.srcObject = stream;
-            video.setAttribute("playsinline", "true");
-            video.muted = true;
-            await video.play().catch(() => {});
-            setMoteur("BarcodeDetector (natif)");
-            boucleNative(detecteur);
-            natifOk = true;
-          }
-        } catch {
-          natifOk = false;
-        }
-      }
-      if (!natifOk) {
-        const [{ BrowserMultiFormatReader }, { BarcodeFormat }] =
-          await Promise.all([
-            import("@zxing/browser"),
-            import("@zxing/library"),
-          ]);
-        const reader = new BrowserMultiFormatReader(undefined, {
-          delayBetweenScanAttempts: 100,
-        });
-        setMoteur("ZXing");
-        controlsRef.current = await reader.decodeFromStream(
-          stream,
-          video,
-          (result) => {
-            if (result) {
-              const fmt = BarcodeFormat[result.getBarcodeFormat()];
-              traiter(result.getText(), fmt ? fmt.toLowerCase() : null);
-            }
-          },
-        );
-      }
-
-      const s = track.getSettings();
-      if (s.width && s.height) setResolution(`${s.width}×${s.height}`);
-      setScanning(true);
-    } catch {
-      setErreurCam(
-        "Caméra indisponible ou refusée. Autorise l'accès caméra dans le navigateur (site en HTTPS requis), puis réessaie. Sinon, colle le contenu du code ci-dessous.",
-      );
-    }
-  }, [boucleNative, traiter]);
-
-  const arreter = useCallback(() => {
-    scanningRef.current = false;
-    if (boucleRef.current) clearTimeout(boucleRef.current);
-    controlsRef.current?.stop();
-    controlsRef.current = null;
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    trackRef.current = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setScanning(false);
-    setTorche(false);
-    setTorcheDispo(false);
-  }, []);
-
-  const basculerTorche = useCallback(async () => {
-    const track = trackRef.current;
-    if (!track) return;
-    try {
-      await track.applyConstraints({
-        advanced: [{ torch: !torche }],
-      } as unknown as MediaTrackConstraints);
-      setTorche((v) => !v);
-    } catch {
-      /* torche non applicable */
-    }
-  }, [torche]);
-
   useEffect(() => {
     return () => {
-      scanningRef.current = false;
-      if (boucleRef.current) clearTimeout(boucleRef.current);
-      controlsRef.current?.stop();
-      streamRef.current?.getTracks().forEach((t) => t.stop());
       if (flashTimer.current) clearTimeout(flashTimer.current);
     };
   }, []);

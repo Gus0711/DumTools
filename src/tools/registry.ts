@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { CircuitBoard, ClipboardCheck, ClipboardList, FlaskConical, FolderOpen, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
+import { Boxes, CircuitBoard, ClipboardCheck, ClipboardList, FlaskConical, FolderOpen, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
 
 /* =============================================================================
  * REGISTRE D'OUTILS
@@ -118,6 +118,18 @@ export const TOOLS: Tool[] = [
     status: "disponible",
     signal: "do",
     portee: "affaire",
+  },
+  {
+    id: "magasin",
+    nom: "Magasin",
+    description:
+      "Le référentiel produit et le stock : ce qu'on a, ce qui est réservé à une affaire, ce qui est sorti. Réception et sortie au scan ou au clavier, inventaires, prix d'achat — et le matériel d'une affaire dérivé de ses projets GTB.",
+    icon: Boxes,
+    href: "/outils/magasin",
+    status: "disponible",
+    // Vert « ce qui sort » : le signal DO est libre dans le rail, Documents
+    // étant un outil d'affaire (absent de la navigation).
+    signal: "do",
   },
   {
     id: "wiki",
