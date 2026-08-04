@@ -80,4 +80,5 @@
   --dur-4: 520ms; /* balayage de signature (filet laiton)      */
   --dur-5: 1100ms; /* le courant qui parcourt un synoptique     */
   --dur-pouls: 2.4s; /* respiration d'une LED en service        */
+  --dur-alerte: 1.4s; /* appel d'une LED qui réclame une action  */
 }

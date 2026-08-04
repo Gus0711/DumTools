@@ -68,3 +68,7 @@ next-env.d.ts
 
 # Clients OAuth du serveur MCP (enregistrement dynamique) — jamais committé
 mcp/.oauth-clients.json
+.sauvegardes/
+
+# Journal du serveur de prod locale (scripts/serve-prod.sh)
+.prod.log

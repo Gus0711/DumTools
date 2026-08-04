@@ -26,7 +26,20 @@ function alimente(j: Jalon) {
   return j.etat === "fait" || j.etat === "encours";
 }
 
-export function FriseCycle({ jalons }: { jalons: Jalon[] }) {
+export function FriseCycle({
+  jalons,
+  reperes,
+  signaux,
+}: {
+  jalons: Jalon[];
+  /** Les compteurs de l'affaire (automates, E/S, MES, documents), posés sur la
+   *  ligne de titre. Ils vivaient dans leur propre bandeau au-dessus : trois
+   *  blocs empilés pour dire une chose — où en est l'affaire. Ici, les chiffres
+   *  et la progression se lisent d'un seul regard. */
+  reperes?: React.ReactNode;
+  /** Répartition AI·DI·AO·DO·COM, en pied de bloc quand il y a des E/S. */
+  signaux?: React.ReactNode;
+}) {
   // Jusqu'où le courant va : le dernier jalon alimenté. Au-delà, la piste reste
   // pointillée même si un jalon isolé plus loin est déjà fait — c'est une
   // progression qu'on lit, pas une somme de cases.
@@ -39,11 +52,14 @@ export function FriseCycle({ jalons }: { jalons: Jalon[] }) {
       // Le synoptique parle des E/S : il porte le bleu du signal AI.
       className="signal-ai bloc overflow-hidden"
     >
-      <div className="bloc-entete flex-wrap items-baseline gap-x-2">
-        <h2 className="font-display text-sm font-semibold text-fg">Avancement</h2>
-        <p className="text-xs text-subtle">
-          déduit de ce qui a réellement été produit — rien à cocher
-        </p>
+      <div className="bloc-entete flex-wrap items-baseline gap-x-4 gap-y-1.5">
+        <h2
+          className="font-display text-sm font-semibold text-fg"
+          title="Déduit de ce qui a réellement été produit — rien à cocher"
+        >
+          Avancement
+        </h2>
+        {reperes}
         <p className="ref ml-auto text-signal">
           {faits}/{jalons.length}
         </p>
@@ -73,6 +89,15 @@ export function FriseCycle({ jalons }: { jalons: Jalon[] }) {
           })}
         </ol>
       </div>
+
+      {/* La répartition des signaux ferme le bloc : c'est un détail des E/S
+          annoncées juste au-dessus, pas un sujet en soi. */}
+      {signaux && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-hairline px-3 py-2 md:px-4">
+          <p className="stamp shrink-0">Signaux</p>
+          <div className="min-w-52 flex-1">{signaux}</div>
+        </div>
+      )}
     </section>
   );
 }

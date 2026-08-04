@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Boxes, Cpu, FileStack, FolderOpen, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
-import { Button, Chiffre, JaugeES, RangeeChiffres, type CompteES } from "@/ui";
+import { Button, JaugeES, type CompteES } from "@/ui";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { etatLabel } from "@/lib/chantiers/etats";
 import { auth } from "@/auth";
@@ -76,6 +76,39 @@ function SectionTitle({
         </span>
       )}
     </h2>
+  );
+}
+
+/**
+ * Un repère chiffré de l'affaire, sur UNE ligne.
+ *
+ * Remplace le gros `<Chiffre>` : ces nombres sont des repères qu'on consulte,
+ * pas le sujet de l'écran. Quatre compteurs d'atelier empilés au-dessus de la
+ * frise disaient trois fois la même chose (où en est l'affaire) en trois blocs.
+ * Ils vivent maintenant sur la ligne de titre de l'Avancement.
+ */
+function Repere({
+  label,
+  valeur,
+  detail,
+  ton = "neutre",
+}: {
+  label: string;
+  valeur: React.ReactNode;
+  detail?: string;
+  ton?: "neutre" | "success" | "danger";
+}) {
+  const TON = {
+    neutre: "text-fg",
+    success: "text-success",
+    danger: "text-danger",
+  } as const;
+  return (
+    <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="stamp">{label}</span>
+      <span className={`font-mono text-sm font-semibold tabular-nums ${TON[ton]}`}>{valeur}</span>
+      {detail && <span className="text-xs text-subtle">{detail}</span>}
+    </span>
   );
 }
 
@@ -162,7 +195,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   );
 
   return (
-    <div className="mx-auto max-w-[1700px] space-y-8 px-4 py-5 md:px-7 md:py-7">
+    /* space-y-6 et non 8 : dix sections espacées de 2rem faisaient défiler
+       autant de vide que de contenu. */
+    <div className="mx-auto max-w-[1700px] space-y-6 px-4 py-4 md:px-7 md:py-5">
       <TitreEcran
         estampille="Affaire"
         titre={affaire.nom}
@@ -178,33 +213,44 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         clients={clients.map((c) => c.nom)}
       />
 
-      {/* ---- Les chiffres de l'affaire, lisibles de loin ------------------ */}
-      <section className="-mt-4">
-        <RangeeChiffres>
-          <Chiffre label="Automates" valeur={projets.length} detail={`${nbModules} module${nbModules > 1 ? "s" : ""}`} />
-          <Chiffre label="E/S" valeur={totalES} detail="entrées / sorties déclarées" />
-          <Chiffre
-            label="Mise en service"
-            valeur={`${testsTotal.ok}/${testsTotal.total}`}
-            ton={testsTotal.defaut > 0 ? "danger" : testsTotal.total > 0 && testsTotal.ok === testsTotal.total ? "success" : "neutre"}
-            detail={testsTotal.defaut > 0 ? `${testsTotal.defaut} en défaut` : "points testés"}
-            petit
-          />
-          <Chiffre label="Documents" valeur={documents.length} detail={`${notes.length} note${notes.length > 1 ? "s" : ""} · ${scans.length} scan${scans.length > 1 ? "s" : ""}`} petit />
-        </RangeeChiffres>
-
-        {totalES > 0 && (
-          <div className="bloc -mt-px px-4 py-3.5 md:px-6">
-            <p className="stamp mb-2.5">Répartition des signaux</p>
-            <JaugeES compte={repartitionES} />
-          </div>
-        )}
-      </section>
-
-      {/* ---- Avancement technique (frise des 7 étapes du cycle) ----------- */}
-      <div>
-        <FriseCycle jalons={jalons} />
-      </div>
+      {/* ---- Avancement : la frise des 7 jalons, ET les repères chiffrés ---
+              Un seul bloc. Les compteurs (automates, E/S, mise en service,
+              documents) tenaient auparavant leur propre bandeau au-dessus,
+              suivi d'un second pour la répartition des signaux : trois blocs
+              empilés pour répondre à une seule question — où en est l'affaire.
+              Les chiffres se lisent maintenant sur la ligne de titre, la frise
+              en dessous, la répartition en pied. ---------------------------- */}
+      <FriseCycle
+        jalons={jalons}
+        reperes={
+          <>
+            <Repere
+              label="Automates"
+              valeur={projets.length}
+              detail={nbModules > 0 ? `${nbModules} mod.` : undefined}
+            />
+            <Repere label="E/S" valeur={totalES} />
+            <Repere
+              label="MES"
+              valeur={`${testsTotal.ok}/${testsTotal.total}`}
+              ton={
+                testsTotal.defaut > 0
+                  ? "danger"
+                  : testsTotal.total > 0 && testsTotal.ok === testsTotal.total
+                    ? "success"
+                    : "neutre"
+              }
+              detail={testsTotal.defaut > 0 ? `${testsTotal.defaut} en défaut` : undefined}
+            />
+            <Repere
+              label="Documents"
+              valeur={documents.length}
+              detail={`${notes.length} note${notes.length > 1 ? "s" : ""}`}
+            />
+          </>
+        }
+        signaux={totalES > 0 ? <JaugeES compte={repartitionES} /> : undefined}
+      />
 
       {/* ---- Alerte « schéma d'armoire manquant » : la frise dit l'état, ce
               bandeau dit quoi FAIRE. Rien quand tout va bien. --------------- */}
@@ -284,6 +330,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </table>
           </div>
         )}
+      </section>
+
+      {/* ---- Matériel (outil Magasin) — juste sous le Projet GTB, dont il
+              dérive : on lit les automates, puis ce qu'ils coûtent en pièces. */}
+      <section>
+        <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+          <SectionTitle icon={<Boxes className="h-4 w-4 text-muted" />}>Matériel</SectionTitle>
+          <p className="text-xs text-subtle">
+            dérivé des projets GTB et des listes de points, confronté au stock
+          </p>
+        </div>
+        <BlocMaterielAffaire chantierId={id} peutPrix={peutVoirPrix(session?.user?.role)} />
       </section>
 
       {/* ---- Notes (documents riches de l'affaire) ------------------------- */}
@@ -410,17 +468,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             ))}
           </div>
         )}
-      </section>
-
-      {/* ---- Matériel (outil Magasin) — masqué si rien à dire ------------- */}
-      <section>
-        <div className="mb-3">
-          <SectionTitle icon={<Boxes className="h-4 w-4 text-muted" />}>Matériel</SectionTitle>
-          <p className="mt-1 text-xs text-subtle">
-            Besoin dérivé des projets GTB et des listes de points, confronté au stock du magasin.
-          </p>
-        </div>
-        <BlocMaterielAffaire chantierId={id} peutPrix={peutVoirPrix(session?.user?.role)} />
       </section>
 
       {/* ---- Scans (outil Scanner) — masqué si l'affaire n'en a aucun ----- */}

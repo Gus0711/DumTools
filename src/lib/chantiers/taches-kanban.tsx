@@ -177,23 +177,46 @@ export function TachesKanban({
   }
 
   return (
-    <section>
-      <div className="mb-3">
-        <h2 className="flex items-center gap-2.5">
-          <ListTodo className="h-4 w-4 text-brand" />
-          <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
-            Tâches
+    /* REPLIÉ PAR DÉFAUT. Trois colonnes toujours dépliées poussaient le Projet
+       GTB — le cœur de l'affaire — sous la ligne de flottaison. Le titre suffit
+       à dire s'il reste du travail ; un clic ouvre le tableau.
+       `open` est absent, donc non contrôlé : le navigateur tient l'état et on
+       ne re-rend rien au pliage. */
+    <details className="group">
+      <summary className="mb-3 flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">
+        <ChevronRight className="h-4 w-4 shrink-0 text-subtle transition-transform duration-150 group-open:rotate-90" />
+        <ListTodo className="h-4 w-4 shrink-0 text-brand" />
+        <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
+          Tâches
+        </span>
+
+        {/* LE SIGNAL, section repliée. La .led-cur du synoptique respirait trop
+            discrètement pour un bandeau fermé qu'il faut REMARQUER : on passe à
+            .led-alerte (plus grosse, plus rapide, halo qui part loin), sur une
+            pastille cerclée. La couleur ne porte jamais l'information seule —
+            le compte et « à faire ou en cours » sont écrits à côté, et
+            l'animation cède la place à un anneau fixe sous
+            prefers-reduced-motion. */}
+        {ouvertes > 0 ? (
+          <span className="signal-accent inline-flex items-center gap-2 rounded border border-signal/50 bg-signal/15 px-2 py-1">
+            <span aria-hidden className="led led-alerte" />
+            <span className="font-mono text-sm font-bold tabular-nums text-signal">
+              {ouvertes}
+            </span>
+            <span className="text-xs font-medium text-signal">à faire ou en cours</span>
           </span>
+        ) : (
           <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
-            {ouvertes}
+            0
           </span>
-        </h2>
-        {erreur && (
-          <p className="mt-2 flex items-center gap-1.5 text-sm text-danger">
-            <TriangleAlert className="h-4 w-4" /> {erreur}
-          </p>
         )}
-      </div>
+      </summary>
+
+      {erreur && (
+        <p className="mb-2 flex items-center gap-1.5 text-sm text-danger">
+          <TriangleAlert className="h-4 w-4" /> {erreur}
+        </p>
+      )}
 
       <div className="grid items-start gap-3 sm:grid-cols-3">
         {COLONNES_TACHES.map((col, colIndex) => {
@@ -215,7 +238,7 @@ export function TachesKanban({
                 enSurvol ? "border-brand/50" : "border-border",
               )}
             >
-              <div className="flex items-center gap-2 px-3 pb-1 pt-2.5">
+              <div className="flex items-center gap-2 px-2.5 pb-0.5 pt-2">
                 <span className={cn("h-2 w-2 shrink-0 rounded-full", col.dot)} />
                 <span className="text-xs font-semibold uppercase tracking-wide text-muted">
                   {col.label}
@@ -223,7 +246,9 @@ export function TachesKanban({
                 <span className="text-xs tabular-nums text-subtle">{cartes.length}</span>
               </div>
 
-              <div className="flex min-h-16 flex-1 flex-col gap-1.5 p-2">
+              {/* Plus de plancher de hauteur : une colonne vide ne réserve que
+                  la place de son bouton « Ajouter », pas un pavé de vide. */}
+              <div className="flex flex-1 flex-col gap-1.5 p-1.5">
                 {cartes.map((t) => (
                   <Fragment key={t.id}>
                     {indicAvantId === t.id && <Indicateur />}
@@ -254,7 +279,7 @@ export function TachesKanban({
           );
         })}
       </div>
-    </section>
+    </details>
   );
 }
 

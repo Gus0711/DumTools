@@ -3,11 +3,11 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Info, Loader2, Trash2, TriangleAlert } from "lucide-react";
 import { Button, Combobox, type ComboOption } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { BesoinArmoire, EtatAffaire } from "@/generated/prisma/enums";
-import { CYCLE_AFFAIRE } from "./etats";
+import { CYCLE_AFFAIRE, etapeSuivante, etatAide, etatLabel } from "./etats";
 import { BESOINS_ARMOIRE } from "./armoire";
 import { changerBesoinArmoire, changerEtatAffaire, modifierAffaire } from "./actions";
 
@@ -107,9 +107,11 @@ export function AffaireFicheHeader({
       <div className="bloc">
         <span aria-hidden className="rule-signal anim-sweep absolute inset-x-0 top-0 z-10 h-[3px]" />
 
-        <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-start md:justify-between md:gap-x-8 md:px-6 md:pb-5 md:pt-6">
+        {/* L'estampille « Affaire » a été retirée : la barre de chrome l'affiche
+            déjà en permanence au-dessus. Le titre plafonne plus bas qu'avant —
+            à 2,6rem il mangeait un tiers de l'écran avant la moindre donnée. */}
+        <div className="flex flex-col gap-2 px-4 pb-3 pt-3.5 md:flex-row md:items-center md:justify-between md:gap-x-6 md:px-6 md:pb-3.5 md:pt-4">
           <div className="min-w-0 flex-1">
-            <p className="stamp">Affaire</p>
             {/* Le nom EST le titre : on l'édite là où on le lit. Le plancher de
                 taille est bas pour que les noms longs tiennent au téléphone —
                 un champ de saisie ne sait pas passer à la ligne. */}
@@ -119,7 +121,7 @@ export function AffaireFicheHeader({
               aria-label="Nom de l'affaire"
               className={cn(
                 CHAMP_PLAT,
-                "mt-1.5 font-display text-[clamp(1.15rem,0.75rem+2.1vw,2.6rem)] font-bold leading-tight tracking-[-0.03em]",
+                "font-display text-[clamp(1.1rem,0.8rem+1.3vw,1.85rem)] font-bold leading-tight tracking-[-0.03em]",
               )}
             />
           </div>
@@ -135,6 +137,7 @@ export function AffaireFicheHeader({
                 Enregistrer
               </Button>
             )}
+            <BoutonEtapeSuivante etat={etat} pending={pending} onChanger={changerEtat} />
             <BoutonCorbeille etat={etat} pending={pending} onChanger={changerEtat} />
           </div>
         </div>
@@ -142,9 +145,13 @@ export function AffaireFicheHeader({
         {/* Rail du cycle — la barre de progression de l'affaire, pleine largeur. */}
         <CycleAffaire etat={etat} pending={pending} onChanger={changerEtat} />
 
-        {/* Pavé de références. */}
-        <div className="flex flex-col border-t border-hairline bg-surface-2 sm:flex-row sm:flex-wrap">
-          <Champ label="Client" className="min-w-52 flex-1">
+        {/* Pavé de références — TROIS COLONNES ÉGALES. En flex, le champ Client
+            portait `flex-1` et mangeait toute la largeur restante : les trois
+            références n'avaient aucune raison d'être hiérarchisées ainsi. Une
+            grille à parts égales les aligne, et les filets de séparation
+            tombent à intervalle régulier. */}
+        <div className="grid grid-cols-1 border-t border-hairline bg-surface-2 sm:grid-cols-3">
+          <Champ label="Client">
             <Combobox
               value={valClient}
               onInput={setValClient}
@@ -155,7 +162,7 @@ export function AffaireFicheHeader({
             />
           </Champ>
 
-          <Champ label="N° Why" className="min-w-40">
+          <Champ label="N° Why">
             <input
               value={valWhy}
               onChange={(e) => setValWhy(e.target.value)}
@@ -165,7 +172,7 @@ export function AffaireFicheHeader({
             />
           </Champ>
 
-          <Champ label="Besoin armoire" className="min-w-44" pourId="besoin-armoire">
+          <Champ label="Besoin armoire" pourId="besoin-armoire">
             <select
               id="besoin-armoire"
               value={besoinArmoire ?? ""}
@@ -207,7 +214,10 @@ function Champ({
   return (
     <div
       className={cn(
-        "border-b border-hairline px-4 py-2.5 last:border-b-0",
+        // min-w-0 : en grille, une colonne `1fr` vaut `min-width:auto` par
+        // défaut — un nom de client à rallonge élargirait sa colonne et
+        // casserait l'égalité des trois.
+        "min-w-0 border-b border-hairline px-4 py-2 last:border-b-0",
         "sm:border-b-0 sm:border-r sm:last:border-r-0 md:px-6",
         className,
       )}
@@ -227,8 +237,16 @@ function Champ({
 /**
  * Cycle de vie en rail : Devis → Commande → En cours → Livrée → Clôturée.
  * Chaque étape occupe la même largeur et se remplit quand elle est franchie —
- * on lit l'avancement d'un coup d'œil, sans compter les pastilles. Chaque
- * segment est cliquable pour avancer (ou revenir).
+ * on lit l'avancement d'un coup d'œil, sans compter les pastilles.
+ *
+ * DÉCOUVRABILITÉ (le point qui coinçait) : le rail ressemblait à une barre de
+ * progression, donc personne ne devinait qu'il était cliquable, et les libellés
+ * seuls ne disaient pas ce qu'on déclarait en cliquant. Trois ajouts :
+ *   - une ligne sous le rail explique l'étape EN COURS en langage de chantier ;
+ *   - les étapes non atteintes portent un liseré pointillé (« pas encore »),
+ *     et le survol annonce l'action en toutes lettres ;
+ *   - le geste normal (avancer d'un cran) a son propre bouton, plus haut —
+ *     le rail ne sert plus qu'à corriger ou revenir en arrière.
  */
 function CycleAffaire({
   etat,
@@ -243,40 +261,94 @@ function CycleAffaire({
   const courant = CYCLE_AFFAIRE.findIndex((e) => e.value === etat);
 
   return (
-    <div className="flex snap-x snap-mandatory overflow-x-auto border-t border-hairline [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {CYCLE_AFFAIRE.map((e, i) => {
-        const estCourant = e.value === etat;
-        const franchie = !corbeille && courant >= 0 && i < courant;
-        return (
-          <button
-            key={e.value}
-            type="button"
-            onClick={() => !estCourant && onChanger(e.value)}
-            disabled={pending || estCourant}
-            aria-current={estCourant ? "step" : undefined}
-            title={estCourant ? `Étape actuelle : ${e.label}` : `Passer en « ${e.label} »`}
-            className={cn(
-              "group relative min-w-[7.5rem] shrink-0 snap-start border-r border-hairline px-2 py-3 text-center last:border-r-0 sm:min-w-0 sm:flex-1 sm:py-2.5",
-              "transition-colors duration-150",
-              estCourant
-                ? "bg-brand text-brand-fg"
-                : franchie
-                  ? "bg-brand/10 text-brand hover:bg-brand/15"
-                  : "text-subtle hover:bg-surface-2 hover:text-fg",
-              pending && "opacity-60",
-            )}
-          >
-            <span className="flex items-center justify-center gap-1.5 font-display text-[0.68rem] font-semibold uppercase tracking-[0.09em]">
-              {franchie && <Check className="h-3.5 w-3.5" />}
-              {e.label}
-            </span>
-            {estCourant && (
-              <span aria-hidden className="absolute inset-x-0 bottom-0 h-[3px] bg-accent" />
-            )}
-          </button>
-        );
-      })}
-    </div>
+    <>
+      <div className="flex snap-x snap-mandatory overflow-x-auto border-t border-hairline [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {CYCLE_AFFAIRE.map((e, i) => {
+          const estCourant = e.value === etat;
+          const franchie = !corbeille && courant >= 0 && i < courant;
+          return (
+            <button
+              key={e.value}
+              type="button"
+              onClick={() => !estCourant && onChanger(e.value)}
+              disabled={pending || estCourant}
+              aria-current={estCourant ? "step" : undefined}
+              title={
+                estCourant
+                  ? `Étape actuelle : ${e.label} — ${e.aide}`
+                  : `Basculer l'affaire en « ${e.label} » : ${e.aide}`
+              }
+              className={cn(
+                "group relative min-w-[7.5rem] shrink-0 snap-start border-r border-hairline px-2 py-2.5 text-center last:border-r-0 sm:min-w-0 sm:flex-1 sm:py-2",
+                "transition-colors duration-150",
+                estCourant
+                  ? "bg-brand text-brand-fg"
+                  : franchie
+                    ? "bg-brand/10 text-brand hover:bg-brand/15"
+                    : "cursor-pointer text-subtle hover:bg-surface-2 hover:text-fg",
+                pending && "opacity-60",
+              )}
+            >
+              <span className="flex items-center justify-center gap-1.5 font-display text-[0.68rem] font-semibold uppercase tracking-[0.09em]">
+                {franchie && <Check className="h-3.5 w-3.5" />}
+                {e.label}
+              </span>
+              {estCourant && (
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-[3px] bg-accent" />
+              )}
+              {/* Ce qui reste à parcourir est pointillé — même vocabulaire que
+                  le synoptique d'avancement : pointillé = pas encore alimenté. */}
+              {!estCourant && !franchie && !corbeille && (
+                <span
+                  aria-hidden
+                  className="absolute inset-x-0 bottom-0 border-b border-dashed border-border"
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Ce que l'étape courante VEUT DIRE. C'est la ligne qui manquait : sans
+          elle, « Commande » ou « Livrée » ne se distinguent que pour ceux qui
+          connaissent déjà le processus maison. */}
+      <p className="border-t border-hairline bg-surface-2 px-4 py-1.5 text-xs text-muted md:px-6">
+        <Info className="mr-1.5 inline h-3.5 w-3.5 -translate-y-px text-subtle" />
+        <span className="font-medium text-fg">{etatLabel(etat)}</span> — {etatAide(etat)}
+      </p>
+    </>
+  );
+}
+
+/**
+ * Le geste normal, rendu évident : avancer d'un cran. Un bouton avec un verbe
+ * et la destination, plutôt qu'un segment de rail à deviner. Disparaît quand
+ * l'affaire est clôturée (plus de suite) ou à la corbeille (hors piste).
+ */
+function BoutonEtapeSuivante({
+  etat,
+  pending,
+  onChanger,
+}: {
+  etat: EtatAffaire;
+  pending: boolean;
+  onChanger: (e: EtatAffaire) => void;
+}) {
+  const suivante = etapeSuivante(etat);
+  if (!suivante) return null;
+
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => onChanger(suivante.value)}
+      disabled={pending}
+      title={`Faire avancer l'affaire : ${etatAide(suivante.value)}`}
+    >
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+      Passer en « {suivante.label} »
+      <ArrowRight className="h-4 w-4" />
+    </Button>
   );
 }
 

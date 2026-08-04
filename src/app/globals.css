@@ -258,6 +258,19 @@
     border-style: dashed;
     background-color: transparent;
   }
+  /* ALERTE : ce n'est plus une respiration, c'est un appel. Réservée à ce qui
+     réclame une action de l'utilisateur (tâches ouvertes d'une affaire). Plus
+     grosse que ses sœurs, plus rapide, et son halo part loin — là où .led-cur
+     se contente d'exister, celle-ci veut être vue depuis l'autre bout de
+     l'écran. À n'employer QUE doublée d'un compte et d'un libellé : une pastille
+     qui pulse toute seule est du bruit, pas de l'information. */
+  .led-alerte {
+    height: 0.75rem;
+    width: 0.75rem;
+    border-color: transparent;
+    background-color: var(--signal);
+    animation: pouls-alerte var(--dur-alerte) var(--ease-calm) infinite;
+  }
 
   /* --- Le synoptique ------------------------------------------------------ *
    * Le cycle d'une affaire lu comme un schéma de principe : des voyants reliés
@@ -766,6 +779,24 @@
   }
 }
 
+/* L'appel de .led-alerte : une onde qui part du voyant et se dissipe, doublée
+   d'un léger gonflement. Contrairement à `pouls`, elle ne fait pas l'aller-
+   retour — elle repart de zéro à chaque tour, ce qui donne le battement. */
+@keyframes pouls-alerte {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--signal) 75%, transparent);
+    transform: scale(1);
+  }
+  60% {
+    box-shadow: 0 0 0 9px color-mix(in oklab, var(--signal) 0%, transparent);
+    transform: scale(1.22);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--signal) 0%, transparent);
+    transform: scale(1);
+  }
+}
+
 /* Le courant qui parcourt un synoptique à l'ouverture — une seule passe. */
 @keyframes courant {
   from { transform: translateX(-110%); }
@@ -885,8 +916,14 @@
   .stagger > *,
   .jauge-anim > span,
   .led-cur,
+  .led-alerte,
   .syn-courant::after {
     animation: none;
+  }
+  /* Immobile, la LED d'alerte perdrait son halo — donc sa visibilité, qui est
+     toute sa raison d'être. On lui rend un anneau fixe et franc. */
+  .led-alerte {
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--signal) 40%, transparent);
   }
   .anim-sweep {
     transform: none;
