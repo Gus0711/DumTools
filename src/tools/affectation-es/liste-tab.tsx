@@ -19,6 +19,7 @@ export function ListeTab({
   project,
   nom,
   clientNom,
+  numeroWhy,
   chantierId,
   setRows,
   onKdriveSaved,
@@ -28,6 +29,7 @@ export function ListeTab({
   project: Project;
   nom: string;
   clientNom: string;
+  numeroWhy: string;
   chantierId: string | null;
   setRows: React.Dispatch<React.SetStateAction<PointRow[]>>;
   onKdriveSaved: (m: KdriveMarker) => void;
@@ -60,6 +62,10 @@ export function ListeTab({
               projectName={projectName}
               clientNom={clientNom}
               chantierNom={project.header}
+              numeroWhy={numeroWhy}
+              projetNom={nom}
+              version={project.version}
+              automate={project.controller}
               date={project.date || null}
               rows={rows}
               marker={project.kdrive}
@@ -68,7 +74,16 @@ export function ListeTab({
           </div>
         }
       />
-      <Impression clientNom={clientNom} chantierNom={project.header} date={project.date || null} rows={rows} />
+      <Impression
+        clientNom={clientNom}
+        chantierNom={project.header}
+        date={project.date || null}
+        rows={rows}
+        numeroWhy={numeroWhy}
+        projetNom={nom}
+        version={project.version}
+        automate={project.controller}
+      />
     </div>
   );
 }

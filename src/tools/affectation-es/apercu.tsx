@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import { useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Loader2, Printer } from "lucide-react";
 import { Button } from "@/ui";
 import { cn } from "@/lib/cn";
@@ -10,6 +10,7 @@ import { fnv1a } from "@/tools/liste-points/hash";
 import { genererApercuPdf, type OrientationApercu } from "./apercu-pdf";
 import { SelecteurOrientation } from "./selecteur-orientation";
 import { BoutonSauvegardeKdrive } from "./sauvegarder-kdrive";
+import { construireRecap, RecapPage } from "./recap-affectation";
 import { powerSupplyInfo } from "./catalog";
 import { MODULE_IMAGES } from "./images";
 import { automateDef, moduleDef, type AutomateDef, type Catalogue } from "./catalogue";
@@ -557,8 +558,18 @@ export function Apercu({
       (m) => normalizeControllerReference(m.type) === normalizeControllerReference(project.controller),
     );
   const showControllerPage = hasController && !mainIsIntegrated;
+
+  // Le tableau récapitulatif d'affectation est une SECTION de ce document (il
+  // n'a plus d'écran ni d'impression à lui) : il s'intercale entre la page
+  // automate et les schémas à bornes — l'inventaire d'abord, le câblage ensuite.
+  const recap = useMemo(
+    () => construireRecap(project, modules, orientation),
+    [project, modules, orientation],
+  );
+
   const total =
     (showControllerPage ? 1 : 0) +
+    recap.pages.length +
     integratedModules.length * 2 +
     extensionModules.length +
     commModules.length;
@@ -567,6 +578,22 @@ export function Apercu({
   let page = 1;
   if (showControllerPage) {
     pages.push(<ControllerPage key="ctrl" project={project} page={page} total={total} catalogue={catalogue} />);
+    page += 1;
+  }
+  for (const [i, blocs] of recap.pages.entries()) {
+    const numero = page;
+    pages.push(
+      <RecapPage
+        key={`recap-${i}`}
+        project={project}
+        blocs={blocs}
+        premiere={i === 0}
+        page={numero}
+        entete={<DocHeader project={project} />}
+        pied={<DocFooter project={project} page={numero} total={total} />}
+        recap={recap}
+      />,
+    );
     page += 1;
   }
   for (const m of ordered) {

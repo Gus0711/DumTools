@@ -1,0 +1,410 @@
+/* Document imprimable « Liste de points GTB / GTC ».
+   Charte de la maison portée sur le papier : bandeau or/marine, cartouche
+   (estampille + titre + pavé de références), filets, tableau à en-tête marine.
+   Les 5 teintes E/S sont CONTRACTUELLES (imprimées chez le client) : elles ne
+   bougent pas — elles pastillent les cellules et soulignent leur colonne.
+   Tout est scopé sous .liste-doc pour ne percuter aucun autre outil, et tout est
+   dimensionné en pt/mm : le document ne doit pas suivre la densité de l'écran. */
+
+.liste-doc {
+  --navy: #003765;
+  --navy-soft: #eef2f7;
+  --or: #c79213;
+  --or-soft: #faf4e4;
+  --or-ligne: #eadfc0;
+  --gris: #f2f5f8;
+  --texte: #1b2733;
+  --muted: #7b8794;
+  --ligne: #d7dee6;
+  --ai: #1f6feb;
+  --di: #b4690e;
+  --ao: #7b41c9;
+  --do: #1a8a4a;
+  --com: #0d8c97;
+  /* La syntaxe de repli de var() est indispensable : sans elle, une variable de
+     police absente rend TOUTE la déclaration invalide et le document tombe en
+     serif. */
+  font-family: var(--font-sans-app, "IBM Plex Sans"), "Segoe UI", Arial, sans-serif;
+  color: var(--texte);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Une page = la SURFACE UTILE de la feuille A4 telle que la découpe le patron
+   global (`@page { size: A4; margin: 12mm }` de globals.css) : 186 × 273 mm.
+   On ne redéclare pas de `@page` nommée à marge nulle — le montage « page
+   nommée + .print-root absolu » est justement ce qui casse l'impression du
+   document d'affectation (voir apercu-pdf.ts). Deux millimètres de mou en
+   hauteur évitent qu'un arrondi ne fasse déborder chaque page sur la suivante. */
+.liste-doc .print-page {
+  width: 186mm;
+  height: 271mm;
+  margin: 0 auto;
+  background: #fff;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Zone de mesure : hors écran mais AVEC layout (visibility, pas display:none)
+   → getBoundingClientRect renvoie de vraies hauteurs. Même largeur utile que la
+   page (210 − 2×12 mm) pour que les hauteurs mesurées soient les bonnes. */
+.liste-doc.liste-mesure {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 186mm;
+  visibility: hidden;
+}
+
+/* --- Bandeau d'identité (toutes les pages) -------------------------------- */
+.liste-doc .bandeau {
+  display: flex;
+  height: 4px;
+  margin: 0 0 7mm;
+}
+.liste-doc .bandeau i {
+  display: block;
+  height: 4px;
+}
+.liste-doc .bandeau .b1 {
+  background: var(--or);
+  flex: 0 0 30%;
+}
+.liste-doc .bandeau .b2 {
+  background: var(--navy);
+  flex: 1;
+}
+
+/* --- Cartouche (page 1) --------------------------------------------------- */
+.liste-doc .doc-tete {
+  display: flex;
+  align-items: flex-start;
+  gap: 10mm;
+}
+.liste-doc .doc-tete .txt {
+  flex: 1;
+  min-width: 0;
+}
+.liste-doc .surtitre {
+  color: var(--or);
+  font-size: 7.6pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 5px;
+}
+.liste-doc .doc-tete h1 {
+  font-family: var(--font-display-app, Archivo), "Segoe UI", Arial, sans-serif;
+  color: var(--navy);
+  font-size: 19pt;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.liste-doc .soustitre {
+  font-size: 10.5pt;
+  color: var(--muted);
+  margin: 0;
+}
+.liste-doc .soustitre b {
+  color: var(--navy);
+}
+.liste-doc .doc-tete .marque {
+  flex: 0 0 22mm;
+  text-align: right;
+}
+.liste-doc .doc-tete .marque img {
+  height: 24mm;
+  width: auto;
+  display: block;
+  margin-left: auto;
+}
+.liste-doc .ref-pill {
+  display: inline-block;
+  margin-top: 6px;
+  background: var(--navy);
+  color: #fff;
+  font-family: var(--font-mono-app, "IBM Plex Mono"), Consolas, monospace;
+  font-size: 8pt;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+}
+.liste-doc .filet {
+  border-top: 2px solid var(--navy);
+  margin: 4mm 0 2.5mm;
+}
+.liste-doc .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8mm;
+  font-size: 8.4pt;
+  color: var(--muted);
+  margin: 0 0 5mm;
+}
+.liste-doc .meta span {
+  white-space: nowrap;
+}
+.liste-doc .meta b {
+  color: var(--navy);
+}
+
+/* --- Tête des pages suivantes --------------------------------------------- */
+.liste-doc .tete-suite {
+  display: flex;
+  align-items: baseline;
+  gap: 6mm;
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 3mm;
+  margin-bottom: 4mm;
+}
+.liste-doc .tete-suite .stamp {
+  color: var(--or);
+  font-size: 7.2pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.liste-doc .tete-suite .suite {
+  flex: 1;
+  min-width: 0;
+  font-size: 9pt;
+  font-weight: 600;
+  color: var(--navy);
+}
+.liste-doc .tete-suite .suite i {
+  font-style: normal;
+  color: var(--muted);
+}
+.liste-doc .tete-suite .ref {
+  font-family: var(--font-mono-app, "IBM Plex Mono"), Consolas, monospace;
+  font-size: 8pt;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* --- Synthèse : les chiffres se lisent de loin (page 1) ------------------- */
+.liste-doc .synthese {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid var(--ligne);
+  margin-bottom: 5mm;
+}
+.liste-doc .synthese .cell {
+  padding: 6px 8px 7px;
+  border-right: 1px solid var(--ligne);
+  border-top: 3px solid transparent;
+}
+.liste-doc .synthese .cell:last-child {
+  border-right: none;
+}
+.liste-doc .synthese .k {
+  color: var(--muted);
+  font-size: 6.2pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.25;
+  min-height: 2.5em;
+  margin-bottom: 2px;
+}
+.liste-doc .synthese .v {
+  font-family: var(--font-display-app, Archivo), "Segoe UI", Arial, sans-serif;
+  font-size: 16pt;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--navy);
+}
+.liste-doc .synthese .s-ai { border-top-color: var(--ai); }
+.liste-doc .synthese .s-di { border-top-color: var(--di); }
+.liste-doc .synthese .s-ao { border-top-color: var(--ao); }
+.liste-doc .synthese .s-do { border-top-color: var(--do); }
+.liste-doc .synthese .s-com { border-top-color: var(--com); }
+.liste-doc .synthese .bilan {
+  background: var(--navy-soft);
+  border-top-color: var(--navy);
+}
+
+/* --- Tableau des points ---------------------------------------------------- */
+.liste-doc table.pts {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+}
+.liste-doc .pts col.c-num { width: 9mm; }
+.liste-doc .pts col.c-nom { width: 62mm; }
+.liste-doc .pts col.c-io { width: 11mm; }
+
+.liste-doc .pts thead th {
+  background: var(--navy);
+  color: #fff;
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 7.2pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.liste-doc .pts thead th.num,
+.liste-doc .pts thead th.io,
+.liste-doc .pts td.io {
+  text-align: center;
+}
+/* Chaque colonne E/S est soulignée de sa teinte : le filet des 5 signaux. */
+.liste-doc .pts thead th.io {
+  border-bottom: 2.5px solid currentColor;
+}
+.liste-doc .pts thead th.h-ai { color: #6ea8f7; }
+.liste-doc .pts thead th.h-di { color: #e0a34a; }
+.liste-doc .pts thead th.h-ao { color: #b48ae4; }
+.liste-doc .pts thead th.h-do { color: #5cc98a; }
+.liste-doc .pts thead th.h-com { color: #4fc3cd; }
+.liste-doc .pts thead th.io span {
+  color: #fff;
+}
+
+.liste-doc .pts tbody td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--ligne);
+  vertical-align: top;
+}
+.liste-doc .pts tbody tr.pair td {
+  background: #fafbfc;
+}
+.liste-doc .pts td.num {
+  font-family: var(--font-mono-app, "IBM Plex Mono"), Consolas, monospace;
+  font-size: 7.4pt;
+  color: var(--muted);
+  text-align: center;
+}
+.liste-doc .pts td.nom {
+  font-weight: 500;
+}
+.liste-doc .pts td.libre {
+  color: var(--muted);
+  font-size: 8.2pt;
+}
+.liste-doc .pts td.libre .sig,
+.liste-doc .pts td.libre .proto {
+  font-family: var(--font-mono-app, "IBM Plex Mono"), Consolas, monospace;
+  font-size: 7.4pt;
+}
+.liste-doc .pts td.libre .proto {
+  color: var(--com);
+  font-weight: 700;
+}
+.liste-doc .pts td.io {
+  padding: 3px 2px;
+}
+
+.liste-doc .pastille {
+  display: inline-block;
+  min-width: 20px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 6.8pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+}
+.liste-doc .pastille.p-ai { background: var(--ai); }
+.liste-doc .pastille.p-di { background: var(--di); }
+.liste-doc .pastille.p-ao { background: var(--ao); }
+.liste-doc .pastille.p-do { background: var(--do); }
+.liste-doc .pastille.p-com { background: var(--com); }
+
+/* Titre de section : rail laiton, comme les estampilles de l'interface. */
+.liste-doc .pts tr.sep td {
+  background: var(--or-soft);
+  color: var(--or);
+  font-weight: 700;
+  font-size: 7.4pt;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--or-ligne);
+}
+/* Sous-total de section : discret, mais les compteurs restent lisibles. */
+.liste-doc .pts tr.st td {
+  background: #fff;
+  color: var(--muted);
+  font-size: 7.6pt;
+  font-style: italic;
+  text-align: right;
+  padding: 3px 8px 5px;
+  border-bottom: 1px solid var(--ligne);
+}
+.liste-doc .pts tr.st td.io {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+}
+
+.liste-doc .pts tfoot td {
+  padding: 6px 8px;
+  font-weight: 700;
+  font-size: 8.4pt;
+}
+.liste-doc .pts tfoot tr.tp td {
+  background: var(--gris);
+  color: var(--navy);
+  border-top: 1px solid var(--navy);
+}
+.liste-doc .pts tfoot tr.tg td {
+  background: var(--navy);
+  color: #fff;
+}
+.liste-doc .pts tfoot tr.tg td.io {
+  font-family: var(--font-display-app, Archivo), "Segoe UI", Arial, sans-serif;
+  font-size: 11pt;
+}
+
+/* --- Pied de page ---------------------------------------------------------- */
+.liste-doc .doc-pied {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid var(--ligne);
+  display: flex;
+  justify-content: space-between;
+  gap: 6mm;
+  font-size: 7.2pt;
+  color: var(--muted);
+}
+.liste-doc .doc-pied b {
+  color: var(--navy);
+}
+.liste-doc .doc-pied i {
+  font-style: normal;
+  color: var(--ligne);
+}
+
+/* --- Impression : A4 portrait plein cadre --------------------------------- */
+@media print {
+  /* Le patron global borne .print-root à la hauteur d'UNE page (inset: 0) :
+     un document de plusieurs pages s'y ferait couper. */
+  .liste-doc.print-root {
+    height: auto;
+    bottom: auto;
+  }
+  .liste-doc .print-page {
+    break-after: page;
+    page-break-after: always;
+  }
+  .liste-doc .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  /* La zone de mesure ne doit rien peser sur le papier. */
+  .liste-doc.liste-mesure {
+    display: none;
+  }
+  .liste-doc * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

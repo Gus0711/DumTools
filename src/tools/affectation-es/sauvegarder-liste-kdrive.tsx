@@ -12,6 +12,10 @@ export function SauvegarderListeKdrive({
   projectName,
   clientNom,
   chantierNom,
+  numeroWhy,
+  projetNom,
+  version,
+  automate,
   date,
   rows,
   marker,
@@ -21,19 +25,24 @@ export function SauvegarderListeKdrive({
   projectName: string;
   clientNom: string;
   chantierNom: string;
+  numeroWhy?: string;
+  projetNom?: string;
+  version?: string;
+  automate?: string;
   date: string | null;
   rows: PointRow[];
   marker?: KdriveMarker;
   onSaved: (m: KdriveMarker) => void;
 }) {
   const jour = new Date().toISOString().slice(0, 10);
+  const entete = { numeroWhy, projetNom, version, automate };
   return (
     <BoutonSauvegardeKdrive
       chantierId={chantierId}
       nomFichier={`Liste de points — ${projectName} — ${jour}.pdf`}
-      currentHash={hashListe(rows, clientNom, chantierNom, date)}
+      currentHash={hashListe(rows, clientNom, chantierNom, date, entete)}
       marker={marker}
-      genererPdf={() => genererListePdf({ clientNom, chantierNom, date, rows })}
+      genererPdf={() => genererListePdf({ clientNom, chantierNom, date, rows, ...entete })}
       onSaved={onSaved}
     />
   );

@@ -46,9 +46,9 @@ Un projet = une affaire chantier, du chiffrage à la mise en service.
 | **Projet** | Identification seule (nom, client, N° Why, en-tête, titre, version, date) | `ProjetTab` (editeur.tsx) |
 | **Liste de points** | Saisie unique des points (catalogue, modèles, sections, drag&drop, totaux) + **Imprimer la liste A4** + **Générer GFX** | `liste-tab.tsx` → `RowsEditor` |
 | **Automate & modules** | Choix automate (+ **reco**), alimentation, réseaux, Wi-Fi, modules d'extension, **lien fiche technique** | `AutomateModulesTab` (editeur.tsx) |
-| **Affectation** | Vérif/ajustement des bornes (signal/module/canal/relais), **Ré-affecter automatiquement** | `affectation-tab.tsx` |
+| **Affectation** | Vérif/ajustement des bornes (signal/module/canal/relais), **Ré-affecter automatiquement** ; le tableau récapitulatif est une **page du document Aperçu**, pas une impression à part | `affectation-tab.tsx` |
 | **Mise en service** | Suivi des tests par module (cartes déroulantes, statut coloré, commentaire) + **Imprimer le rapport** | `tests-tab.tsx` / `tests-report.tsx` |
-| **Aperçu** | Document d'affectation E/S (A4 paysage : couverture, page automate, schéma à bornes + tableaux par module) + impression | `apercu.tsx` |
+| **Aperçu** | **Le** document d'affectation E/S (A4 paysage : couverture, page automate, **tableau récapitulatif**, schéma à bornes + tableaux par module) + impression | `apercu.tsx` + `recap-affectation.tsx` |
 
 ### Flux de travail
 
@@ -200,7 +200,9 @@ src/tools/affectation-es/
   affectation-tab.tsx  onglet Affectation (bornes) + ré-affecter auto
   tests-tab.tsx        onglet Mise en service (cartes déroulantes)
   tests-report.tsx     rapport de mise en service imprimable (A4 portrait)
-  apercu.tsx           document d'affectation imprimable (A4 paysage)
+  apercu.tsx           LE document d'affectation imprimable (A4 paysage) :
+                       couverture, automate, récap, une page par module
+  recap-affectation.tsx  pages du tableau récapitulatif, montées dans apercu.tsx
   catalogue.ts         base matériel : types + défauts (catalogueParDefaut)
   catalogue-queries.ts lecture BDD (getCatalogue, getMaterielAdmin)
   catalogue-actions.ts CRUD base matériel
@@ -213,7 +215,9 @@ src/tools/affectation-es/
 
 src/tools/liste-points/   (bibliothèque partagée + outil autonome déprécié)
   rows-editor.tsx      éditeur de lignes réutilisable (rows/setRows)
-  impression.tsx       impression A4 de la liste
+  impression.tsx + impression-print.css   document A4 de la liste (cartouche,
+                       synthèse, sous-totaux de section, pagination mesurée)
+  pdf-liste.ts         même document en PDF vectoriel (pdfmake) pour kDrive
   generer-gfx.tsx + gfx-export/   génération de squelette GFX
   config-points.tsx / config-actions.ts   écran /configuration/points
   catalog.ts           CATALOG + TEMPLATES (seed/fallback)
@@ -248,7 +252,6 @@ client → `npm run db:generate` + redémarrer `next dev`) :
   `PointsList`** (après confirmation que tout est migré en prod).
 - **Import GFX/PDF piloté par la base matériel** (aujourd'hui détection sur les
   constantes `catalog.ts`) — voir `A_FAIRE-base-materiel.md`.
-- **Esthétique de l'impression A4 de la liste** (signalée moins jolie).
 
 ---
 

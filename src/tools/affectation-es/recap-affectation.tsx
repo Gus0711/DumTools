@@ -1,13 +1,7 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-import { useMemo, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, Loader2, Printer } from "lucide-react";
-import { Button } from "@/ui";
-import { cn } from "@/lib/cn";
-import "./apercu-print.css";
-import { genererApercuPdf, type OrientationApercu } from "./apercu-pdf";
-import { SelecteurOrientation } from "./selecteur-orientation";
+import { type ReactNode } from "react";
+import type { OrientationApercu } from "./apercu-pdf";
 import { signalLabel } from "@/tools/liste-points/model";
 import {
   moduleDisplayTitle,
@@ -17,20 +11,18 @@ import {
   type Project,
 } from "./model";
 
-/* Aperçu + impression du TABLEAU RÉCAPITULATIF d'affectation E/S (A4 paysage).
+/* TABLEAU RÉCAPITULATIF d'affectation E/S : une vue synthétique qui liste toutes
+ * les entrées puis toutes les sorties avec leur repère, signal, module et canal
+ * — ce qu'on relit d'un coup d'œil pour vérifier le câblage.
  *
- * Distinct du document de l'onglet « Aperçu » (schémas à bornes, une page par
- * module) : ici, une seule vue synthétique liste toutes les entrées puis toutes
- * les sorties avec leur repère, signal, module et canal — ce qu'on relit d'un
- * coup d'œil pour vérifier le câblage.
+ * Ce n'est PAS un document à part : ses pages sont montées dans le document
+ * unique de l'onglet « Aperçu » (voir apercu.tsx), entre la page automate et les
+ * schémas à bornes. Un seul document, donc une seule impression.
  *
- * Réutilise l'infrastructure d'impression paysage déjà éprouvée
- * (`apercu-print.css` : `.affectation-doc` + `.io-table` + pages A4 fixes). La
- * pagination est faite ICI, en pages de hauteur fixe, comme le reste du
- * document — pas de flux CSS hasardeux qui risquerait d'être rogné. */
-
-const DISTECH_LOGO = "/materiel/distech-logo.png";
-const DUMORTIER_LOGO = "/logo-dumortier.png";
+ * Même infrastructure que le reste du document (`apercu-print.css` :
+ * `.affectation-doc` + `.io-table` + pages A4 fixes). La pagination est faite
+ * ICI, en pages de hauteur fixe — pas de flux CSS hasardeux qui risquerait
+ * d'être rogné. */
 
 /** Gabarit d'une page, en MILLIMÈTRES — toutes les valeurs sont mesurées au
  *  navigateur sur le rendu réel (et non estimées) :
@@ -150,156 +142,68 @@ function paginer(
     }
   }
   fermerPage();
-  return pages.length > 0 ? pages : [[]];
+  return pages;
 }
 
-export function ApercuAffectation({
-  project,
-  modules,
-  onFermer,
-}: {
-  project: Project;
-  modules: Module[];
-  onFermer: () => void;
-}) {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [orientation, setOrientation] = useState<OrientationApercu>("landscape");
-  const [impression, setImpression] = useState(false);
-  const [erreurImpr, setErreurImpr] = useState("");
+export interface Recap {
+  /** Pages du récapitulatif — vide s'il n'y a aucune E/S à lister. */
+  pages: BlocPage[][];
+  nbEntrees: number;
+  nbSorties: number;
+  nonAffectes: number;
+  incompatibles: number;
+}
 
-  const { pages, nbEntrees, nbSorties, nonAffectes, incompatibles } = useMemo(() => {
-    const actifs = (project.points ?? []).filter((p) => p.active);
-    const entrees = trier(actifs.filter((p) => p.direction === "input")).map((p) =>
-      versLigne(p, modules),
-    );
-    const sorties = trier(actifs.filter((p) => p.direction === "output")).map((p) =>
-      versLigne(p, modules),
-    );
-    const pages = paginer(
-      [
-        { section: "input", titre: "Entrées", lignes: entrees },
-        { section: "output", titre: "Sorties", lignes: sorties },
-      ],
-      orientation,
-    );
-    return {
-      pages,
-      nbEntrees: entrees.length,
-      nbSorties: sorties.length,
-      nonAffectes: [...entrees, ...sorties].filter((l) => l.nonAffecte).length,
-      incompatibles: [...entrees, ...sorties].filter((l) => l.incompatible).length,
-    };
-  }, [project.points, modules, orientation]);
-
-  const total = pages.length;
-
-  /**
-   * Impression = génération du PDF (chemin FIABLE, WYSIWYG) puis ouverture dans
-   * un nouvel onglet où l'utilisateur imprime/enregistre. On n'utilise PAS
-   * `window.print()` : il est cassé sur ce document (le montage `@page` nommé
-   * paysage + `.print-root` en `position:absolute` du CSS global le borne à UNE
-   * seule page portrait tronquée, orientation non modifiable dans le dialogue).
-   * Même chemin que l'onglet Aperçu — voir `apercu-pdf.ts`.
-   */
-  async function imprimer() {
-    if (!rootRef.current || impression) return;
-    setImpression(true);
-    setErreurImpr("");
-    try {
-      const blob = await genererApercuPdf(rootRef.current, orientation);
-      const url = URL.createObjectURL(blob);
-      const onglet = window.open(url, "_blank");
-      if (!onglet) {
-        // Popup bloquée → repli sur un téléchargement.
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `Affectation E-S — ${project.name || "tableau"}.pdf`;
-        a.click();
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
-    } catch (e) {
-      setErreurImpr(e instanceof Error ? e.message : "Génération du PDF impossible.");
-    } finally {
-      setImpression(false);
-    }
-  }
-
-  return (
-    <div>
-      {/* Barre d'action — hors .print-root, donc jamais imprimée. */}
-      <div className="mb-4 flex flex-wrap items-center gap-2.5">
-        <Button variant="outline" size="sm" onClick={onFermer}>
-          <ArrowLeft className="h-4 w-4" /> Retour à l&apos;édition
-        </Button>
-        <span className="text-sm text-muted">
-          Tableau d&apos;affectation — {nbEntrees} entrée{nbEntrees > 1 ? "s" : ""},{" "}
-          {nbSorties} sortie{nbSorties > 1 ? "s" : ""}
-        </span>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          {/* Choix d'orientation : agit sur l'aperçu écran ET le PDF (même DOM). */}
-          <SelecteurOrientation orientation={orientation} onChange={setOrientation} />
-          <Button size="sm" onClick={imprimer} disabled={impression}>
-            {impression ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Printer className="h-4 w-4" />
-            )}
-            Imprimer / PDF
-          </Button>
-        </div>
-      </div>
-      {erreurImpr && <div className="mb-3 text-sm text-danger">{erreurImpr}</div>}
-
-      <div
-        ref={rootRef}
-        className={cn("print-root affectation-doc", orientation === "portrait" && "portrait")}
-      >
-        {pages.map((blocs, idx) => (
-          <RecapPage
-            key={idx}
-            project={project}
-            blocs={blocs}
-            premiere={idx === 0}
-            page={idx + 1}
-            total={total}
-            nbEntrees={nbEntrees}
-            nbSorties={nbSorties}
-            nonAffectes={nonAffectes}
-            incompatibles={incompatibles}
-          />
-        ))}
-      </div>
-    </div>
+/** Construit les pages du récapitulatif. Fonction pure : l'appelant (apercu.tsx)
+ *  la mémoïse et numérote les pages dans la foulée du reste du document. */
+export function construireRecap(
+  project: Project,
+  modules: Module[],
+  orientation: OrientationApercu,
+): Recap {
+  const actifs = (project.points ?? []).filter((p) => p.active);
+  const entrees = trier(actifs.filter((p) => p.direction === "input")).map((p) => versLigne(p, modules));
+  const sorties = trier(actifs.filter((p) => p.direction === "output")).map((p) => versLigne(p, modules));
+  const pages = paginer(
+    [
+      { section: "input", titre: "Entrées", lignes: entrees },
+      { section: "output", titre: "Sorties", lignes: sorties },
+    ],
+    orientation,
   );
+  const toutes = [...entrees, ...sorties];
+  return {
+    pages,
+    nbEntrees: entrees.length,
+    nbSorties: sorties.length,
+    nonAffectes: toutes.filter((l) => l.nonAffecte).length,
+    incompatibles: toutes.filter((l) => l.incompatible).length,
+  };
 }
 
-function RecapPage({
+/** Une page du récapitulatif. L'en-tête et le pied sont fournis par le document
+ *  (apercu.tsx) : une seule définition du bandeau Distech et du cartouche de
+ *  pied pour toutes les pages, quelle que soit leur nature. */
+export function RecapPage({
   project,
   blocs,
   premiere,
   page,
-  total,
-  nbEntrees,
-  nbSorties,
-  nonAffectes,
-  incompatibles,
+  entete,
+  pied,
+  recap,
 }: {
   project: Project;
   blocs: BlocPage[];
   premiere: boolean;
   page: number;
-  total: number;
-  nbEntrees: number;
-  nbSorties: number;
-  nonAffectes: number;
-  incompatibles: number;
+  entete: ReactNode;
+  pied: ReactNode;
+  recap: Recap;
 }) {
   return (
     <section className={`print-page recap-page${premiere ? " first" : ""}`}>
-      <div className="doc-header">
-        <img className="header-distech-logo" src={DISTECH_LOGO} alt="Distech Controls" />
-        <span className="header-title">{project.header || " "}</span>
-      </div>
+      {entete}
 
       {premiere && (
         <div className="recap-intro">
@@ -311,13 +215,13 @@ function RecapPage({
           </div>
           <div className="recap-meta">
             <div>
-              <b>{nbEntrees}</b> entrées &nbsp;·&nbsp; <b>{nbSorties}</b> sorties
+              <b>{recap.nbEntrees}</b> entrées &nbsp;·&nbsp; <b>{recap.nbSorties}</b> sorties
             </div>
-            {nonAffectes > 0 && (
-              <div className="recap-warn">{nonAffectes} non affectée(s)</div>
+            {recap.nonAffectes > 0 && (
+              <div className="recap-warn">{recap.nonAffectes} non affectée(s)</div>
             )}
-            {incompatibles > 0 && (
-              <div className="recap-warn">{incompatibles} borne(s) incompatible(s)</div>
+            {recap.incompatibles > 0 && (
+              <div className="recap-warn">{recap.incompatibles} borne(s) incompatible(s)</div>
             )}
             <div>
               Version {project.version} — {project.date}
@@ -333,18 +237,7 @@ function RecapPage({
       </div>
 
       <div className="side-page">{page}</div>
-      <div className="logo-dumortier">
-        <img src={DUMORTIER_LOGO} alt="Dumortier Groupe Fareneït" />
-      </div>
-      <div className="doc-footer">
-        <div>
-          Version {project.version} - {project.date}
-        </div>
-        <div>www.dumortier02.fr</div>
-        <div>
-          Page {page} / {total}
-        </div>
-      </div>
+      {pied}
     </section>
   );
 }

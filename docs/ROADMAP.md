@@ -151,7 +151,6 @@ collègue armoire. La **BOM cumulée par affaire** (P2.1) sert aussi de repli.
   (**destructif**, à valider après vérif prod) — [`ARCHITECTURE.md`](ARCHITECTURE.md) §10.
 - **Import GFX/PDF piloté par la base matériel** (aujourd'hui constantes en dur) —
   [`A_FAIRE-base-materiel.md`](A_FAIRE-base-materiel.md).
-- **Esthétique de l'impression A4** de la liste de points (signalée moins jolie).
 - **Spike kDrive avec les vrais identifiants** (le miroir GED tourne en spool
   tant que l'API n'est pas branchée).
 - Validation de l'**ouverture du squelette GFX** dans EC-gfxProgram (échantillons réels).

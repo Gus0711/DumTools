@@ -402,6 +402,7 @@ export function Editeur({
             project={project}
             nom={nom}
             clientNom={clientNom}
+            numeroWhy={initial.numeroWhy}
             chantierId={initial.chantierId}
             setRows={setListeRows}
             onKdriveSaved={(m) => setProject((p) => ({ ...p, kdrive: m }))}
@@ -411,7 +412,12 @@ export function Editeur({
         )}
 
         {tab === "affectation" && (
-          <AffectationTab project={project} patch={patch} modules={modules} />
+          <AffectationTab
+            project={project}
+            patch={patch}
+            modules={modules}
+            onVoirDocument={() => setTab("apercu")}
+          />
         )}
 
         {tab === "tests" && <TestsTab project={project} patch={patch} modules={modules} projetId={id} />}

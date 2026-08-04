@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   AlertTriangle,
   ArrowDownToLine,
   ArrowUpFromLine,
-  Printer,
+  FileText,
   Wand2,
 } from "lucide-react";
 import { Button } from "@/ui";
@@ -13,7 +13,6 @@ import { cn } from "@/lib/cn";
 import { INPUT_SIGNALS, OUTPUT_SIGNALS } from "./catalog";
 import { signalLabel } from "@/tools/liste-points/model";
 import { affecterAuto } from "./affectation-auto";
-import { ApercuAffectation } from "./apercu-affectation";
 import {
   allowedModules,
   channelCount,
@@ -34,10 +33,14 @@ export function AffectationTab({
   project,
   patch,
   modules,
+  onVoirDocument,
 }: {
   project: Project;
   patch: (fn: (p: Project) => Project) => void;
   modules: Module[];
+  /** Ouvre l'onglet « Aperçu » : le tableau d'affectation y est une page du
+   *  document unique — il n'a pas d'impression séparée. */
+  onVoirDocument: () => void;
 }) {
   const points = useMemo(
     () => (project.points ?? []).filter((p) => p.active),
@@ -48,24 +51,12 @@ export function AffectationTab({
   const nonAffectes = points.filter((p) => p.module == null || p.channel == null).length;
   const incompatibles = points.filter(borneIncompatible).length;
 
-  const [apercuOuvert, setApercuOuvert] = useState(false);
-
   const update = (uid: string, patchPoint: Partial<Point>) =>
     patch((p) => ({
       ...p,
       points: (p.points ?? []).map((pt) => (pt.uid === uid ? { ...pt, ...patchPoint } : pt)),
     }));
   const reaffecter = () => patch((p) => ({ ...p, points: affecterAuto(p) }));
-
-  if (apercuOuvert) {
-    return (
-      <ApercuAffectation
-        project={project}
-        modules={modules}
-        onFermer={() => setApercuOuvert(false)}
-      />
-    );
-  }
 
   if (points.length === 0) {
     return (
@@ -89,8 +80,8 @@ export function AffectationTab({
           <StatPill label="Bornes incompatibles" value={incompatibles} tone="danger" />
         )}
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setApercuOuvert(true)}>
-            <Printer className="h-4 w-4" /> Aperçu / Impression
+          <Button variant="outline" size="sm" onClick={onVoirDocument}>
+            <FileText className="h-4 w-4" /> Voir dans le document
           </Button>
           <Button size="sm" onClick={reaffecter}>
             <Wand2 className="h-4 w-4" /> Ré-affecter automatiquement

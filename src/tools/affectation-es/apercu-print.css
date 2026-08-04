@@ -443,7 +443,7 @@
 /* Hauteur = tout l'espace sous l'en-tête MOINS la bande du logo Dumortier
    (absolu, bas à gauche : il mordrait sur les dernières lignes d'un tableau
    qui descend jusqu'en bas de page). Toute modification doit être reportée
-   dans GABARIT (apercu-affectation.tsx), qui pagine en millimètres. */
+   dans GABARIT (recap-affectation.tsx), qui pagine en millimètres. */
 .affectation-doc .recap-body {
   height: 162mm;
   display: flex;
@@ -556,7 +556,7 @@
 .affectation-doc.portrait .company-block { width: 170mm; }
 
 /* Tableau récapitulatif : page plus HAUTE (donc plus de lignes — voir CAPACITE
-   dans apercu-affectation.tsx) mais plus ÉTROITE → colonnes fixes resserrées et
+   dans recap-affectation.tsx) mais plus ÉTROITE → colonnes fixes resserrées et
    police d'un cran plus petite. Largeur utile = 210 - 2×13 (page) - 2×7 (corps)
    = 170 mm ; les colonnes fixes en consomment 117 (sorties) et la désignation
    prend le reste. */

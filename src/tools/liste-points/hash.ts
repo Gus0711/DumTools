@@ -18,12 +18,15 @@ export function hashListe(
   clientNom: string,
   chantierNom: string,
   date: string | null,
+  /** Références du cartouche : elles s'impriment, donc elles comptent. */
+  entete?: { numeroWhy?: string; projetNom?: string; version?: string; automate?: string },
 ): string {
   return fnv1a(
     JSON.stringify({
       c: clientNom ?? "",
       h: chantierNom ?? "",
       d: date ?? "",
+      e: [entete?.numeroWhy ?? "", entete?.projetNom ?? "", entete?.version ?? "", entete?.automate ?? ""],
       r: (rows ?? []).map((r) => ({
         k: r.kind,
         n: r.nom ?? "",
