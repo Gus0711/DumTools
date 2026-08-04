@@ -62,6 +62,39 @@ quotidien : app + connecteur Claude Desktop.
   `--build`. Pour développer pendant que la prod locale tourne :
   `PORT=3001 npm run dev`.
 
+### Relance automatique au démarrage de la machine
+
+Lancé à la main, le script meurt avec le terminal — **et avec le reboot**.
+Postgres, lui, revient tout seul (Docker + `restart=unless-stopped`) : le seul
+maillon manquant de la chaîne était l'app. Le service
+[`deploy/dumtools.service`](deploy/dumtools.service) le comble.
+
+```bash
+sudo cp deploy/dumtools.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now dumtools
+```
+
+```bash
+systemctl status dumtools          # état
+journalctl -u dumtools -f          # les logs en direct
+sudo systemctl restart dumtools    # après un `npm run build`
+```
+
+Deux points qui ont demandé de l'attention dans l'unité :
+
+- **`node` vient de nvm**, donc absent du `PATH` minimal d'un service systemd :
+  il est désigné en clair par `Environment=PATH=…`. Sans ça, le démarrage
+  échoue sur « node: command not found ».
+- **`Wants=docker.service` et non `Requires=`** : si Docker traîne au boot,
+  `Restart=always` rattrape en quelques secondes, alors qu'un `Requires` non
+  satisfait laisserait le service en échec définitif.
+
+⚠️ Le service **sert** le dernier build, il n'en fabrique pas. Après une
+modification : `npm run build`, puis `sudo systemctl restart dumtools`. Et si
+l'app tourne déjà à la main, l'arrêter avant d'activer le service — sinon le
+port 3000 est déjà pris et systemd tourne en boucle de redémarrage.
+
 ## Production (VM Proxmox)
 
 Prérequis sur la VM : Docker + plugin Compose, un enregistrement DNS/hosts

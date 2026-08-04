@@ -1,0 +1,64 @@
+# DumTools — prod locale, relancée automatiquement au démarrage de la machine.
+#
+# Jusqu'ici l'app ne tournait que depuis un terminal (`scripts/serve-prod.sh`) :
+# un reboot la tuait définitivement, alors que Postgres, lui, revenait tout seul
+# (Docker + restart=unless-stopped). D'où ce service, qui comble le seul maillon
+# manquant de la chaîne.
+#
+# INSTALLATION (une fois, en sudo — voir DEPLOIEMENT.md) :
+#   sudo cp /home/gus/Projets/DumTools/deploy/dumtools.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now dumtools
+#
+# USAGE :
+#   systemctl status dumtools          # état
+#   journalctl -u dumtools -f          # les logs en direct
+#   sudo systemctl restart dumtools    # après un `npm run build`
+#
+# ⚠️ Ce service SERT le dernier build, il n'en fabrique pas : après une
+# modification de code, `npm run build` puis `sudo systemctl restart dumtools`.
+
+[Unit]
+Description=DumTools — prod locale (build standalone Next.js)
+Documentation=file:///home/gus/Projets/DumTools/DEPLOIEMENT.md
+# La base tourne dans Docker : sans cette dépendance, l'app démarrerait avant
+# elle et servirait des erreurs Prisma jusqu'à un redémarrage manuel.
+# `Wants` et non `Requires` : si Docker traîne, le Restart ci-dessous rattrape,
+# alors qu'un `Requires` non satisfait laisserait le service en échec définitif.
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+# Postgres met quelques secondes à répondre après un reboot : on laisse le
+# service réessayer aussi longtemps qu'il le faut, sans plafond de tentatives.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=gus
+Group=gus
+WorkingDirectory=/home/gus/Projets/DumTools
+
+# node est installé par nvm, donc absent du PATH minimal d'un service systemd.
+# Sans cette ligne, le démarrage échoue sur « node: command not found ».
+Environment=PATH=/home/gus/.nvm/versions/node/v24.16.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=NODE_ENV=production
+
+# Un seul lanceur, le même qu'à la main : il recopie les statiques dans
+# .next/standalone, ancre les chemins de médias dans le projet, charge .env,
+# démarre le serveur MCP (port 8787) puis l'app au premier plan.
+ExecStart=/home/gus/Projets/DumTools/scripts/serve-prod.sh
+
+# Le script lance le MCP en arrière-plan : tuer tout le groupe de contrôle
+# évite de laisser le port 8787 occupé par un orphelin au redémarrage.
+KillMode=control-group
+TimeoutStopSec=20
+
+Restart=always
+RestartSec=5
+
+# Les logs partent au journal : `journalctl -u dumtools`.
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dumtools
+
+[Install]
+WantedBy=multi-user.target
