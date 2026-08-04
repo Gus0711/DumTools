@@ -17,40 +17,62 @@
  *    0 à sa quantité — le stock reste juste dans tous les cas.
  * ========================================================================== */
 
-export type CategorieProduit =
-  | "AUTOMATE"
-  | "MODULE"
-  | "SONDE"
-  | "VANNE"
-  | "SERVOMOTEUR"
-  | "RESEAU"
-  | "ACCESSOIRE"
-  | "AUTRE";
+/* -----------------------------------------------------------------------------
+ * CATÉGORIES & FABRICANTS — deux référentiels, pas deux listes en dur
+ *
+ * La catégorie était une enum Postgres et le fabricant un texte libre. Les deux
+ * ont changé de nature le 2026-08-04, pour deux raisons opposées mais qui se
+ * répondent : on ne pouvait pas RETIRER une catégorie (une enum ne se dégonfle
+ * pas), et on pouvait AJOUTER un fabricant sans le vouloir (« Siemnes »).
+ *
+ * Les composants ne connaissent donc plus aucune liste : elle leur est passée
+ * en props depuis le serveur. `nom` est la clé unique — c'est ce qui rend le
+ * rapprochement possible à l'import.
+ * -------------------------------------------------------------------------- */
 
-export const CATEGORIES: CategorieProduit[] = [
-  "AUTOMATE",
-  "MODULE",
-  "SONDE",
-  "VANNE",
-  "SERVOMOTEUR",
-  "RESEAU",
-  "ACCESSOIRE",
-  "AUTRE",
-];
+export interface CategorieVue {
+  id: string;
+  nom: string;
+  ordre: number;
+  actif: boolean;
+  /** Combien de produits la portent — c'est ce qui décide si on peut la
+   *  supprimer sans rien casser. */
+  nbProduits: number;
+}
 
-export const CATEGORIE_LABEL: Record<CategorieProduit, string> = {
-  AUTOMATE: "Automate",
-  MODULE: "Module",
-  SONDE: "Sonde",
-  VANNE: "Vanne",
-  SERVOMOTEUR: "Servomoteur",
-  RESEAU: "Réseau",
-  ACCESSOIRE: "Accessoire",
-  AUTRE: "Autre",
-};
+export interface FabricantVue {
+  id: string;
+  nom: string;
+  actif: boolean;
+  note: string;
+  nbProduits: number;
+}
 
-export function estCategorie(v: unknown): v is CategorieProduit {
-  return typeof v === "string" && (CATEGORIES as string[]).includes(v);
+/** Référence interne lisible proposée à partir d'un libellé libre — une
+ *  suggestion, corrigeable, jamais imposée. Partagée par tous les endroits où
+ *  l'on crée un article à la volée (BOM d'affaire, scan). */
+export function refDepuisLibelle(nom: string): string {
+  return nom
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 24);
+}
+
+/** Clé de rapprochement d'un libellé libre (import, saisie) avec le référentiel :
+ *  casse, accents et espaces superflus ne font pas deux entrées différentes.
+ *  Ce qui reste — « Siemnes » pour « Siemens » — est une vraie faute, que seul
+ *  un humain peut trancher : l'écran de référentiel sait fusionner. */
+export function cleReferentiel(nom: string): string {
+  return nom
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\s+/g, " ");
 }
 
 export type TypeDepot = "ATELIER" | "VEHICULE" | "CHANTIER";
@@ -262,8 +284,12 @@ export interface ProduitRayon {
   refInterne: string;
   refFabricant: string | null;
   designation: string;
-  marque: string | null;
-  categorie: CategorieProduit;
+  fabricantId: string | null;
+  fabricantNom: string | null;
+  categorieId: string | null;
+  /** Le libellé, dénormalisé pour l'affichage ; null = sans catégorie (une
+   *  catégorie supprimée ne devait pas emporter ses produits). */
+  categorieNom: string | null;
   unite: string;
   emplacement: string | null;
   seuilMini: number;
@@ -337,7 +363,9 @@ export interface LigneBom {
   refInterne: string;
   designation: string;
   unite: string;
-  categorie: CategorieProduit;
+  /** Le libellé de catégorie sert au regroupement de la BOM ; null en fin de
+   *  liste, comme tout ce qui n'est pas rangé. */
+  categorieNom: string | null;
   /** Quantité totale nécessaire. */
   besoin: number;
   /** D'où vient le besoin — la même ligne peut avoir plusieurs origines. */

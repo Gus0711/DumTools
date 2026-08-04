@@ -5,16 +5,12 @@ import { useRouter } from "next/navigation";
 import { Loader2, X } from "lucide-react";
 import { Button, Input, Label } from "@/ui";
 import { enregistrerProduit, type SaisieProduit } from "./actions";
-import {
-  CATEGORIES,
-  CATEGORIE_LABEL,
-  formatEuros,
-  parseEuros,
-  type CategorieProduit,
-} from "./model";
+import { formatEuros, parseEuros, type CategorieVue, type FabricantVue } from "./model";
 import type { FournisseurVue } from "./queries";
 
-/** Valeur du select qui déplie la saisie d'un nouveau fournisseur. */
+/** Valeur du select qui déplie la saisie d'une nouvelle entrée de référentiel
+ *  (fournisseur, fabricant). Créer reste possible sans quitter le formulaire,
+ *  mais c'est un choix explicite — pas la conséquence d'une frappe. */
 const NOUVEAU = "__NOUVEAU__";
 
 /* =============================================================================
@@ -38,12 +34,17 @@ const selectCls =
 export function EditeurProduit({
   initial,
   fournisseurs,
+  fabricants,
+  categories,
   produits = [],
   peutPrix,
   onFermer,
 }: {
   initial?: Partial<ProduitEdition>;
   fournisseurs: FournisseurVue[];
+  /** Les deux référentiels : le formulaire ne connaît plus aucune liste en dur. */
+  fabricants: FabricantVue[];
+  categories: CategorieVue[];
   /** Les autres produits, pour désigner un remplaçant (obsolescence). */
   produits?: { id: string; refInterne: string; designation: string }[];
   /** Sans le droit de voir les prix, on n'affiche pas le volet achat. */
@@ -57,10 +58,9 @@ export function EditeurProduit({
   const [refInterne, setRefInterne] = useState(initial?.refInterne ?? "");
   const [refFabricant, setRefFabricant] = useState(initial?.refFabricant ?? "");
   const [designation, setDesignation] = useState(initial?.designation ?? "");
-  const [marque, setMarque] = useState(initial?.marque ?? "");
-  const [categorie, setCategorie] = useState<CategorieProduit>(
-    (initial?.categorie as CategorieProduit) ?? "AUTRE",
-  );
+  const [fabricantId, setFabricantId] = useState(initial?.fabricantId ?? "");
+  const [fabricantNom, setFabricantNom] = useState("");
+  const [categorieId, setCategorieId] = useState(initial?.categorieId ?? "");
   const [unite, setUnite] = useState(initial?.unite ?? "U");
   const [serialisable, setSerialisable] = useState(Boolean(initial?.serialisable));
   const [seuilMini, setSeuilMini] = useState(String(initial?.seuilMini ?? 0));
@@ -89,8 +89,9 @@ export function EditeurProduit({
           refInterne,
           refFabricant,
           designation,
-          marque,
-          categorie,
+          fabricantId: fabricantId === NOUVEAU ? null : fabricantId || null,
+          fabricantNom: fabricantId === NOUVEAU ? fabricantNom : null,
+          categorieId: categorieId || null,
           unite,
           serialisable,
           seuilMini: Number(seuilMini) || 0,
@@ -177,26 +178,51 @@ export function EditeurProduit({
 
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <div>
-              <Label>Marque</Label>
-              <Input
-                value={marque ?? ""}
-                onChange={(e) => setMarque(e.target.value)}
-                placeholder="Distech Controls"
-                className="mt-1"
-              />
+              <Label>Fabricant</Label>
+              <select
+                value={fabricantId ?? ""}
+                onChange={(e) => setFabricantId(e.target.value)}
+                className={selectCls}
+              >
+                <option value="">— Aucun —</option>
+                {/* Un fabricant archivé reste proposé s'il est déjà porté par ce
+                    produit : sinon, la moindre modification l'effacerait. */}
+                {fabricants
+                  .filter((f) => f.actif || f.id === initial?.fabricantId)
+                  .map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nom}
+                      {f.actif ? "" : " (archivé)"}
+                    </option>
+                  ))}
+                <option value={NOUVEAU}>＋ Nouveau fabricant…</option>
+              </select>
+              {fabricantId === NOUVEAU && (
+                <Input
+                  autoFocus
+                  value={fabricantNom}
+                  onChange={(e) => setFabricantNom(e.target.value)}
+                  placeholder="Nom du fabricant"
+                  className="mt-2"
+                />
+              )}
             </div>
             <div>
               <Label>Catégorie</Label>
               <select
-                value={categorie}
-                onChange={(e) => setCategorie(e.target.value as CategorieProduit)}
+                value={categorieId ?? ""}
+                onChange={(e) => setCategorieId(e.target.value)}
                 className={selectCls}
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {CATEGORIE_LABEL[c]}
-                  </option>
-                ))}
+                <option value="">— Sans catégorie —</option>
+                {categories
+                  .filter((c) => c.actif || c.id === initial?.categorieId)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nom}
+                      {c.actif ? "" : " (archivée)"}
+                    </option>
+                  ))}
               </select>
             </div>
             <div>

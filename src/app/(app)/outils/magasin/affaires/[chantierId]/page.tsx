@@ -6,7 +6,13 @@ import { prisma } from "@/lib/db";
 import { MaterielAffaire } from "@/tools/magasin/materiel-affaire";
 import { bomAffaire } from "@/tools/magasin/bom";
 import { peutGererReferentiel, peutVoirPrix } from "@/tools/magasin/model";
-import { coutMaterielAffaire, listerDepots, listerRayon } from "@/tools/magasin/queries";
+import {
+  coutMaterielAffaire,
+  listerCategories,
+  listerDepots,
+  listerFabricants,
+  listerRayon,
+} from "@/tools/magasin/queries";
 
 export const metadata: Metadata = { title: "Matériel d'affaire — Magasin" };
 
@@ -20,7 +26,8 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
   });
   if (!affaire) notFound();
 
-  const [bom, reservations, lignesManuelles, rayon, depots, coutSortiCents] = await Promise.all([
+  const [bom, reservations, lignesManuelles, rayon, depots, coutSortiCents, fabricants, categories] =
+    await Promise.all([
     bomAffaire(chantierId),
     prisma.reservationStock.findMany({
       where: { chantierId, etat: "RESERVEE" },
@@ -33,6 +40,8 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
     listerRayon(),
     listerDepots(),
     coutMaterielAffaire(chantierId),
+    listerFabricants(),
+    listerCategories(),
   ]);
 
   return (
@@ -73,6 +82,8 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
           dernierPrixCents: l.dernierPrixCents,
         }))}
         depots={depots}
+        fabricants={fabricants}
+        categories={categories}
         peutPrix={peutVoirPrix(session?.user?.role)}
         peutGerer={peutGererReferentiel(session?.user?.role)}
       />

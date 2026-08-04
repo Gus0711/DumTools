@@ -1,16 +1,26 @@
 import type { Metadata } from "next";
+import { auth } from "@/auth";
 import { Cartouche } from "@/ui";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { ScanMagasin } from "@/tools/magasin/scan-magasin";
-import { listerDepots, listerRayon } from "@/tools/magasin/queries";
+import { peutGererReferentiel } from "@/tools/magasin/model";
+import {
+  listerCategories,
+  listerDepots,
+  listerFabricants,
+  listerRayon,
+} from "@/tools/magasin/queries";
 
 export const metadata: Metadata = { title: "Scanner — Magasin" };
 
 export default async function Page() {
-  const [lignes, depots, affaires] = await Promise.all([
+  const session = await auth();
+  const [lignes, depots, affaires, fabricants, categories] = await Promise.all([
     listerRayon(),
     listerDepots(),
     listerAffaires(),
+    listerFabricants(),
+    listerCategories(),
   ]);
 
   return (
@@ -19,7 +29,7 @@ export default async function Page() {
         estampille="Magasin"
         titre="Scanner"
         retour={{ href: "/outils/magasin", label: "Le rayon" }}
-        description="On choisit une fois le contexte — réception ou sortie — puis on enchaîne les codes. Un code inconnu s'associe à un produit et sera reconnu pour toujours."
+        description="On choisit une fois le contexte — réception ou sortie — puis on enchaîne les codes. Un code inconnu s'associe à un produit et sera reconnu pour toujours ; s'il s'agit d'un EAN, on demande au passage à une base publique ce qu'elle en sait."
         className="mb-6"
       />
 
@@ -43,6 +53,9 @@ export default async function Page() {
             clientNom: a.clientNom,
             numeroWhy: a.numeroWhy,
           }))}
+        fabricants={fabricants}
+        categories={categories}
+        peutGerer={peutGererReferentiel(session?.user?.role)}
       />
     </div>
   );

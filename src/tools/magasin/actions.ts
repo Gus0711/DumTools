@@ -8,7 +8,7 @@ import { produitParCode, type ProduitBref } from "./queries";
 import {
   SENS_MOUVEMENT,
   TYPES_SAISISSABLES,
-  estCategorie,
+  cleReferentiel,
   estTypeDepot,
   estTypeMouvement,
   peutCorrigerStock,
@@ -63,6 +63,181 @@ function entierPositif(v: unknown, champ: string): number {
   return n;
 }
 
+/* --- Catégories & fabricants ----------------------------------------------- */
+
+/**
+ * Retrouve une entrée de référentiel par son NOM, à la casse, aux accents et aux
+ * espaces près (`cleReferentiel`). C'est le garde-fou anti-doublon : « SIEMENS »
+ * saisi à l'import et « Siemens » saisi à la main désignent le même fabricant.
+ * Ce qu'il ne peut pas rattraper — « Siemnes » — se fusionne à la main depuis
+ * l'écran des référentiels.
+ */
+async function trouverParNom<T extends { id: string; nom: string }>(
+  lignes: T[],
+  nom: string,
+): Promise<T | undefined> {
+  const cle = cleReferentiel(nom);
+  return lignes.find((l) => cleReferentiel(l.nom) === cle);
+}
+
+/** id explicite > nom à rapprocher > rien. Créer par le nom reste possible :
+ *  sans ça, un import ou une saisie rapide se retrouverait bloqué. */
+async function resoudreFabricantId(
+  id: string | null | undefined,
+  nom: string | null | undefined,
+): Promise<string | null> {
+  const choisi = texteOuNull(id);
+  if (choisi) return choisi;
+  const libelle = texte(nom);
+  if (!libelle) return null;
+  const existants = await prisma.fabricant.findMany({ select: { id: true, nom: true } });
+  const trouve = await trouverParNom(existants, libelle);
+  if (trouve) return trouve.id;
+  const cree = await prisma.fabricant.create({
+    data: { nom: libelle },
+    select: { id: true },
+  });
+  return cree.id;
+}
+
+async function resoudreCategorieId(
+  id: string | null | undefined,
+  nom: string | null | undefined,
+): Promise<string | null> {
+  const choisie = texteOuNull(id);
+  if (choisie) return choisie;
+  const libelle = texte(nom);
+  if (!libelle) return null;
+  const existantes = await prisma.categorieProduit.findMany({ select: { id: true, nom: true } });
+  const trouvee = await trouverParNom(existantes, libelle);
+  if (trouvee) return trouvee.id;
+  const derniere = await prisma.categorieProduit.findFirst({
+    orderBy: { ordre: "desc" },
+    select: { ordre: true },
+  });
+  const creee = await prisma.categorieProduit.create({
+    data: { nom: libelle, ordre: (derniere?.ordre ?? 0) + 1 },
+    select: { id: true },
+  });
+  return creee.id;
+}
+
+export async function enregistrerCategorie(p: {
+  id?: string;
+  nom: string;
+  ordre?: number;
+  actif?: boolean;
+}): Promise<{ id: string }> {
+  await acteurReferentiel();
+  const nom = texte(p.nom);
+  if (!nom) throw new Error("Nom de catégorie requis");
+
+  // Renommer vers un nom déjà pris n'est pas une erreur mais une FUSION : c'est
+  // le geste qui répare les doublons hérités (« Sondes » et « Sonde »). Les
+  // produits suivent, la catégorie vidée disparaît.
+  const homonyme = await trouverParNom(
+    await prisma.categorieProduit.findMany({ select: { id: true, nom: true } }),
+    nom,
+  );
+  if (homonyme && homonyme.id !== p.id) {
+    if (!p.id) throw new Error(`La catégorie « ${homonyme.nom} » existe déjà`);
+    await prisma.$transaction([
+      prisma.produit.updateMany({ where: { categorieId: p.id }, data: { categorieId: homonyme.id } }),
+      prisma.categorieProduit.delete({ where: { id: p.id } }),
+    ]);
+    revalidatePath(RAYON, "layout");
+    return { id: homonyme.id };
+  }
+
+  const data = {
+    nom,
+    ...(p.ordre === undefined ? {} : { ordre: Math.round(Number(p.ordre)) || 0 }),
+    ...(p.actif === undefined ? {} : { actif: Boolean(p.actif) }),
+  };
+  const categorie = p.id
+    ? await prisma.categorieProduit.update({ where: { id: p.id }, data, select: { id: true } })
+    : await prisma.categorieProduit.create({
+        data: { ...data, ordre: data.ordre ?? 0 },
+        select: { id: true },
+      });
+  revalidatePath(RAYON, "layout");
+  return { id: categorie.id };
+}
+
+/**
+ * Supprime une catégorie. Si des produits la portent, il faut dire ce qu'ils
+ * deviennent : `remplacerParId` les bascule ailleurs, sinon ils se retrouvent
+ * « sans catégorie » — jamais supprimés, jamais silencieusement rangés ailleurs.
+ */
+export async function supprimerCategorie(p: {
+  id: string;
+  remplacerParId?: string | null;
+}): Promise<void> {
+  await acteurReferentiel();
+  const remplacant = texteOuNull(p.remplacerParId);
+  if (remplacant === p.id) throw new Error("Une catégorie ne peut pas se remplacer elle-même");
+  await prisma.$transaction([
+    prisma.produit.updateMany({
+      where: { categorieId: p.id },
+      data: { categorieId: remplacant },
+    }),
+    prisma.categorieProduit.delete({ where: { id: p.id } }),
+  ]);
+  revalidatePath(RAYON, "layout");
+}
+
+export async function enregistrerFabricant(p: {
+  id?: string;
+  nom: string;
+  note?: string;
+  actif?: boolean;
+}): Promise<{ id: string }> {
+  await acteurReferentiel();
+  const nom = texte(p.nom);
+  if (!nom) throw new Error("Nom de fabricant requis");
+
+  // Même règle que les catégories : renommer sur un existant fusionne. C'est
+  // exactement ce qu'on veut le jour où l'on découvre « Siemnes » dans le rayon.
+  const homonyme = await trouverParNom(
+    await prisma.fabricant.findMany({ select: { id: true, nom: true } }),
+    nom,
+  );
+  if (homonyme && homonyme.id !== p.id) {
+    if (!p.id) throw new Error(`Le fabricant « ${homonyme.nom} » existe déjà`);
+    await prisma.$transaction([
+      prisma.produit.updateMany({ where: { fabricantId: p.id }, data: { fabricantId: homonyme.id } }),
+      prisma.fabricant.delete({ where: { id: p.id } }),
+    ]);
+    revalidatePath(RAYON, "layout");
+    return { id: homonyme.id };
+  }
+
+  const data = {
+    nom,
+    ...(p.note === undefined ? {} : { note: texte(p.note) }),
+    ...(p.actif === undefined ? {} : { actif: Boolean(p.actif) }),
+  };
+  const fabricant = p.id
+    ? await prisma.fabricant.update({ where: { id: p.id }, data, select: { id: true } })
+    : await prisma.fabricant.create({ data, select: { id: true } });
+  revalidatePath(RAYON, "layout");
+  return { id: fabricant.id };
+}
+
+export async function supprimerFabricant(p: {
+  id: string;
+  remplacerParId?: string | null;
+}): Promise<void> {
+  await acteurReferentiel();
+  const remplacant = texteOuNull(p.remplacerParId);
+  if (remplacant === p.id) throw new Error("Un fabricant ne peut pas se remplacer lui-même");
+  await prisma.$transaction([
+    prisma.produit.updateMany({ where: { fabricantId: p.id }, data: { fabricantId: remplacant } }),
+    prisma.fabricant.delete({ where: { id: p.id } }),
+  ]);
+  revalidatePath(RAYON, "layout");
+}
+
 /* --- Produits -------------------------------------------------------------- */
 
 export interface SaisieProduit {
@@ -70,8 +245,15 @@ export interface SaisieProduit {
   refInterne: string;
   refFabricant?: string | null;
   designation: string;
-  marque?: string | null;
-  categorie: string;
+  /** Le fabricant est CHOISI dans le référentiel. */
+  fabricantId?: string | null;
+  /** …ou nommé, si l'utilisateur a explicitement demandé à en créer un. Le nom
+   *  est rapproché de l'existant à la casse et aux accents près : on ne crée
+   *  jamais un doublon de « Siemens » sans le vouloir. */
+  fabricantNom?: string | null;
+  categorieId?: string | null;
+  /** Idem pour la catégorie (chemin d'import, surtout). */
+  categorieNom?: string | null;
   unite?: string;
   serialisable?: boolean;
   seuilMini?: number;
@@ -96,7 +278,11 @@ export async function enregistrerProduit(p: SaisieProduit): Promise<{ id: string
   const designation = texte(p.designation);
   if (!refInterne) throw new Error("Référence interne requise");
   if (!designation) throw new Error("Désignation requise");
-  if (!estCategorie(p.categorie)) throw new Error("Catégorie inconnue");
+
+  const [fabricantId, categorieId] = await Promise.all([
+    resoudreFabricantId(p.fabricantId, p.fabricantNom),
+    resoudreCategorieId(p.categorieId, p.categorieNom),
+  ]);
 
   const seuil = Math.max(0, Math.round(Number(p.seuilMini ?? 0)) || 0);
 
@@ -124,8 +310,8 @@ export async function enregistrerProduit(p: SaisieProduit): Promise<{ id: string
     refInterne,
     refFabricant: texteOuNull(p.refFabricant),
     designation,
-    marque: texteOuNull(p.marque),
-    categorie: p.categorie,
+    fabricantId,
+    categorieId,
     unite: texte(p.unite) || "U",
     serialisable: Boolean(p.serialisable),
     seuilMini: seuil,
@@ -155,6 +341,44 @@ export async function enregistrerProduit(p: SaisieProduit): Promise<{ id: string
     }
     throw e;
   }
+}
+
+/**
+ * Brouillon d'article saisi AILLEURS que dans le rayon : réparation d'un trou de
+ * BOM, ajout de matériel sur une affaire. Le strict nécessaire pour ne pas
+ * quitter l'écran en cours — la fiche complète se remplit plus tard.
+ */
+export interface BrouillonProduit {
+  refInterne: string;
+  designation: string;
+  refFabricant?: string | null;
+  fabricantId?: string | null;
+  fabricantNom?: string | null;
+  categorieId?: string | null;
+  categorieNom?: string | null;
+  unite?: string;
+  prixAchatCents?: number | null;
+  fournisseurNom?: string | null;
+}
+
+/**
+ * Résout un brouillon en produit. Une référence interne déjà connue n'est pas
+ * une erreur : c'est le même article, on le réutilise plutôt que de refuser la
+ * saisie — le rayon masque les articles archivés, l'utilisateur ne pouvait pas
+ * savoir. La création passe par `enregistrerProduit`, donc par le contrôle de
+ * droit du référentiel : une seule porte d'écriture pour les produits.
+ */
+async function produitDuBrouillon(b: BrouillonProduit | undefined): Promise<string> {
+  if (!b) throw new Error("Choisissez un produit, ou créez-en un");
+  const refInterne = texte(b.refInterne);
+  if (!refInterne) throw new Error("Référence interne requise");
+  const existant = await prisma.produit.findUnique({
+    where: { refInterne },
+    select: { id: true },
+  });
+  if (existant) return existant.id;
+  const { id } = await enregistrerProduit(b);
+  return id;
 }
 
 /**
@@ -241,6 +465,41 @@ export async function oublierCode(id: string): Promise<void> {
   await acteurReferentiel();
   const code = await prisma.codeBarreProduit.delete({ where: { id } });
   revalidatePath(`${RAYON}/produits/${code.produitId}`);
+}
+
+/**
+ * Le geste qui manquait au scan : un code inconnu dont l'article n'existe pas
+ * encore. On crée le produit ET on apprend le code dans la foulée — séparer les
+ * deux, c'était laisser l'utilisateur avec un produit tout neuf qu'il faudrait
+ * rescanner pour l'associer.
+ *
+ */
+export async function creerProduitDepuisCode(p: {
+  code: string;
+  format?: string | null;
+  produit: BrouillonProduit;
+}): Promise<{ id: string; refInterne: string; designation: string; unite: string; stock: number }> {
+  await acteurReferentiel();
+  const code = texte(p.code);
+  if (!code) throw new Error("Code vide");
+
+  const dejaPris = await prisma.codeBarreProduit.findUnique({
+    where: { code },
+    include: { produit: { select: { refInterne: true } } },
+  });
+  if (dejaPris) throw new Error(`Ce code est déjà associé à ${dejaPris.produit.refInterne}`);
+
+  const produitId = await produitDuBrouillon(p.produit);
+  await apprendreCode({ code, produitId, format: p.format });
+
+  const cree = await prisma.produit.findUniqueOrThrow({
+    where: { id: produitId },
+    select: { id: true, refInterne: true, designation: true, unite: true },
+  });
+  revalidatePath(RAYON);
+  // Un produit tout juste créé n'a par construction aucun mouvement : son stock
+  // de départ est zéro, inutile de le recalculer.
+  return { ...cree, stock: 0 };
 }
 
 /* --- Mouvements ------------------------------------------------------------ */
@@ -648,21 +907,31 @@ export async function supprimerNomenclature(id: string): Promise<void> {
 
 /* --- Matériel d'affaire : lignes manuelles & réservations ------------------ */
 
+/**
+ * Ajoute (ou remet à jour) une ligne manuelle de BOM. L'article peut ne pas
+ * encore exister au magasin : `nouveauProduit` le crée au passage plutôt que
+ * d'obliger à quitter l'affaire, saisir la fiche dans le rayon, puis revenir.
+ * Ajouter un article connu reste ouvert à tous ; en créer un est un geste de
+ * référentiel, et `produitDuBrouillon` en porte le contrôle de droit.
+ */
 export async function enregistrerLigneMateriel(p: {
   chantierId: string;
-  produitId: string;
+  produitId?: string | null;
+  nouveauProduit?: BrouillonProduit;
   quantite: number;
   note?: string;
-}): Promise<void> {
+}): Promise<{ produitId: string }> {
   await acteur();
   const quantite = entierPositif(p.quantite, "Quantité");
+  const produitId = texteOuNull(p.produitId) ?? (await produitDuBrouillon(p.nouveauProduit));
   await prisma.ligneMaterielAffaire.upsert({
-    where: { chantierId_produitId: { chantierId: p.chantierId, produitId: p.produitId } },
-    create: { chantierId: p.chantierId, produitId: p.produitId, quantite, note: texte(p.note) },
+    where: { chantierId_produitId: { chantierId: p.chantierId, produitId } },
+    create: { chantierId: p.chantierId, produitId, quantite, note: texte(p.note) },
     update: { quantite, note: texte(p.note) },
   });
   revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
   revalidatePath(`/affaires/${p.chantierId}`);
+  return { produitId };
 }
 
 export async function supprimerLigneMateriel(id: string): Promise<void> {
@@ -789,15 +1058,13 @@ export async function servirReservation(p: {
 export async function ouvrirInventaire(p: {
   depotId: string;
   libelle?: string;
-  categorie?: string | null;
+  categorieId?: string | null;
 }): Promise<{ id: string }> {
   const a = await acteurReferentiel();
 
+  const categorieId = texteOuNull(p.categorieId);
   const produits = await prisma.produit.findMany({
-    where: {
-      actif: true,
-      ...(p.categorie && estCategorie(p.categorie) ? { categorie: p.categorie } : {}),
-    },
+    where: { actif: true, ...(categorieId ? { categorieId } : {}) },
     select: { id: true },
   });
 
@@ -925,44 +1192,15 @@ export async function associerTrou(p: {
   cle: string;
   typeIo?: string | null;
   produitId?: string | null;
-  nouveauProduit?: { refInterne: string; designation: string; categorie: string };
+  nouveauProduit?: BrouillonProduit;
   quantite?: number;
   chantierId?: string;
 }): Promise<{ produitId: string }> {
-  const a = await acteurReferentiel();
+  await acteurReferentiel();
   const cle = texte(p.cle);
   if (!cle) throw new Error("Élément à relier manquant");
 
-  let produitId = texteOuNull(p.produitId);
-
-  if (!produitId) {
-    const brouillon = p.nouveauProduit;
-    if (!brouillon) throw new Error("Choisissez un produit, ou créez-en un");
-    const refInterne = texte(brouillon.refInterne);
-    const designation = texte(brouillon.designation);
-    if (!refInterne) throw new Error("Référence interne requise");
-    if (!designation) throw new Error("Désignation requise");
-    // Une référence déjà connue n'est pas une erreur : c'est le même article,
-    // on le réutilise plutôt que de refuser la saisie.
-    const existant = await prisma.produit.findUnique({
-      where: { refInterne },
-      select: { id: true },
-    });
-    produitId =
-      existant?.id ??
-      (
-        await prisma.produit.create({
-          data: {
-            refInterne,
-            designation,
-            categorie: estCategorie(brouillon.categorie) ? brouillon.categorie : "AUTRE",
-            createdById: a.id,
-            updatedById: a.id,
-          },
-          select: { id: true },
-        })
-      ).id;
-  }
+  const produitId = texteOuNull(p.produitId) ?? (await produitDuBrouillon(p.nouveauProduit));
 
   if (p.genre === "automate") {
     const { count } = await prisma.automateModele.updateMany({

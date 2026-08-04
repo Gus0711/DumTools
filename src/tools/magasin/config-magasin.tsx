@@ -2,15 +2,41 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Pencil, Plus, Truck, Warehouse } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  Factory,
+  Loader2,
+  Pencil,
+  Plus,
+  Tags,
+  Trash2,
+  Truck,
+  Warehouse,
+  type LucideIcon,
+} from "lucide-react";
 import { Badge, Button, EnteteSection, Input, Label } from "@/ui";
-import { enregistrerDepot, enregistrerFournisseur } from "./actions";
-import { TYPE_DEPOT_LABEL, type DepotVue, type TypeDepot } from "./model";
+import {
+  enregistrerCategorie,
+  enregistrerDepot,
+  enregistrerFabricant,
+  enregistrerFournisseur,
+  supprimerCategorie,
+  supprimerFabricant,
+} from "./actions";
+import {
+  TYPE_DEPOT_LABEL,
+  type CategorieVue,
+  type DepotVue,
+  type FabricantVue,
+  type TypeDepot,
+} from "./model";
 import type { FournisseurVue } from "./queries";
 
 /* =============================================================================
- * FOURNISSEURS & DÉPÔTS
- * Deux référentiels courts qui n'ont pas mérité un écran chacun.
+ * LES RÉFÉRENTIELS DU MAGASIN
+ * Quatre listes courtes — dépôts, fournisseurs, catégories, fabricants — qui
+ * n'ont pas mérité un écran chacune.
  *
  * Le « dortoir » est le réglage qui décide de la doctrine camion : coché, ce
  * qui entre dans le dépôt est considéré comme consommé (aucun stock tenu) ;
@@ -43,9 +69,13 @@ type BrouillonFournisseur = {
 export function ConfigMagasin({
   depots,
   fournisseurs,
+  categories,
+  fabricants,
 }: {
   depots: DepotVue[];
   fournisseurs: FournisseurVue[];
+  categories: CategorieVue[];
+  fabricants: FabricantVue[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -368,6 +398,250 @@ export function ConfigMagasin({
           </div>
         )}
       </section>
+
+      {/* Catégories ---------------------------------------------------------- */}
+      <ListeReferentiel
+        icone={Tags}
+        titre="Catégories"
+        singulier="Catégorie"
+        lignes={categories.map((c) => ({ id: c.id, nom: c.nom, actif: c.actif, nbProduits: c.nbProduits }))}
+        vide="Aucune catégorie — le rayon ne peut alors plus être trié que par référence."
+        aide="Le rangement du rayon. Supprimer une catégorie ne supprime jamais ses produits : ils basculent vers celle que vous désignez, ou se retrouvent « sans catégorie », visibles en fin de rayon."
+        pending={pending}
+        onEnregistrer={(id, nom) => run(() => enregistrerCategorie({ id, nom }).then(() => undefined))}
+        onArchiver={(id, actif) =>
+          run(() => enregistrerCategorie({ id, nom: nomDe(categories, id), actif }).then(() => undefined))
+        }
+        onSupprimer={(id, remplacerParId) => run(() => supprimerCategorie({ id, remplacerParId }))}
+      />
+
+      {/* Fabricants ---------------------------------------------------------- */}
+      <ListeReferentiel
+        icone={Factory}
+        titre="Fabricants"
+        singulier="Fabricant"
+        lignes={fabricants.map((f) => ({ id: f.id, nom: f.nom, actif: f.actif, nbProduits: f.nbProduits }))}
+        vide="Aucun fabricant enregistré."
+        aide="Qui fabrique le matériel — à ne pas confondre avec le fournisseur, qui le facture. Renommer un fabricant SUR UN NOM DÉJÀ PRIS les FUSIONNE : c'est le geste qui répare un « Siemnes » saisi un jour de fatigue, sans perdre un seul produit."
+        pending={pending}
+        onEnregistrer={(id, nom) => run(() => enregistrerFabricant({ id, nom }).then(() => undefined))}
+        onArchiver={(id, actif) =>
+          run(() => enregistrerFabricant({ id, nom: nomDe(fabricants, id), actif }).then(() => undefined))
+        }
+        onSupprimer={(id, remplacerParId) => run(() => supprimerFabricant({ id, remplacerParId }))}
+      />
     </>
+  );
+}
+
+function nomDe(lignes: { id: string; nom: string }[], id: string): string {
+  return lignes.find((l) => l.id === id)?.nom ?? "";
+}
+
+interface LigneReferentiel {
+  id: string;
+  nom: string;
+  actif: boolean;
+  nbProduits: number;
+}
+
+/**
+ * Catégories et fabricants sont le même objet : une liste de noms, comptés en
+ * produits. Un seul composant, donc — et surtout un seul comportement de
+ * suppression, qui est la partie délicate.
+ *
+ * La règle : rien ne disparaît en silence. Supprimer une entrée encore portée
+ * par des produits demande d'abord de dire où ils vont ; « nulle part » est une
+ * réponse valable (ils deviennent « sans catégorie »), mais elle est CHOISIE.
+ */
+function ListeReferentiel({
+  icone,
+  titre,
+  singulier,
+  lignes,
+  vide,
+  aide,
+  pending,
+  onEnregistrer,
+  onArchiver,
+  onSupprimer,
+}: {
+  icone: LucideIcon;
+  titre: string;
+  singulier: string;
+  lignes: LigneReferentiel[];
+  vide: string;
+  aide: string;
+  pending: boolean;
+  onEnregistrer: (id: string | undefined, nom: string) => void;
+  onArchiver: (id: string, actif: boolean) => void;
+  onSupprimer: (id: string, remplacerParId: string | null) => void;
+}) {
+  const [edition, setEdition] = useState<{ id?: string; nom: string } | null>(null);
+  const [suppression, setSuppression] = useState<{ ligne: LigneReferentiel; vers: string } | null>(
+    null,
+  );
+
+  return (
+    <section className="mt-8">
+      <EnteteSection
+        icone={icone}
+        titre={titre}
+        compteur={lignes.length}
+        actions={
+          <Button size="sm" variant="outline" onClick={() => setEdition({ nom: "" })}>
+            <Plus className="h-4 w-4" /> {singulier}
+          </Button>
+        }
+      />
+
+      <p className="mb-3 text-xs leading-relaxed text-muted">{aide}</p>
+
+      <div className="data-card overflow-x-auto">
+        <table className="data-table table-cards">
+          <thead>
+            <tr>
+              <th>{singulier}</th>
+              <th className="text-right">Produits</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.length === 0 && (
+              <tr>
+                <td colSpan={3} className="py-6 text-center text-sm text-subtle">
+                  {vide}
+                </td>
+              </tr>
+            )}
+            {lignes.map((l) => (
+              <tr key={l.id} className={l.actif ? "" : "opacity-55"}>
+                <td className="cell-title cell-card-title">
+                  {l.nom}
+                  {!l.actif && (
+                    <Badge tone="neutral" className="ml-2">
+                      Archivé
+                    </Badge>
+                  )}
+                </td>
+                <td data-label="Produits" className="text-right tabular-nums">
+                  {l.nbProduits}
+                </td>
+                <td className="whitespace-nowrap text-right">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={`Renommer ${l.nom}`}
+                    onClick={() => setEdition({ id: l.id, nom: l.nom })}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title={
+                      l.actif
+                        ? "Archiver : retiré des choix, conservé sur les produits qui le portent"
+                        : "Remettre dans les choix"
+                    }
+                    aria-label={l.actif ? `Archiver ${l.nom}` : `Réactiver ${l.nom}`}
+                    disabled={pending}
+                    onClick={() => onArchiver(l.id, !l.actif)}
+                  >
+                    {l.actif ? <Archive className="h-4 w-4" /> : <ArchiveRestore className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={`Supprimer ${l.nom}`}
+                    disabled={pending}
+                    onClick={() =>
+                      l.nbProduits === 0
+                        ? onSupprimer(l.id, null)
+                        : setSuppression({ ligne: l, vers: "" })
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {edition && (
+        <div className="bloc mt-3 px-4 py-4">
+          <Label>Nom</Label>
+          <Input
+            autoFocus
+            value={edition.nom}
+            onChange={(e) => setEdition({ ...edition, nom: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && edition.nom.trim()) {
+                onEnregistrer(edition.id, edition.nom);
+                setEdition(null);
+              }
+            }}
+            className="mt-1"
+          />
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setEdition(null)} disabled={pending}>
+              Annuler
+            </Button>
+            <Button
+              disabled={pending || !edition.nom.trim()}
+              onClick={() => {
+                onEnregistrer(edition.id, edition.nom);
+                setEdition(null);
+              }}
+            >
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Enregistrer
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {suppression && (
+        <div className="bloc mt-3 border-danger/40 px-4 py-4">
+          <p className="text-sm text-fg">
+            <strong>{suppression.ligne.nom}</strong> est encore portée par{" "}
+            <strong>{suppression.ligne.nbProduits}</strong> produit
+            {suppression.ligne.nbProduits > 1 ? "s" : ""}. Que deviennent-ils ?
+          </p>
+          <select
+            value={suppression.vers}
+            onChange={(e) => setSuppression({ ...suppression, vers: e.target.value })}
+            className={`${selectCls} max-w-sm`}
+          >
+            <option value="">Aucune — ils resteront « sans {singulier.toLowerCase()} »</option>
+            {lignes
+              .filter((l) => l.id !== suppression.ligne.id)
+              .map((l) => (
+                <option key={l.id} value={l.id}>
+                  Les basculer vers « {l.nom} »
+                </option>
+              ))}
+          </select>
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setSuppression(null)} disabled={pending}>
+              Annuler
+            </Button>
+            <Button
+              variant="danger"
+              disabled={pending}
+              onClick={() => {
+                onSupprimer(suppression.ligne.id, suppression.vers || null);
+                setSuppression(null);
+              }}
+            >
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Supprimer
+            </Button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

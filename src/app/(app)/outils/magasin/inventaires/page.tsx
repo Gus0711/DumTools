@@ -5,7 +5,7 @@ import { Badge, Cartouche, EtatVide } from "@/ui";
 import { fmtDateHeure } from "@/lib/dates";
 import { OuvrirInventaire } from "@/tools/magasin/inventaire";
 import { ETAT_INVENTAIRE_LABEL, peutGererReferentiel, type EtatInventaire } from "@/tools/magasin/model";
-import { listerDepots, listerInventaires } from "@/tools/magasin/queries";
+import { listerCategories, listerDepots, listerInventaires } from "@/tools/magasin/queries";
 
 export const metadata: Metadata = { title: "Inventaires — Magasin" };
 
@@ -18,7 +18,11 @@ const TON: Record<EtatInventaire, "warning" | "success" | "neutral"> = {
 export default async function Page() {
   const session = await auth();
   const peutGerer = peutGererReferentiel(session?.user?.role);
-  const [inventaires, depots] = await Promise.all([listerInventaires(), listerDepots()]);
+  const [inventaires, depots, categories] = await Promise.all([
+    listerInventaires(),
+    listerDepots(),
+    listerCategories(),
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-5 md:px-7 md:py-7">
@@ -27,7 +31,7 @@ export default async function Page() {
         titre="Inventaires"
         retour={{ href: "/outils/magasin", label: "Le rayon" }}
         description="Compter ce qu'il y a vraiment. L'ouverture fige le théorique, la validation transforme chaque différence en écart visible — jamais en correction silencieuse."
-        actions={peutGerer ? <OuvrirInventaire depots={depots.filter((d) => d.actif)} /> : null}
+        actions={peutGerer ? <OuvrirInventaire depots={depots.filter((d) => d.actif)} categories={categories} /> : null}
         className="mb-6"
       />
 

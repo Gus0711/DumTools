@@ -8,6 +8,7 @@ import {
   Flashlight,
   Loader2,
   Minus,
+  PackagePlus,
   Plus,
   ScanLine,
   Search,
@@ -17,8 +18,19 @@ import {
 import { Badge, Button, Input, Label } from "@/ui";
 import { cn } from "@/lib/cn";
 import { useLecteurCode } from "@/lib/scan/lecteur";
-import { apprendreCode, chercherParCode, enregistrerLotScan } from "./actions";
-import { MOUVEMENT_LABEL, type DepotVue } from "./model";
+import {
+  apprendreCode,
+  chercherParCode,
+  creerProduitDepuisCode,
+  enregistrerLotScan,
+} from "./actions";
+import {
+  MOUVEMENT_LABEL,
+  refDepuisLibelle,
+  type CategorieVue,
+  type DepotVue,
+  type FabricantVue,
+} from "./model";
 import type { AffaireChoix, ProduitChoix } from "./saisie-mouvement";
 
 /* =============================================================================
@@ -32,9 +44,30 @@ import type { AffaireChoix, ProduitChoix } from "./saisie-mouvement";
  * Le code inconnu n'est pas une erreur, c'est une étape : on l'associe à un
  * produit, il est APPRIS, et la fois suivante il est reconnu instantanément.
  * Sans cet apprentissage, un magasin scanné meurt en trois semaines.
+ *
+ * Le code inconnu peut aussi désigner un article qui n'existe pas encore : on le
+ * crée ici même, et le code lui est appris dans la foulée. Séparer les deux
+ * gestes obligeait à rescanner.
+ *
+ * (Une interrogation de base externe — UPCitemdb — a été branchée puis retirée
+ * le 2026-08-04 : aucune réponse sur du matériel GTB. Voir docs/MAGASIN.md.)
  * ========================================================================== */
 
 type Mode = "RECEPTION" | "SORTIE";
+
+/** Valeur du select qui déplie la saisie d'un nouveau fabricant. */
+const NOUVEAU_FABRICANT = "__NOUVEAU__";
+
+/** L'article qu'on crée depuis le scan — le strict nécessaire pour que la
+ *  session continue ; le reste de la fiche se complète depuis le rayon. */
+interface CreationScan {
+  refInterne: string;
+  designation: string;
+  refFabricant: string;
+  fabricantId: string;
+  fabricantNom: string;
+  categorieId: string;
+}
 
 interface LigneSession {
   produitId: string;
@@ -49,10 +82,17 @@ export function ScanMagasin({
   produits,
   depots,
   affaires,
+  fabricants,
+  categories,
+  peutGerer,
 }: {
   produits: ProduitChoix[];
   depots: DepotVue[];
   affaires: AffaireChoix[];
+  fabricants: FabricantVue[];
+  categories: CategorieVue[];
+  /** Créer un article reste un geste de référentiel (Achats / Admin). */
+  peutGerer: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -67,6 +107,7 @@ export function ScanMagasin({
 
   const [lignes, setLignes] = useState<LigneSession[]>([]);
   const [inconnu, setInconnu] = useState<{ code: string; format: string | null } | null>(null);
+  const [creation, setCreation] = useState<CreationScan | null>(null);
   const [recherche, setRecherche] = useState("");
   const [manuel, setManuel] = useState("");
   const [flash, setFlash] = useState<"ok" | "inconnu" | null>(null);
@@ -130,12 +171,14 @@ export function ScanMagasin({
       const produit = await chercherParCode(code);
       if (produit) {
         ajouter(produit);
-      } else {
-        inconnuRef.current = true;
-        setInconnu({ code, format });
-        setRecherche("");
-        montrerFlash("inconnu");
+        return;
       }
+
+      inconnuRef.current = true;
+      setInconnu({ code, format });
+      setRecherche("");
+      setCreation(null);
+      montrerFlash("inconnu");
     });
   };
 
@@ -176,8 +219,54 @@ export function ScanMagasin({
 
   function abandonnerInconnu() {
     setInconnu(null);
+    setCreation(null);
     inconnuRef.current = false;
   }
+
+  /** Ouvre le formulaire de création. La recherche déjà tapée sert d'amorce :
+   *  on cherchait « sonde gaine » sans la trouver, autant la pré-remplir. */
+  function ouvrirCreation() {
+    const amorce = recherche.trim();
+    setCreation({
+      refInterne: refDepuisLibelle(amorce),
+      designation: amorce,
+      refFabricant: "",
+      fabricantId: "",
+      fabricantNom: "",
+      categorieId: "",
+    });
+  }
+
+  function creerEtAssocier() {
+    if (!inconnu || !creation) return;
+    setErreur(null);
+    startTransition(async () => {
+      try {
+        const produit = await creerProduitDepuisCode({
+          code: inconnu.code,
+          format: inconnu.format,
+          produit: {
+            refInterne: creation.refInterne,
+            designation: creation.designation,
+            refFabricant: creation.refFabricant || null,
+            fabricantId:
+              creation.fabricantId === NOUVEAU_FABRICANT ? null : creation.fabricantId || null,
+            fabricantNom:
+              creation.fabricantId === NOUVEAU_FABRICANT ? creation.fabricantNom : null,
+            categorieId: creation.categorieId || null,
+          },
+        });
+        ajouter(produit);
+        abandonnerInconnu();
+        router.refresh();
+      } catch (e) {
+        setErreur(e instanceof Error ? e.message : "Erreur inattendue");
+      }
+    });
+  }
+
+  const majCreation = (patch: Partial<CreationScan>) =>
+    setCreation((c) => (c ? { ...c, ...patch } : c));
 
   function valider() {
     setErreur(null);
@@ -377,35 +466,143 @@ export function ScanMagasin({
           <p className="mt-2 text-sm text-muted">
             À quel produit correspond-il ? Une fois associé, il sera reconnu pour toujours.
           </p>
-          <div className="relative mt-2">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
-            <Input
-              autoFocus
-              value={recherche}
-              onChange={(e) => setRecherche(e.target.value)}
-              placeholder="Chercher le produit…"
-              className="pl-8"
-            />
-          </div>
-          <ul className="mt-2 max-h-52 overflow-y-auto border border-hairline">
-            {resultatsRecherche.map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => associer(p.id)}
-                  className="flex w-full items-baseline gap-2 border-b border-hairline px-3 py-2 text-left text-sm transition-colors last:border-0 hover:bg-surface-2"
+
+          {/* Chemin 1 : associer à un produit existant --------------------- */}
+          {!creation && (
+            <>
+              <div className="relative mt-3">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
+                <Input
+                  autoFocus
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                  placeholder="Chercher le produit…"
+                  className="pl-8"
+                />
+              </div>
+              <ul className="mt-2 max-h-52 overflow-y-auto border border-hairline">
+                {resultatsRecherche.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() => associer(p.id)}
+                      className="flex w-full items-baseline gap-2 border-b border-hairline px-3 py-2 text-left text-sm transition-colors last:border-0 hover:bg-surface-2"
+                    >
+                      <span className="ref shrink-0">{p.refInterne}</span>
+                      <span className="min-w-0 flex-1 truncate text-fg">{p.designation}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 flex flex-wrap justify-end gap-2">
+                {peutGerer && (
+                  <Button size="sm" variant="outline" onClick={ouvrirCreation}>
+                    <PackagePlus className="h-4 w-4" />
+                    L&apos;article n&apos;existe pas — le créer
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" onClick={abandonnerInconnu}>
+                  Ignorer ce code
+                </Button>
+              </div>
+            </>
+          )}
+
+          {/* Chemin 2 : créer l'article, puis apprendre le code ------------ */}
+          {creation && (
+            <div className="mt-3 border-t border-hairline pt-3">
+              <p className="stamp mb-2">Nouvel article</p>
+              <div className="grid gap-3 sm:grid-cols-[11rem_minmax(0,1fr)]">
+                <div>
+                  <Label>Réf. interne *</Label>
+                  <Input
+                    autoFocus
+                    value={creation.refInterne}
+                    onChange={(e) => majCreation({ refInterne: e.target.value })}
+                    className="mt-1 font-mono"
+                  />
+                </div>
+                <div>
+                  <Label>Désignation *</Label>
+                  <Input
+                    value={creation.designation}
+                    onChange={(e) => majCreation({ designation: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div>
+                  <Label>Réf. fabricant</Label>
+                  <Input
+                    value={creation.refFabricant}
+                    onChange={(e) => majCreation({ refFabricant: e.target.value })}
+                    className="mt-1 font-mono"
+                  />
+                </div>
+                <div>
+                  <Label>Fabricant</Label>
+                  <select
+                    value={creation.fabricantId}
+                    onChange={(e) => majCreation({ fabricantId: e.target.value })}
+                    className="mt-1 h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+                  >
+                    <option value="">— Aucun —</option>
+                    {fabricants
+                      .filter((f) => f.actif)
+                      .map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.nom}
+                        </option>
+                      ))}
+                    <option value={NOUVEAU_FABRICANT}>＋ Nouveau fabricant…</option>
+                  </select>
+                  {creation.fabricantId === NOUVEAU_FABRICANT && (
+                    <Input
+                      value={creation.fabricantNom}
+                      onChange={(e) => majCreation({ fabricantNom: e.target.value })}
+                      placeholder="Nom du fabricant"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+                <div>
+                  <Label>Catégorie</Label>
+                  <select
+                    value={creation.categorieId}
+                    onChange={(e) => majCreation({ categorieId: e.target.value })}
+                    className="mt-1 h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+                  >
+                    <option value="">— Sans catégorie —</option>
+                    {categories
+                      .filter((c) => c.actif)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nom}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-muted">
+                Le code <span className="ref">{inconnu.code}</span> sera appris sur cet article : la
+                prochaine fois, il sera reconnu sans rien demander.
+              </p>
+              <div className="mt-3 flex flex-wrap justify-end gap-2">
+                <Button size="sm" variant="ghost" onClick={() => setCreation(null)} disabled={pending}>
+                  Revenir à la recherche
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={pending || !creation.refInterne.trim() || !creation.designation.trim()}
+                  onClick={creerEtAssocier}
                 >
-                  <span className="ref shrink-0">{p.refInterne}</span>
-                  <span className="min-w-0 flex-1 truncate text-fg">{p.designation}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2 flex justify-end">
-            <Button size="sm" variant="ghost" onClick={abandonnerInconnu}>
-              Ignorer ce code
-            </Button>
-          </div>
+                  {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Créer et scanner
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

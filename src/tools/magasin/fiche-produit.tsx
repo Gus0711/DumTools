@@ -30,14 +30,13 @@ import {
   supprimerProduit,
 } from "./actions";
 import {
-  CATEGORIE_LABEL,
   ETAT_EXEMPLAIRE_LABEL,
   MOUVEMENT_LABEL,
   SOURCE_PRIX_LABEL,
   formatEuros,
   sensAffiche,
 } from "./model";
-import type { DepotVue } from "./model";
+import type { CategorieVue, DepotVue, FabricantVue } from "./model";
 import type { FicheProduit } from "./queries";
 import type { FournisseurVue } from "./queries";
 
@@ -59,6 +58,8 @@ export function FicheProduitVue({
   depots,
   affaires,
   fournisseurs,
+  fabricants,
+  categories,
   autresProduits,
   peutPrix,
   peutGerer,
@@ -69,6 +70,8 @@ export function FicheProduitVue({
   affaires: AffaireChoix[];
   /** Passée à l'éditeur : le fournisseur se choisit sur la fiche produit. */
   fournisseurs: FournisseurVue[];
+  fabricants: FabricantVue[];
+  categories: CategorieVue[];
   /** Passée à l'éditeur : pour désigner un remplaçant. */
   autresProduits: { id: string; refInterne: string; designation: string }[];
   peutPrix: boolean;
@@ -620,7 +623,8 @@ export function FicheProduitVue({
           )}
 
           <p className="text-xs text-subtle">
-            Catégorie {CATEGORIE_LABEL[fiche.categorie]}
+            {fiche.categorieNom ? `Catégorie ${fiche.categorieNom}` : "Sans catégorie"}
+            {fiche.fabricantNom ? ` · ${fiche.fabricantNom}` : ""}
             {fiche.note ? ` · ${fiche.note}` : ""}
           </p>
         </div>
@@ -644,8 +648,8 @@ export function FicheProduitVue({
             refInterne: fiche.refInterne,
             refFabricant: fiche.refFabricant,
             designation: fiche.designation,
-            marque: fiche.marque,
-            categorie: fiche.categorie,
+            fabricantId: fiche.fabricantId,
+            categorieId: fiche.categorieId,
             unite: fiche.unite,
             serialisable: fiche.serialisable,
             seuilMini: fiche.seuilMini,
@@ -659,6 +663,8 @@ export function FicheProduitVue({
             delaiJours: fiche.delaiJours,
           }}
           fournisseurs={fournisseurs}
+          fabricants={fabricants}
+          categories={categories}
           produits={autresProduits}
           peutPrix={peutPrix}
           onFermer={() => setEdition(false)}

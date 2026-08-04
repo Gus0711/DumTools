@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   Ban,
   Blocks,
   Boxes,
@@ -11,6 +12,7 @@ import {
   Link2,
   Loader2,
   PackageCheck,
+  PackagePlus,
   PackageX,
   Plus,
   Search,
@@ -31,7 +33,11 @@ import {
 import {
   GENRE_TROU_LABEL,
   formatEuros,
+  parseEuros,
+  refDepuisLibelle,
+  type CategorieVue,
   type DepotVue,
+  type FabricantVue,
   type LigneBom,
   type TrouBom,
 } from "./model";
@@ -62,24 +68,18 @@ export interface LigneManuelleVue {
 
 /** Référence interne proposée par défaut quand on crée l'article à la volée :
  *  celle du constructeur pour un automate ou un module (elle est parlante), le
- *  nom du point sinon — à corriger par l'utilisateur si besoin. */
+ *  nom du point sinon. */
 function refDepuisTrou(t: TrouBom): string {
-  if (t.genre === "point") {
-    return t.cle
-      .toUpperCase()
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^A-Z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 24);
-  }
-  return t.cle;
+  return t.genre === "point" ? refDepuisLibelle(t.cle) : t.cle;
 }
 
-function categorieProbable(genre: TrouBom["genre"]): string {
-  if (genre === "automate") return "AUTOMATE";
-  if (genre === "module") return "MODULE";
-  return "AUTRE";
+/** La catégorie qu'un trou appelle probablement. Renvoyée par son NOM : le
+ *  serveur la rapproche du référentiel (casse et accents ignorés) et ne la crée
+ *  que si elle a réellement été supprimée. */
+function categorieProbable(genre: TrouBom["genre"]): string | undefined {
+  if (genre === "automate") return "Automate";
+  if (genre === "module") return "Module";
+  return undefined;
 }
 
 interface Reparation {
@@ -92,6 +92,49 @@ interface Reparation {
   quantite: string;
 }
 
+/** L'article qu'on ajoute n'existe pas encore au magasin : on le saisit ici, le
+ *  strict nécessaire. Sa fiche complète (seuil, doc, codes-barres) se remplit
+ *  plus tard depuis le rayon — l'important est de ne pas quitter l'affaire. */
+interface Creation {
+  refInterne: string;
+  designation: string;
+  /** "" = aucun · un id · NOUVEAU_FABRICANT pour déplier la saisie. */
+  fabricantId: string;
+  fabricantNom: string;
+  categorieId: string;
+  unite: string;
+  prix: string;
+  fournisseur: string;
+}
+
+/** Créer un fabricant depuis ici reste possible, mais jamais par accident : il
+ *  faut le demander explicitement dans la liste. */
+const NOUVEAU_FABRICANT = "__NOUVEAU__";
+
+interface Ajout {
+  recherche: string;
+  quantite: string;
+  /** null = on cherche dans le rayon ; sinon on saisit l'article manquant. */
+  creation: Creation | null;
+}
+
+function creationDepuis(recherche: string): Creation {
+  const nom = recherche.trim();
+  return {
+    refInterne: refDepuisLibelle(nom),
+    designation: nom,
+    fabricantId: "",
+    fabricantNom: "",
+    categorieId: "",
+    unite: "U",
+    prix: "",
+    fournisseur: "",
+  };
+}
+
+const selectCls =
+  "mt-1 h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg";
+
 export function MaterielAffaire({
   chantierId,
   lignes,
@@ -103,6 +146,8 @@ export function MaterielAffaire({
   lignesManuelles,
   produits,
   depots,
+  fabricants,
+  categories,
   peutPrix,
   peutGerer,
   coutSortiCents,
@@ -119,6 +164,8 @@ export function MaterielAffaire({
   lignesManuelles: LigneManuelleVue[];
   produits: ProduitChoix[];
   depots: DepotVue[];
+  fabricants: FabricantVue[];
+  categories: CategorieVue[];
   peutPrix: boolean;
   peutGerer: boolean;
   coutSortiCents: number;
@@ -126,9 +173,7 @@ export function MaterielAffaire({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [erreur, setErreur] = useState<string | null>(null);
-  const [ajout, setAjout] = useState<{ recherche: string; produitId: string; quantite: string } | null>(
-    null,
-  );
+  const [ajout, setAjout] = useState<Ajout | null>(null);
   const [reparation, setReparation] = useState<Reparation | null>(null);
   const [tousLesTrous, setTousLesTrous] = useState(false);
 
@@ -146,6 +191,12 @@ export function MaterielAffaire({
   };
 
   const depotDefaut = depots.find((d) => d.actif && !d.dortoir)?.id ?? depots[0]?.id ?? "";
+
+  /** L'article en cours de création, extrait une fois pour toutes : le narrowing
+   *  de `ajout.creation` ne survivrait pas aux callbacks des champs. */
+  const creation = ajout?.creation ?? null;
+  const majCreation = (patch: Partial<Creation>) =>
+    setAjout((a) => (a?.creation ? { ...a, creation: { ...a.creation, ...patch } } : a));
 
   function run(action: () => Promise<void>, apres?: () => void) {
     setErreur(null);
@@ -432,7 +483,7 @@ export function MaterielAffaire({
                                   nouveauProduit: {
                                     refInterne: reparation.refInterne,
                                     designation: reparation.designation,
-                                    categorie: categorieProbable(reparation.genre),
+                                    categorieNom: categorieProbable(reparation.genre),
                                   },
                                   quantite: Number(reparation.quantite) || 1,
                                   chantierId,
@@ -471,7 +522,7 @@ export function MaterielAffaire({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setAjout({ recherche: "", produitId: "", quantite: "1" })}
+              onClick={() => setAjout({ recherche: "", quantite: "1", creation: null })}
             >
               <Plus className="h-4 w-4" /> Ajouter du matériel
             </Button>
@@ -479,7 +530,7 @@ export function MaterielAffaire({
         }
       />
 
-      {ajout && (
+      {ajout && ajout.creation === null && (
         <div className="bloc mb-3 px-4 py-3">
           <Label>Produit à ajouter</Label>
           <div className="relative mt-1">
@@ -488,36 +539,51 @@ export function MaterielAffaire({
               autoFocus
               value={ajout.recherche}
               onChange={(e) => setAjout({ ...ajout, recherche: e.target.value })}
-              placeholder="Chercher…"
+              placeholder="Chercher dans le magasin…"
               className="pl-8"
             />
           </div>
-          <ul className="mt-2 max-h-48 overflow-y-auto border border-hairline">
-            {resultatsAjout.map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() =>
-                    run(
-                      () =>
-                        enregistrerLigneMateriel({
-                          chantierId,
-                          produitId: p.id,
-                          quantite: Math.max(1, Number(ajout.quantite) || 1),
-                        }),
-                      () => setAjout(null),
-                    )
-                  }
-                  className="flex w-full items-baseline gap-2 border-b border-hairline px-3 py-2 text-left text-sm transition-colors last:border-0 hover:bg-surface-2"
-                >
-                  <span className="ref shrink-0">{p.refInterne}</span>
-                  <span className="min-w-0 flex-1 truncate text-fg">{p.designation}</span>
-                  <span className="shrink-0 text-xs text-muted">stock {p.stock}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2 flex items-end gap-2">
+
+          {resultatsAjout.length > 0 ? (
+            <ul className="mt-2 max-h-48 overflow-y-auto border border-hairline">
+              {resultatsAjout.map((p) => (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      run(
+                        () =>
+                          enregistrerLigneMateriel({
+                            chantierId,
+                            produitId: p.id,
+                            quantite: Math.max(1, Number(ajout.quantite) || 1),
+                          }).then(() => undefined),
+                        () => setAjout(null),
+                      )
+                    }
+                    className="flex w-full items-baseline gap-2 border-b border-hairline px-3 py-2 text-left text-sm transition-colors last:border-0 hover:bg-surface-2"
+                  >
+                    <span className="ref shrink-0">{p.refInterne}</span>
+                    <span className="min-w-0 flex-1 truncate text-fg">{p.designation}</span>
+                    <span className="shrink-0 text-xs text-muted">stock {p.stock}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 border border-dashed border-hairline px-3 py-3 text-sm text-muted">
+              Aucun article du magasin ne correspond
+              {ajout.recherche.trim() && (
+                <>
+                  {" "}
+                  à « <strong className="text-fg">{ajout.recherche.trim()}</strong> »
+                </>
+              )}
+              .
+            </p>
+          )}
+
+          <div className="mt-2 flex flex-wrap items-end gap-2">
             <div className="w-28">
               <Label>Quantité</Label>
               <Input
@@ -528,8 +594,206 @@ export function MaterielAffaire({
                 className="mt-1 tabular-nums"
               />
             </div>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              {/* Le magasin ne connaît pas tout : rien ne doit obliger à quitter
+                  l'affaire, saisir la fiche dans le rayon, puis revenir. */}
+              {peutGerer ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setAjout({ ...ajout, creation: creationDepuis(ajout.recherche) })}
+                >
+                  <PackagePlus className="h-4 w-4" />
+                  Créer l&apos;article
+                </Button>
+              ) : (
+                <span className="text-xs text-subtle">
+                  Absent du magasin ? Profil Achats requis pour l&apos;y créer.
+                </span>
+              )}
+              <Button variant="ghost" onClick={() => setAjout(null)}>
+                Annuler
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ajout && creation && (
+        <div className="bloc mb-3 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="stamp">Nouvel article</p>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setAjout({ ...ajout, creation: null })}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Revenir à la recherche
+            </Button>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            Le strict nécessaire : l&apos;article entre au magasin <em>et</em> rejoint le besoin de
+            cette affaire. Le reste de sa fiche (seuil, emplacement, documentation, codes-barres)
+            se complète plus tard depuis le rayon. Une référence interne déjà connue n&apos;en crée
+            pas un second : c&apos;est le même article, on le réutilise.
+          </p>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+            <div>
+              <Label>Réf. interne *</Label>
+              <Input
+                autoFocus
+                value={creation.refInterne}
+                onChange={(e) => majCreation({ refInterne: e.target.value })}
+                placeholder="STP100-2"
+                className="mt-1 font-mono"
+              />
+            </div>
+            <div>
+              <Label>Désignation *</Label>
+              <Input
+                value={creation.designation}
+                onChange={(e) => majCreation({ designation: e.target.value })}
+                placeholder="Sonde de température de gaine"
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <Label>Catégorie</Label>
+              <select
+                value={creation.categorieId}
+                onChange={(e) => majCreation({ categorieId: e.target.value })}
+                className={selectCls}
+              >
+                <option value="">— Sans catégorie —</option>
+                {categories
+                  .filter((c) => c.actif)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nom}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <Label>Unité</Label>
+              <select
+                value={creation.unite}
+                onChange={(e) => majCreation({ unite: e.target.value })}
+                className={selectCls}
+              >
+                <option value="U">Unité</option>
+                <option value="m">Mètre</option>
+                <option value="kg">Kilo</option>
+              </select>
+            </div>
+            <div>
+              <Label>Fabricant</Label>
+              <select
+                value={creation.fabricantId}
+                onChange={(e) => majCreation({ fabricantId: e.target.value })}
+                className={selectCls}
+              >
+                <option value="">— Aucun —</option>
+                {fabricants
+                  .filter((f) => f.actif)
+                  .map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.nom}
+                    </option>
+                  ))}
+                <option value={NOUVEAU_FABRICANT}>＋ Nouveau fabricant…</option>
+              </select>
+              {creation.fabricantId === NOUVEAU_FABRICANT && (
+                <Input
+                  autoFocus
+                  value={creation.fabricantNom}
+                  onChange={(e) => majCreation({ fabricantNom: e.target.value })}
+                  placeholder="Nom du fabricant"
+                  className="mt-2"
+                />
+              )}
+            </div>
+            <div>
+              <Label>Quantité</Label>
+              <Input
+                type="number"
+                min={1}
+                value={ajout.quantite}
+                onChange={(e) => setAjout({ ...ajout, quantite: e.target.value })}
+                className="mt-1 tabular-nums"
+              />
+            </div>
+          </div>
+
+          {peutPrix && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>Prix d&apos;achat</Label>
+                <Input
+                  value={creation.prix}
+                  onChange={(e) => majCreation({ prix: e.target.value })}
+                  placeholder="0,00"
+                  className="mt-1 tabular-nums"
+                />
+                <p className="mt-1 text-xs text-muted">
+                  {parseEuros(creation.prix) !== null
+                    ? `${formatEuros(parseEuros(creation.prix))} — sert au coût prévu tant qu'aucune réception n'est valorisée.`
+                    : "Facultatif — sans prix, la ligne comptera parmi les références sans prix connu."}
+                </p>
+              </div>
+              <div>
+                <Label>Fournisseur</Label>
+                <Input
+                  value={creation.fournisseur}
+                  onChange={(e) => majCreation({ fournisseur: e.target.value })}
+                  placeholder="Créé s'il n'existe pas encore"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="mt-3 flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setAjout(null)}>
               Annuler
+            </Button>
+            <Button
+              disabled={pending || !creation.refInterne.trim() || !creation.designation.trim()}
+              onClick={() =>
+                run(
+                  () =>
+                    enregistrerLigneMateriel({
+                      chantierId,
+                      quantite: Math.max(1, Number(ajout.quantite) || 1),
+                      nouveauProduit: {
+                        refInterne: creation.refInterne,
+                        designation: creation.designation,
+                        fabricantId:
+                          creation.fabricantId === NOUVEAU_FABRICANT
+                            ? null
+                            : creation.fabricantId || null,
+                        fabricantNom:
+                          creation.fabricantId === NOUVEAU_FABRICANT
+                            ? creation.fabricantNom
+                            : null,
+                        categorieId: creation.categorieId || null,
+                        unite: creation.unite,
+                        // Sans le droit de voir les prix, on n'en transmet aucun :
+                        // ce n'est pas notre rôle, et l'action le refuserait.
+                        prixAchatCents: peutPrix ? parseEuros(creation.prix) : undefined,
+                        fournisseurNom: peutPrix ? creation.fournisseur || null : undefined,
+                      },
+                    }).then(() => undefined),
+                  () => setAjout(null),
+                )
+              }
+            >
+              {pending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Créer et ajouter
             </Button>
           </div>
         </div>

@@ -63,12 +63,21 @@ async function main() {
   console.log(`Dépôt de travail : ${atelier.nom} (${atelier.code})\n`);
 
   // --- 1. Référentiel ------------------------------------------------------
+  // Catégorie et fabricant sont des tables depuis le 2026-08-04 : on se raccroche
+  // à celles du seed plutôt que d'en inventer, sinon le smoke laisserait des
+  // rayons fantômes derrière lui.
+  const catAutomate = await prisma.categorieProduit.findUnique({ where: { nom: "Automate" } });
+  const catSonde = await prisma.categorieProduit.findUnique({ where: { nom: "Sonde" } });
+  if (!catAutomate || !catSonde) {
+    throw new Error("Catégories « Automate »/« Sonde » absentes : la migration est-elle passée ?");
+  }
+
   const automate = await prisma.produit.create({
     data: {
       refInterne: `${PREFIXE}ECY-303`,
       refFabricant: "ECY-303",
       designation: "Automate ECLYPSE (smoke)",
-      categorie: "AUTOMATE",
+      categorieId: catAutomate.id,
       serialisable: true,
       seuilMini: 2,
     },
@@ -77,7 +86,7 @@ async function main() {
     data: {
       refInterne: `${PREFIXE}SONDE-GAINE`,
       designation: "Sonde de gaine (smoke)",
-      categorie: "SONDE",
+      categorieId: catSonde.id,
       seuilMini: 5,
     },
   });
@@ -288,7 +297,7 @@ async function main() {
     verifier("un produit qui a bougé n'est PAS supprimable", ficheAutomate?.supprimable, false);
 
     const jetable = await prisma.produit.create({
-      data: { refInterne: `${PREFIXE}JETABLE`, designation: "Créé par erreur", categorie: "AUTRE" },
+      data: { refInterne: `${PREFIXE}JETABLE`, designation: "Créé par erreur" },
     });
     const ficheJetable = await ficheProduit(jetable.id);
     verifier("un produit sans histoire est supprimable", ficheJetable?.supprimable, true);
@@ -346,6 +355,60 @@ async function main() {
   verifier("le fournisseur est porté par le produit", ficheSonde?.fournisseurNom, `${PREFIXE}Fournisseur`);
   verifier("avec sa référence à lui", ficheSonde?.refFournisseur, "F-SONDE");
 
+  // --- 8. Les référentiels catégorie & fabricant ---------------------------
+  // Deux promesses à tenir : un libellé écrit autrement ne crée pas un doublon,
+  // et supprimer une entrée ne supprime jamais les produits qui la portent.
+  {
+    const { cleReferentiel } = await import("../src/tools/magasin/model");
+    verifier(
+      "casse, accents et espaces ne font pas deux fabricants",
+      [cleReferentiel("SIEMENS"), cleReferentiel(" Siémens "), cleReferentiel("siemens")].every(
+        (c) => c === "siemens",
+      ),
+      true,
+    );
+    verifier(
+      "une vraie faute de frappe reste distincte (elle se fusionne à la main)",
+      cleReferentiel("Siemnes") === cleReferentiel("Siemens"),
+      false,
+    );
+
+    const fabricant = await prisma.fabricant.create({ data: { nom: `${PREFIXE}Fabricant` } });
+    const categorie = await prisma.categorieProduit.create({
+      data: { nom: `${PREFIXE}Catégorie`, ordre: 99 },
+    });
+    await prisma.produit.update({
+      where: { id: sonde.id },
+      data: { fabricantId: fabricant.id, categorieId: categorie.id },
+    });
+
+    const rayonRef = await listerRayon({ q: PREFIXE });
+    const sondeRef = rayonRef.find((l) => l.id === sonde.id);
+    verifier("le rayon affiche le fabricant", sondeRef?.fabricantNom, `${PREFIXE}Fabricant`);
+    verifier("le rayon affiche la catégorie", sondeRef?.categorieNom, `${PREFIXE}Catégorie`);
+
+    // Un nom déjà pris ne peut pas exister deux fois : c'est l'index unique qui
+    // le garantit, pas seulement la couche applicative.
+    let refusee = false;
+    try {
+      await prisma.categorieProduit.create({ data: { nom: `${PREFIXE}Catégorie` } });
+    } catch {
+      refusee = true;
+    }
+    verifier("deux catégories ne peuvent pas porter le même nom", refusee, true);
+
+    // Le point qui compte : supprimer emporte le rangement, jamais le produit.
+    await prisma.categorieProduit.delete({ where: { id: categorie.id } });
+    await prisma.fabricant.delete({ where: { id: fabricant.id } });
+    const sondeApres = await prisma.produit.findUnique({
+      where: { id: sonde.id },
+      select: { id: true, categorieId: true, fabricantId: true },
+    });
+    verifier("supprimer une catégorie ne supprime pas ses produits", Boolean(sondeApres), true);
+    verifier("le produit se retrouve sans catégorie", sondeApres?.categorieId, null);
+    verifier("et sans fabricant", sondeApres?.fabricantId, null);
+  }
+
   // La fiche produit agrège séparément (elle détaille par dépôt) : les deux
   // chemins de calcul doivent tomber sur le même chiffre.
   const { ficheProduit } = await import("../src/tools/magasin/queries");
@@ -379,6 +442,8 @@ async function nettoyer() {
   await prisma.affectationProjet.deleteMany({ where: { nom: { startsWith: PREFIXE } } });
   await prisma.pointCatalog.deleteMany({ where: { nom: { startsWith: PREFIXE } } });
   await prisma.fournisseur.deleteMany({ where: { nom: { startsWith: PREFIXE } } });
+  await prisma.categorieProduit.deleteMany({ where: { nom: { startsWith: PREFIXE } } });
+  await prisma.fabricant.deleteMany({ where: { nom: { startsWith: PREFIXE } } });
   console.log(`\nNettoyage : ${ids.length} produit(s) de test supprimé(s).`);
 }
 

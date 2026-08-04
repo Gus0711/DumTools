@@ -2,7 +2,7 @@ import "server-only";
 import { prisma } from "@/lib/db";
 import { normalizeControllerReference, type Project } from "@/tools/affectation-es/model";
 import type { PointRow } from "@/tools/liste-points/model";
-import type { CategorieProduit, LigneBom, OrigineBom, TrouBom } from "./model";
+import type { LigneBom, OrigineBom, TrouBom } from "./model";
 
 /* =============================================================================
  * LA BOM D'UNE AFFAIRE — DÉRIVÉE, PAS SAISIE
@@ -242,7 +242,7 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
         refInterne: true,
         designation: true,
         unite: true,
-        categorie: true,
+        categorie: { select: { nom: true, ordre: true } },
       },
     }),
     prisma.depot.findMany({ where: { dortoir: false, actif: true }, select: { id: true } }),
@@ -342,7 +342,7 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       refInterne: p.refInterne,
       designation: p.designation,
       unite: p.unite,
-      categorie: p.categorie as CategorieProduit,
+      categorieNom: p.categorie?.nom ?? null,
       besoin: a.besoin,
       origines: a.origines,
       stock: stock.get(a.produitId) ?? 0,
@@ -354,8 +354,13 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
     });
   }
 
+  // Regroupé par catégorie, les non rangés en dernier — jamais en tête : une
+  // ligne sans catégorie est un oubli, pas une priorité.
   lignes.sort(
-    (a, b) => a.categorie.localeCompare(b.categorie) || a.refInterne.localeCompare(b.refInterne),
+    (a, b) =>
+      Number(a.categorieNom === null) - Number(b.categorieNom === null) ||
+      (a.categorieNom ?? "").localeCompare(b.categorieNom ?? "") ||
+      a.refInterne.localeCompare(b.refInterne),
   );
 
   return {

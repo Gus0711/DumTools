@@ -110,15 +110,18 @@ réceptions** (aucune table de prix à tenir, le PMP se calcule tout seul), et u
 enum Role { ADMIN  ACHATS  MEMBRE }   // ACHATS ajouté ; peutVoirPrix = ADMIN | ACHATS
 
 // --- Référentiel produit ----------------------------------------------------
-enum CategorieProduit { AUTOMATE MODULE SONDE VANNE SERVOMOTEUR RESEAU ACCESSOIRE AUTRE }
+// Catégorie et fabricant sont des TABLES depuis le 2026-08-04 (voir §5 bis) :
+// l'enum ne se dégonflait pas, le texte libre se dédoublait.
+model CategorieProduit { id String @id @default(cuid())  nom String @unique  ordre Int  actif Boolean }
+model Fabricant        { id String @id @default(cuid())  nom String @unique  actif Boolean  note String }
 
 model Produit {
   id           String  @id @default(cuid())
   refInterne   String  @unique          // clé maison, imprimable en étiquette
   refFabricant String?                  // ECY-303, STP100-2…
   designation  String
-  marque       String?
-  categorie    CategorieProduit @default(AUTRE)
+  fabricantId  String?                  // → Fabricant  (onDelete: SetNull)
+  categorieId  String?                  // → CategorieProduit (onDelete: SetNull)
   unite        String  @default("U")    // U | m | kg
   serialisable Boolean @default(false)  // on CAPTE la série si on l'a, on ne l'exige jamais
   seuilMini    Int     @default(0)      // alimente « sous le seuil »
@@ -268,6 +271,106 @@ automates, et c'est l'affaire qu'on prépare et qu'on livre.
 > n'oblige à saisir un nom du catalogue. Les points tapés à la main resteront
 > muets côté nomenclature. Parade retenue : afficher « n lignes sans
 > nomenclature » sur la BOM plutôt que de laisser croire à un total complet.
+
+### Créer l'article sans quitter l'affaire (ajouté le 2026-08-04)
+
+Le magasin ne connaît pas tout, et il ne le connaîtra jamais : chaque affaire
+apporte son article inédit. « Ajouter du matériel » cherche donc dans le rayon
+**et** propose, juste à côté, de créer l'article manquant sur place — même geste
+que la réparation d'un trou, qui l'offrait déjà. Sans ça, il fallait quitter
+l'affaire, saisir la fiche dans le rayon, revenir, retrouver sa ligne : quatre
+écrans pour une sonde.
+
+Le formulaire ne demande que le strict nécessaire (réf. interne, désignation,
+catégorie, unité, marque — plus le prix et le fournisseur pour un profil
+Achats) ; le reste de la fiche se complète plus tard depuis le rayon. Une
+référence interne **déjà connue n'en crée pas un second** : c'est le même
+article, on le réutilise. Ce n'est pas de la tolérance décorative — le rayon
+masque les articles archivés, l'utilisateur ne pouvait donc pas savoir qu'il
+existait déjà.
+
+Côté code, `enregistrerLigneMateriel` accepte un `nouveauProduit` et le résout
+par `produitDuBrouillon()`, seule et même porte que `associerTrou` : la création
+d'un produit passe toujours par `enregistrerProduit`, donc par le contrôle de
+droit du référentiel. Ajouter un article **connu** reste ouvert à tous ; en
+créer un est un geste d'Achats.
+
+### Catégories & fabricants : deux référentiels (ajouté le 2026-08-04)
+
+Deux champs du produit ont changé de nature le même jour, pour des raisons
+symétriques :
+
+| | Avant | Le problème | Après |
+|---|---|---|---|
+| **Catégorie** | enum Postgres | On ne peut pas RETIRER une valeur d'enum (`ALTER TYPE … DROP VALUE` n'existe pas), et en ajouter une demandait une migration : le magasinier ne tenait pas ses propres rayons. | table `CategorieProduit` (nom unique, `ordre`, `actif`) |
+| **Fabricant** | `marque String?`, texte libre | On pouvait en ajouter un SANS LE VOULOIR : « Siemens » un jour, « Siemnes » le lendemain — deux marques, un filtre muet, et rien pour le signaler. | table `Fabricant` (nom unique, `actif`) |
+
+Le fabricant n'est pas le fournisseur : **l'un fabrique, l'autre facture**. Le
+champ s'appelait « marque », il s'appelle désormais « fabricant » partout — y
+compris dans la colonne d'import, dont les anciens en-têtes (`marque`,
+`constructeur`) restent reconnus.
+
+Trois règles portent l'anti-doublon :
+
+1. **Le rapprochement est tolérant** — `cleReferentiel()` ignore la casse, les
+   accents et les espaces superflus : « SIEMENS », « Siémens » et « siemens »
+   désignent la même ligne, à la saisie comme à l'import.
+2. **La création est délibérée** — dans les formulaires, le fabricant est une
+   *liste* ; en créer un demande de choisir « ＋ Nouveau fabricant… ». On ne
+   crée plus une marque en tapant à côté.
+3. **Renommer sur un nom déjà pris FUSIONNE** — c'est le geste qui répare un
+   « Siemnes » découvert trois mois plus tard : les produits suivent, l'entrée
+   vidée disparaît. Ce que la règle 1 ne peut pas deviner, la règle 3 le répare.
+
+**Supprimer ne détruit jamais un produit.** Une entrée encore portée demande
+d'abord où vont ses produits : vers une autre entrée, ou nulle part — ils
+deviennent alors « sans catégorie », visibles en **fin** de rayon (jamais en
+tête : un oubli n'est pas une priorité) et retrouvables par le filtre « Sans
+catégorie ». `onDelete: SetNull` garantit le reste. L'alternative douce reste
+l'**archivage** : retiré des choix, conservé sur les produits qui le portent.
+
+L'import applique la même doctrine : un libellé inconnu **crée** l'entrée
+(sinon un fichier légitime serait bloqué), mais un produit importé sans colonne
+« catégorie » reste **sans catégorie** plutôt que d'être rangé d'office dans
+« Autre » — un fichier parfaitement importé et un rayon parfaitement faux serait
+le pire des deux mondes.
+
+Tout se gère sur `/outils/magasin/fournisseurs` (écran « Référentiels du
+magasin » : dépôts, fournisseurs, catégories, fabricants).
+
+### Bases de codes-barres externes : testé, puis retiré (2026-08-04)
+
+L'idée était séduisante : un code scanné inconnu, on demande à une base
+publique ce qu'est l'article, et le formulaire de création se pré-remplit tout
+seul. **UPCitemdb** a été branché (plan gratuit : 100 requêtes/jour, sans clé),
+avec cache des réponses, filtrage des non-GTIN et rapprochement du fabricant
+sur le référentiel. Testé le jour même sur du vrai matériel : **aucune
+réponse**. Retiré dans la foulée — code, table de cache et variable
+d'environnement.
+
+À garder en tête si l'idée revient :
+
+- **Ces bases sont peuplées par le commerce de détail**, et plutôt
+  nord-américain. Au banc d'essai, un EAN européen aussi banal que celui du
+  Nutella (`3017620422003`) en ressortait *inconnu*. Une sonde de gaine n'avait
+  aucune chance.
+- **La moitié de notre matériel ne porte pas de GTIN du tout.** L'étiquette d'un
+  automate donne un numéro de série ou une MAC — identifiants d'exemplaire, pas
+  de modèle. Aucune base produit ne les reconnaîtra jamais, quel que soit le
+  fournisseur de données.
+- **Les deux pistes qui restent**, dans cet ordre : le **catalogue du
+  distributeur** (Rexel, Sonepar — EAN, désignation, marque, prix ; le moteur
+  d'import existe déjà et ça marche hors ligne ensuite), puis la **lecture de
+  l'étiquette en photo** pour tout ce qui n'a pas de code produit.
+- Et surtout : `CodeBarreProduit` — « appris une fois, valable pour toujours » —
+  reste le mécanisme le plus fiable du lot. Une source externe n'aurait jamais
+  été qu'un accélérateur de la *première* fois.
+
+Ce qui **reste** de l'épisode, et qui n'a rien à voir avec une API : depuis
+l'écran de scan, un code inconnu dont l'article n'existe pas encore permet de
+**créer le produit sur place**, avec apprentissage du code dans la foulée
+(`creerProduitDepuisCode`). Avant, il fallait quitter le scan, créer l'article
+au rayon, revenir, rescanner.
 
 ### « Ce point ne demande aucun matériel »
 

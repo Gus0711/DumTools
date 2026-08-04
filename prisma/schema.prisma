@@ -1059,15 +1059,42 @@ model NoteFraisMois {
 /// Famille d'un produit. Sert au filtrage et au regroupement des impressions ;
 /// n'a AUCUNE incidence technique (les capacités E/S restent dans
 /// AutomateModele / ModuleModele).
-enum CategorieProduit {
-  AUTOMATE
-  MODULE
-  SONDE
-  VANNE
-  SERVOMOTEUR
-  RESEAU
-  ACCESSOIRE
-  AUTRE
+///
+/// C'était une **enum Postgres** jusqu'au 2026-08-04. Une enum ne se retire
+/// pas (`ALTER TYPE … DROP VALUE` n'existe pas), et ajouter une famille
+/// demandait une migration : le magasinier ne pouvait donc pas tenir ses
+/// propres rayons. Devenue une table pour cette seule raison.
+model CategorieProduit {
+  id        String   @id @default(cuid())
+  nom       String   @unique
+  /// Ordre d'affichage des filtres et des listes ; à égalité, le nom tranche.
+  ordre     Int      @default(0)
+  /// Archivée : conservée sur les produits qui la portent, retirée des choix.
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  produits Produit[]
+}
+
+/// Qui FABRIQUE le matériel (Distech Controls, Siemens, Belimo) — à ne pas
+/// confondre avec le FOURNISSEUR (Rexel, Sonepar), qui le facture. Le même
+/// produit a toujours un fabricant, pas toujours le même distributeur.
+///
+/// Une table plutôt qu'un texte libre : « Siemens » saisi une fois et
+/// « Siemnes » la fois d'après faisaient deux marques distinctes, sans que rien
+/// ne le signale — un filtre muet et un rayon qui ment. On choisit désormais
+/// dans la liste ; l'ajout est un geste séparé, donc délibéré.
+model Fabricant {
+  id        String   @id @default(cuid())
+  nom       String   @unique
+  /// Archivé : même règle que les catégories.
+  actif     Boolean  @default(true)
+  note      String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  produits Produit[]
 }
 
 enum TypeDepot {
@@ -1117,8 +1144,14 @@ model Produit {
   /// peuvent se croiser, et une réf. fabricant peut être ré-attribuée.
   refFabricant  String?
   designation   String
-  marque        String?
-  categorie     CategorieProduit @default(AUTRE)
+  /// Le fabricant, choisi dans le référentiel (voir `Fabricant`).
+  fabricantId   String?
+  fabricant     Fabricant?        @relation(fields: [fabricantId], references: [id], onDelete: SetNull)
+  /// La catégorie, choisie dans le référentiel (voir `CategorieProduit`).
+  /// Nullable : supprimer une catégorie ne doit pas emporter ses produits, ils
+  /// se retrouvent « sans catégorie » — visible, réparable, jamais silencieux.
+  categorieId   String?
+  categorie     CategorieProduit? @relation(fields: [categorieId], references: [id], onDelete: SetNull)
   /// U | m | kg — unité de comptage affichée partout.
   unite         String           @default("U")
   /// On CAPTE le n° de série quand on l'a (scan, saisie), on ne l'EXIGE jamais.
@@ -1172,7 +1205,8 @@ model Produit {
   automates       AutomateModele[]
   modules         ModuleModele[]
 
-  @@index([categorie])
+  @@index([categorieId])
+  @@index([fabricantId])
   @@index([refFabricant])
   @@index([fournisseurId])
 }

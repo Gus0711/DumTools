@@ -8,11 +8,10 @@ import { cn } from "@/lib/cn";
 import { EditeurProduit } from "./editeur-produit";
 import { SaisieMouvement, type AffaireChoix } from "./saisie-mouvement";
 import {
-  CATEGORIES,
-  CATEGORIE_LABEL,
   formatEuros,
-  type CategorieProduit,
+  type CategorieVue,
   type DepotVue,
+  type FabricantVue,
   type ProduitRayon,
 } from "./model";
 import type { FournisseurVue, StatsMagasin } from "./queries";
@@ -30,6 +29,8 @@ export function Rayon({
   depots,
   affaires,
   fournisseurs,
+  fabricants,
+  categories,
   peutPrix,
   peutGerer,
 }: {
@@ -38,11 +39,13 @@ export function Rayon({
   depots: DepotVue[];
   affaires: AffaireChoix[];
   fournisseurs: FournisseurVue[];
+  fabricants: FabricantVue[];
+  categories: CategorieVue[];
   peutPrix: boolean;
   peutGerer: boolean;
 }) {
   const [q, setQ] = useState("");
-  const [categorie, setCategorie] = useState<CategorieProduit | "TOUTES">("TOUTES");
+  const [categorieId, setCategorieId] = useState("TOUTES");
   const [seulementAlertes, setSeulementAlertes] = useState(false);
   // Les archivés sont chargés mais masqués : on les retrouve d'un clic, sans
   // aller-retour serveur, et sans encombrer le rayon au quotidien.
@@ -54,18 +57,25 @@ export function Rayon({
     const f = q.trim().toLowerCase();
     return lignes.filter((l) => {
       if (!avecArchives && !l.actif) return false;
-      if (categorie !== "TOUTES" && l.categorie !== categorie) return false;
+      // « SANS » est un filtre à part entière : c'est le seul moyen de retrouver
+      // ce qui est tombé hors catégorie après une suppression.
+      if (categorieId === "SANS" && l.categorieId !== null) return false;
+      if (categorieId !== "TOUTES" && categorieId !== "SANS" && l.categorieId !== categorieId) {
+        return false;
+      }
       if (seulementAlertes && !l.sousSeuil) return false;
       if (!f) return true;
       return (
         l.refInterne.toLowerCase().includes(f) ||
         (l.refFabricant ?? "").toLowerCase().includes(f) ||
         l.designation.toLowerCase().includes(f) ||
-        (l.marque ?? "").toLowerCase().includes(f) ||
+        (l.fabricantNom ?? "").toLowerCase().includes(f) ||
         (l.emplacement ?? "").toLowerCase().includes(f)
       );
     });
-  }, [lignes, q, categorie, seulementAlertes, avecArchives]);
+  }, [lignes, q, categorieId, seulementAlertes, avecArchives]);
+
+  const nbSansCategorie = lignes.filter((l) => l.actif && l.categorieId === null).length;
 
   const nbArchives = lignes.filter((l) => !l.actif).length;
 
@@ -125,16 +135,17 @@ export function Rayon({
         </div>
 
         <select
-          value={categorie}
-          onChange={(e) => setCategorie(e.target.value as CategorieProduit | "TOUTES")}
+          value={categorieId}
+          onChange={(e) => setCategorieId(e.target.value)}
           className="h-[var(--control-h)] rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
         >
           <option value="TOUTES">Toutes catégories</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {CATEGORIE_LABEL[c]}
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nom}
             </option>
           ))}
+          {nbSansCategorie > 0 && <option value="SANS">Sans catégorie ({nbSansCategorie})</option>}
         </select>
 
         <Button
@@ -204,10 +215,12 @@ export function Rayon({
                     <span className="ref shrink-0">{l.refInterne}</span>
                     <span className="min-w-0">{l.designation}</span>
                   </Link>
-                  {l.marque && <div className="text-xs text-subtle">{l.marque}</div>}
+                  {l.fabricantNom && <div className="text-xs text-subtle">{l.fabricantNom}</div>}
                   {!l.actif && <Badge tone="neutral">Archivé</Badge>}
                 </td>
-                <td data-label="Catégorie">{CATEGORIE_LABEL[l.categorie]}</td>
+                <td data-label="Catégorie">
+                  {l.categorieNom ?? <span className="text-subtle">—</span>}
+                </td>
                 <td data-label="Emplacement">
                   {l.emplacement ? <span className="ref">{l.emplacement}</span> : <span className="text-subtle">—</span>}
                 </td>
@@ -288,6 +301,8 @@ export function Rayon({
       {creation && (
         <EditeurProduit
           fournisseurs={fournisseurs}
+          fabricants={fabricants}
+          categories={categories}
           peutPrix={peutPrix}
           onFermer={() => {
             setCreation(false);

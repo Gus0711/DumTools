@@ -4,7 +4,6 @@ import ExcelJS from "exceljs";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import type { CategorieProduit as CategorieProduitDb } from "@/generated/prisma/enums";
 import {
   CHAMPS,
   type GenreImport,
@@ -12,7 +11,7 @@ import {
   type LignePreview,
   type ResultatImport,
 } from "./import-model";
-import { CATEGORIE_LABEL, estCategorie, peutGererReferentiel } from "./model";
+import { cleReferentiel, peutGererReferentiel } from "./model";
 import { construireCsv } from "./modele-import";
 
 /* =============================================================================
@@ -175,28 +174,35 @@ function nombre(v: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function categorieDepuis(v: string): CategorieProduitDb | null {
-  const brut = v.trim().toUpperCase();
+/**
+ * Le libellé de catégorie d'un fichier, ramené au vocabulaire de la maison
+ * quand c'est un synonyme évident (« Contrôleur » → « Automate », « Capteur » →
+ * « Sonde »). Un libellé inconnu ressort TEL QUEL : depuis que les catégories
+ * sont un référentiel, un fichier a le droit d'en apporter une nouvelle — c'est
+ * l'écran des référentiels, pas cette fonction, qui fait le ménage.
+ */
+function categorieDepuis(v: string): string | null {
+  const brut = v.trim();
   if (!brut) return null;
-  if (estCategorie(brut)) return brut as CategorieProduitDb;
-  const table: Record<string, CategorieProduitDb> = {
-    AUTOMATE: "AUTOMATE",
-    CONTROLEUR: "AUTOMATE",
-    MODULE: "MODULE",
-    EXTENSION: "MODULE",
-    SONDE: "SONDE",
-    CAPTEUR: "SONDE",
-    VANNE: "VANNE",
-    SERVOMOTEUR: "SERVOMOTEUR",
-    MOTEUR: "SERVOMOTEUR",
-    RESEAU: "RESEAU",
-    ACCESSOIRE: "ACCESSOIRE",
+  const synonymes: Record<string, string> = {
+    AUTOMATE: "Automate",
+    CONTROLEUR: "Automate",
+    MODULE: "Module",
+    EXTENSION: "Module",
+    SONDE: "Sonde",
+    CAPTEUR: "Sonde",
+    VANNE: "Vanne",
+    SERVOMOTEUR: "Servomoteur",
+    MOTEUR: "Servomoteur",
+    RESEAU: "Réseau",
+    ACCESSOIRE: "Accessoire",
+    AUTRE: "Autre",
   };
-  const sansAccent = brut.normalize("NFD").replace(/[̀-ͯ]/g, "");
-  for (const [cle, valeur] of Object.entries(table)) {
+  const sansAccent = brut.toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  for (const [cle, valeur] of Object.entries(synonymes)) {
     if (sansAccent.includes(cle)) return valeur;
   }
-  return null;
+  return brut;
 }
 
 export interface ParamsImport {
@@ -213,13 +219,20 @@ interface Contexte {
   depotsParCle: Map<string, string>;
   depotParDefaut: string | null;
   fournisseursParNom: Map<string, string>;
+  /** Référentiels indexés par `cleReferentiel` : un fichier qui écrit
+   *  « DISTECH CONTROLS » ne doit pas créer un second « Distech Controls ». */
+  categoriesParCle: Map<string, string>;
+  fabricantsParCle: Map<string, string>;
+  ordreCategorieMax: number;
 }
 
 async function chargerContexte(): Promise<Contexte> {
-  const [produits, depots, fournisseurs] = await Promise.all([
+  const [produits, depots, fournisseurs, categories, fabricants] = await Promise.all([
     prisma.produit.findMany({ select: { id: true, refInterne: true, refFabricant: true } }),
     prisma.depot.findMany({ select: { id: true, nom: true, code: true, dortoir: true, actif: true } }),
     prisma.fournisseur.findMany({ select: { id: true, nom: true } }),
+    prisma.categorieProduit.findMany({ select: { id: true, nom: true, ordre: true } }),
+    prisma.fabricant.findMany({ select: { id: true, nom: true } }),
   ]);
 
   const produitsParRefInterne = new Map<string, { id: string; refInterne: string }>();
@@ -242,6 +255,9 @@ async function chargerContexte(): Promise<Contexte> {
     depotsParCle,
     depotParDefaut: tenu?.id ?? depots[0]?.id ?? null,
     fournisseursParNom: new Map(fournisseurs.map((f) => [f.nom.toLowerCase(), f.id])),
+    categoriesParCle: new Map(categories.map((c) => [cleReferentiel(c.nom), c.id])),
+    fabricantsParCle: new Map(fabricants.map((f) => [cleReferentiel(f.nom), f.id])),
+    ordreCategorieMax: categories.reduce((m, c) => Math.max(m, c.ordre), 0),
   };
 }
 
@@ -317,11 +333,37 @@ async function traiter(
       if (designation) poser("designation", designation, "désignation");
       if (refFabricant) poser("refFabricant", refFabricant, "réf. fabricant");
 
-      const marque = lecture(ligne, "marque");
-      if (marque) poser("marque", marque, "marque");
+      // Fabricant et catégorie sont des RÉFÉRENTIELS : le libellé du fichier est
+      // rapproché de l'existant à la casse et aux accents près, et n'est créé
+      // que s'il est réellement inconnu (voir cleReferentiel).
+      const nomFabricant = lecture(ligne, "fabricant");
+      if (nomFabricant) {
+        const cle = cleReferentiel(nomFabricant);
+        let fabricantId = ctx.fabricantsParCle.get(cle) ?? null;
+        if (!fabricantId && ecrire) {
+          const cree = await prisma.fabricant.create({ data: { nom: nomFabricant.trim() } });
+          fabricantId = cree.id;
+          ctx.fabricantsParCle.set(cle, cree.id);
+        }
+        if (fabricantId) poser("fabricantId", fabricantId, "fabricant");
+        else if (!ecrire) champsModifies.push("fabricant (à créer)");
+      }
 
-      const categorie = categorieDepuis(lecture(ligne, "categorie"));
-      if (categorie) poser("categorie", categorie, "catégorie");
+      const nomCategorie = categorieDepuis(lecture(ligne, "categorie"));
+      if (nomCategorie) {
+        const cle = cleReferentiel(nomCategorie);
+        let categorieId = ctx.categoriesParCle.get(cle) ?? null;
+        if (!categorieId && ecrire) {
+          ctx.ordreCategorieMax += 1;
+          const creee = await prisma.categorieProduit.create({
+            data: { nom: nomCategorie, ordre: ctx.ordreCategorieMax },
+          });
+          categorieId = creee.id;
+          ctx.categoriesParCle.set(cle, creee.id);
+        }
+        if (categorieId) poser("categorieId", categorieId, "catégorie");
+        else if (!ecrire) champsModifies.push("catégorie (à créer)");
+      }
 
       const unite = lecture(ligne, "unite");
       if (unite) poser("unite", unite, "unité");
@@ -387,7 +429,10 @@ async function traiter(
             data: {
               refInterne,
               designation,
-              categorie: categorie ?? "AUTRE",
+              // Pas de catégorie de repli : un produit importé sans colonne
+              // « catégorie » reste « sans catégorie », donc visible en fin de
+              // rayon. Le ranger d'office dans « Autre » aurait donné un fichier
+              // parfaitement importé et un rayon parfaitement faux.
               unite: unite || "U",
               ...donnees,
               createdById: acteurId,
@@ -514,8 +559,12 @@ export async function exporterProduitsCsv(): Promise<{ nomFichier: string; conte
 
   const produits = await prisma.produit.findMany({
     where: { actif: true },
-    orderBy: [{ categorie: "asc" }, { refInterne: "asc" }],
-    include: { fournisseur: { select: { nom: true } } },
+    orderBy: [{ categorie: { ordre: "asc" } }, { refInterne: "asc" }],
+    include: {
+      fournisseur: { select: { nom: true } },
+      fabricant: { select: { nom: true } },
+      categorie: { select: { nom: true } },
+    },
   });
 
   const champs = CHAMPS.produits;
@@ -527,10 +576,10 @@ export async function exporterProduitsCsv(): Promise<{ nomFichier: string; conte
         return p.refFabricant ?? "";
       case "designation":
         return p.designation;
-      case "marque":
-        return p.marque ?? "";
+      case "fabricant":
+        return p.fabricant?.nom ?? "";
       case "categorie":
-        return CATEGORIE_LABEL[p.categorie as keyof typeof CATEGORIE_LABEL] ?? p.categorie;
+        return p.categorie?.nom ?? "";
       case "unite":
         return p.unite;
       case "seuilMini":

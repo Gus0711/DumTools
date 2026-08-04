@@ -6,7 +6,7 @@ import { Check, ClipboardList, Loader2, Search, X } from "lucide-react";
 import { Badge, Button, Chiffre, Input, Label, RangeeChiffres } from "@/ui";
 import { cn } from "@/lib/cn";
 import { annulerInventaire, ouvrirInventaire, saisirComptage, validerInventaire } from "./actions";
-import { CATEGORIES, CATEGORIE_LABEL, type DepotVue } from "./model";
+import type { CategorieVue, DepotVue } from "./model";
 import type { InventaireDetail } from "./queries";
 
 /* =============================================================================
@@ -18,12 +18,18 @@ import type { InventaireDetail } from "./queries";
  * bout de quelques mois, si le rituel de saisie tient ou pas.
  * ========================================================================== */
 
-export function OuvrirInventaire({ depots }: { depots: DepotVue[] }) {
+export function OuvrirInventaire({
+  depots,
+  categories,
+}: {
+  depots: DepotVue[];
+  categories: CategorieVue[];
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [ouvert, setOuvert] = useState(false);
   const [depotId, setDepotId] = useState(depots.find((d) => !d.dortoir)?.id ?? depots[0]?.id ?? "");
-  const [categorie, setCategorie] = useState("TOUTES");
+  const [categorieId, setCategorieId] = useState("TOUTES");
   const [libelle, setLibelle] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -56,16 +62,18 @@ export function OuvrirInventaire({ depots }: { depots: DepotVue[] }) {
         <div>
           <Label>Limiter à une catégorie</Label>
           <select
-            value={categorie}
-            onChange={(e) => setCategorie(e.target.value)}
+            value={categorieId}
+            onChange={(e) => setCategorieId(e.target.value)}
             className="mt-1 h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
           >
             <option value="TOUTES">Tout le magasin</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORIE_LABEL[c]}
-              </option>
-            ))}
+            {categories
+              .filter((c) => c.actif)
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nom}
+                </option>
+              ))}
           </select>
         </div>
         <div>
@@ -93,7 +101,7 @@ export function OuvrirInventaire({ depots }: { depots: DepotVue[] }) {
                 const { id } = await ouvrirInventaire({
                   depotId,
                   libelle,
-                  categorie: categorie === "TOUTES" ? null : categorie,
+                  categorieId: categorieId === "TOUTES" ? null : categorieId,
                 });
                 router.push(`/outils/magasin/inventaires/${id}`);
               } catch (e) {

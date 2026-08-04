@@ -7,7 +7,9 @@ import { listerAffaires } from "@/lib/chantiers/queries";
 import { Rayon } from "@/tools/magasin/rayon";
 import { peutGererReferentiel, peutVoirPrix } from "@/tools/magasin/model";
 import {
+  listerCategories,
   listerDepots,
+  listerFabricants,
   listerFournisseurs,
   listerRayon,
   statsMagasin,
@@ -22,11 +24,13 @@ export default async function Page() {
   const session = await auth();
   const role = session?.user?.role;
 
-  const [lignes, depots, affaires, fournisseurs] = await Promise.all([
+  const [lignes, depots, affaires, fournisseurs, fabricants, categories] = await Promise.all([
     listerRayon({ avecArchives: true }),
     listerDepots(),
     listerAffaires(),
     listerFournisseurs(),
+    listerFabricants(),
+    listerCategories(),
   ]);
   // Les archivés sont chargés pour pouvoir les retrouver d'un clic, mais ils ne
   // comptent NI dans le nombre de références, NI dans la valeur du stock, NI
@@ -53,7 +57,7 @@ export default async function Page() {
               <>
                 <Link href="/outils/magasin/fournisseurs" className={lienSecondaire}>
                   <Truck className="h-4 w-4" />
-                  Fournisseurs
+                  Référentiels
                 </Link>
                 <Link href="/outils/magasin/import" className={lienSecondaire}>
                   <FileUp className="h-4 w-4" />
@@ -79,6 +83,8 @@ export default async function Page() {
             numeroWhy: a.numeroWhy,
           }))}
         fournisseurs={fournisseurs}
+        fabricants={fabricants}
+        categories={categories}
         peutPrix={peutVoirPrix(role)}
         peutGerer={peutGererReferentiel(role)}
       />

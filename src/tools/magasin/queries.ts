@@ -3,9 +3,10 @@ import { prisma } from "@/lib/db";
 import type { ClientArtefact } from "@/lib/clients/types";
 import {
   formatEuros,
-  type CategorieProduit,
+  type CategorieVue,
   type DepotVue,
   type EtatExemplaire,
+  type FabricantVue,
   type ExemplaireVue,
   type LigneNomenclature,
   type MouvementVue,
@@ -156,7 +157,7 @@ export function prixReference(p: PrixProduit | undefined): {
 
 export interface FiltresRayon {
   q?: string;
-  categorie?: CategorieProduit | "TOUTES";
+  categorieId?: string | "TOUTES";
   /** N'afficher que ce qui est sous le seuil de réapprovisionnement. */
   sousSeuil?: boolean;
   /** Inclure les produits archivés. */
@@ -169,21 +170,28 @@ export async function listerRayon(f: FiltresRayon = {}): Promise<ProduitRayon[]>
   const produits = await prisma.produit.findMany({
     where: {
       ...(f.avecArchives ? {} : { actif: true }),
-      ...(f.categorie && f.categorie !== "TOUTES" ? { categorie: f.categorie } : {}),
+      ...(f.categorieId && f.categorieId !== "TOUTES" ? { categorieId: f.categorieId } : {}),
       ...(q
         ? {
             OR: [
               { refInterne: { contains: q, mode: "insensitive" as const } },
               { refFabricant: { contains: q, mode: "insensitive" as const } },
               { designation: { contains: q, mode: "insensitive" as const } },
-              { marque: { contains: q, mode: "insensitive" as const } },
+              { fabricant: { nom: { contains: q, mode: "insensitive" as const } } },
               { emplacement: { contains: q, mode: "insensitive" as const } },
               { codes: { some: { code: { contains: q, mode: "insensitive" as const } } } },
             ],
           }
         : {}),
     },
-    orderBy: [{ categorie: "asc" }, { refInterne: "asc" }],
+    include: { categorie: { select: { nom: true, ordre: true } }, fabricant: { select: { nom: true } } },
+    // Les produits sans catégorie ferment la marche plutôt que de l'ouvrir :
+    // ce qui n'est pas rangé ne doit pas s'imposer en tête du rayon.
+    orderBy: [
+      { categorie: { ordre: "asc" } },
+      { categorie: { nom: "asc" } },
+      { refInterne: "asc" },
+    ],
   });
 
   const [stock, reserve, prix] = await Promise.all([
@@ -202,8 +210,10 @@ export async function listerRayon(f: FiltresRayon = {}): Promise<ProduitRayon[]>
       refInterne: p.refInterne,
       refFabricant: p.refFabricant,
       designation: p.designation,
-      marque: p.marque,
-      categorie: p.categorie as CategorieProduit,
+      fabricantId: p.fabricantId,
+      fabricantNom: p.fabricant?.nom ?? null,
+      categorieId: p.categorieId,
+      categorieNom: p.categorie?.nom ?? null,
       unite: p.unite,
       emplacement: p.emplacement,
       seuilMini: p.seuilMini,
@@ -269,8 +279,10 @@ export interface FicheProduit {
   refInterne: string;
   refFabricant: string | null;
   designation: string;
-  marque: string | null;
-  categorie: CategorieProduit;
+  fabricantId: string | null;
+  fabricantNom: string | null;
+  categorieId: string | null;
+  categorieNom: string | null;
   unite: string;
   serialisable: boolean;
   seuilMini: number;
@@ -318,6 +330,8 @@ export async function ficheProduit(id: string): Promise<FicheProduit | null> {
         include: { createdBy: { select: { nom: true } } },
       },
       fournisseur: { select: { id: true, nom: true } },
+      fabricant: { select: { id: true, nom: true } },
+      categorie: { select: { id: true, nom: true } },
       nomenclature: {
         include: { pointCatalog: { select: { id: true, nom: true } } },
         orderBy: { pointCatalog: { nom: "asc" } },
@@ -395,8 +409,10 @@ export async function ficheProduit(id: string): Promise<FicheProduit | null> {
     refInterne: p.refInterne,
     refFabricant: p.refFabricant,
     designation: p.designation,
-    marque: p.marque,
-    categorie: p.categorie as CategorieProduit,
+    fabricantId: p.fabricantId,
+    fabricantNom: p.fabricant?.nom ?? null,
+    categorieId: p.categorieId,
+    categorieNom: p.categorie?.nom ?? null,
     unite: p.unite,
     serialisable: p.serialisable,
     seuilMini: p.seuilMini,
@@ -545,7 +561,7 @@ export async function rechercherProduits(q: string, limite = 20): Promise<Produi
               { refInterne: { contains: requete, mode: "insensitive" as const } },
               { refFabricant: { contains: requete, mode: "insensitive" as const } },
               { designation: { contains: requete, mode: "insensitive" as const } },
-              { marque: { contains: requete, mode: "insensitive" as const } },
+              { fabricant: { nom: { contains: requete, mode: "insensitive" as const } } },
             ],
           }
         : {}),
@@ -635,6 +651,39 @@ export async function listerFournisseurs(): Promise<FournisseurVue[]> {
     delaiJours: f.delaiJours,
     note: f.note,
     actif: f.actif,
+    nbProduits: f._count.produits,
+  }));
+}
+
+/* --- Catégories & fabricants ----------------------------------------------- */
+
+/** Les catégories, dans l'ordre du magasinier. `nbProduits` n'est pas décoratif :
+ *  c'est lui qui décide si une catégorie peut disparaître sans laisser de
+ *  produits derrière elle. */
+export async function listerCategories(): Promise<CategorieVue[]> {
+  const categories = await prisma.categorieProduit.findMany({
+    orderBy: [{ ordre: "asc" }, { nom: "asc" }],
+    include: { _count: { select: { produits: true } } },
+  });
+  return categories.map((c) => ({
+    id: c.id,
+    nom: c.nom,
+    ordre: c.ordre,
+    actif: c.actif,
+    nbProduits: c._count.produits,
+  }));
+}
+
+export async function listerFabricants(): Promise<FabricantVue[]> {
+  const fabricants = await prisma.fabricant.findMany({
+    orderBy: { nom: "asc" },
+    include: { _count: { select: { produits: true } } },
+  });
+  return fabricants.map((f) => ({
+    id: f.id,
+    nom: f.nom,
+    actif: f.actif,
+    note: f.note,
     nbProduits: f._count.produits,
   }));
 }

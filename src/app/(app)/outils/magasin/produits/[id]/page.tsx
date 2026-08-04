@@ -12,7 +12,9 @@ import {
 } from "@/tools/magasin/model";
 import {
   ficheProduit,
+  listerCategories,
   listerDepots,
+  listerFabricants,
   listerFournisseurs,
   listerRayon,
 } from "@/tools/magasin/queries";
@@ -35,11 +37,13 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const fiche = await ficheProduit(id);
   if (!fiche) notFound();
 
-  const [depots, affaires, fournisseurs, rayon] = await Promise.all([
+  const [depots, affaires, fournisseurs, rayon, fabricants, categories] = await Promise.all([
     listerDepots(),
     listerAffaires(),
     listerFournisseurs(),
     listerRayon(),
+    listerFabricants(),
+    listerCategories(),
   ]);
 
   const prix = peutVoirPrix(role);
@@ -50,7 +54,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         estampille="Produit"
         titre={fiche.designation}
         titreTexte={fiche.designation}
-        sousTitre={fiche.marque ?? undefined}
+        sousTitre={fiche.fabricantNom ?? undefined}
         retour={{ href: "/outils/magasin", label: "Le rayon" }}
         statut={
           fiche.actif ? (
@@ -105,6 +109,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             numeroWhy: a.numeroWhy,
           }))}
         fournisseurs={fournisseurs}
+        fabricants={fabricants}
+        categories={categories}
         autresProduits={rayon.map((l) => ({
           id: l.id,
           refInterne: l.refInterne,
