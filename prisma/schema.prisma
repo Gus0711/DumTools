@@ -65,6 +65,7 @@ model User {
   mouvementsStock       MouvementStock[]
   inventairesOuverts    Inventaire[]
   reservationsStock     ReservationStock[]
+  materielHorsFourniture MaterielHorsFourniture[]
   importsMagasin        ImportMagasin[]
   depotsDetenus         Depot[]
 }
@@ -199,6 +200,7 @@ model Chantier {
   mouvementsStock    MouvementStock[]
   reservationsStock  ReservationStock[]
   lignesMateriel     LigneMaterielAffaire[]
+  materielHorsFourniture MaterielHorsFourniture[]
   exemplaires        Exemplaire[]
 
   @@index([clientId])
@@ -470,6 +472,12 @@ model Note {
   /// Jeton de partage public : lecture seule via /n/[jeton], SANS session
   /// (l'app est exposée sur internet). Null = privée. Révocation = remise à null.
   jetonPartage String? @unique
+  /// Échéance du partage (null = sans limite). Un lien échu est refusé côté
+  /// serveur — le jeton reste en base tant qu'on ne l'a pas révoqué, pour que
+  /// l'auteur puisse le prolonger sans redistribuer une nouvelle URL.
+  /// La vérification est faite par `partageValide` (src/lib/partage/model.ts) :
+  /// jamais par une simple présence de jeton.
+  partageExpireLe DateTime?
 
   // --- rattachement (Affaire obligatoire — « affaire d'abord ») ---
   chantierId String
@@ -714,6 +722,15 @@ model WikiPage {
   /// Déclarée ici pour éviter la dérive ; jamais sélectionnée par le client
   /// (interrogée uniquement en $queryRaw).
   recherche Unsupported("tsvector")?
+
+  /// Partage public TEMPORAIRE d'une page (lecture seule via /w/[jeton], SANS
+  /// session). Le wiki est interne par défaut : une page n'est jamais publique
+  /// tant qu'un jeton n'a pas été posé explicitement, et l'usage attendu est
+  /// une échéance courte (`partageExpireLe`) — d'où l'échéance obligatoire à la
+  /// création côté action, contrairement aux notes où elle est facultative.
+  jetonPartage    String?   @unique
+  /// Échéance du partage (null = sans limite). Cf. Note.partageExpireLe.
+  partageExpireLe DateTime?
 
   rubriqueId String
   rubrique   WikiRubrique @relation(fields: [rubriqueId], references: [id], onDelete: Restrict)
@@ -1151,6 +1168,7 @@ model Produit {
   nomenclature    NomenclaturePoint[]
   reservations    ReservationStock[]
   lignesMateriel  LigneMaterielAffaire[]
+  horsFourniture  MaterielHorsFourniture[]
   automates       AutomateModele[]
   modules         ModuleModele[]
 
@@ -1367,6 +1385,35 @@ model LigneMaterielAffaire {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([chantierId, produitId])
+  @@index([produitId])
+}
+
+/// « Hors de notre fourniture » — l'article est bien nécessaire au chantier,
+/// mais il est **déjà sur place** (ou fourni par un autre lot) : on le raccorde
+/// et on le met en service sans le vendre.
+///
+/// La présence de la ligne EST la décision (pas de booléen à maintenir) : la BOM
+/// garde l'article visible mais le sort du besoin, du manquant et du coût. Rien
+/// n'est modifié en place, rien n'est effacé — cocher et décocher sont exactement
+/// symétriques.
+///
+/// ⚠️ Propre à CETTE affaire, à la différence de `PointCatalog.sansMateriel` qui
+/// vaut pour toutes (« ce type de point ne demande jamais rien »). La même sonde
+/// de gaine reste fournie sur le chantier d'à côté.
+model MaterielHorsFourniture {
+  id         String   @id @default(cuid())
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  produitId  String
+  produit    Produit  @relation(fields: [produitId], references: [id], onDelete: Cascade)
+  /// Pourquoi c'est hors fourniture (« sondes existantes reprises », « lot CVC »).
+  note       String   @default("")
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
 
   @@unique([chantierId, produitId])
   @@index([produitId])
