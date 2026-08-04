@@ -16,6 +16,8 @@ export interface NoteEditeurProps {
     contenu: NoteContenu;
     version: number;
     jetonPartage: string | null;
+    /** ISO, ou null pour « sans échéance ». */
+    partageExpireLe: string | null;
     chantierId: string;
     affaireNom: string;
     clientNom: string;

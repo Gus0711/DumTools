@@ -139,6 +139,21 @@ async function main() {
       couleur: "com",
       description: "Câblage, armoires électriques, choix et montage du matériel.",
     },
+    {
+      // Le fourre-tout ASSUMÉ du wiki : ce qu'on note à la volée avant de
+      // l'oublier. Sans lui, une info attrapée en cinq secondes exigeait de
+      // choisir une rubrique, donc finissait sur un post-it. En dernier dans
+      // l'ordre : c'est le brouillon, pas la doc. Rien n'empêche de déplacer
+      // une note vers une vraie rubrique quand elle a mûri.
+      // ⚠️ À ne pas confondre avec l'OUTIL « Notes », qui est rattaché à une
+      // affaire — d'où le libellé « Notes rapides ».
+      slug: "notes",
+      nom: "Notes rapides",
+      icon: "StickyNote",
+      couleur: "di",
+      description:
+        "Mémos, brouillons, trucs à ne pas oublier — jetés ici sans cérémonie, rangés plus tard (ou jamais).",
+    },
   ];
   for (const [i, r] of RUBRIQUES.entries()) {
     await prisma.wikiRubrique.upsert({

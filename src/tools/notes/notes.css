@@ -221,6 +221,38 @@
   padding-inline: 0;
 }
 
+/* --- Pièce jointe : vrai lien de téléchargement ------------------------------
+ * Le bloc fichier de BlockNote est enveloppé dans un <a> (voir
+ * blocs/fichier-telechargeable.tsx). Dans l'ÉDITEUR le clic sert à sélectionner
+ * le bloc : le lien ne doit donc rien annoncer. En LECTURE il devient cliquable
+ * et le dit — c'est là (aperçu, page publique) qu'aucun autre chemin n'existe. */
+.note-fichier-lien {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.note-doc-lecture .note-fichier-lien {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.12s ease;
+}
+.note-doc-lecture .note-fichier-lien:hover {
+  background-color: color-mix(in oklab, var(--brand) 8%, transparent);
+}
+.note-doc-lecture .note-fichier-lien:hover .bn-file-name {
+  text-decoration: underline;
+}
+.note-doc-lecture .note-fichier-lien:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+@media print {
+  /* À l'impression, une pastille de survol n'a aucun sens. */
+  .note-fichier-lien {
+    background: none !important;
+  }
+}
+
 /* --- Micro-animations (popovers de l'outil : partage, menu ⋯, bannières) ----- */
 @keyframes note-pop-in {
   from {

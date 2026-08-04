@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import type { ClientArtefact } from "@/lib/clients/types";
+import { partageActif } from "@/lib/partage/model";
 import { resumeNote, type NoteContenu } from "./model";
 
 export interface NoteResume {
@@ -27,6 +28,7 @@ type NoteAvecResume = {
   chantierId: string;
   numeroWhy: string | null;
   jetonPartage: string | null;
+  partageExpireLe: Date | null;
   contenu: unknown;
   updatedAt: Date;
   chantier: { nom: string; client: { nom: string } };
@@ -41,7 +43,7 @@ function versResume(n: NoteAvecResume): NoteResume {
     affaireNom: n.chantier.nom,
     clientNom: n.chantier.client.nom,
     numeroWhy: n.numeroWhy,
-    partagee: n.jetonPartage != null,
+    partagee: partageActif(n),
     auteur: n.createdBy?.nom ?? null,
     resume: resumeNote(n.contenu as NoteContenu),
     updatedAt: n.updatedAt,
@@ -73,6 +75,7 @@ export interface NoteDetail {
   contenu: NoteContenu;
   version: number;
   jetonPartage: string | null;
+  partageExpireLe: Date | null;
   chantierId: string;
   affaireNom: string;
   clientNom: string;
@@ -97,6 +100,7 @@ export async function getNote(id: string): Promise<NoteDetail | null> {
     contenu: (n.contenu as NoteContenu) ?? [],
     version: n.version,
     jetonPartage: n.jetonPartage,
+    partageExpireLe: n.partageExpireLe,
     chantierId: n.chantierId,
     affaireNom: n.chantier.nom,
     clientNom: n.chantier.client.nom,
@@ -111,24 +115,27 @@ export interface NotePublique {
   titre: string;
   contenu: NoteContenu;
   jetonPartage: string;
+  partageExpireLe: Date | null;
   clientNom: string;
   updatedAt: Date;
 }
 
 /** Une note partagée, chargée UNIQUEMENT par jeton (route publique /n/[jeton]).
- *  Ne jamais exposer d'id interrogeable sans session. */
+ *  Ne jamais exposer d'id interrogeable sans session. Un jeton ÉCHU est traité
+ *  comme inexistant : `partageActif` est le seul juge (cf. lib/partage). */
 export async function getNotePublique(jeton: string): Promise<NotePublique | null> {
   if (!jeton || jeton.length < 16) return null;
   const n = await prisma.note.findUnique({
     where: { jetonPartage: jeton },
     include: { chantier: { select: { client: { select: { nom: true } } } } },
   });
-  if (!n?.jetonPartage) return null;
+  if (!n?.jetonPartage || !partageActif(n)) return null;
   return {
     id: n.id,
     titre: n.titre,
     contenu: (n.contenu as NoteContenu) ?? [],
     jetonPartage: n.jetonPartage,
+    partageExpireLe: n.partageExpireLe,
     clientNom: n.chantier.client.nom,
     updatedAt: n.updatedAt,
   };

@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
+import { partageActif } from "@/lib/partage/model";
 import {
   MARQUEUR_DEBUT,
   MARQUEUR_FIN,
@@ -268,6 +269,9 @@ export interface WikiPageDetail {
   tags: string[];
   auteur: string | null;
   updatedAt: Date;
+  /** Partage public temporaire (cf. lib/partage). */
+  jetonPartage: string | null;
+  partageExpireLe: Date | null;
 }
 
 /** Une page complète pour l'éditeur. */
@@ -283,6 +287,8 @@ export async function getPage(id: string): Promise<WikiPageDetail | null> {
       rubriqueId: true,
       parentId: true,
       updatedAt: true,
+      jetonPartage: true,
+      partageExpireLe: true,
       rubrique: { select: { slug: true, nom: true } },
       createdBy: { select: { nom: true } },
       tags: { select: { tag: { select: { nom: true } } } },
@@ -302,6 +308,50 @@ export async function getPage(id: string): Promise<WikiPageDetail | null> {
     ancetres: p.parentId ? await ancetresDe(id) : [],
     tags: p.tags.map((t) => t.tag.nom),
     auteur: p.createdBy?.nom ?? null,
+    updatedAt: p.updatedAt,
+    jetonPartage: p.jetonPartage,
+    partageExpireLe: p.partageExpireLe,
+  };
+}
+
+export interface WikiPagePublique {
+  id: string;
+  titre: string;
+  resume: string;
+  contenu: WikiContenu;
+  rubriqueNom: string;
+  jetonPartage: string;
+  partageExpireLe: Date | null;
+  updatedAt: Date;
+}
+
+/** Une page partagée, chargée UNIQUEMENT par jeton (route publique /w/[jeton]).
+ *  Deux gardes, dans cet ordre : le jeton existe, ET il n'est pas échu. Ne
+ *  jamais exposer d'id interrogeable sans session. */
+export async function getPagePublique(jeton: string): Promise<WikiPagePublique | null> {
+  if (!jeton || jeton.length < 16) return null;
+  const p = await prisma.wikiPage.findUnique({
+    where: { jetonPartage: jeton },
+    select: {
+      id: true,
+      titre: true,
+      resume: true,
+      contenu: true,
+      updatedAt: true,
+      jetonPartage: true,
+      partageExpireLe: true,
+      rubrique: { select: { nom: true } },
+    },
+  });
+  if (!p?.jetonPartage || !partageActif(p)) return null;
+  return {
+    id: p.id,
+    titre: p.titre,
+    resume: p.resume,
+    contenu: (p.contenu as WikiContenu) ?? [],
+    rubriqueNom: p.rubrique.nom,
+    jetonPartage: p.jetonPartage,
+    partageExpireLe: p.partageExpireLe,
     updatedAt: p.updatedAt,
   };
 }

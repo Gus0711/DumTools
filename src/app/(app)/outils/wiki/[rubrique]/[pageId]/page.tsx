@@ -49,6 +49,8 @@ export default async function Page({
         tags: page.tags,
         auteur: page.auteur,
         updatedAt: page.updatedAt.toISOString(),
+        jetonPartage: page.jetonPartage,
+        partageExpireLe: page.partageExpireLe?.toISOString() ?? null,
       }}
       rubriques={rubriques}
       tousLesTags={tags.map((t) => ({ nom: t.nom, couleur: t.couleur }))}

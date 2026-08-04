@@ -9,6 +9,7 @@ import {
   HardHat,
   Library,
   Server,
+  StickyNote,
   Wrench,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ const ICONES: Record<string, LucideIcon> = {
   Cpu,
   Library,
   BookText,
+  StickyNote,
 };
 
 /** Icône d'une rubrique (résolue depuis la clé stockée en base). Composant

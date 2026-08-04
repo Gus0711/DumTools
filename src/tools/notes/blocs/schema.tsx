@@ -17,13 +17,15 @@ import { Code2, Link2, Table2 } from "lucide-react";
 import { tableVide } from "../model";
 import { blocCodeRepliable } from "./code-repliable";
 import { blocEmbedHtml } from "./embed-html";
+import { blocFichierTelechargeable } from "./fichier-telechargeable";
 import { blocLienCarte } from "./lien-carte";
 import { blocTableDonnees } from "./table-donnees";
 
 /* Schéma BlockNote des notes : blocs standard (titres, listes, todo, tableaux
- * riches, images, fichiers…), bloc de code avec coloration syntaxique, saut de
- * page (opt-in BlockNote via withPageBreak — utile pour l'impression A4), et
- * nos trois blocs métier (table de données typée, HTML embarqué, carte lien).
+ * riches, images, fichiers…), bloc de code avec coloration syntaxique, pièce
+ * jointe rendue en vrai lien de téléchargement, saut de page (opt-in BlockNote
+ * via withPageBreak — utile pour l'impression A4), et nos trois blocs métier
+ * (table de données typée, HTML embarqué, carte lien).
  * Partagé par l'éditeur ET les vues lecture seule (aperçu, page publique) —
  * un document ne se rend qu'avec le schéma qui l'a produit. */
 
@@ -32,6 +34,7 @@ export const schemaNotes = withPageBreak(
     blockSpecs: {
       ...defaultBlockSpecs,
       codeBlock: blocCodeRepliable(codeBlockOptions),
+      file: blocFichierTelechargeable(),
       tableDonnees: blocTableDonnees(),
       embedHtml: blocEmbedHtml(),
       lienCarte: blocLienCarte(),
@@ -86,11 +89,22 @@ export const dictionnaireNotes = {
 
 export type EditeurNotes = typeof schemaNotes.BlockNoteEditor;
 
+export interface OptionsMenuSlash {
+  /** L'écran hôte propose-t-il des documents GED ? Faux dans le wiki, qui n'est
+   *  rattaché à aucune affaire : annoncer « ou document GED de l'affaire » y
+   *  promettrait un sélecteur toujours vide. */
+  avecDocumentsGed?: boolean;
+}
+
 /** Items du menu « / » : les blocs standard (libellés français via la locale),
  *  le saut de page inséré DANS le groupe « Blocs de base » (ajouté en fin de
  *  liste, il créerait un second en-tête de groupe), puis nos blocs métier,
  *  groupés « DumTools ». */
-export function itemsMenuSlash(editor: EditeurNotes): DefaultReactSuggestionItem[] {
+export function itemsMenuSlash(
+  editor: EditeurNotes,
+  options: OptionsMenuSlash = {},
+): DefaultReactSuggestionItem[] {
+  const { avecDocumentsGed = true } = options;
   const defauts = getDefaultReactSlashMenuItems(editor);
   const sautDePage = getPageBreakReactSlashMenuItems(editor);
   const groupeBase = dictionnaireNotes.slash_menu.divider.group;
@@ -129,8 +143,10 @@ export function itemsMenuSlash(editor: EditeurNotes): DefaultReactSuggestionItem
       onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "embedHtml" }),
     },
     {
-      title: "Carte lien / document",
-      subtext: "URL externe ou document GED de l'affaire, en carte cliquable",
+      title: avecDocumentsGed ? "Carte lien / document" : "Carte lien",
+      subtext: avecDocumentsGed
+        ? "URL externe ou document GED de l'affaire, en carte cliquable"
+        : "URL externe, en carte cliquable",
       aliases: ["lien", "url", "document", "ged", "fichier"],
       group: "DumTools",
       icon: <Link2 size={18} />,

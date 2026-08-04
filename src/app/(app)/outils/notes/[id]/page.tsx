@@ -33,6 +33,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         contenu: note.contenu,
         version: note.version,
         jetonPartage: note.jetonPartage,
+        partageExpireLe: note.partageExpireLe?.toISOString() ?? null,
         chantierId: note.chantierId,
         affaireNom: note.affaireNom,
         clientNom: note.clientNom,

@@ -5,14 +5,13 @@ import { partageActif } from "@/lib/partage/model";
 
 export const runtime = "nodejs";
 
-/** Sert le binaire d'un média d'une note PARTAGÉE, sans session.
+/** Sert le binaire d'un média d'une page de wiki PARTAGÉE, sans session.
  *  Trois gardes, toutes nécessaires :
  *    1. le jeton existe ET n'est pas échu (partageActif) ;
- *    2. le média appartient à LA note de ce jeton — un jeton valide ne donne
- *       jamais accès aux médias d'une autre note ;
+ *    2. le média appartient à LA page de ce jeton — un jeton valide ne donne
+ *       jamais accès aux médias d'une autre page ;
  *    3. cache court, pour qu'une révocation coupe l'accès sans délai.
- *  Route exclue du matcher d'auth (src/proxy.ts) via le préfixe api/public/.
- *  `?dl=1` force le téléchargement (voir dispositionMedia). */
+ *  Route exclue du matcher d'auth (src/proxy.ts) via le préfixe api/public/. */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ jeton: string; id: string }> },
@@ -22,19 +21,19 @@ export async function GET(
     return NextResponse.json({ error: "Jeton invalide" }, { status: 404 });
   }
 
-  const note = await prisma.note.findUnique({
+  const page = await prisma.wikiPage.findUnique({
     where: { jetonPartage: jeton },
     select: { id: true, jetonPartage: true, partageExpireLe: true },
   });
-  if (!note || !partageActif(note)) {
-    return NextResponse.json({ error: "Note introuvable" }, { status: 404 });
+  if (!page || !partageActif(page)) {
+    return NextResponse.json({ error: "Page introuvable" }, { status: 404 });
   }
 
-  const media = await prisma.noteMedia.findUnique({
+  const media = await prisma.wikiMedia.findUnique({
     where: { id },
-    select: { noteId: true, fichier: true, mimeType: true, nom: true },
+    select: { pageId: true, fichier: true, mimeType: true, nom: true },
   });
-  if (!media || media.noteId !== note.id) {
+  if (!media || media.pageId !== page.id) {
     return NextResponse.json({ error: "Média introuvable" }, { status: 404 });
   }
 

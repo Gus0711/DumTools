@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { lireMediaNote } from "@/tools/notes/stockage";
+import { CACHE_MEDIA_INTERNE, reponseMedia } from "@/lib/medias-document/routes";
 
 export const runtime = "nodejs";
 
-/** Sert le binaire d'un média de note, authentifié. Les <img> et cartes de
+/** Sert le binaire d'un média de note, AUTHENTIFIÉ. Les <img> et cartes de
  *  fichiers de l'éditeur pointent ici (cookie de session envoyé). La vue
- *  publique passe par /api/public/notes/[jeton]/media/[id]. */
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+ *  publique passe par /api/public/notes/[jeton]/media/[id].
+ *  `?dl=1` force le téléchargement (voir dispositionMedia). */
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
@@ -24,22 +22,5 @@ export async function GET(
   });
   if (!media) return NextResponse.json({ error: "Média introuvable" }, { status: 404 });
 
-  let contenu: Buffer;
-  try {
-    contenu = await lireMediaNote(media.fichier);
-  } catch {
-    return NextResponse.json({ error: "Fichier absent du stockage" }, { status: 410 });
-  }
-
-  return new NextResponse(new Uint8Array(contenu), {
-    headers: {
-      "Content-Type": media.mimeType,
-      "Content-Length": String(contenu.byteLength),
-      ...(media.nom
-        ? { "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(media.nom)}` }
-        : {}),
-      // Un média de note est immuable (UUID) : cache privé long.
-      "Cache-Control": "private, max-age=31536000, immutable",
-    },
-  });
+  return reponseMedia(req, media, CACHE_MEDIA_INTERNE);
 }

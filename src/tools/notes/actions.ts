@@ -6,8 +6,10 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
-import { mediasReferences, type NoteContenu } from "./model";
-import { supprimerMediaNote } from "./stockage";
+import { purgerMediasOrphelins } from "@/lib/medias-document/purge";
+import { supprimerMedia } from "@/lib/medias-document/stockage";
+import { dureeParId, echeanceDepuis, DUREES_PARTAGE } from "@/lib/partage/model";
+import { PREFIXE_MEDIA_NOTE, type NoteContenu } from "./model";
 
 const BASE = "/outils/notes";
 
@@ -72,7 +74,12 @@ export async function sauverNote(
   // (qui est la forme native de BlockNote).
   const contenu = JSON.parse(JSON.stringify(data.contenu ?? [])) as Prisma.InputJsonValue;
 
-  const res = await prisma.note.updateMany({
+  // updateManyAndReturn : la garde de version et la lecture du résultat sont la
+  // MÊME requête. Avec un updateMany suivi d'un findUnique, un save concurrent
+  // pouvait se glisser entre les deux et nous faire renvoyer SA version — le
+  // client repartait alors sur une version qui n'était pas la sienne, et se
+  // prenait un faux conflit au save suivant.
+  const [note] = await prisma.note.updateManyAndReturn({
     where: { id, version: data.versionBase },
     data: {
       titre: data.titre.trim() || "Sans titre",
@@ -82,41 +89,43 @@ export async function sauverNote(
       // écrit si la sauvegarde est refusée pour conflit.
       updatedById: userId,
     },
-  });
-
-  const note = await prisma.note.findUnique({
-    where: { id },
     select: { version: true, updatedAt: true, chantierId: true },
   });
-  if (!note) throw new Error("Note introuvable");
 
-  if (res.count === 0) {
+  if (!note) {
+    // Rien écrit : soit conflit de version, soit note disparue.
+    const courante = await prisma.note.findUnique({
+      where: { id },
+      select: { version: true, updatedAt: true },
+    });
+    if (!courante) throw new Error("Note introuvable");
     return {
       ok: false,
       conflit: true,
-      version: note.version,
-      updatedAt: note.updatedAt.toISOString(),
+      version: courante.version,
+      updatedAt: courante.updatedAt.toISOString(),
     };
   }
 
-  await purgerMediasOrphelins(id, data.contenu);
+  await purgerMediasNote(id, data.contenu);
   revalidateNote(note.chantierId);
   return { ok: true, version: note.version, updatedAt: note.updatedAt.toISOString() };
 }
 
-/** Supprime du disque et de la base les médias que le document ne référence
- *  plus. Les médias très récents sont épargnés : un upload en cours n'apparaît
- *  dans le document qu'après insertion du bloc (course upload/autosave). */
-async function purgerMediasOrphelins(noteId: string, contenu: NoteContenu): Promise<void> {
-  const references = mediasReferences(contenu);
-  const seuil = new Date(Date.now() - 5 * 60 * 1000);
-  const orphelins = await prisma.noteMedia.findMany({
-    where: { noteId, createdAt: { lt: seuil }, id: { notIn: [...references] } },
-    select: { id: true, fichier: true },
+/** Purge des médias que le document ne cite plus (mécanique dans lib/medias-document). */
+function purgerMediasNote(noteId: string, contenu: NoteContenu): Promise<void> {
+  return purgerMediasOrphelins({
+    contenu,
+    prefixeUrl: PREFIXE_MEDIA_NOTE,
+    candidats: (gardes, avant) =>
+      prisma.noteMedia.findMany({
+        where: { noteId, createdAt: { lt: avant }, id: { notIn: gardes } },
+        select: { id: true, fichier: true },
+      }),
+    oublier: async (ids) => {
+      await prisma.noteMedia.deleteMany({ where: { id: { in: ids } } });
+    },
   });
-  if (orphelins.length === 0) return;
-  await Promise.all(orphelins.map((m) => supprimerMediaNote(m.fichier)));
-  await prisma.noteMedia.deleteMany({ where: { id: { in: orphelins.map((m) => m.id) } } });
 }
 
 export async function supprimerNote(id: string): Promise<void> {
@@ -126,22 +135,60 @@ export async function supprimerNote(id: string): Promise<void> {
     select: { chantierId: true, medias: { select: { fichier: true } } },
   });
   if (!note) return;
-  await Promise.all(note.medias.map((m) => supprimerMediaNote(m.fichier)));
+  await Promise.all(note.medias.map((m) => supprimerMedia(m.fichier)));
   await prisma.note.delete({ where: { id } });
   revalidateNote(note.chantierId);
 }
 
-/** Active le partage public : pose un jeton non devinable (lecture seule via
- *  /n/[jeton], accessible SANS session — l'app est exposée sur internet). */
-export async function genererJetonPartage(id: string): Promise<string> {
+/**
+ * Active le partage public : pose un jeton non devinable (lecture seule via
+ * /n/[jeton], accessible SANS session — l'app est exposée sur internet).
+ *
+ * `dureeId` choisit l'échéance parmi DUREES_PARTAGE ; « illimite » est permis
+ * ici (une note d'affaire transmise à un client peut devoir rester lisible),
+ * contrairement au wiki. Une durée inconnue n'est jamais interprétée comme
+ * « sans limite » : on refuse.
+ */
+export async function genererJetonPartage(
+  id: string,
+  dureeId: string = "illimite",
+): Promise<{ jeton: string; expireLe: string | null }> {
   const userId = await requireUserId();
+
+  const duree = dureeParId(dureeId, DUREES_PARTAGE);
+  if (!duree) throw new Error("Durée de partage inconnue");
+  const expireLe = echeanceDepuis(duree.heures);
+
   const jeton = randomBytes(24).toString("base64url");
   await prisma.note.update({
     where: { id },
-    data: { jetonPartage: jeton, updatedById: userId },
+    data: { jetonPartage: jeton, partageExpireLe: expireLe, updatedById: userId },
   });
   revalidatePath(`${BASE}/${id}`);
-  return jeton;
+  return { jeton, expireLe: expireLe?.toISOString() ?? null };
+}
+
+/** Repousse l'échéance d'un partage DÉJÀ posé — le lien distribué continue de
+ *  fonctionner, personne n'a de nouvelle URL à recevoir. */
+export async function prolongerPartage(
+  id: string,
+  dureeId: string,
+): Promise<{ expireLe: string | null }> {
+  const userId = await requireUserId();
+
+  const duree = dureeParId(dureeId, DUREES_PARTAGE);
+  if (!duree) throw new Error("Durée de partage inconnue");
+  const expireLe = echeanceDepuis(duree.heures);
+
+  const note = await prisma.note.findUnique({ where: { id }, select: { jetonPartage: true } });
+  if (!note?.jetonPartage) throw new Error("Cette note n'est pas partagée");
+
+  await prisma.note.update({
+    where: { id },
+    data: { partageExpireLe: expireLe, updatedById: userId },
+  });
+  revalidatePath(`${BASE}/${id}`);
+  return { expireLe: expireLe?.toISOString() ?? null };
 }
 
 /** Révoque le partage : le lien public meurt immédiatement. */
@@ -149,7 +196,7 @@ export async function revoquerJetonPartage(id: string): Promise<void> {
   const userId = await requireUserId();
   await prisma.note.update({
     where: { id },
-    data: { jetonPartage: null, updatedById: userId },
+    data: { jetonPartage: null, partageExpireLe: null, updatedById: userId },
   });
   revalidatePath(`${BASE}/${id}`);
 }

@@ -1,14 +1,24 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { Role } from "@/generated/prisma/enums";
-import { extraireTexte, mediasReferences, slugsTags, type FiltresWiki, type WikiContenu } from "./model";
+import { purgerMediasOrphelins } from "@/lib/medias-document/purge";
+import { supprimerMedia } from "@/lib/medias-document/stockage";
+import { dureeParId, echeanceDepuis, DUREES_PARTAGE_WIKI } from "@/lib/partage/model";
+import {
+  extraireTexte,
+  slugsTags,
+  PREFIXE_MEDIA_WIKI,
+  RUBRIQUE_NOTES,
+  type FiltresWiki,
+  type WikiContenu,
+} from "./model";
 import { candidatsParent, rechercherPages, type CandidatParent, type WikiResultatRecherche } from "./queries";
-import { supprimerMediaWiki } from "./stockage";
 
 const BASE = "/outils/wiki";
 
@@ -86,6 +96,58 @@ export async function creerPage(rubriqueId: string, parentId?: string | null): P
     },
     select: { id: true },
   });
+  revalidateWiki(rubrique.slug);
+  redirect(`${BASE}/${rubrique.slug}/${page.id}`);
+}
+
+/**
+ * Note à la volée : une page vierge dans la rubrique « Notes rapides », titrée
+ * à la date du jour, ouverte immédiatement.
+ *
+ * Tout l'intérêt est de n'avoir RIEN à choisir — ni rubrique, ni parent, ni
+ * titre. Le titre daté n'est qu'un point de départ : il est présélectionné à
+ * l'ouverture de l'éditeur, donc taper le remplace.
+ *
+ * Si la rubrique n'existe pas encore (base seedée avant son ajout), on la crée
+ * au vol plutôt que d'échouer : le bouton doit marcher du premier coup, sans
+ * qu'on ait à repasser un `db:seed`.
+ */
+export async function creerNoteRapide(): Promise<void> {
+  const userId = await requireUserId();
+
+  const rubrique = await prisma.wikiRubrique.upsert({
+    where: { slug: RUBRIQUE_NOTES },
+    update: {},
+    create: {
+      slug: RUBRIQUE_NOTES,
+      nom: "Notes rapides",
+      icon: "StickyNote",
+      couleur: "di",
+      description:
+        "Mémos, brouillons, trucs à ne pas oublier — jetés ici sans cérémonie, rangés plus tard (ou jamais).",
+      ordre: 99,
+    },
+    select: { id: true, slug: true },
+  });
+
+  const maintenant = new Date();
+  const titre = `Note du ${maintenant.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })} — ${maintenant.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+
+  const page = await prisma.wikiPage.create({
+    data: {
+      titre,
+      rubriqueId: rubrique.id,
+      ordre: await prochainOrdre(rubrique.id, null),
+      createdById: userId,
+      updatedById: userId,
+    },
+    select: { id: true },
+  });
+
   revalidateWiki(rubrique.slug);
   redirect(`${BASE}/${rubrique.slug}/${page.id}`);
 }
@@ -197,7 +259,10 @@ export async function sauverPage(
   const avant = await prisma.wikiPage.findUnique({ where: { id }, select: { rubriqueId: true } });
   const changementRubrique = !!avant && avant.rubriqueId !== data.rubriqueId;
 
-  const res = await prisma.wikiPage.updateMany({
+  // updateManyAndReturn : garde de version et lecture du résultat en une seule
+  // requête (cf. sauverNote — un updateMany + findUnique laissait un save
+  // concurrent s'intercaler et renvoyer SA version).
+  const [page] = await prisma.wikiPage.updateManyAndReturn({
     where: { id, version: data.versionBase },
     data: {
       titre: data.titre.trim() || "Sans titre",
@@ -211,20 +276,20 @@ export async function sauverPage(
       // Dans le même data que la garde de version (pas d'auteur écrit si conflit).
       updatedById: userId,
     },
-  });
-
-  const page = await prisma.wikiPage.findUnique({
-    where: { id },
     select: { version: true, updatedAt: true, rubrique: { select: { slug: true } } },
   });
-  if (!page) throw new Error("Page introuvable");
 
-  if (res.count === 0) {
+  if (!page) {
+    const courante = await prisma.wikiPage.findUnique({
+      where: { id },
+      select: { version: true, updatedAt: true },
+    });
+    if (!courante) throw new Error("Page introuvable");
     return {
       ok: false,
       conflit: true,
-      version: page.version,
-      updatedAt: page.updatedAt.toISOString(),
+      version: courante.version,
+      updatedAt: courante.updatedAt.toISOString(),
     };
   }
 
@@ -241,24 +306,25 @@ export async function sauverPage(
   }
 
   await synchroniserTags(id, tags);
-  await purgerMediasOrphelins(id, data.contenu);
+  await purgerMediasPage(id, data.contenu);
   revalidateWiki(page.rubrique.slug);
   return { ok: true, version: page.version, updatedAt: page.updatedAt.toISOString() };
 }
 
-/** Supprime du disque et de la base les médias que le document ne référence
- *  plus (grâce de 5 min : un upload en cours n'est dans le document qu'après
- *  insertion du bloc — course upload/autosave). */
-async function purgerMediasOrphelins(pageId: string, contenu: WikiContenu): Promise<void> {
-  const references = mediasReferences(contenu);
-  const seuil = new Date(Date.now() - 5 * 60 * 1000);
-  const orphelins = await prisma.wikiMedia.findMany({
-    where: { pageId, createdAt: { lt: seuil }, id: { notIn: [...references] } },
-    select: { id: true, fichier: true },
+/** Purge des médias que le document ne cite plus (mécanique dans lib/medias-document). */
+function purgerMediasPage(pageId: string, contenu: WikiContenu): Promise<void> {
+  return purgerMediasOrphelins({
+    contenu,
+    prefixeUrl: PREFIXE_MEDIA_WIKI,
+    candidats: (gardes, avant) =>
+      prisma.wikiMedia.findMany({
+        where: { pageId, createdAt: { lt: avant }, id: { notIn: gardes } },
+        select: { id: true, fichier: true },
+      }),
+    oublier: async (ids) => {
+      await prisma.wikiMedia.deleteMany({ where: { id: { in: ids } } });
+    },
   });
-  if (orphelins.length === 0) return;
-  await Promise.all(orphelins.map((m) => supprimerMediaWiki(m.fichier)));
-  await prisma.wikiMedia.deleteMany({ where: { id: { in: orphelins.map((m) => m.id) } } });
 }
 
 /** Suppression d'une page — réservée aux administrateurs (le wiki est un bien
@@ -277,8 +343,77 @@ export async function supprimerPage(id: string): Promise<void> {
   // Remonter les enfants d'un cran (vers le parent du supprimé) : sinon la FK
   // `Restrict` bloque le delete et le sous-arbre serait perdu.
   await prisma.wikiPage.updateMany({ where: { parentId: id }, data: { parentId: page.parentId } });
-  await Promise.all(page.medias.map((m) => supprimerMediaWiki(m.fichier)));
+  await Promise.all(page.medias.map((m) => supprimerMedia(m.fichier)));
   await prisma.wikiPage.delete({ where: { id } }); // cascade : tags + médias (lignes)
+  revalidateWiki(page.rubrique.slug);
+}
+
+/* --- Partage public TEMPORAIRE ------------------------------------------------
+ * Le wiki est interne : ces trois actions sont la SEULE porte vers l'extérieur.
+ * Trois garde-fous, tenus ici et pas dans l'interface :
+ *   1. une échéance est OBLIGATOIRE (pas de « sans limite » dans
+ *      DUREES_PARTAGE_WIKI) — un lien oublié finit par mourir tout seul ;
+ *   2. une durée inconnue est refusée, jamais réinterprétée en illimité ;
+ *   3. prolonger exige un jeton déjà posé — on ne partage pas par inadvertance
+ *      en cliquant « prolonger ». */
+
+/** Ouvre un lien public en lecture seule sur une page, pour une durée choisie. */
+export async function genererJetonPartagePage(
+  id: string,
+  dureeId: string,
+): Promise<{ jeton: string; expireLe: string }> {
+  const userId = await requireUserId();
+
+  const duree = dureeParId(dureeId, DUREES_PARTAGE_WIKI);
+  if (!duree) throw new Error("Durée de partage inconnue");
+  const expireLe = echeanceDepuis(duree.heures);
+  if (!expireLe) throw new Error("Le partage d'une page de wiki doit avoir une échéance");
+
+  const jeton = randomBytes(24).toString("base64url");
+  const page = await prisma.wikiPage.update({
+    where: { id },
+    data: { jetonPartage: jeton, partageExpireLe: expireLe, updatedById: userId },
+    select: { rubrique: { select: { slug: true } } },
+  });
+  revalidateWiki(page.rubrique.slug);
+  return { jeton, expireLe: expireLe.toISOString() };
+}
+
+/** Repousse l'échéance sans changer le jeton : le lien déjà distribué survit. */
+export async function prolongerPartagePage(
+  id: string,
+  dureeId: string,
+): Promise<{ expireLe: string }> {
+  const userId = await requireUserId();
+
+  const duree = dureeParId(dureeId, DUREES_PARTAGE_WIKI);
+  if (!duree) throw new Error("Durée de partage inconnue");
+  const expireLe = echeanceDepuis(duree.heures);
+  if (!expireLe) throw new Error("Le partage d'une page de wiki doit avoir une échéance");
+
+  const existante = await prisma.wikiPage.findUnique({
+    where: { id },
+    select: { jetonPartage: true },
+  });
+  if (!existante?.jetonPartage) throw new Error("Cette page n'est pas partagée");
+
+  const page = await prisma.wikiPage.update({
+    where: { id },
+    data: { partageExpireLe: expireLe, updatedById: userId },
+    select: { rubrique: { select: { slug: true } } },
+  });
+  revalidateWiki(page.rubrique.slug);
+  return { expireLe: expireLe.toISOString() };
+}
+
+/** Coupe le lien immédiatement, sans attendre l'échéance. */
+export async function revoquerJetonPartagePage(id: string): Promise<void> {
+  const userId = await requireUserId();
+  const page = await prisma.wikiPage.update({
+    where: { id },
+    data: { jetonPartage: null, partageExpireLe: null, updatedById: userId },
+    select: { rubrique: { select: { slug: true } } },
+  });
   revalidateWiki(page.rubrique.slug);
 }
 

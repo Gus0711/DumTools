@@ -5,6 +5,7 @@
  * blocs JSON. On réutilise le schéma et les helpers de texte de l'outil Notes
  * (mêmes blocs), seul le stockage des médias diffère (préfixe /api/wiki/…). */
 
+import { referencesMedias } from "@/lib/medias-document/references";
 import { extraireTexte, resumeNote } from "@/tools/notes/model";
 
 export type WikiContenu = unknown[];
@@ -58,20 +59,42 @@ export interface FiltresWiki {
 /** Images collées + pièces jointes : 50 Mo de marge (comme les notes). */
 export const TAILLE_MAX_MEDIA_WIKI = 50 * 1024 * 1024;
 
-/** URL canonique d'un média de page wiki. Route AUTHENTIFIÉE : le wiki est
- *  100 % interne (aucune vue publique, contrairement aux notes partagées). */
-export function urlMediaWiki(mediaId: string): string {
-  return `/api/wiki/media/${mediaId}`;
+/** Slug de la rubrique fourre-tout des notes à la volée (cf. prisma/seed.ts).
+ *  Vit ici et pas dans actions.ts : un module `"use server"` ne peut exporter
+ *  QUE des fonctions async — y ajouter une constante invalide tout le module,
+ *  et le message d'erreur (« has no exports at all ») ne le dit pas. */
+export const RUBRIQUE_NOTES = "notes";
+
+/** Titres posés par la MACHINE, pas par un humain : l'éditeur les présélectionne
+ *  à l'ouverture pour que la première frappe les remplace. « Nouvelle page »
+ *  vient du défaut Prisma, « Note du … » de creerNoteRapide. */
+export function titreGenere(titre: string): boolean {
+  return titre === "Nouvelle page" || titre.startsWith("Note du ");
 }
 
-/** Extrait les ids de médias référencés par un document (pour la purge des
- *  médias orphelins au save). */
-export function mediasReferences(contenu: WikiContenu): Set<string> {
-  const ids = new Set<string>();
+/** Préfixe de la route média du wiki. Source de vérité unique (URL écrite dans
+ *  le document, purge des orphelins, réécriture pour un partage public). */
+export const PREFIXE_MEDIA_WIKI = "/api/wiki/media/";
+
+/** URL canonique d'un média de page wiki — route AUTHENTIFIÉE. Une page
+ *  partagée temporairement voit ces URLs réécrites vers la route scopée au
+ *  jeton (cf. reecrireMediasPublics). */
+export function urlMediaWiki(mediaId: string): string {
+  return `${PREFIXE_MEDIA_WIKI}${mediaId}`;
+}
+
+/** Réécrit les URLs médias vers la route publique scopée au jeton : le lecteur
+ *  d'un lien partagé n'a pas de session, la route authentifiée le refuserait. */
+export function reecrireMediasPublics(contenu: WikiContenu, jeton: string): WikiContenu {
   const json = JSON.stringify(contenu ?? []);
-  const re = /\/api\/wiki\/media\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
-  for (const m of json.matchAll(re)) ids.add(m[1].toLowerCase());
-  return ids;
+  return JSON.parse(
+    json.replaceAll(PREFIXE_MEDIA_WIKI, `/api/public/wiki/${jeton}/media/`),
+  ) as WikiContenu;
+}
+
+/** Ids de médias référencés par un document (purge des orphelins au save). */
+export function mediasReferences(contenu: WikiContenu): Set<string> {
+  return referencesMedias(contenu, PREFIXE_MEDIA_WIKI);
 }
 
 /* --- Recherche : surlignage des extraits -------------------------------------

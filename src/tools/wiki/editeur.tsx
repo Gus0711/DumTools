@@ -25,6 +25,9 @@ export interface WikiEditeurProps {
     auteur: string | null;
     /** ISO — date de dernière modification (affichée sous le titre). */
     updatedAt: string;
+    /** Partage public temporaire : jeton posé, et son échéance (ISO). */
+    jetonPartage: string | null;
+    partageExpireLe: string | null;
   };
   /** Rubriques (pour déplacer la page). */
   rubriques: { id: string; slug: string; nom: string }[];

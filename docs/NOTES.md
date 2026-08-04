@@ -163,6 +163,32 @@ Trois choses rendaient l'outil « fade » — corrigées :
 - Le document stocke l'URL **canonique** (`/api/notes/media/…`) ; la page
   publique réécrit vers la route à jeton (`reecrireMediasPublics`).
 
+### Pièces jointes : vrai lien de téléchargement (2026-08-03)
+
+BlockNote rend un bloc « fichier » comme un simple `<div>` « icône + nom » —
+**ni lien, ni gestionnaire de clic**. Le téléchargement vit dans la barre
+d'outils flottante du bloc, que les vues lecture seule éteignent
+(`filePanel`/`formattingToolbar`/`sideMenu` à `false` dans `lecture-impl.tsx`).
+Sur une note **partagée à un client**, le nom du fichier était donc du texte
+mort : aucun chemin pour récupérer la pièce jointe.
+
+Corrigé par `blocs/fichier-telechargeable.tsx`, qui enveloppe le bloc natif
+(même patron que `code-repliable.tsx`, **sans ajouter de prop** — c'est l'ajout
+de prop qui déclenche le crash de `wrapInBlockStructure`, §4) et glisse le
+« icône + nom » dans un vrai `<a download>`. Détails qui comptent :
+
+- **`?dl=1`** sur l'URL → `Content-Disposition: attachment` (`dispositionMedia`
+  dans `stockage.ts`). Sans lui, un **PDF s'ouvre dans l'onglet** au lieu de se
+  télécharger. Les `<img>` du document appellent la route **sans** le drapeau et
+  restent en `inline`.
+- Le drapeau n'est posé que sur **nos** routes `/api/…` : une URL externe collée
+  dans la note ne connaît pas `dl`, et `download` y est ignoré (autre origine).
+- **`draggable = false`** sur le lien : un `<a>` est draggable par défaut, et
+  glisser une pièce jointe dans l'éditeur déplacerait le lien au lieu du bloc.
+- `isEditable` est consulté **au clic**, pas au rendu : au premier rendu d'une
+  vue lecture seule, `BlockNoteView` n'a pas encore appliqué `editable={false}`.
+  En édition le clic est neutralisé (il sert à sélectionner le bloc).
+
 ## 7. Partage public `/n/[jeton]`
 
 - **La seule route applicative sans session** — exclusions `n/` et

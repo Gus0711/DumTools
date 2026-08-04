@@ -6,6 +6,8 @@
  * embeds HTML…). On le transporte en `unknown[]` : seul l'éditeur (qui possède
  * le schéma) sait le typer précisément — le serveur le stocke tel quel. */
 
+import { referencesMedias } from "@/lib/medias-document/references";
+
 export type NoteContenu = unknown[];
 
 /* --- Table de données typée (bloc custom « esprit Coda ») -------------------- */
@@ -66,10 +68,15 @@ export function uidCourt(): string {
  *  petites, mais une note peut porter un PDF ou une archive). */
 export const TAILLE_MAX_MEDIA_NOTE = 50 * 1024 * 1024;
 
+/** Préfixe de la route média des notes. Source de vérité unique : l'URL écrite
+ *  dans le document, la regex de purge et la réécriture publique en dépendent
+ *  toutes les trois. */
+export const PREFIXE_MEDIA_NOTE = "/api/notes/media/";
+
 /** URL canonique d'un média de note — c'est CETTE forme qui est stockée dans le
  *  document ; la vue publique la réécrit vers la route scopée au jeton. */
 export function urlMediaNote(mediaId: string): string {
-  return `/api/notes/media/${mediaId}`;
+  return `${PREFIXE_MEDIA_NOTE}${mediaId}`;
 }
 
 /** Réécrit les URLs médias d'un document vers la route publique scopée au
@@ -78,18 +85,13 @@ export function urlMediaNote(mediaId: string): string {
 export function reecrireMediasPublics(contenu: NoteContenu, jeton: string): NoteContenu {
   const json = JSON.stringify(contenu ?? []);
   return JSON.parse(
-    json.replaceAll("/api/notes/media/", `/api/public/notes/${jeton}/media/`),
+    json.replaceAll(PREFIXE_MEDIA_NOTE, `/api/public/notes/${jeton}/media/`),
   ) as NoteContenu;
 }
 
-/** Extrait les ids de médias référencés par un document (pour la purge des
- *  médias orphelins au save). */
+/** Ids de médias référencés par un document (purge des orphelins au save). */
 export function mediasReferences(contenu: NoteContenu): Set<string> {
-  const ids = new Set<string>();
-  const json = JSON.stringify(contenu ?? []);
-  const re = /\/api\/notes\/media\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/gi;
-  for (const m of json.matchAll(re)) ids.add(m[1].toLowerCase());
-  return ids;
+  return referencesMedias(contenu, PREFIXE_MEDIA_NOTE);
 }
 
 /* --- Résumé (fiches client / affaire, index) ---------------------------------- */

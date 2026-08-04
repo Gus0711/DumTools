@@ -158,6 +158,18 @@
   --row-y:      0.72rem;
   --control-h:  2.5rem;
   --tap:        2.75rem;
+
+  /* --- Largeur des documents riches : « Confort » par défaut -------------- *
+   * Ne concerne QUE la feuille d'un document (Notes, Wiki) — les écrans de
+   * liste restent à leur largeur propre. Trois crans, parce que deux besoins
+   * s'opposent : une ligne de prose se lit mal au-delà de ~75 caractères,
+   * mais une table de données typée étouffe dans une colonne étroite.
+   *   Lecture ≈  930 px — la colonne de prose historique
+   *   Confort ≈ 1420 px — le défaut : de l'air sans balayer l'écran
+   *   Pleine  =  1700 px — aligné sur les autres écrans de l'appli
+   * En rem (donc solidaire de la densité) sauf « pleine », volontairement en
+   * px pour coller AU PIXEL au max-w-[1700px] des écrans de liste. */
+  --doc-max: 86rem;
 }
 
 :root[data-density="compact"] {
@@ -166,6 +178,9 @@
   --control-h: 2.25rem;
   --tap:       2.25rem;
 }
+
+:root[data-largeur="lecture"] { --doc-max: 56rem; }
+:root[data-largeur="pleine"]  { --doc-max: 1700px; }
 
 /* --- Thème sombre : préférence système par défaut... ---------------------- *
  * Le bloc est volontairement dupliqué plus bas pour l'override explicite :

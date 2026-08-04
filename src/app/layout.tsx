@@ -56,11 +56,12 @@ export default function RootLayout({
       className={`${sans.variable} ${mono.variable} ${display.variable} h-full`}
     >
       <head>
-        {/* Applique le thème ET la densité mémorisés avant le premier rendu :
-            sans ça, l'écran clignote (clair→sombre, compact→confort) au chargement. */}
+        {/* Applique le thème, la densité ET la largeur de document mémorisés
+            avant le premier rendu : sans ça, l'écran clignote (clair→sombre,
+            compact→confort, feuille étroite→large) au chargement. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('dumtools-theme');if(t==='dark'||t==='light'){d.setAttribute('data-theme',t);}var n=localStorage.getItem('dumtools-density');if(n==='compact'||n==='confort'){d.setAttribute('data-density',n);}}catch(e){}})();`,
+            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem('dumtools-theme');if(t==='dark'||t==='light'){d.setAttribute('data-theme',t);}var n=localStorage.getItem('dumtools-density');if(n==='compact'||n==='confort'){d.setAttribute('data-density',n);}var l=localStorage.getItem('dumtools-largeur');if(l==='lecture'||l==='confort'||l==='pleine'){d.setAttribute('data-largeur',l);}}catch(e){}})();`,
           }}
         />
       </head>

@@ -4,6 +4,7 @@ import { SlidersHorizontal } from "lucide-react";
 import { Cartouche } from "@/ui";
 import { listerRubriques } from "@/tools/wiki/queries";
 import { RechercheWiki } from "@/tools/wiki/recherche";
+import { NoteRapide } from "@/tools/wiki/boutons";
 import { IconeRubrique, teinteRubrique } from "@/tools/wiki/apparence";
 
 export const metadata: Metadata = { title: "Wiki" };
@@ -22,6 +23,7 @@ export default async function Page() {
           { label: "Rubriques", valeur: rubriques.length, fort: true },
           { label: "Pages", valeur: total, fort: true },
         ]}
+        actions={<NoteRapide variant="primary" />}
         enfants={
           <div>
             <RechercheWiki />
