@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Boxes, TriangleAlert } from "lucide-react";
+import { ArrowRight, Boxes, PackageX, TriangleAlert } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { bomAffaire } from "./bom";
 import { coutMaterielAffaire } from "./queries";
@@ -25,12 +25,23 @@ export async function BlocMaterielAffaire({
     coutMaterielAffaire(chantierId),
   ]);
 
-  // Rien de dérivable et rien de sorti : le bloc n'a rien à raconter.
-  if (bom.lignes.length === 0 && nbMouvements === 0 && bom.trous.length === 0) return null;
+  // Rien de dérivable et rien de sorti : le bloc n'a rien à raconter. Des points
+  // « pas de notre fourniture » suffisent en revanche à le justifier — une
+  // affaire de pure reprise d'existant a un besoin nul, et c'est une information.
+  if (
+    bom.lignes.length === 0 &&
+    nbMouvements === 0 &&
+    bom.trous.length === 0 &&
+    bom.nbHorsFourniture === 0
+  ) {
+    return null;
+  }
 
-  const totalManquant = bom.lignes.reduce((s, l) => s + l.manquant, 0);
+  // Ce qui est coché « hors fourniture » ne pèse sur aucun total (voir bom.ts).
+  const aFournir = bom.lignes.filter((l) => !l.horsFourniture);
+  const totalManquant = aFournir.reduce((s, l) => s + l.manquant, 0);
   const totalSorti = bom.lignes.reduce((s, l) => s + l.sorti, 0);
-  const totalBesoin = bom.lignes.reduce((s, l) => s + l.besoin, 0);
+  const totalBesoin = aFournir.reduce((s, l) => s + l.besoin, 0);
 
   return (
     <div className="border border-hairline bg-surface">
@@ -41,7 +52,7 @@ export async function BlocMaterielAffaire({
             {totalBesoin}
           </span>
           <span className="ml-1.5 text-xs text-muted">
-            article{totalBesoin > 1 ? "s" : ""} · {bom.lignes.length} réf.
+            article{totalBesoin > 1 ? "s" : ""} · {aFournir.length} réf.
           </span>
         </div>
 
@@ -102,6 +113,19 @@ export async function BlocMaterielAffaire({
           >
             Les relier →
           </Link>
+        </p>
+      )}
+
+      {bom.nbHorsFourniture > 0 && (
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-hairline px-4 py-2.5 text-xs text-muted">
+          <PackageX className="h-3.5 w-3.5 shrink-0 text-accent-strong" />
+          <span>
+            {bom.nbHorsFourniture} référence{bom.nbHorsFourniture > 1 ? "s" : ""}{" "}
+            <strong>hors de notre fourniture</strong> (déjà sur place ou d&apos;un autre lot) :
+            raccordée{bom.nbHorsFourniture > 1 ? "s" : ""} et mise
+            {bom.nbHorsFourniture > 1 ? "s" : ""} en service, volontairement hors du besoin
+            ci-dessus.
+          </span>
         </p>
       )}
     </div>

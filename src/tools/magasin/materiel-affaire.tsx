@@ -11,6 +11,7 @@ import {
   Link2,
   Loader2,
   PackageCheck,
+  PackageX,
   Plus,
   Search,
   Trash2,
@@ -20,6 +21,7 @@ import { Badge, Button, Chiffre, EnteteSection, Input, Label, RangeeChiffres } f
 import { cn } from "@/lib/cn";
 import {
   associerTrou,
+  basculerHorsFourniture,
   enregistrerLigneMateriel,
   marquerPointSansMateriel,
   reserver,
@@ -104,6 +106,7 @@ export function MaterielAffaire({
   peutPrix,
   peutGerer,
   coutSortiCents,
+  nbHorsFourniture,
 }: {
   chantierId: string;
   lignes: LigneBom[];
@@ -111,6 +114,7 @@ export function MaterielAffaire({
   projets: { id: string; nom: string }[];
   coutPrevuCents: number;
   nbSansPrix: number;
+  nbHorsFourniture: number;
   reservations: ReservationVue[];
   lignesManuelles: LigneManuelleVue[];
   produits: ProduitChoix[];
@@ -156,9 +160,12 @@ export function MaterielAffaire({
     });
   }
 
-  const totalBesoin = lignes.reduce((s, l) => s + l.besoin, 0);
-  const totalManquant = lignes.reduce((s, l) => s + l.manquant, 0);
-  const nbAReserver = lignes.filter((l) => l.manquant > 0 && l.stock >= l.manquant).length;
+  // Les lignes hors fourniture restent AFFICHÉES mais ne comptent nulle part :
+  // c'est tout l'intérêt de la case.
+  const aFournir = lignes.filter((l) => !l.horsFourniture);
+  const totalBesoin = aFournir.reduce((s, l) => s + l.besoin, 0);
+  const totalManquant = aFournir.reduce((s, l) => s + l.manquant, 0);
+  const nbAReserver = aFournir.filter((l) => l.manquant > 0 && l.stock >= l.manquant).length;
   const resultatsAjout = (() => {
     if (!ajout) return [];
     const f = ajout.recherche.trim().toLowerCase();
@@ -176,7 +183,15 @@ export function MaterielAffaire({
   return (
     <>
       <RangeeChiffres className="mb-5">
-        <Chiffre label="Articles nécessaires" valeur={totalBesoin} detail={`${lignes.length} références`} />
+        <Chiffre
+          label="Articles à fournir"
+          valeur={totalBesoin}
+          detail={
+            nbHorsFourniture > 0
+              ? `${aFournir.length} réf. · ${nbHorsFourniture} hors fourniture`
+              : `${lignes.length} références`
+          }
+        />
         <Chiffre
           label="Manquants"
           valeur={totalManquant}
@@ -203,6 +218,23 @@ export function MaterielAffaire({
         <div className="mb-4 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger">
           {erreur}
         </div>
+      )}
+
+      {/* Ce qui est EXCLU VOLONTAIREMENT — rien à réparer, juste à savoir ---- */}
+      {nbHorsFourniture > 0 && (
+        <p className="mb-5 flex items-start gap-2 border border-hairline border-l-2 border-l-accent bg-surface px-4 py-2.5 text-xs leading-relaxed text-muted">
+          <PackageX className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-strong" />
+          <span>
+            <strong className="font-semibold text-fg">
+              {nbHorsFourniture} référence{nbHorsFourniture > 1 ? "s" : ""}
+            </strong>{" "}
+            coché{nbHorsFourniture > 1 ? "es" : "e"} « hors fourniture » : nécessaire
+            {nbHorsFourniture > 1 ? "s" : ""} au chantier, mais déjà sur place ou d&apos;un autre
+            lot. On les raccorde et on les met en service sans les vendre — d&apos;où leur absence
+            du besoin, du manquant et du coût ci-dessus. Elles restent affichées, barrées, pour
+            pouvoir revenir en arrière. Décision propre à <strong>cette affaire</strong>.
+          </span>
+        </p>
       )}
 
       {/* Ce que la dérivation ne sait pas chiffrer — et comment le réparer -- */}
@@ -509,6 +541,9 @@ export function MaterielAffaire({
             <tr>
               <th>Produit</th>
               <th>D&apos;où vient le besoin</th>
+              <th className="w-28 text-center" title="Nécessaire, mais déjà sur place ou fourni par un autre lot">
+                Hors fourniture
+              </th>
               <th className="text-right">Besoin</th>
               <th className="text-right">Stock</th>
               <th className="text-right">Réservé</th>
@@ -520,7 +555,7 @@ export function MaterielAffaire({
           <tbody>
             {lignes.length === 0 && (
               <tr>
-                <td colSpan={8} className="py-6 text-center text-sm text-subtle">
+                <td colSpan={9} className="py-6 text-center text-sm text-subtle">
                   Rien à sortir pour l&apos;instant — ni projet GTB chiffrable, ni ajout manuel.
                 </td>
               </tr>
@@ -529,7 +564,7 @@ export function MaterielAffaire({
               const reservation = reservations.find((r) => r.produitId === l.produitId);
               const manuelle = lignesManuelles.find((m) => m.produitId === l.produitId);
               return (
-                <tr key={l.produitId}>
+                <tr key={l.produitId} className={cn(l.horsFourniture && "text-muted")}>
                   <td className="cell-title cell-card-title cell-wrap">
                     <Link
                       href={`/outils/magasin/produits/${l.produitId}`}
@@ -555,8 +590,41 @@ export function MaterielAffaire({
                       ))}
                     </ul>
                   </td>
+                  <td data-label="Hors fourniture" className="text-center">
+                    <label
+                      className="inline-flex cursor-pointer items-center justify-center gap-1.5"
+                      title={
+                        l.horsFourniture
+                          ? "Hors de notre fourniture : compté nulle part, on le raccorde seulement. Décocher pour le remettre au besoin."
+                          : "Cocher si cet article est déjà sur place (ou fourni par un autre lot) : il sort du besoin et du coût, sur cette affaire uniquement."
+                      }
+                    >
+                      <input
+                        type="checkbox"
+                        checked={l.horsFourniture}
+                        disabled={pending}
+                        onChange={(e) =>
+                          run(() =>
+                            basculerHorsFourniture({
+                              chantierId,
+                              produitId: l.produitId,
+                              valeur: e.target.checked,
+                            }),
+                          )
+                        }
+                        className="h-4 w-4 cursor-pointer accent-accent"
+                      />
+                      {l.horsFourniture && (
+                        <span className="text-xs font-medium text-accent-strong">sur site</span>
+                      )}
+                    </label>
+                  </td>
                   <td data-label="Besoin" className="text-right tabular-nums">
-                    <strong>{l.besoin}</strong>
+                    {l.horsFourniture ? (
+                      <span className="line-through">{l.besoin}</span>
+                    ) : (
+                      <strong>{l.besoin}</strong>
+                    )}
                   </td>
                   <td data-label="Stock" className="text-right tabular-nums">
                     {l.stock}
@@ -568,7 +636,11 @@ export function MaterielAffaire({
                     {l.sorti > 0 ? l.sorti : <span className="text-subtle">—</span>}
                   </td>
                   <td data-label="Manque" className="text-right tabular-nums">
-                    {l.manquant > 0 ? (
+                    {l.horsFourniture ? (
+                      // Un « OK » vert mentirait : rien n'est couvert, on ne le
+                      // fournit simplement pas.
+                      <span className="text-subtle">—</span>
+                    ) : l.manquant > 0 ? (
                       <Badge tone={l.stock >= l.manquant ? "warning" : "danger"} point>
                         {l.manquant}
                       </Badge>

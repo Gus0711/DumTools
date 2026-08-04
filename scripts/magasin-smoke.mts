@@ -212,6 +212,52 @@ async function main() {
     await prisma.pointCatalog.deleteMany({ where: { nom: { startsWith: PREFIXE } } });
   }
 
+  // --- 4 quater. « Hors de notre fourniture » --------------------------------
+  // L'article est bien appelé par le chantier, mais il est déjà sur place : la
+  // ligne doit RESTER VISIBLE (sinon on ne pourrait pas décocher) tout en
+  // sortant du besoin, du manquant et du coût. Et cocher/décocher doit être
+  // exactement symétrique.
+  if (affaire) {
+    const { bomAffaire } = await import("../src/tools/magasin/bom");
+
+    const avant = await bomAffaire(affaire.id);
+    const ligneAvant = avant.lignes.find((l) => l.produitId === sonde.id);
+    verifier("fourni : la ligne pèse sur le besoin", (ligneAvant?.besoin ?? 0) > 0, true);
+    verifier("fourni : elle n'est pas hors fourniture", ligneAvant?.horsFourniture, false);
+    const besoinAvant = avant.lignes.reduce((s, l) => (l.horsFourniture ? s : s + l.besoin), 0);
+    const coutAvant = avant.coutPrevuCents;
+
+    // `basculerHorsFourniture` passe par auth() : on écrit la ligne en direct,
+    // c'est l'invariant de la BOM qu'on teste ici, pas la garde d'authentification.
+    await prisma.materielHorsFourniture.create({
+      data: { chantierId: affaire.id, produitId: sonde.id, note: "smoke" },
+    });
+
+    const apres = await bomAffaire(affaire.id);
+    const ligneApres = apres.lignes.find((l) => l.produitId === sonde.id);
+    verifier("hors fourniture : la ligne reste visible", !!ligneApres, true);
+    verifier("hors fourniture : elle est marquée", ligneApres?.horsFourniture, true);
+    verifier("hors fourniture : plus rien ne manque dessus", ligneApres?.manquant, 0);
+    verifier("hors fourniture : elle est comptée à part", apres.nbHorsFourniture, 1);
+    verifier(
+      "hors fourniture : le besoin à fournir retombe",
+      apres.lignes.reduce((s, l) => (l.horsFourniture ? s : s + l.besoin), 0),
+      besoinAvant - (ligneAvant?.besoin ?? 0),
+    );
+    verifier(
+      "hors fourniture : le coût prévu ne la compte plus",
+      apres.coutPrevuCents,
+      coutAvant - (ligneAvant?.pmpCents ?? 0) * (ligneAvant?.besoin ?? 0),
+    );
+
+    await prisma.materielHorsFourniture.deleteMany({
+      where: { chantierId: affaire.id, produitId: sonde.id },
+    });
+    const retour = await bomAffaire(affaire.id);
+    verifier("décocher rend le besoin à l'identique", retour.coutPrevuCents, coutAvant);
+    verifier("décocher ne laisse aucune trace", retour.nbHorsFourniture, 0);
+  }
+
   // --- 4 ter. Le modèle d'import se relit tout seul --------------------------
   // Le fichier proposé au téléchargement porte exactement les libellés attendus :
   // si cette propriété casse, l'utilisateur télécharge un modèle que l'import ne

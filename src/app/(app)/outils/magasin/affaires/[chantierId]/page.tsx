@@ -58,6 +58,7 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
         projets={bom.projets}
         coutPrevuCents={bom.coutPrevuCents}
         nbSansPrix={bom.nbSansPrix}
+        nbHorsFourniture={bom.nbHorsFourniture}
         coutSortiCents={coutSortiCents}
         reservations={reservations}
         lignesManuelles={lignesManuelles}

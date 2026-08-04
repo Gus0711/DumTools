@@ -286,6 +286,37 @@ Deux endroits pour la poser : le bouton « Aucun matériel » sur la ligne du tr
 (écran Matériel d'affaire) et la bascule de l'écran Nomenclature, qui sert aussi
 à revenir en arrière (« À chiffrer »).
 
+### « Hors de notre fourniture » (ajouté le 2026-08-03)
+
+L'autre moitié du sujet, et il ne faut **surtout pas** la confondre avec la
+précédente : l'article est bel et bien nécessaire au chantier — il se raccorde,
+il se met en service, il figure au document — mais **on ne le vend pas**, parce
+qu'il est **déjà sur place** ou fourni par un autre lot. Cas courant en rénovation.
+
+| | `PointCatalog.sansMateriel` | `MaterielHorsFourniture` |
+|---|---|---|
+| Question posée | « ce **type** de point demande-t-il du matériel ? » | « sur **cette affaire**, est-ce nous qui le fournissons ? » |
+| Portée | **toutes** les affaires (catalogue) | **une seule** affaire |
+| Où | écran Nomenclature / ligne de trou | case à cocher sur la ligne de BOM |
+
+Le geste est une **case à cocher sur la ligne de l'écran Matériel d'affaire** —
+pas sur la ligne de point. La liste de points est un artefact **technique**
+(qu'est-ce qui se câble, sur quelle borne) ; « qui fournit » est une question
+**d'achat** : c'est la règle du §2, et elle décide de l'emplacement. Cela évite
+au passage d'alourdir d'une colonne l'écran le plus chargé et le plus fréquenté
+de la plateforme.
+
+Cochée, la ligne **reste affichée** (barrée, grisée) mais sort du besoin, du
+manquant et du coût prévu — et son prix inconnu cesse d'être signalé, puisqu'on
+ne l'achète pas. La **présence de la ligne EST la décision** (`@@unique`
+`[chantierId, produitId]`, pas de booléen à maintenir) : cocher et décocher sont
+parfaitement symétriques, rien n'est perdu dans un sens ni dans l'autre.
+
+> **Choix assumé : c'est tout ou rien par article.** « 3 sondes déjà en place sur
+> les 12 » ne s'exprime pas — il faudrait une quantité déductible, donc un champ
+> de saisie là où une case suffit. Décidé ainsi à l'usage ; si le cas partiel se
+> présente vraiment, la ligne manuelle sait déjà ajuster une quantité.
+
 ---
 
 ## 6. La reprise de données (imports)
@@ -481,6 +512,11 @@ par code-barres appris), rôle **`ACHATS`** dans `/configuration/utilisateurs`.
    d'achat et le délai remontent sur le produit. L'import passe de trois genres
    à deux, la fiche produit perd une section, et saisir un prix ne demande plus
    de créer le fournisseur d'abord — il se crée depuis le formulaire.
+7. **« Hors de notre fourniture »** (2026-08-03) — case à cocher par ligne de BOM
+   (`MaterielHorsFourniture`), pour le matériel présent sur site qu'on met en
+   service sans le vendre. Voir §5. La première tentative avait posé le marquage
+   sur la **ligne de point** : mauvais étage (technique au lieu de commerce) et
+   sur l'écran déjà le plus chargé de la plateforme — déplacé avant d'être livré.
 
 ### Pièges rencontrés (à ne pas re-découvrir)
 

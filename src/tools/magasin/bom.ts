@@ -27,6 +27,10 @@ export interface BomAffaire {
   coutPrevuCents: number;
   /** Nombre de lignes dont on ne connaît pas le prix. */
   nbSansPrix: number;
+  /** Nombre de lignes cochées « hors de notre fourniture » : elles restent
+   *  visibles (sinon on ne pourrait pas décocher) mais sortent du besoin, du
+   *  manquant et du coût. Compté pour être DIT, jamais pour être chiffré. */
+  nbHorsFourniture: number;
 }
 
 interface Accumulateur {
@@ -65,6 +69,17 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       include: { produit: { select: { id: true, refInterne: true } } },
     }),
   ]);
+
+  // Les articles que le chantier appelle mais qu'on ne fournit pas : déjà en
+  // place, ou du lot d'un autre. La présence de la ligne EST la décision.
+  const horsFourniture = new Set(
+    (
+      await prisma.materielHorsFourniture.findMany({
+        where: { chantierId },
+        select: { produitId: true },
+      })
+    ).map((h) => h.produitId),
+  );
 
   const acc = new Map<string, Accumulateur>();
   // Clé = `${genre}:${cle}` : deux points homonymes de genres différents ne se
@@ -215,6 +230,7 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       projets: projets.map((p) => ({ id: p.id, nom: p.nom })),
       coutPrevuCents: 0,
       nbSansPrix: 0,
+      nbHorsFourniture: 0,
     };
   }
 
@@ -305,12 +321,20 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
   let coutPrevuCents = 0;
   let nbSansPrix = 0;
 
+  let nbHorsFourniture = 0;
+
   for (const a of acc.values()) {
     const p = parId.get(a.produitId);
     if (!p) continue;
     const dejaCouvert = (reserve.get(a.produitId) ?? 0) + Math.max(0, sorti.get(a.produitId) ?? 0);
     const prix = prixRef.get(a.produitId) ?? null;
-    if (prix === null) nbSansPrix += 1;
+    // Hors fourniture : la ligne reste AFFICHÉE (on doit pouvoir décocher, et
+    // savoir ce qu'on a raccordé sans le vendre) mais elle ne pèse ni sur le
+    // besoin, ni sur le manquant, ni sur le coût — et son prix inconnu n'a plus
+    // à être signalé, puisqu'on ne l'achète pas.
+    const exclue = horsFourniture.has(a.produitId);
+    if (exclue) nbHorsFourniture += 1;
+    else if (prix === null) nbSansPrix += 1;
     else coutPrevuCents += prix * a.besoin;
 
     lignes.push({
@@ -324,8 +348,9 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       stock: stock.get(a.produitId) ?? 0,
       reserve: reserve.get(a.produitId) ?? 0,
       sorti: Math.max(0, sorti.get(a.produitId) ?? 0),
-      manquant: Math.max(0, a.besoin - dejaCouvert),
+      manquant: exclue ? 0 : Math.max(0, a.besoin - dejaCouvert),
       pmpCents: prix,
+      horsFourniture: exclue,
     });
   }
 
@@ -339,5 +364,6 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
     projets: projets.map((p) => ({ id: p.id, nom: p.nom })),
     coutPrevuCents,
     nbSansPrix,
+    nbHorsFourniture,
   };
 }

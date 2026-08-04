@@ -672,6 +672,34 @@ export async function supprimerLigneMateriel(id: string): Promise<void> {
   revalidatePath(`/affaires/${l.chantierId}`);
 }
 
+/**
+ * « Hors de notre fourniture » : l'article est nécessaire au chantier mais il
+ * est déjà sur place (ou d'un autre lot). Cocher pose la ligne, décocher la
+ * retire — strictement symétrique, aucune donnée perdue dans un sens ni dans
+ * l'autre. La décision ne vaut que pour CETTE affaire.
+ */
+export async function basculerHorsFourniture(p: {
+  chantierId: string;
+  produitId: string;
+  valeur: boolean;
+}): Promise<void> {
+  const a = await acteur();
+  const ou = { chantierId_produitId: { chantierId: p.chantierId, produitId: p.produitId } };
+  if (p.valeur) {
+    await prisma.materielHorsFourniture.upsert({
+      where: ou,
+      create: { chantierId: p.chantierId, produitId: p.produitId, createdById: a.id },
+      update: {},
+    });
+  } else {
+    await prisma.materielHorsFourniture.deleteMany({
+      where: { chantierId: p.chantierId, produitId: p.produitId },
+    });
+  }
+  revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
+  revalidatePath(`/affaires/${p.chantierId}`);
+}
+
 /** Pose (ou met à jour) une réservation. Quantité 0 = on annule. */
 export async function reserver(p: {
   chantierId: string;

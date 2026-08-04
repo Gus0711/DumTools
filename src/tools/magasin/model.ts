@@ -349,6 +349,10 @@ export interface LigneBom {
   manquant: number;
   /** Prix retenu pour chiffrer la ligne (payé si connu, tarif sinon). */
   pmpCents: number | null;
+  /** Coché « hors de notre fourniture » : nécessaire au chantier, mais déjà sur
+   *  place ou fourni par un autre lot. La ligne reste visible et sort des
+   *  totaux (`manquant` forcé à 0). */
+  horsFourniture: boolean;
 }
 
 export interface OrigineBom {
