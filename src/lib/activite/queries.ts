@@ -44,12 +44,40 @@ function contexte(...morceaux: (string | null | undefined)[]): string {
   return morceaux.map((m) => m?.trim()).filter(Boolean).join(" · ");
 }
 
-/** Les `limite` dernières modifications, tous outils confondus. */
-export async function activiteRecente(limite = 10): Promise<EvenementActivite[]> {
+/**
+ * « C'est moi qui ai touché ça en dernier » — filtre d'auteur d'une source.
+ * `updatedById` d'abord (dernière main humaine), avec repli sur `createdById`
+ * pour les lignes antérieures à ce champ : sans le repli, « Reprendre » serait
+ * vide sur tout l'historique.
+ */
+function parAuteur(id: string) {
+  return {
+    OR: [{ updatedById: id }, { updatedById: null, createdById: id }],
+  };
+}
+
+/**
+ * Les `limite` dernières modifications, tous outils confondus.
+ *
+ * `auteurId` restreint le fil à ce qu'une personne a touché — c'est ce qui
+ * alimente « Reprendre » sur l'accueil, là où le fil complet répond à « qu'est-ce
+ * qui a bougé dans la maison ». Les deux emploient la même agrégation.
+ */
+export async function activiteRecente(
+  limite = 10,
+  auteurId?: string,
+): Promise<EvenementActivite[]> {
+  // Le Chantier ne porte pas de createdById : le filtre s'y réduit à updatedById.
+  const moi = auteurId ? parAuteur(auteurId) : {};
+  const moiChantier = auteurId ? { updatedById: auteurId } : {};
+  // Un fichier n'est jamais « modifié » : son déposant est son seul auteur.
+  const moiDocument = auteurId ? { createdById: auteurId } : {};
+
   // Chaque source ramène `limite` lignes : après fusion et tri, on est certain
   // d'avoir les `limite` plus récentes globales quelle que soit la répartition.
   const [affaires, projets, notes, documents, visites, pages] = await Promise.all([
     prisma.chantier.findMany({
+      where: moiChantier,
       orderBy: { updatedAt: "desc" },
       take: limite,
       select: {
@@ -61,6 +89,7 @@ export async function activiteRecente(limite = 10): Promise<EvenementActivite[]>
       },
     }),
     prisma.affectationProjet.findMany({
+      where: moi,
       orderBy: { updatedAt: "desc" },
       take: limite,
       select: {
@@ -73,6 +102,7 @@ export async function activiteRecente(limite = 10): Promise<EvenementActivite[]>
       },
     }),
     prisma.note.findMany({
+      where: moi,
       orderBy: { updatedAt: "desc" },
       take: limite,
       select: {
@@ -85,6 +115,7 @@ export async function activiteRecente(limite = 10): Promise<EvenementActivite[]>
       },
     }),
     prisma.document.findMany({
+      where: moiDocument,
       orderBy: { createdAt: "desc" },
       take: limite,
       select: {
@@ -98,6 +129,7 @@ export async function activiteRecente(limite = 10): Promise<EvenementActivite[]>
       },
     }),
     prisma.visite.findMany({
+      where: moi,
       orderBy: { updatedAt: "desc" },
       take: limite,
       select: {
@@ -110,6 +142,7 @@ export async function activiteRecente(limite = 10): Promise<EvenementActivite[]>
       },
     }),
     prisma.wikiPage.findMany({
+      where: moi,
       orderBy: { updatedAt: "desc" },
       take: limite,
       select: {

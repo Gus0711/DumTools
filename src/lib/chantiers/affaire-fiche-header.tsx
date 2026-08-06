@@ -3,13 +3,28 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Info, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Info,
+  KeyRound,
+  Loader2,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { Button, Combobox, type ComboOption } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { BesoinArmoire, EtatAffaire } from "@/generated/prisma/enums";
 import { CYCLE_AFFAIRE, etapeSuivante, etatAide, etatLabel } from "./etats";
 import { BESOINS_ARMOIRE } from "./armoire";
-import { changerBesoinArmoire, changerEtatAffaire, modifierAffaire } from "./actions";
+import {
+  changerBesoinArmoire,
+  changerEtatAffaire,
+  libererNumeroWhy,
+  modifierAffaire,
+  supprimerAffaire,
+} from "./actions";
 
 /* =============================================================================
  * IDENTIFICATION DE L'AFFAIRE
@@ -51,6 +66,8 @@ export function AffaireFicheHeader({
   const [valClient, setValClient] = useState(clientNom);
   const [valWhy, setValWhy] = useState(numeroWhy ?? "");
   const [erreur, setErreur] = useState("");
+  // Suppression en deux temps : le premier clic arme, le second exécute.
+  const [confirmeSuppr, setConfirmeSuppr] = useState(false);
   const [pending, start] = useTransition();
 
   const options = useMemo<ComboOption[]>(() => clients.map((c) => ({ value: c })), [clients]);
@@ -62,7 +79,17 @@ export function AffaireFicheHeader({
     setErreur("");
     start(async () => {
       try {
-        await modifierAffaire(id, { nom: valNom, clientNom: valClient, numeroWhy: valWhy });
+        // Le refus attendu (n° Why déjà pris) est RETOURNÉ : une erreur lancée
+        // arriverait ici sans son message, effacé par Next en production.
+        const r = await modifierAffaire(id, {
+          nom: valNom,
+          clientNom: valClient,
+          numeroWhy: valWhy,
+        });
+        if (r?.erreur) {
+          setErreur(r.erreur);
+          return;
+        }
         router.refresh();
       } catch (e) {
         setErreur(e instanceof Error ? e.message : "Erreur");
@@ -75,6 +102,25 @@ export function AffaireFicheHeader({
     start(async () => {
       try {
         await changerEtatAffaire(id, nouvel);
+        router.refresh();
+      } catch (e) {
+        setErreur(e instanceof Error ? e.message : "Erreur");
+      }
+    });
+  }
+
+  /** Deux gestes de nettoyage, réservés à la corbeille (voir actions.ts). Ils
+   *  RETOURNENT leur refus : un message lancé serait effacé en production. */
+  function nettoyer(action: () => Promise<{ erreur: string } | void>, apres?: () => void) {
+    setErreur("");
+    start(async () => {
+      try {
+        const r = await action();
+        if (r?.erreur) {
+          setErreur(r.erreur);
+          return;
+        }
+        apres?.();
         router.refresh();
       } catch (e) {
         setErreur(e instanceof Error ? e.message : "Erreur");
@@ -141,6 +187,57 @@ export function AffaireFicheHeader({
             <BoutonCorbeille etat={etat} pending={pending} onChanger={changerEtat} />
           </div>
         </div>
+
+        {/* --- Nettoyage, uniquement depuis la corbeille -------------------- *
+            Une affaire mise de côté retient son n° Why, qui est unique : le
+            numéro reste pris alors que l'affaire n'apparaît plus au tableau de
+            bord. Les deux issues sont ici, et nulle part ailleurs. */}
+        {etat === "CORBEILLE" && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-hairline bg-surface-2 px-4 py-2.5">
+            <span className="stamp">Nettoyage</span>
+            {numeroWhy && (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => nettoyer(() => libererNumeroWhy(id))}
+                title="Rend le n° Why réutilisable par une autre affaire. Rien n'est supprimé."
+                className="press inline-flex min-h-[2.25rem] items-center gap-1.5 text-sm font-semibold text-brand transition-colors hover:text-brand-strong disabled:opacity-50 sm:min-h-0"
+              >
+                <KeyRound className="h-3.5 w-3.5" />
+                Libérer le n° Why
+              </button>
+            )}
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                confirmeSuppr
+                  ? nettoyer(() => supprimerAffaire(id), () => router.push("/affaires"))
+                  : setConfirmeSuppr(true)
+              }
+              title="Supprime l'affaire. Refusé tant qu'elle porte quelque chose."
+              className={cn(
+                "press inline-flex min-h-[2.25rem] items-center gap-1.5 text-sm font-semibold transition-colors disabled:opacity-50 sm:min-h-0",
+                confirmeSuppr ? "text-danger" : "text-muted hover:text-danger",
+              )}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {confirmeSuppr ? "Confirmer la suppression définitive" : "Supprimer définitivement"}
+            </button>
+            {confirmeSuppr && (
+              <button
+                type="button"
+                onClick={() => setConfirmeSuppr(false)}
+                className="text-sm text-muted transition-colors hover:text-fg"
+              >
+                Annuler
+              </button>
+            )}
+            <span className="ml-auto hidden text-xs text-subtle sm:block">
+              La suppression n&apos;est possible que si l&apos;affaire ne porte plus rien.
+            </span>
+          </div>
+        )}
 
         {/* Rail du cycle — la barre de progression de l'affaire, pleine largeur. */}
         <CycleAffaire etat={etat} pending={pending} onChanger={changerEtat} />

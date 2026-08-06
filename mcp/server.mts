@@ -54,6 +54,7 @@ import {
   type RowInput,
   brancherActeur,
 } from "./data.mts";
+import { nomLocalise } from "../src/tools/liste-points/model";
 
 const CHARACTER_LIMIT = 25000;
 
@@ -88,6 +89,22 @@ async function run<T extends Record<string, unknown>>(fn: () => Promise<T>): Pro
 }
 
 const IO_TYPE = z.enum(["AI", "DI", "AO", "DO", "COM"]);
+
+// --- Convention de nommage des points ---------------------------------------
+// Le catalogue est un VOCABULAIRE partagé, pas un journal de points. Le nom d'un
+// point dit CE QUE C'EST (« Cde contacteur dalle chauffante ») ; ce qui distingue
+// deux points identiques — le local, la zone, le repère — vit dans le texte
+// libre (« Salle Communale 1 »). Sans cette règle le catalogue enfle d'un point
+// par local, la BOM (qui apparie par nom exact) ne retrouve plus rien, et la
+// recherche rend un libellé unique par affaire.
+
+const CONVENTION_NOMMAGE = `⚠️ CONVENTION DE NOMMAGE (impérative) : le nom d'un point dit CE QUE C'EST, jamais OÙ IL EST.
+  · nom  = le générique, repris TEL QUEL du catalogue (dumtools_list_catalog) — « Cde contacteur dalle chauffante », « Sonde ambiance », « Commande ».
+  · note = ce qui distingue ce point d'un autre identique : le local, la zone, le repère, le n° de trame — « Salle Communale 1 », « CR Mairie », « Aérothermes ».
+Donc « Cde contacteur dalle chauffante Salle Communale 1 » et « … 2 » sont DEUX FOIS le même point : nom « Cde contacteur dalle chauffante », notes « Salle Communale 1 » et « Salle Communale 2 ».
+Avant d'inventer un nom, chercher le générique correspondant dans le catalogue et le réutiliser. Un nom absent du catalogue n'est justifié que s'il désigne un ÉQUIPEMENT nouveau, réutilisable sur une autre affaire.`;
+
+// `nomLocalise` est partagé avec l'interface (src/tools/liste-points/model).
 const ETAT_AFFAIRE = z.enum(["DEVIS", "COMMANDE", "EN_COURS", "LIVRE", "CLOTURE"]);
 const BESOIN_ARMOIRE = z.enum(["INTEGRATION", "NOUVELLE"]);
 const POWER_SUPPLY = z.enum(["none", "integrated", "230V"]);
@@ -142,7 +159,9 @@ server.registerTool(
 
 Args : id (string) — l'id du projet (voir dumtools_list_projects).
 
-Les 'rows' sont la source de saisie ; les 'points' en sont dérivés (affectés aux bornes). Pour modifier la liste, utiliser dumtools_update_project_rows.`,
+Les 'rows' sont la source de saisie ; les 'points' en sont dérivés (affectés aux bornes). Pour modifier la liste, utiliser dumtools_update_project_rows.
+
+Une ligne se lit en deux parties : 'nom' = ce que c'est (générique, vocabulaire du catalogue), 'note' = où c'est / quel repère. Des rows anciennes peuvent porter le local dans le nom — ne pas s'en inspirer, c'est le défaut qu'on corrige.`,
     inputSchema: { id: z.string().min(1).describe("Id du projet") },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
@@ -231,9 +250,13 @@ server.registerTool(
     title: "Catalogue de points & modèles",
     description: `Liste le catalogue de points partagé (nom → type d'E/S + signal par défaut) et les modèles de saisie (sections pré-remplies : Chaudière, CTA…).
 
+Le catalogue est le VOCABULAIRE de l'entreprise : une entrée = un type de point réutilisable d'une affaire à l'autre, jamais un point d'un chantier précis. C'est lui qui porte la nomenclature matériel (BOM), donc l'appariement se fait sur le nom EXACT.
+
 Retourne : points[] (id, nom, type AI|DI|AO|DO|COM, signal) et modeles[] (id, nom, ordre, points[]).
 
-Utile avant d'éditer une liste de points (dumtools_update_project_rows) pour reprendre des noms/types cohérents.`,
+À APPELER AVANT toute édition de liste de points (dumtools_update_project_rows) : les noms doivent être repris tels quels d'ici.
+
+${CONVENTION_NOMMAGE}`,
     inputSchema: {},
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
@@ -415,9 +438,12 @@ Args :
   - id (string, requis) : id du projet.
   - rows (array, requis) : chaque élément =
       { id?, kind? ('point'|'section', défaut 'point'), nom (string),
-        note? (texte libre, points), type? (AI|DI|AO|DO|COM — requis pour un point),
+        note? (le local / la zone / le repère), type? (AI|DI|AO|DO|COM — requis pour un point),
         signal? (ex. PT1000, 0-10V, D) }.
     Règle métier : 1 ligne = 1 type d'E/S exclusif. Les sections n'ont qu'un nom. Les COM ne produisent pas de borne physique.
+
+${CONVENTION_NOMMAGE}
+Le couple nom + note est composé pour nommer la variable du programme Distech généré, et la note s'imprime sous le libellé sur le document client : rien n'est perdu à sortir le local du nom.
 
 Retourne : { updatedAt, nbPoints }.`,
     inputSchema: {
@@ -427,8 +453,18 @@ Retourne : { updatedAt, nbPoints }.`,
           z.object({
             id: z.string().optional().describe("Id d'une ligne existante à conserver (sinon générée)"),
             kind: z.enum(["point", "section"]).optional().describe("Type de ligne (défaut 'point')"),
-            nom: z.string().min(1).describe("Libellé du point ou titre de section"),
-            note: z.string().optional().describe("Texte libre (points)"),
+            nom: z
+              .string()
+              .min(1)
+              .describe(
+                "Nom GÉNÉRIQUE du point, repris tel quel du catalogue (« Sonde ambiance », « Cde contacteur dalle chauffante ») — JAMAIS le local, la zone ni le n° de repère. Ou le titre, pour une section.",
+              ),
+            note: z
+              .string()
+              .optional()
+              .describe(
+                "Ce qui distingue ce point d'un autre identique : le local, la zone, le repère (« Salle Communale 1 », « CR Mairie »). C'est ICI que va tout ce qui ne doit pas entrer dans le nom.",
+              ),
             type: IO_TYPE.optional().describe("Type d'E/S exclusif (requis pour un point)"),
             signal: z.string().optional().describe("Signal électrique (défaut selon le type)"),
           }),
@@ -540,19 +576,36 @@ server.registerTool(
   "dumtools_upsert_catalog_point",
   {
     title: "Ajouter/éditer un point du catalogue",
-    description: `Ajoute ou met à jour un point du catalogue partagé (clé = nom). Alimente le combobox de saisie de l'éditeur.
+    description: `Ajoute ou met à jour un point du VOCABULAIRE partagé (clé = nom). Alimente le combobox de saisie de l'éditeur et porte la nomenclature matériel (BOM).
+
+⚠️ À N'UTILISER QUE pour un type de point RÉUTILISABLE d'une affaire à l'autre, et seulement après avoir vérifié dans dumtools_list_catalog qu'il n'existe pas déjà. Ce n'est PAS l'endroit où enregistrer les points d'un chantier : ceux-là vivent dans les rows du projet (dumtools_update_project_rows).
+
+${CONVENTION_NOMMAGE}
+
+Un nom contenant un local (« … Salle Communale 1 », « Chauffage laverie », « Sonde ambiance Ss Fil — Bar ») est REFUSÉ : ajoutez le générique et mettez le local dans la note de la ligne.
 
 Args : nom (string, requis) ; type (AI|DI|AO|DO|COM, requis) ; signal? (ex. PT1000, 0-10V, D ; null = défaut selon le type).
 
 Retourne : le point { id, nom, type, signal }.`,
     inputSchema: {
-      nom: z.string().min(1).describe("Nom du point (clé unique)"),
+      nom: z
+        .string()
+        .min(1)
+        .describe("Nom générique et réutilisable du point (clé unique) — sans local, zone ni repère"),
       type: IO_TYPE.describe("Type d'E/S"),
       signal: z.string().nullable().optional().describe("Signal électrique par défaut"),
     },
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
   async ({ nom, type, signal }) => run(async () => {
+    // Garde-fou : le catalogue est un vocabulaire. Un nom localisé y crée une
+    // entrée par local — c'est ce qui l'a fait enfler de 63 points en une
+    // semaine. On refuse avec la marche à suivre, pas juste un « non ».
+    const raison = nomLocalise(nom);
+    if (raison)
+      throw new Error(
+        `« ${nom} » ne peut pas entrer au catalogue : ${raison}. Le catalogue est un vocabulaire réutilisable, pas un journal de points. Ajoutez le générique (ex. « Cde contacteur dalle chauffante ») et mettez « ${nom} » — ou plutôt sa partie localisante — dans le champ « note » de la ligne, via dumtools_update_project_rows.`,
+      );
     const point = await upsertCatalogPoint(nom, type, signal ?? null);
     return { point };
   }),

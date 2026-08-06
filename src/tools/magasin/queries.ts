@@ -234,6 +234,30 @@ export async function listerRayon(f: FiltresRayon = {}): Promise<ProduitRayon[]>
   return f.sousSeuil ? lignes.filter((l) => l.sousSeuil) : lignes;
 }
 
+/**
+ * Les deux seuls chiffres dont l'accueil a besoin : la taille du rayon et ce
+ * qui est passé sous son seuil de réapprovisionnement.
+ *
+ * Volontairement séparé de `listerRayon()` — celui-ci calcule aussi tous les
+ * prix (PMP, dernier payé, prix d'achat), soit trois requêtes d'agrégation qui
+ * ne servent à rien pour une pastille. Sur l'écran le plus visité de l'appli,
+ * ça faisait 150 ms pour deux nombres.
+ */
+export async function alerteRayon(): Promise<{ nbProduits: number; nbSousSeuil: number }> {
+  const [produits, stock, reserve] = await Promise.all([
+    prisma.produit.findMany({ where: { actif: true }, select: { id: true, seuilMini: true } }),
+    stockParProduit(),
+    reserveParProduit(),
+  ]);
+  // Même règle que le rayon : c'est le DISPONIBLE (stock moins réservé) qui
+  // déclenche l'alerte, sinon on croit avoir de quoi faire avec du matériel
+  // déjà promis à une affaire.
+  const nbSousSeuil = produits.filter(
+    (p) => p.seuilMini > 0 && (stock.get(p.id) ?? 0) - (reserve.get(p.id) ?? 0) < p.seuilMini,
+  ).length;
+  return { nbProduits: produits.length, nbSousSeuil };
+}
+
 export interface StatsMagasin {
   nbProduits: number;
   nbSousSeuil: number;

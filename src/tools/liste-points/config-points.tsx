@@ -2,11 +2,14 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUp, Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
-import { Button, Cartouche } from "@/ui";
+import { ArrowDown, ArrowUp, Check, Loader2, Package, Pencil, Plus, Search, Trash2, TriangleAlert, X } from "lucide-react";
+import { Button, Cartouche, Input } from "@/ui";
 import { cn } from "@/lib/cn";
-import { IO_TYPES, signalLabel, signalsForType, type IoType, type ModelePoint } from "./model";
+import { IO_TYPES, nomLocalise, signalLabel, signalsForType, type IoType, type ModelePoint } from "./model";
 import type { ModeleRow, PointCatalogueRow } from "./queries";
+import { MaterielPoint } from "@/tools/magasin/materiel-point";
+import type { PointAvecNomenclature } from "@/tools/magasin/queries";
+import type { ProduitChoix } from "@/tools/magasin/saisie-mouvement";
 import {
   enregistrerModele,
   enregistrerPointCatalogue,
@@ -20,14 +23,35 @@ type ModeleDraft = { id?: string; nom: string; ordre: number; points: ModelePoin
 export function ConfigPoints({
   catalogue,
   modeles,
+  nomenclatures,
+  produits,
+  peutGererMateriel,
 }: {
   catalogue: PointCatalogueRow[];
   modeles: ModeleRow[];
+  /** Le matériel appelé par chaque point (magasin) — même bloc que l'écran
+   *  Nomenclature et que la ligne de besoin d'une affaire. */
+  nomenclatures: PointAvecNomenclature[];
+  produits: ProduitChoix[];
+  peutGererMateriel: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [ptDraft, setPtDraft] = useState<PointDraft | null>(null);
+  /** 126 points : sans recherche, l'écran n'est pas utilisable. */
+  const [q, setQ] = useState("");
+  const [materielOuvert, setMaterielOuvert] = useState<string | null>(null);
   const [modDraft, setModDraft] = useState<ModeleDraft | null>(null);
+
+  const filtres = useMemo(() => {
+    const f = q.trim().toLowerCase();
+    if (!f) return catalogue;
+    return catalogue.filter(
+      (c) => c.nom.toLowerCase().includes(f) || c.type.toLowerCase().includes(f),
+    );
+  }, [catalogue, q]);
+
+  const materielDe = (nom: string) => nomenclatures.find((n) => n.nom === nom);
 
   function run(action: () => Promise<void>, done?: () => void) {
     startTransition(async () => {
@@ -42,17 +66,30 @@ export function ConfigPoints({
       <Cartouche
         estampille="Configuration"
         titre="Points &amp; modèles"
-        description="Points suggérés (nom → type d’E/S + signal) et modèles de saisie, partagés entre tous. Le signal pré-affecte la bonne borne à l’insertion."
+        description="Le vocabulaire de l’entreprise : un point réutilisable d’une affaire à l’autre (nom → type d’E/S + signal), et les modèles de saisie. Le nom dit ce que c’est — le local (« Salle Communale 1 ») va dans le texte libre de la ligne, jamais ici. Le signal pré-affecte la bonne borne à l’insertion."
         actions={pending ? <Loader2 className="h-5 w-5 animate-spin text-muted" /> : null}
         className="mb-6"
       />
 
       {/* Catalogue de points ------------------------------------------------ */}
       <section className="mb-8">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <h2 className="text-sm font-semibold text-fg">
-            Points <span className="text-subtle">({catalogue.length})</span>
+            Points{" "}
+            <span className="text-subtle">
+              ({filtres.length}
+              {filtres.length !== catalogue.length && ` sur ${catalogue.length}`})
+            </span>
           </h2>
+          <div className="relative ml-auto mr-2 w-64">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Chercher un point…"
+              className="pl-8"
+            />
+          </div>
           <Button size="sm" variant="outline" onClick={() => setPtDraft({ nom: "", type: "AI", signal: "0-10V" })}>
             <Plus className="h-4 w-4" /> Ajouter un point
           </Button>
@@ -75,14 +112,15 @@ export function ConfigPoints({
                 <th className="px-4 py-2.5 font-medium">Nom</th>
                 <th className="w-24 px-4 py-2.5 font-medium">Type</th>
                 <th className="w-32 px-4 py-2.5 font-medium">Signal / protocole</th>
+                <th className="px-4 py-2.5 font-medium">Matériel appelé</th>
                 <th className="w-24" />
               </tr>
             </thead>
             <tbody>
-              {catalogue.map((c) =>
-                ptDraft?.id === c.id ? (
+              {filtres.flatMap((c) =>
+                ptDraft?.id === c.id ? [
                   <tr key={c.id}>
-                    <td colSpan={4} className="p-0">
+                    <td colSpan={5} className="p-0">
                       <PointForm
                         draft={ptDraft}
                         setDraft={setPtDraft}
@@ -91,8 +129,8 @@ export function ConfigPoints({
                         onCancel={() => setPtDraft(null)}
                       />
                     </td>
-                  </tr>
-                ) : (
+                  </tr>,
+                ] : [
                   <tr key={c.id} className="border-b border-border-soft last:border-0">
                     <td className="px-4 py-2 text-fg">{c.nom}</td>
                     <td className="px-4 py-2">
@@ -104,6 +142,34 @@ export function ConfigPoints({
                       ) : (
                         <span className="text-subtle">{c.type === "COM" ? "—" : "défaut"}</span>
                       )}
+                    </td>
+                    <td className="px-4 py-2">
+                      {(() => {
+                        const mat = materielDe(c.nom);
+                        const resume = mat?.sansMateriel
+                          ? "aucun matériel"
+                          : mat && mat.lignes.length > 0
+                            ? mat.lignes.map((l) => `${l.quantite}× ${l.refInterne}`).join(" + ")
+                            : "à relier";
+                        return (
+                          <button
+                            type="button"
+                            disabled={!mat}
+                            onClick={() => setMaterielOuvert((v) => (v === c.id ? null : c.id))}
+                            title="Voir et régler le matériel que ce point appelle"
+                            className={cn(
+                              "inline-flex max-w-full items-center gap-1.5 text-left text-xs transition-colors",
+                              mat && mat.lignes.length > 0
+                                ? "text-muted hover:text-brand"
+                                : "text-subtle hover:text-brand",
+                              !mat && "cursor-default hover:text-subtle",
+                            )}
+                          >
+                            <Package className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{resume}</span>
+                          </button>
+                        );
+                      })()}
                     </td>
                     <td className="px-2 py-2">
                       <LigneActions
@@ -118,8 +184,25 @@ export function ConfigPoints({
                         onDelete={() => run(() => supprimerPointCatalogue(c.id))}
                       />
                     </td>
-                  </tr>
-                ),
+                  </tr>,
+                  // Le matériel du point, déplié SOUS sa ligne — même bloc que
+                  // l'écran Nomenclature et que la ligne de besoin d'une affaire.
+                  ...(materielOuvert === c.id && materielDe(c.nom)
+                    ? [
+                        <tr key={`mat-${c.id}`}>
+                          <td colSpan={5} className="p-0">
+                            <MaterielPoint
+                              compact
+                              point={materielDe(c.nom)!}
+                              produits={produits}
+                              peutGerer={peutGererMateriel}
+                              onFait={() => router.refresh()}
+                            />
+                          </td>
+                        </tr>,
+                      ]
+                    : []),
+                ],
               )}
             </tbody>
           </table>
@@ -211,6 +294,8 @@ function PointForm({
   onSave: () => void;
   onCancel: () => void;
 }) {
+  // Avertissement non bloquant : ici c'est un humain qui juge (le MCP, lui, refuse).
+  const localise = draft.nom ? nomLocalise(draft.nom) : null;
   return (
     <div className="mb-3 flex flex-wrap items-end gap-3 rounded-lg border border-brand/40 bg-surface p-4">
       <label className="block space-y-1">
@@ -222,6 +307,15 @@ function PointForm({
           className="h-9 w-64 rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle"
         />
       </label>
+      {localise && (
+        <p className="order-last flex w-full items-start gap-1.5 text-xs text-warning">
+          <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>
+            Ce nom ressemble à un point de chantier : {localise}. Le catalogue est le
+            vocabulaire partagé — le local va dans le texte libre de la ligne, pas ici.
+          </span>
+        </p>
+      )}
       <label className="block space-y-1">
         <span className="text-xs font-medium text-muted">Type</span>
         <TypeSelect

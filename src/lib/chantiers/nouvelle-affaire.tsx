@@ -19,8 +19,14 @@ export function NouvelleAffaire({ clients }: { clients: string[] }) {
     setErreur("");
     start(async () => {
       try {
-        // L'action redirige vers la nouvelle affaire en cas de succès.
-        await creerAffaire({ nom, clientNom, numeroWhy });
+        // L'action redirige vers la nouvelle affaire en cas de succès, et
+        // RETOURNE son refus sinon (une erreur lancée perdrait son message en
+        // production — Next ne laisse passer qu'un digest).
+        const r = await creerAffaire({ nom, clientNom, numeroWhy });
+        if (r?.erreur) {
+          setErreur(r.erreur);
+          return;
+        }
       } catch (e) {
         // NEXT_REDIRECT n'est pas une vraie erreur : on le laisse remonter.
         if (e instanceof Error && e.message === "NEXT_REDIRECT") throw e;

@@ -358,6 +358,9 @@ export interface BrouillonProduit {
   categorieNom?: string | null;
   unite?: string;
   prixAchatCents?: number | null;
+  /** Fournisseur choisi dans l'existant. Prioritaire sur `fournisseurNom`. */
+  fournisseurId?: string | null;
+  /** Fournisseur inconnu au référentiel : créé au vol depuis son seul nom. */
   fournisseurNom?: string | null;
 }
 
@@ -913,6 +916,15 @@ export async function supprimerNomenclature(id: string): Promise<void> {
  * d'obliger à quitter l'affaire, saisir la fiche dans le rayon, puis revenir.
  * Ajouter un article connu reste ouvert à tous ; en créer un est un geste de
  * référentiel, et `produitDuBrouillon` en porte le contrôle de droit.
+ *
+ * DEUX GESTES, DEUX SENS — et c'est l'appelant qui tranche :
+ *   · `cumuler: true` — « il m'en faut 2 de plus » : la quantité s'AJOUTE à ce
+ *     qui est déjà saisi. C'est le geste du bouton « Ajouter » : ajouter deux
+ *     fois le même article devait additionner, il écrasait.
+ *   · sans `cumuler` — « il m'en faut 6 en tout » : la quantité REMPLACE.
+ *     C'est le geste de la correction sur la ligne du tableau.
+ * La note, elle, n'est écrasée que si on en fournit une : un ré-ajout ne doit
+ * pas effacer la raison notée la première fois.
  */
 export async function enregistrerLigneMateriel(p: {
   chantierId: string;
@@ -920,14 +932,19 @@ export async function enregistrerLigneMateriel(p: {
   nouveauProduit?: BrouillonProduit;
   quantite: number;
   note?: string;
+  cumuler?: boolean;
 }): Promise<{ produitId: string }> {
   await acteur();
   const quantite = entierPositif(p.quantite, "Quantité");
   const produitId = texteOuNull(p.produitId) ?? (await produitDuBrouillon(p.nouveauProduit));
+  const note = p.note === undefined ? undefined : texte(p.note);
   await prisma.ligneMaterielAffaire.upsert({
     where: { chantierId_produitId: { chantierId: p.chantierId, produitId } },
-    create: { chantierId: p.chantierId, produitId, quantite, note: texte(p.note) },
-    update: { quantite, note: texte(p.note) },
+    create: { chantierId: p.chantierId, produitId, quantite, note: note ?? "" },
+    update: {
+      quantite: p.cumuler ? { increment: quantite } : quantite,
+      ...(note === undefined ? {} : { note }),
+    },
   });
   revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
   revalidatePath(`/affaires/${p.chantierId}`);

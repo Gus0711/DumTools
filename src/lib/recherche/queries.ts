@@ -38,7 +38,13 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
       where: {
         OR: [{ nom: contient }, { numeroWhy: contient }, { client: { nom: contient } }],
       },
-      select: { id: true, nom: true, numeroWhy: true, client: { select: { nom: true } } },
+      select: {
+        id: true,
+        nom: true,
+        numeroWhy: true,
+        etat: true,
+        client: { select: { nom: true } },
+      },
       orderBy: { updatedAt: "desc" },
       take: PAR_SOURCE,
     }),
@@ -106,7 +112,15 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
       type: "affaire" as const,
       id: a.id,
       titre: a.nom,
-      sousTitre: contexte(a.client?.nom, a.numeroWhy),
+      // La recherche, elle, ne filtre pas par état : elle ramène aussi ce que le
+      // tableau de bord masque. Une affaire mise à la corbeille doit donc le
+      // DIRE — sinon elle se fait passer pour une affaire vivante, et on ne
+      // comprend pas pourquoi son n° Why reste pris ailleurs.
+      sousTitre: contexte(
+        a.etat === "CORBEILLE" ? "Corbeille" : null,
+        a.client?.nom,
+        a.numeroWhy,
+      ),
       href: `/affaires/${a.id}`,
     })),
     ...clients.map((c) => ({

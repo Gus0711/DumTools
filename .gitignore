@@ -70,5 +70,11 @@ next-env.d.ts
 mcp/.oauth-clients.json
 .sauvegardes/
 
+# Sauvegardes de la base (scripts/backup-db.sh) : dumps COMPLETS — clients,
+# affaires, empreintes de mots de passe. Jamais dans git, et surtout pas sur un
+# dépôt distant. La purge à 14 jours du script effacerait de toute façon des
+# fichiers suivis, ce qui salissait le statut à chaque sauvegarde.
+backups/
+
 # Journal du serveur de prod locale (scripts/serve-prod.sh)
 .prod.log

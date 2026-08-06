@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClipboardList, FileUp, ScanLine, Truck } from "lucide-react";
+import { ClipboardList, FileUp, ScanLine, Tags, Truck } from "lucide-react";
 import { auth } from "@/auth";
 import { Cartouche } from "@/ui";
 import { listerAffaires } from "@/lib/chantiers/queries";
@@ -55,6 +55,13 @@ export default async function Page() {
             </Link>
             {peutGererReferentiel(role) && (
               <>
+                {/* La nomenclature n'était liée de NULLE PART : l'écran existait,
+                    on ne pouvait y arriver qu'en tapant l'URL. C'est pourtant
+                    lui qui décide de tout le chiffrage dérivé des affaires. */}
+                <Link href="/outils/magasin/nomenclature" className={lienSecondaire}>
+                  <Tags className="h-4 w-4" />
+                  Nomenclature
+                </Link>
                 <Link href="/outils/magasin/fournisseurs" className={lienSecondaire}>
                   <Truck className="h-4 w-4" />
                   Référentiels

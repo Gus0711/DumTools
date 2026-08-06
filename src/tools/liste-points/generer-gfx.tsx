@@ -37,6 +37,16 @@ export function GenererGfx({
     return [...map.entries()].sort((a, b) => a[0] - b[0]);
   }, [plan]);
 
+  // Noms encore identiques APRÈS composition « nom + texte libre ». Le writer
+  // les suffixera « (2) », « (3) »… — lisible pour BACnet, pas pour l'humain qui
+  // met en service. On le dit avant de générer : le remède est un texte libre
+  // (le local), pas un nom de point rallongé.
+  const doublons = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const a of [...plan.inputs, ...plan.outputs]) n.set(a.name, (n.get(a.name) ?? 0) + 1);
+    return [...n.entries()].filter(([, c]) => c > 1).sort((a, b) => b[1] - a[1]);
+  }, [plan]);
+
   async function download() {
     setBusy(true);
     setErr("");
@@ -140,6 +150,19 @@ export function GenererGfx({
                 </div>
               )}
             </div>
+
+            {doublons.length > 0 && (
+              <div className="mb-3 flex gap-2 rounded-md border border-warning/40 bg-warning/10 p-2.5 text-xs text-warning">
+                <TriangleAlert className="h-4 w-4 shrink-0" />
+                <span>
+                  {doublons.length} nom(s) en doublon dans le programme — ils seront
+                  suffixés « (2) », « (3) »… Renseignez le <b>texte libre</b> (le local,
+                  la zone) plutôt que d’allonger le nom du point :{" "}
+                  {doublons.slice(0, 4).map(([nom, c]) => `${nom} ×${c}`).join(", ")}
+                  {doublons.length > 4 ? "…" : ""}
+                </span>
+              </div>
+            )}
 
             {plan.overflow.length > 0 && (
               <div className="mb-3 flex gap-2 rounded-md border border-danger/40 bg-danger/10 p-2.5 text-xs text-danger">

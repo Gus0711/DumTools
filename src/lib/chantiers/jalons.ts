@@ -40,20 +40,33 @@ export interface Jalon {
   detail: string;
 }
 
+/** Une visite réduite à ce dont les jalons ont besoin. */
+export type VisitePourJalons = { type: string; data: unknown };
+
 /**
  * Calcule les 7 jalons. Les projets et documents sont passés par l'appelant
- * (la fiche Affaire les charge déjà) ; seules les visites sont lues ici.
+ * (la fiche Affaire les charge déjà) ; les visites sont lues ici par défaut.
+ *
+ * `visites` permet de les fournir déjà chargées : l'accueil calcule les jalons
+ * de TOUT le parc actif, et une requête par affaire y coûterait N allers-retours
+ * pour un seul écran.
  */
 export async function calculerJalons(p: {
   chantierId: string;
   besoinArmoire: BesoinArmoire | null;
-  projets: ProjetAffaireResume[];
-  documents: DocResume[];
+  // Contrat volontairement étroit : seuls ces champs entrent dans le calcul.
+  // L'accueil peut donc charger le parc entier sans construire des résumés
+  // complets dont il n'a que faire.
+  projets: Pick<ProjetAffaireResume, "controller" | "tests">[];
+  documents: Pick<DocResume, "nom" | "categorie">[];
+  visites?: VisitePourJalons[];
 }): Promise<Jalon[]> {
-  const visites = await prisma.visite.findMany({
-    where: { chantierId: p.chantierId },
-    select: { type: true, data: true },
-  });
+  const visites =
+    p.visites ??
+    (await prisma.visite.findMany({
+      where: { chantierId: p.chantierId },
+      select: { type: true, data: true },
+    }));
 
   const parType = (t: string) => visites.filter((v) => v.type === t).length;
   const reservesOuvertes = visites.reduce(

@@ -109,6 +109,37 @@ export function computeTotals(rows: PointRow[]): Totals {
   return { ...t, points, es };
 }
 
+// --- Convention de nommage : générique au nom, local au texte libre ---------
+// Le catalogue est le VOCABULAIRE de l'entreprise : une entrée = un type de
+// point réutilisable d'une affaire à l'autre. Ce qui distingue deux points
+// identiques (le local, la zone, le repère) vit dans le texte libre de la
+// ligne. Sans cette règle le catalogue enfle d'un point par local, la BOM —
+// qui apparie sur le nom EXACT — ne retrouve plus sa nomenclature, et la
+// recherche rend un libellé unique par affaire.
+
+/** Mots de local/zone : leur présence dans un nom trahit un point « localisé ». */
+const MOTS_DE_LOCAL =
+  /\b(salles?|bureaux?|cuisines?|sanitaires?|hall|vestiaires?|p[ée]risco(?:laire)?|[ée]tage|dortoir|cantine|r[ée]fectoire|couloir|d[ée]gagement|pr[ée]au|classe|gar[çc]ons?|filles?|infirmerie|laverie|r[ée]serve|rangement|douche|logement|mairie|m[ée]diath[èe]que|conseil|secr[ée]tariat|direction|accueil|locaux?|zone|tribune|gymnase)\b/i;
+
+/**
+ * Un nom de point porte-t-il un local ? Renvoie la raison, ou null s'il est
+ * bien générique.
+ *
+ * Deux indices : un mot de local, ou un complément après un tiret cadratin
+ * (« Sonde ambiance Ss Fil — Bar »). L'indice numérique seul ne compte PAS :
+ * « Commande pompe 1 », « Defaut chaudière 2 » sont des repères d'ÉQUIPEMENT,
+ * parfaitement légitimes dans le vocabulaire.
+ */
+export function nomLocalise(nom: string): string | null {
+  // Les soulignés des noms importés du GFX (« ODM_Dalles_Secretariat ») sont des
+  // caractères de mot : sans cette normalisation, \b ne coupe pas et le local
+  // passe inaperçu.
+  const m = nom.replace(/_/g, " ").match(MOTS_DE_LOCAL);
+  if (m) return `il contient « ${m[0]} », qui désigne un local`;
+  if (/\s[—–]\s\S/.test(nom)) return "il porte un complément après un tiret cadratin";
+  return null;
+}
+
 export const IO_LABELS: Record<IoType, string> = {
   AI: "Entrée analogique",
   DI: "Entrée logique",

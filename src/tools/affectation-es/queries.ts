@@ -127,33 +127,65 @@ function sommeES(data: Project | null): Record<IoType, number> {
   return total;
 }
 
+/** Un projet stocké → son résumé riche (E/S, avancement de mise en service). */
+function resumeProjet(p: {
+  id: string;
+  nom: string;
+  data: unknown;
+  updatedAt: Date;
+}): ProjetAffaireResume {
+  const data = (p.data as Project) ?? null;
+  const pts = Array.isArray(data?.points) ? data.points.filter((x) => x.active) : [];
+  const tests: AvancementTests = { ok: 0, defaut: 0, nonTeste: 0, total: pts.length };
+  for (const pt of pts) {
+    if (pt.testStatus === "ok") tests.ok += 1;
+    else if (pt.testStatus === "defaut") tests.defaut += 1;
+    else tests.nonTeste += 1;
+  }
+  return {
+    id: p.id,
+    nom: p.nom,
+    controller: data?.controller ?? "",
+    nbPoints: pts.length,
+    nbModules: nbModules(data),
+    es: sommeES(data),
+    tests,
+    updatedAt: p.updatedAt,
+    href: `/outils/affectation-es/${p.id}`,
+  };
+}
+
 /** Projets GTB (automates) d'une affaire, vue détaillée (E/S + mise en service). */
 export async function listerProjetsAffaire(chantierId: string): Promise<ProjetAffaireResume[]> {
   const projets = await prisma.affectationProjet.findMany({
     where: { chantierId },
     orderBy: { updatedAt: "desc" },
   });
-  return projets.map((p) => {
-    const data = (p.data as unknown as Project) ?? null;
-    const pts = Array.isArray(data?.points) ? data.points.filter((x) => x.active) : [];
-    const tests: AvancementTests = { ok: 0, defaut: 0, nonTeste: 0, total: pts.length };
-    for (const pt of pts) {
-      if (pt.testStatus === "ok") tests.ok += 1;
-      else if (pt.testStatus === "defaut") tests.defaut += 1;
-      else tests.nonTeste += 1;
-    }
-    return {
-      id: p.id,
-      nom: p.nom,
-      controller: data?.controller ?? "",
-      nbPoints: pts.length,
-      nbModules: nbModules(data),
-      es: sommeES(data),
-      tests,
-      updatedAt: p.updatedAt,
-      href: `/outils/affectation-es/${p.id}`,
-    };
+  return projets.map(resumeProjet);
+}
+
+/**
+ * Les projets de PLUSIEURS affaires, en une seule requête, rangés par affaire.
+ * L'accueil dérive l'avancement de tout le parc actif : une requête par affaire
+ * y ferait N allers-retours pour un seul écran.
+ */
+export async function projetsParAffaires(
+  chantierIds: string[],
+): Promise<Map<string, ProjetAffaireResume[]>> {
+  const parAffaire = new Map<string, ProjetAffaireResume[]>();
+  if (chantierIds.length === 0) return parAffaire;
+
+  const projets = await prisma.affectationProjet.findMany({
+    where: { chantierId: { in: chantierIds } },
+    orderBy: { updatedAt: "desc" },
   });
+  for (const p of projets) {
+    if (!p.chantierId) continue;
+    const liste = parAffaire.get(p.chantierId);
+    if (liste) liste.push(resumeProjet(p));
+    else parAffaire.set(p.chantierId, [resumeProjet(p)]);
+  }
+  return parAffaire;
 }
 
 export interface ProjetComplet {

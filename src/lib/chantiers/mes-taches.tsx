@@ -51,10 +51,19 @@ const RANG: Record<EtatTache, number> = { EN_COURS: 0, A_FAIRE: 1, TERMINEE: 2 }
 export function MesTaches({
   taches: tachesInitiales,
   limite = 5,
+  colonne = false,
 }: {
   taches: MaTacheRow[];
   /** Nombre de tâches visibles avant dépliage. */
   limite?: number;
+  /**
+   * Rendu en COLONNE étroite (accueil) : l'affaire passe sous le titre au lieu
+   * de se caler à droite. Les points de rupture de Tailwind regardent la
+   * fenêtre, pas le bloc — dans une colonne d'un tiers d'écran, la mise en
+   * ligne « titre … affaire » se retrouve à l'étroit alors que la fenêtre, elle,
+   * est large.
+   */
+  colonne?: boolean;
 }) {
   const [taches, setTaches] = useState(tachesInitiales);
   const [erreur, setErreur] = useState("");
@@ -114,6 +123,15 @@ export function MesTaches({
         )}
       </div>
 
+      {triees.length === 0 && (
+        // Le bloc reste en place quand il est vide : sur l'accueil il ouvre la
+        // colonne de droite, et un bloc qui disparaît fait sauter la mise en
+        // page d'un jour à l'autre.
+        <p className="px-4 py-3 text-sm text-muted">
+          Rien ne vous est assigné. Les tâches se créent sur la fiche d&apos;une affaire.
+        </p>
+      )}
+
       <ul className="divide-y divide-hairline">
         {visibles.map((t) => {
           const p = PASTILLE[t.etat];
@@ -133,7 +151,12 @@ export function MesTaches({
                 <Icone className="h-4 w-4" />
               </button>
 
-              <span className="flex min-w-0 flex-1 flex-col gap-0.5 pt-1 sm:flex-row sm:items-baseline sm:gap-3">
+              <span
+                className={cn(
+                  "flex min-w-0 flex-1 flex-col gap-0.5 pt-1",
+                  !colonne && "sm:flex-row sm:items-baseline sm:gap-3",
+                )}
+              >
                 <span
                   className={cn(
                     "min-w-0 flex-1 break-words text-sm text-fg",
@@ -145,7 +168,10 @@ export function MesTaches({
                 <Link
                   href={`/affaires/${t.affaireId}`}
                   title={`${t.affaireNom} · ${t.clientNom}`}
-                  className="shrink-0 truncate text-xs text-subtle transition-colors hover:text-brand sm:max-w-[14rem] sm:text-right"
+                  className={cn(
+                    "shrink-0 truncate text-xs text-subtle transition-colors hover:text-brand",
+                    !colonne && "sm:max-w-[14rem] sm:text-right",
+                  )}
                 >
                   {t.affaireNom}
                 </Link>

@@ -1,37 +1,32 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Briefcase,
-  CircuitBoard,
-  ClipboardCheck,
-  FolderOpen,
-  History,
-  Library,
-  NotebookPen,
-  type LucideIcon,
-} from "lucide-react";
-import { Chiffre, EtatVide, RangeeChiffres } from "@/ui";
+import { Briefcase, ClipboardCheck, History, RotateCcw, ScanLine } from "lucide-react";
 import { auth } from "@/auth";
-import { cn } from "@/lib/cn";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
-import { EspacePersoCard } from "@/components/espace-perso-card";
-import { TOOLS_AFFAIRE, TOOLS_NAV, classeSignal, espacesPersoActifs } from "@/tools/registry";
-import { listerAffaires, listerMesTaches } from "@/lib/chantiers/queries";
-import { activiteRecente, LIBELLE_ACTIVITE, type TypeActivite } from "@/lib/activite/queries";
-import { ETATS_ACTIFS } from "@/lib/chantiers/etats";
-import { EtatBadge } from "@/lib/chantiers/etat-badge";
+import { BoutonRecherche } from "@/components/recherche/bouton-recherche";
+import { Cadran } from "@/components/accueil/cadran";
+import { ParcAffaires } from "@/components/accueil/parc-affaires";
+import { BandeauPerso, Fil } from "@/components/accueil/fil";
+import { NouvelleAffaire } from "@/lib/chantiers/nouvelle-affaire";
 import { MesTaches } from "@/lib/chantiers/mes-taches";
-import { fmtRelatif } from "@/lib/dates";
+import { NoteRapide } from "@/tools/wiki/boutons";
+import { chargerAccueil } from "@/lib/accueil/queries";
+import { listerMesTaches } from "@/lib/chantiers/queries";
+import { listerClients } from "@/lib/clients/queries";
+import { activiteRecente } from "@/lib/activite/queries";
+import { ESPACES_PERSO, STATUS_LABEL, TOOLS_NAV, toolsDeProprietaire } from "@/tools/registry";
 
-/** Icône par type d'événement du fil d'activité. */
-const ICONE_ACTIVITE: Record<TypeActivite, LucideIcon> = {
-  affaire: Briefcase,
-  projet: CircuitBoard,
-  note: NotebookPen,
-  document: FolderOpen,
-  visite: ClipboardCheck,
-  wiki: Library,
-};
+/* =============================================================================
+ * LE POSTE DE TRAVAIL
+ * L'accueil ne refait pas la navigation (le rail et la barre du bas la portent
+ * déjà) : il répond à « où en est la maison » puis « qu'est-ce que je reprends ».
+ *
+ * L'écran se lit en trois temps :
+ *   1. le CARTOUCHE-LANCEUR — qui, quel jour, et par quoi on commence
+ *      (recherche ⌘K + les quatre gestes de création) ;
+ *   2. les QUATRE CADRANS — les destinations de l'appli, chacune avec son
+ *      compteur vital et son alerte s'il y en a une ;
+ *   3. LE TRAVAIL — le parc d'affaires à gauche, ce qui me concerne à droite.
+ * ========================================================================== */
 
 /** « Augustin Duhant » → « Augustin ». */
 function prenom(nom: string) {
@@ -40,14 +35,15 @@ function prenom(nom: string) {
 
 export default async function AccueilPage() {
   const session = await auth();
-  const [affaires, mesTaches, activite] = await Promise.all([
-    listerAffaires(),
-    session?.user?.id ? listerMesTaches(session.user.id) : Promise.resolve([]),
-    activiteRecente(9),
+  const moi = session?.user?.id;
+
+  const [accueil, clients, mesTaches, reprendre, activite] = await Promise.all([
+    chargerAccueil(),
+    listerClients(),
+    moi ? listerMesTaches(moi) : Promise.resolve([]),
+    moi ? activiteRecente(5, moi) : Promise.resolve([]),
+    activiteRecente(8),
   ]);
-  const recentes = affaires.filter((a) => a.etat !== "CORBEILLE").slice(0, 6);
-  const actives = affaires.filter((a) => ETATS_ACTIFS.includes(a.etat));
-  const realisations = affaires.reduce((n, a) => n + a.nbRealisations, 0);
 
   const nom = session?.user?.name ?? session?.user?.email ?? "";
   const jour = new Date().toLocaleDateString("fr-FR", {
@@ -57,16 +53,23 @@ export default async function AccueilPage() {
     year: "numeric",
   });
 
+  const espaces = ESPACES_PERSO.map((e) => ({
+    slug: e.slug,
+    nom: e.nom,
+    icone: e.icon,
+    outils: toolsDeProprietaire(e.slug).map((t) => t.nom),
+  })).filter((e) => e.outils.length > 0);
+
   return (
     <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
       <TitreEcran titre="Poste de travail" />
 
-      {/* --- L'ouverture : qui, quel jour, et l'état de la maison en chiffres.
-              LA surface marine de l'écran — une par page, jamais deux : c'est
-              la couleur de la maison, elle ne se dilue pas. Les compteurs se
-              posent dessous en feuilles blanches. --------------------------- */}
-      <section className="anim-rise mb-6">
-        <div className="bloc plaque-brand relative flex flex-wrap items-center justify-between gap-x-8 gap-y-5 overflow-hidden border-transparent px-4 py-5 md:px-6 md:py-6">
+      {/* --- 1. Le cartouche-lanceur ------------------------------------- *
+          LA surface marine de l'écran — une par page, jamais deux. Les gestes
+          de création se posent juste dessous, sur une feuille blanche : ce sont
+          des boutons de l'appli, ils gardent leur allure de boutons. */}
+      <section className="anim-rise mb-4">
+        <div className="bloc plaque-brand relative flex flex-wrap items-center justify-between gap-x-8 gap-y-4 overflow-hidden border-transparent px-4 py-5 md:px-6">
           {/* Les 5 signaux en tête d'écran : la signature, à sa place. */}
           <span aria-hidden className="rule-signal anim-sweep absolute inset-x-0 top-0 h-[3px]" />
 
@@ -77,280 +80,118 @@ export default async function AccueilPage() {
             </h1>
           </div>
 
-          <Link
-            href="/affaires"
-            className="group bg-accent text-accent-fg press inline-flex w-full items-center justify-center gap-2.5 px-5 py-3.5 text-sm font-semibold transition-colors hover:bg-accent-strong sm:w-auto sm:py-3"
-          >
-            Ouvrir les affaires
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-          </Link>
+          {/* Le point d'entrée VISIBLE de la palette : tout le monde ne connaît
+              pas ⌘K, et depuis l'accueil c'est souvent par là qu'on part. */}
+          <BoutonRecherche className="w-full border-white/20 bg-white/8 text-white/70 hover:border-white/40 hover:bg-white/15 hover:text-white sm:w-80 lg:w-96" />
         </div>
 
-        <RangeeChiffres className="-mt-px">
-          <Chiffre
-            label="Affaires actives"
-            valeur={actives.length}
-            detail={`sur ${affaires.length} au total`}
-            href="/affaires"
-          />
-          <Chiffre
-            label="Mes tâches"
-            valeur={mesTaches.length}
-            ton={mesTaches.length > 0 ? "accent" : "neutre"}
-            detail={mesTaches.length > 0 ? "à traiter" : "rien en attente"}
-          />
-          <Chiffre
-            label="Réalisations"
-            valeur={realisations}
-            detail="tous outils confondus"
-          />
-          <Chiffre
-            label="Dernier mouvement"
-            valeur={activite[0] ? fmtRelatif(activite[0].date) : "—"}
-            detail={activite[0]?.titre}
-            petit
-          />
-        </RangeeChiffres>
+        <div className="bloc -mt-px flex flex-wrap items-center gap-2 px-4 py-3">
+          <span className="stamp mr-1 hidden sm:block">Commencer</span>
+          <NouvelleAffaire clients={clients.map((c) => c.nom)} />
+          <NoteRapide />
+          <Bouton href="/outils/visites/terrain" icone={ClipboardCheck} texte="Visite terrain" />
+          <Bouton href="/outils/magasin/scan" icone={ScanLine} texte="Scanner un produit" />
+        </div>
       </section>
 
-      {mesTaches.length > 0 && (
-        <section className="mb-6">
-          <MesTaches taches={mesTaches} />
-        </section>
-      )}
-
-      {/* --- Deux journaux côte à côte, bord à bord ------------------------ */}
-      <section aria-label="Tableau de bord" className="planche mb-6 lg:grid-cols-2">
-        <Journal
-          icone={Briefcase}
-          titre="Affaires récentes"
-          lien={{ href: "/affaires", label: "Toutes" }}
-        >
-          {recentes.length === 0 ? (
-            <EtatVide
-              dessin="pochette"
-              titre="Aucune affaire"
-              texte="Une affaire naît d'un numéro Why. Créez la première pour démarrer."
-              action={
-                <Link href="/affaires" className="text-sm font-semibold text-brand hover:underline">
-                  Créer une affaire →
-                </Link>
-              }
-            />
-          ) : (
-            <ul className="stagger divide-y divide-hairline">
-              {recentes.map((a) => (
-                <li key={a.id}>
-                  <Link
-                    href={`/affaires/${a.id}`}
-                    className="block px-4 py-3 transition-colors hover:bg-surface-2 sm:py-2.5"
-                  >
-                    <span className="flex items-baseline gap-3">
-                      <span className="min-w-0 flex-1 truncate text-sm font-semibold text-fg">
-                        {a.nom}
-                      </span>
-                      <span
-                        suppressHydrationWarning
-                        className="hidden shrink-0 text-xs tabular-nums text-subtle sm:block"
-                      >
-                        {fmtRelatif(a.updatedAt)}
-                      </span>
-                    </span>
-                    <span className="mt-1 flex items-center gap-2">
-                      <span className="min-w-0 flex-1 truncate text-xs text-muted">
-                        {a.clientNom}
-                      </span>
-                      <EtatBadge etat={a.etat} className="shrink-0" />
-                      <span
-                        suppressHydrationWarning
-                        className="shrink-0 text-xs tabular-nums text-subtle sm:hidden"
-                      >
-                        {fmtRelatif(a.updatedAt)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Journal>
-
-        <Journal icone={History} titre="Activité récente" mention="tous outils">
-          {activite.length === 0 ? (
-            <EtatVide
-              dessin="touret"
-              titre="Rien n'a encore bougé"
-              texte="Dès qu'un projet, une note ou une visite est enregistré, il apparaît ici."
-            />
-          ) : (
-            <ul className="stagger divide-y divide-hairline">
-              {activite.map((e) => {
-                const Icone = ICONE_ACTIVITE[e.type];
-                return (
-                  <li key={`${e.type}:${e.id}`}>
-                    <Link
-                      href={e.href}
-                      className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-surface-2 sm:py-2.5"
-                    >
-                      <Icone className="mt-0.5 h-4 w-4 shrink-0 text-subtle" />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline gap-3">
-                          <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">
-                            {e.titre}
-                          </span>
-                          <span
-                            suppressHydrationWarning
-                            className="shrink-0 text-xs tabular-nums text-subtle"
-                          >
-                            {fmtRelatif(e.date)}
-                          </span>
-                        </span>
-                        <span className="mt-0.5 block truncate text-xs text-muted">
-                          {LIBELLE_ACTIVITE[e.type]}
-                          {e.contexte ? ` · ${e.contexte}` : ""}
-                          {e.auteur ? ` · ${e.auteur}` : ""}
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Journal>
-      </section>
-
-      {/* --- Les outils : une planche de cases, pas une grille de cartes --- */}
-      <Rang titre="Outils" mention="l'affaire est le point d'entrée — les outils s'y rattachent" />
+      {/* --- 2. Les destinations, chacune avec son compteur vital ---------- *
+          Les mêmes que le rail et que la barre du bas, dans le même ordre : le
+          pivot d'abord, puis les outils du REGISTRE. Un outil ajouté à
+          `TOOLS_NAV` prend donc sa case ici tout seul — il n'aura simplement
+          pas de compteur tant que personne n'en aura écrit un dans
+          `chargerAccueil()`. */}
       <section
-        aria-label="Outils disponibles"
-        className="stagger planche mb-6 sm:grid-cols-2 lg:grid-cols-3"
+        aria-label="Les outils"
+        className="stagger planche mb-4 sm:grid-cols-2 xl:grid-cols-4"
       >
-        {TOOLS_NAV.map((tool) => (
-          <CaseOutil key={tool.id} tool={tool} />
+        <Cadran
+          href="/affaires"
+          nom="Affaires"
+          icone={Briefcase}
+          teinte="accent"
+          donnees={accueil.affaires}
+        />
+        {TOOLS_NAV.map((outil) => (
+          <Cadran
+            key={outil.id}
+            href={outil.href}
+            nom={outil.nom}
+            icone={outil.icon}
+            teinte={outil.signal ?? "brand"}
+            donnees={accueil.cadrans[outil.id]}
+            aDefaut={STATUS_LABEL[outil.status]}
+          />
         ))}
       </section>
 
-      <div className="bloc mb-8 flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
-        <span className="stamp">Depuis une affaire</span>
-        {TOOLS_AFFAIRE.map((t) => (
-          <span key={t.id} className="inline-flex items-center gap-1.5 text-sm text-muted">
-            <t.icon className="h-4 w-4 text-subtle" />
-            {t.nom}
-          </span>
-        ))}
-        <Link
-          href="/affaires"
-          className="ml-auto inline-flex min-h-[2.25rem] items-center text-sm font-semibold text-brand transition-colors hover:text-brand-strong sm:min-h-0"
-        >
-          Voir les affaires →
-        </Link>
+      {/* --- 3. Le travail ------------------------------------------------ *
+          À gauche, la colonne large : l'état du parc, puis ce que JE reprends —
+          les deux choses sur lesquelles on revient, et « Reprendre » y gagne la
+          place d'afficher le contexte de chaque document (l'affaire, la
+          rubrique) plutôt qu'un titre coupé.
+          À droite, la colonne étroite : ce qui m'est assigné, et ce que fait
+          l'équipe — deux listes de lignes courtes, qui s'y logent sans être à
+          l'étroit. */}
+      <div className="mb-4 grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="planche">
+          <ParcAffaires
+            parc={accueil.parc}
+            nbActives={accueil.nbActives}
+            esParc={accueil.esParc}
+          />
+          <Fil
+            titre="Reprendre"
+            icone={RotateCcw}
+            mention="ce que j'ai touché"
+            evenements={reprendre}
+            vide={{
+              dessin: "carnet",
+              titre: "Rien à reprendre",
+              texte: "Ce que vous modifierez apparaîtra ici, pour y retomber d'un clic.",
+            }}
+          />
+        </div>
+
+        <div className="planche">
+          <MesTaches taches={mesTaches} colonne />
+          <Fil
+            titre="Activité"
+            icone={History}
+            mention="toute l'équipe"
+            evenements={activite}
+            montrerAuteur
+            vide={{
+              dessin: "touret",
+              titre: "Rien n'a encore bougé",
+              texte: "Dès qu'un projet, une note ou une visite est enregistré, il apparaît ici.",
+            }}
+          />
+        </div>
       </div>
 
-      {espacesPersoActifs().length > 0 && (
-        <>
-          <Rang titre="Espaces perso" mention="les outils de chacun, ouverts à tous" />
-          <section aria-label="Espaces perso" className="space-y-4">
-            {espacesPersoActifs().map((espace) => (
-              <EspacePersoCard key={espace.slug} espace={espace} />
-            ))}
-          </section>
-        </>
-      )}
+      {espaces.length > 0 && <BandeauPerso espaces={espaces} />}
     </div>
   );
 }
 
-/** Journal : une liste posée dans un bloc, avec son entête estampillée. */
-function Journal({
+/** Un lien qui a l'allure d'un bouton `outline` — pour les gestes du lanceur
+ *  qui ne sont qu'une navigation (le terrain, le scan). */
+function Bouton({
+  href,
   icone: Icone,
-  titre,
-  lien,
-  mention,
-  children,
+  texte,
 }: {
-  icone: LucideIcon;
-  titre: string;
-  lien?: { href: string; label: string };
-  mention?: string;
-  children: React.ReactNode;
+  href: string;
+  icone: React.ComponentType<{ className?: string }>;
+  texte: string;
 }) {
   return (
-    <div className="bloc">
-      <div className="bloc-entete">
-        <Icone className="h-4 w-4 text-brand" />
-        <span className="font-display text-sm font-semibold text-fg">{titre}</span>
-        {mention && <span className="stamp ml-auto">{mention}</span>}
-        {lien && (
-          <Link
-            href={lien.href}
-            className="ml-auto inline-flex min-h-[2.25rem] items-center text-xs font-medium text-muted transition-colors hover:text-brand sm:min-h-0"
-          >
-            {lien.label} →
-          </Link>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-/** Case d'outil : un carreau de la planche, pas une carte qui flotte.
- *  Chaque outil porte son signal E/S (voir `SignalOutil` dans le registre) —
- *  c'est ce qui fait qu'on reconnaît le Wiki au turquoise et les Visites à
- *  l'ambre avant d'avoir lu leur nom. */
-function CaseOutil({ tool }: { tool: (typeof TOOLS_NAV)[number] }) {
-  const { icon: Icon, nom, description, href, status, signal } = tool;
-  const ouvrable = status !== "planifie";
-
-  const contenu = (
-    <>
-      <div className="flex items-start gap-3">
-        <Icon className="text-signal mt-0.5 h-5 w-5 shrink-0" />
-        <div className="min-w-0">
-          <h3 className="font-display text-base font-semibold tracking-tight text-fg">{nom}</h3>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{description}</p>
-        </div>
-      </div>
-      {ouvrable ? (
-        <span className="text-signal mt-4 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.08em]">
-          Ouvrir
-          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
-        </span>
-      ) : (
-        <span className="stamp mt-4 block">Bientôt disponible</span>
-      )}
-    </>
-  );
-
-  const classes = cn(
-    "bloc group relative flex flex-col justify-between p-4 transition-colors duration-150",
-    classeSignal(signal),
-  );
-
-  return ouvrable ? (
-    <Link href={href} className={cn(classes, "hover:bg-surface-2")}>
-      {/* Le filet du signal se met sous tension au survol. */}
-      <span
-        aria-hidden
-        className="bg-signal absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
-      />
-      {contenu}
+    <Link
+      href={href}
+      className="press inline-flex h-[var(--control-h)] items-center justify-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface px-4 text-sm font-medium text-fg transition-[background-color,border-color] duration-150 hover:border-brand/45 hover:bg-surface-2"
+    >
+      <Icone className="h-4 w-4" />
+      {texte}
     </Link>
-  ) : (
-    <div className={cn(classes, "opacity-60")}>{contenu}</div>
-  );
-}
-
-/** Titre de rang — le filet qui sépare deux familles de contenu. */
-function Rang({ titre, mention }: { titre: string; mention?: string }) {
-  return (
-    <div className="mb-3 flex items-center gap-3">
-      <h2 className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-fg">
-        {titre}
-      </h2>
-      <span aria-hidden className="h-px flex-1 bg-hairline" />
-      {mention && <span className="hidden text-xs text-subtle sm:block">{mention}</span>}
-    </div>
   );
 }

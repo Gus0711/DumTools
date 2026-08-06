@@ -154,6 +154,24 @@ collègue armoire. La **BOM cumulée par affaire** (P2.1) sert aussi de repli.
 - **Spike kDrive avec les vrais identifiants** (le miroir GED tourne en spool
   tant que l'API n'est pas branchée).
 - Validation de l'**ouverture du squelette GFX** dans EC-gfxProgram (échantillons réels).
+- **Ordre & sections du tableau matériel d'affaire** (demandé le 2026-08-04,
+  *reporté* : le besoin ne s'est pas encore imposé). Trois niveaux, du moins
+  cher au plus cher — l'analyse est faite, elle n'est pas à refaire :
+  1. **Sections par catégorie** — quasi gratuit : `bomAffaire()` trie DÉJÀ les
+     lignes par catégorie (`bom.ts`, les non rangées en dernier), le tableau les
+     rend simplement à plat. Reste à dessiner entêtes + sous-totaux, et à traiter
+     le cas de l'entête dans le repli mobile en cartes (`.table-cards`).
+  2. **Ordre des sections = ordre configuré** — `CategorieProduit.ordre` existe
+     et sert au rayon, mais la BOM trie par ordre alphabétique. Le brancher donne
+     un levier de réorganisation **partagé par toutes les affaires**, réglé une
+     fois dans la config du magasin. C'est le bon périmètre pour un référentiel.
+  3. **Glisser-déposer libre, propre à chaque affaire** — ce que l'utilisateur
+     voulait vraiment, jugé trop lourd pour l'instant. ⚠️ Le coût n'est pas dans
+     le glisser-déposer : **la BOM est dérivée**, la plupart des lignes n'existent
+     pas en base. Il faudrait une table `(chantierId, produitId, ordre)`, décider
+     où atterrit une ligne dérivée qui apparaît, et purger celles qui
+     disparaissent quand un projet GTB change — soit une 4ᵉ source de vérité dans
+     un outil dont l'invariant est « le besoin est dérivé, pas saisi ».
 
 ---
 

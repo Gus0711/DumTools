@@ -18,6 +18,7 @@ import {
   Search,
   Trash2,
   TriangleAlert,
+  Undo2,
 } from "lucide-react";
 import { Badge, Button, Chiffre, EnteteSection, Input, Label, RangeeChiffres } from "@/ui";
 import { cn } from "@/lib/cn";
@@ -41,6 +42,10 @@ import {
   type LigneBom,
   type TrouBom,
 } from "./model";
+// Type seul : `queries` est server-only, l'import est effacé à la compilation
+// (même emprunt que l'éditeur de produit du rayon).
+import type { FournisseurVue, PointAvecNomenclature } from "./queries";
+import { MaterielPoint } from "./materiel-point";
 import type { ProduitChoix } from "./saisie-mouvement";
 
 /* =============================================================================
@@ -104,12 +109,17 @@ interface Creation {
   categorieId: string;
   unite: string;
   prix: string;
-  fournisseur: string;
+  /** "" = aucun · un id · NOUVEAU_FOURNISSEUR pour déplier la saisie. */
+  fournisseurId: string;
+  fournisseurNom: string;
 }
 
-/** Créer un fabricant depuis ici reste possible, mais jamais par accident : il
- *  faut le demander explicitement dans la liste. */
+/** Créer un fabricant ou un fournisseur depuis ici reste possible, mais jamais
+ *  par accident : il faut le demander explicitement dans la liste. Sans ça, on
+ *  ressaisit un nom déjà connu à une majuscule près et le référentiel se
+ *  dédouble en silence. */
 const NOUVEAU_FABRICANT = "__NOUVEAU__";
+const NOUVEAU_FOURNISSEUR = "__NOUVEAU_FOURNISSEUR__";
 
 interface Ajout {
   recherche: string;
@@ -128,17 +138,74 @@ function creationDepuis(recherche: string): Creation {
     categorieId: "",
     unite: "U",
     prix: "",
-    fournisseur: "",
+    fournisseurId: "",
+    fournisseurNom: "",
   };
 }
 
 const selectCls =
   "mt-1 h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg";
 
+/**
+ * La part du besoin SAISIE À LA MAIN, corrigeable sur place.
+ *
+ * Le reste du besoin est dérivé (projets GTB, nomenclature des points) : il ne
+ * se corrige pas ici mais à sa source, sinon le tableau mentirait sur ce que la
+ * dérivation a calculé. Zéro retire la ligne — c'est le geste attendu quand on
+ * s'est trompé d'article, et il évite d'aller chercher la corbeille.
+ */
+function QuantiteManuelle({
+  valeur,
+  disabled,
+  onFixer,
+  onRetirer,
+}: {
+  valeur: number;
+  disabled: boolean;
+  onFixer: (quantite: number) => void;
+  onRetirer: () => void;
+}) {
+  // La valeur du serveur fait autorité : l'appelant monte ce champ avec une
+  // `key` = la quantité, donc un enregistrement le remonte recalé. Pas d'effet
+  // de synchronisation, pas d'état à deux sources.
+  const [saisie, setSaisie] = useState(String(valeur));
+
+  function valider() {
+    const n = Math.round(Number(saisie.replace(",", ".")));
+    if (!Number.isFinite(n) || n === valeur) {
+      setSaisie(String(valeur));
+      return;
+    }
+    if (n <= 0) onRetirer();
+    else onFixer(n);
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      inputMode="numeric"
+      value={saisie}
+      disabled={disabled}
+      title="Quantité saisie à la main sur cette affaire — 0 retire la ligne"
+      aria-label="Quantité saisie à la main"
+      onChange={(e) => setSaisie(e.target.value)}
+      onBlur={valider}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+        if (e.key === "Escape") setSaisie(String(valeur));
+      }}
+      className="h-7 w-14 rounded border border-border bg-surface px-1.5 text-right text-sm tabular-nums text-fg transition-colors hover:border-brand/45 focus:border-brand disabled:opacity-50"
+    />
+  );
+}
+
 export function MaterielAffaire({
   chantierId,
   lignes,
   trous,
+  sansMateriel,
+  nomenclatures,
   projets,
   coutPrevuCents,
   nbSansPrix,
@@ -147,6 +214,7 @@ export function MaterielAffaire({
   produits,
   depots,
   fabricants,
+  fournisseurs,
   categories,
   peutPrix,
   peutGerer,
@@ -156,6 +224,11 @@ export function MaterielAffaire({
   chantierId: string;
   lignes: LigneBom[];
   trous: TrouBom[];
+  /** Points de l'affaire réglés « aucun matériel » (voir bom.ts). */
+  sansMateriel: { nom: string; occurrences: number }[];
+  /** Le catalogue de points avec leur matériel — pour corriger la SOURCE d'une
+   *  ligne dérivée sans quitter l'affaire. */
+  nomenclatures: PointAvecNomenclature[];
   projets: { id: string; nom: string }[];
   coutPrevuCents: number;
   nbSansPrix: number;
@@ -165,6 +238,9 @@ export function MaterielAffaire({
   produits: ProduitChoix[];
   depots: DepotVue[];
   fabricants: FabricantVue[];
+  /** Vide quand l'utilisateur n'a pas le droit de voir les prix : le pavé
+   *  d'achat n'est alors pas rendu du tout. */
+  fournisseurs: FournisseurVue[];
   categories: CategorieVue[];
   peutPrix: boolean;
   peutGerer: boolean;
@@ -176,6 +252,9 @@ export function MaterielAffaire({
   const [ajout, setAjout] = useState<Ajout | null>(null);
   const [reparation, setReparation] = useState<Reparation | null>(null);
   const [tousLesTrous, setTousLesTrous] = useState(false);
+  const [tousLesSilences, setTousLesSilences] = useState(false);
+  /** `${produitId}:${nomDuPoint}` du bloc de nomenclature déplié, ou null. */
+  const [pointOuvert, setPointOuvert] = useState<string | null>(null);
 
   const produitsFiltres = (recherche: string) => {
     const f = recherche.trim().toLowerCase();
@@ -511,6 +590,67 @@ export function MaterielAffaire({
         </div>
       )}
 
+      {/* --- Ce qu'on a réduit au silence --------------------------------- *
+          « Aucun matériel » ne produit ni ligne ni trou : sans ce bloc, le point
+          disparaît de l'écran sans laisser de trace, et un clic malheureux
+          devient introuvable. Le retour doit être là où la faute se commet. */}
+      {sansMateriel.length > 0 && (
+        <div className="bloc mb-5">
+          <div className="bloc-entete">
+            <Ban className="h-4 w-4 shrink-0 text-subtle" />
+            <span className="font-display text-sm font-semibold text-fg">
+              {sansMateriel.length} point{sansMateriel.length > 1 ? "s" : ""} réglé
+              {sansMateriel.length > 1 ? "s" : ""} « aucun matériel »
+            </span>
+            <span className="stamp ml-auto hidden sm:block">réglage du catalogue</span>
+          </div>
+          <p className="px-4 pt-3 text-sm text-muted">
+            Ces points de l&apos;affaire ne demandent rien : ni ligne de besoin, ni
+            signalement. Le réglage vit dans le catalogue de points, donc{" "}
+            <strong>il vaut pour toutes les affaires</strong> — et le défaire aussi.
+          </p>
+          <ul className="mt-2 divide-y divide-hairline border-t border-hairline">
+            {(tousLesSilences ? sansMateriel : sansMateriel.slice(0, 6)).map((s) => (
+              <li
+                key={s.nom}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-2"
+              >
+                <span className="min-w-0 flex-1 truncate text-sm text-fg">{s.nom}</span>
+                <span className="shrink-0 text-xs tabular-nums text-subtle">
+                  ×{s.occurrences}
+                </span>
+                {peutGerer && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    title="Ce point redevient à chiffrer — sur toutes les affaires"
+                    onClick={() =>
+                      run(() =>
+                        marquerPointSansMateriel({ nom: s.nom, valeur: false, chantierId }),
+                      )
+                    }
+                  >
+                    <Undo2 className="h-4 w-4" />
+                    Remettre à chiffrer
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+          {sansMateriel.length > 6 && (
+            <button
+              type="button"
+              onClick={() => setTousLesSilences((v) => !v)}
+              className="flex min-h-[2.5rem] w-full items-center justify-center border-t border-hairline text-xs font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-brand sm:min-h-[2.25rem]"
+            >
+              {tousLesSilences
+                ? "Réduire"
+                : `Afficher les ${sansMateriel.length - 6} autres`}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* La BOM ------------------------------------------------------------- */}
       <EnteteSection
         icone={Boxes}
@@ -546,29 +686,41 @@ export function MaterielAffaire({
 
           {resultatsAjout.length > 0 ? (
             <ul className="mt-2 max-h-48 overflow-y-auto border border-hairline">
-              {resultatsAjout.map((p) => (
-                <li key={p.id}>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      run(
-                        () =>
-                          enregistrerLigneMateriel({
-                            chantierId,
-                            produitId: p.id,
-                            quantite: Math.max(1, Number(ajout.quantite) || 1),
-                          }).then(() => undefined),
-                        () => setAjout(null),
-                      )
-                    }
-                    className="flex w-full items-baseline gap-2 border-b border-hairline px-3 py-2 text-left text-sm transition-colors last:border-0 hover:bg-surface-2"
-                  >
-                    <span className="ref shrink-0">{p.refInterne}</span>
-                    <span className="min-w-0 flex-1 truncate text-fg">{p.designation}</span>
-                    <span className="shrink-0 text-xs text-muted">stock {p.stock}</span>
-                  </button>
-                </li>
-              ))}
+              {resultatsAjout.map((p) => {
+                // Déjà saisi sur cette affaire : l'ajout s'additionnera. On le
+                // dit AVANT le clic — un compte qui bouge sans prévenir, on ne
+                // sait pas s'il a remplacé ou ajouté.
+                const dejaSaisi = lignesManuelles.find((m) => m.produitId === p.id);
+                return (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        run(
+                          () =>
+                            enregistrerLigneMateriel({
+                              chantierId,
+                              produitId: p.id,
+                              quantite: Math.max(1, Number(ajout.quantite) || 1),
+                              cumuler: true,
+                            }).then(() => undefined),
+                          () => setAjout(null),
+                        )
+                      }
+                      className="flex w-full items-baseline gap-2 border-b border-hairline px-3 py-2 text-left text-sm transition-colors last:border-0 hover:bg-surface-2"
+                    >
+                      <span className="ref shrink-0">{p.refInterne}</span>
+                      <span className="min-w-0 flex-1 truncate text-fg">{p.designation}</span>
+                      {dejaSaisi && (
+                        <span className="shrink-0 text-xs font-medium text-accent-strong">
+                          déjà {dejaSaisi.quantite} → {dejaSaisi.quantite + Math.max(1, Number(ajout.quantite) || 1)}
+                        </span>
+                      )}
+                      <span className="shrink-0 text-xs text-muted">stock {p.stock}</span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="mt-2 border border-dashed border-hairline px-3 py-3 text-sm text-muted">
@@ -747,12 +899,33 @@ export function MaterielAffaire({
               </div>
               <div>
                 <Label>Fournisseur</Label>
-                <Input
-                  value={creation.fournisseur}
-                  onChange={(e) => majCreation({ fournisseur: e.target.value })}
-                  placeholder="Créé s'il n'existe pas encore"
-                  className="mt-1"
-                />
+                {/* Même liste que la fiche produit du rayon : on choisit dans
+                    l'existant, on ne le retape pas. Un produit = un fournisseur
+                    (docs/MAGASIN.md §3). */}
+                <select
+                  value={creation.fournisseurId}
+                  onChange={(e) => majCreation({ fournisseurId: e.target.value })}
+                  className={selectCls}
+                >
+                  <option value="">— Aucun —</option>
+                  {fournisseurs
+                    .filter((f) => f.actif)
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.nom}
+                      </option>
+                    ))}
+                  <option value={NOUVEAU_FOURNISSEUR}>＋ Nouveau fournisseur…</option>
+                </select>
+                {creation.fournisseurId === NOUVEAU_FOURNISSEUR && (
+                  <Input
+                    autoFocus
+                    value={creation.fournisseurNom}
+                    onChange={(e) => majCreation({ fournisseurNom: e.target.value })}
+                    placeholder="Nom du fournisseur"
+                    className="mt-2"
+                  />
+                )}
               </div>
             </div>
           )}
@@ -785,7 +958,14 @@ export function MaterielAffaire({
                         // Sans le droit de voir les prix, on n'en transmet aucun :
                         // ce n'est pas notre rôle, et l'action le refuserait.
                         prixAchatCents: peutPrix ? parseEuros(creation.prix) : undefined,
-                        fournisseurNom: peutPrix ? creation.fournisseur || null : undefined,
+                        fournisseurId:
+                          peutPrix && creation.fournisseurId !== NOUVEAU_FOURNISSEUR
+                            ? creation.fournisseurId || null
+                            : null,
+                        fournisseurNom:
+                          peutPrix && creation.fournisseurId === NOUVEAU_FOURNISSEUR
+                            ? creation.fournisseurNom
+                            : null,
                       },
                     }).then(() => undefined),
                   () => setAjout(null),
@@ -827,7 +1007,7 @@ export function MaterielAffaire({
             {lignes.map((l) => {
               const reservation = reservations.find((r) => r.produitId === l.produitId);
               const manuelle = lignesManuelles.find((m) => m.produitId === l.produitId);
-              return (
+              return [
                 <tr key={l.produitId} className={cn(l.horsFourniture && "text-muted")}>
                   <td className="cell-title cell-card-title cell-wrap">
                     <Link
@@ -849,7 +1029,25 @@ export function MaterielAffaire({
                           ) : (
                             <Plus className="h-3 w-3 shrink-0 text-subtle" />
                           )}
-                          {o.libelle}
+                          {/* Une ligne dérivée ne s'édite pas ici — mais sa SOURCE
+                              doit être à un clic. Sinon on voit que le matériel est
+                              faux sans nulle part où le corriger. */}
+                          {o.point ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setPointOuvert((p) =>
+                                  p === `${l.produitId}:${o.point}` ? null : `${l.produitId}:${o.point}`,
+                                )
+                              }
+                              title={`Voir et corriger le matériel appelé par « ${o.point} »`}
+                              className="text-left underline decoration-dotted underline-offset-2 transition-colors hover:text-brand"
+                            >
+                              {o.libelle}
+                            </button>
+                          ) : (
+                            o.libelle
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -884,11 +1082,49 @@ export function MaterielAffaire({
                     </label>
                   </td>
                   <td data-label="Besoin" className="text-right tabular-nums">
-                    {l.horsFourniture ? (
-                      <span className="line-through">{l.besoin}</span>
-                    ) : (
-                      <strong>{l.besoin}</strong>
-                    )}
+                    {(() => {
+                      // Ce que la dérivation a calculé, hors saisie manuelle.
+                      const derive = l.besoin - (manuelle?.quantite ?? 0);
+                      const total = l.horsFourniture ? (
+                        <span className="line-through">{l.besoin}</span>
+                      ) : (
+                        <strong>{l.besoin}</strong>
+                      );
+
+                      if (!manuelle) return total;
+
+                      const champ = (
+                        <QuantiteManuelle
+                          key={manuelle.quantite}
+                          valeur={manuelle.quantite}
+                          disabled={pending}
+                          onFixer={(quantite) =>
+                            run(() =>
+                              enregistrerLigneMateriel({
+                                chantierId,
+                                produitId: l.produitId,
+                                quantite,
+                              }).then(() => undefined),
+                            )
+                          }
+                          onRetirer={() => run(() => supprimerLigneMateriel(manuelle.id))}
+                        />
+                      );
+
+                      // Ligne purement manuelle : le champ EST le besoin, un
+                      // total à côté ferait doublon.
+                      if (derive === 0) {
+                        return <span className="inline-flex justify-end">{champ}</span>;
+                      }
+                      return (
+                        <span className="inline-flex flex-col items-end gap-1">
+                          {total}
+                          <span className="inline-flex items-center gap-1.5 text-xs text-subtle">
+                            dont {champ} saisis
+                          </span>
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td data-label="Stock" className="text-right tabular-nums">
                     {l.stock}
@@ -960,8 +1196,35 @@ export function MaterielAffaire({
                       </Button>
                     )}
                   </td>
-                </tr>
-              );
+                </tr>,
+                // Le matériel appelé par le point, déplié SOUS la ligne qu'il
+                // produit : on corrige là où on constate, et la correction vaut
+                // pour toutes les affaires (le bloc le dit).
+                ...l.origines
+                  .filter((o) => o.point && pointOuvert === `${l.produitId}:${o.point}`)
+                  .map((o) => {
+                    const pointCat = nomenclatures.find((n) => n.nom === o.point);
+                    return (
+                      <tr key={`${l.produitId}:${o.point}`}>
+                        <td colSpan={9} className="p-0">
+                          {pointCat ? (
+                            <MaterielPoint
+                              compact
+                              point={pointCat}
+                              produits={produits}
+                              peutGerer={peutGerer}
+                              onFait={() => router.refresh()}
+                            />
+                          ) : (
+                            <p className="border-t border-hairline bg-surface-2 px-4 py-3 text-sm text-muted">
+                              Ce point n&apos;est plus au catalogue.
+                            </p>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  }),
+              ];
             })}
           </tbody>
         </table>

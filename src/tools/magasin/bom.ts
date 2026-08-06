@@ -31,6 +31,13 @@ export interface BomAffaire {
    *  visibles (sinon on ne pourrait pas décocher) mais sortent du besoin, du
    *  manquant et du coût. Compté pour être DIT, jamais pour être chiffré. */
   nbHorsFourniture: number;
+  /**
+   * Points de CETTE affaire réglés « aucun matériel » dans le catalogue. Ils ne
+   * produisent ni ligne ni trou — donc, sans cette liste, ils disparaissent de
+   * l'écran sans laisser de trace, et un clic malheureux devient invisible et
+   * introuvable. Le réglage est GLOBAL : le défaire vaut pour toutes les affaires.
+   */
+  sansMateriel: { nom: string; occurrences: number }[];
 }
 
 interface Accumulateur {
@@ -193,8 +200,12 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
     }
   }
 
+  const reduitsAuSilence: { nom: string; occurrences: number }[] = [];
   for (const [nom, { occurrences, typeIo }] of nomsPoints) {
-    if (sansMateriel.has(nom)) continue;
+    if (sansMateriel.has(nom)) {
+      reduitsAuSilence.push({ nom, occurrences });
+      continue;
+    }
     const nomenclature = nomenclatureParPoint.get(nom);
     if (!nomenclature || nomenclature.length === 0) {
       noterTrou("point", nom, nom, occurrences, typeIo);
@@ -206,6 +217,7 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
         libelle: `${occurrences} × ${nom}`,
         quantite: n.quantite * occurrences,
         source: "points",
+        point: nom,
       });
     }
   }
@@ -231,6 +243,7 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       coutPrevuCents: 0,
       nbSansPrix: 0,
       nbHorsFourniture: 0,
+      sansMateriel: [],
     };
   }
 
@@ -370,5 +383,6 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
     coutPrevuCents,
     nbSansPrix,
     nbHorsFourniture,
+    sansMateriel: reduitsAuSilence.sort((a, b) => b.occurrences - a.occurrences),
   };
 }

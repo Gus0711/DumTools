@@ -9,6 +9,7 @@ import {
   computeTotals,
   emptyIo,
   IO_TYPES,
+  nomLocalise,
   signalLabel,
   signalsForType,
   type IoType,
@@ -58,6 +59,9 @@ export function RowsEditor({
   // Id de la ligne dont le champ « nom » doit prendre le focus (nouveau point
   // créé au clavier / au bouton) — le Combobox correspondant s'auto-focalise.
   const [focusId, setFocusId] = useState<string | null>(null);
+
+  // Avertissement (non bloquant : l'humain juge) quand le nom saisi porte un local.
+  const npLocalise = np?.nom ? nomLocalise(np.nom) : null;
 
   const totals = useMemo(() => computeTotals(rows), [rows]);
   const pointOptions = useMemo<ComboOption[]>(
@@ -362,15 +366,29 @@ export function RowsEditor({
       {np && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-5 shadow-xl">
-            <h3 className="mb-3 text-base font-semibold text-fg">Nouveau point au catalogue</h3>
+            <h3 className="mb-1 text-base font-semibold text-fg">Nouveau point au catalogue</h3>
+            <p className="mb-3 text-xs text-subtle">
+              Le catalogue est le vocabulaire partagé : un point réutilisable d’une affaire
+              à l’autre. Le local (« Salle Communale 1 ») va dans le texte libre de la
+              ligne, pas dans le nom.
+            </p>
             <div className="space-y-3">
               <input
                 autoFocus
                 value={np.nom}
                 onChange={(e) => setNp({ ...np, nom: e.target.value })}
-                placeholder="Nom du point"
+                placeholder="Nom générique — ex. Cde contacteur dalle chauffante"
                 className="h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle"
               />
+              {npLocalise && (
+                <p className="flex items-start gap-1.5 text-xs text-warning">
+                  <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    Ce nom ressemble à un point de chantier : {npLocalise}. Gardez le
+                    générique ici et mettez le local dans le texte libre de la ligne.
+                  </span>
+                </p>
+              )}
               <div className="flex gap-2">
                 <select
                   value={np.type}

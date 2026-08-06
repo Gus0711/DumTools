@@ -31,17 +31,39 @@ export interface AssignmentPlan {
 
 interface Unit {
   name: string;
+  /** Texte libre de la ligne — sert à départager deux noms identiques. */
+  note: string;
   direction: "input" | "output";
   analog: boolean;
   type: string;
 }
 
-/** Éclate les lignes de points en unités E/S physiques (COM exclu). */
+const propre = (s: string | undefined) => (s ?? "").replace(/\s+/g, " ").trim();
+
+/**
+ * Éclate les lignes de points en unités E/S physiques (COM exclu), en nommant
+ * chaque variable du programme.
+ *
+ * Le nom d'un point est GÉNÉRIQUE par convention (« Commande », « Sonde
+ * départ » — c'est le vocabulaire du catalogue, la clé de la nomenclature) ; ce
+ * qui distingue deux points identiques vit dans le texte libre (le local, la
+ * zone, le repère de câblage). Or un programme n'accepte pas deux fois le même
+ * nom : dix commandes de contacteur deviendraient « Commande (2) … (10) »,
+ * illisibles en mise en service — et la seule échappatoire serait de remettre le
+ * local dans le nom, ce qui repollue le catalogue.
+ *
+ * D'où une composition À LA DEMANDE : le nom générique reste net tant qu'il est
+ * unique, et le texte libre ne vient le compléter que pour départager une
+ * collision. Le texte libre ne porte pas toujours un local (« Carte AI - AI1 »,
+ * « Import GFX - Module 1 / DO1 ») : l'accoler systématiquement alourdirait tous
+ * les noms sans rien apporter.
+ */
 export function expandRows(rows: PointRow[]): Unit[] {
   const units: Unit[] = [];
   for (const r of rows) {
     if (r.kind !== "point" || !r.io) continue;
-    const base = (r.nom || "Point").trim() || "Point";
+    const base = propre(r.nom) || "Point";
+    const note = propre(r.note);
     // Un point peut porter plusieurs E/S : on suffixe le type pour les distinguer.
     const flags: [keyof typeof r.io, "input" | "output", boolean, string][] = [
       ["AI", "input", true, "AI"],
@@ -52,8 +74,15 @@ export function expandRows(rows: PointRow[]): Unit[] {
     const active = flags.filter(([k]) => r.io![k]);
     for (const [, direction, analog, type] of active) {
       const name = active.length > 1 ? `${base} (${type})` : base;
-      units.push({ name, direction, analog, type });
+      units.push({ name, note, direction, analog, type });
     }
+  }
+
+  // Départage : seuls les noms en collision se voient compléter du texte libre.
+  const compte = new Map<string, number>();
+  for (const u of units) compte.set(u.name, (compte.get(u.name) ?? 0) + 1);
+  for (const u of units) {
+    if (u.note && (compte.get(u.name) ?? 0) > 1) u.name = `${u.name} - ${u.note}`;
   }
   return units;
 }

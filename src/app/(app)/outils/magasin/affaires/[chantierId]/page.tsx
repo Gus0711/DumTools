@@ -11,6 +11,8 @@ import {
   listerCategories,
   listerDepots,
   listerFabricants,
+  listerFournisseurs,
+  listerNomenclatures,
   listerRayon,
 } from "@/tools/magasin/queries";
 
@@ -26,8 +28,20 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
   });
   if (!affaire) notFound();
 
-  const [bom, reservations, lignesManuelles, rayon, depots, coutSortiCents, fabricants, categories] =
-    await Promise.all([
+  const peutPrix = peutVoirPrix(session?.user?.role);
+
+  const [
+    bom,
+    reservations,
+    lignesManuelles,
+    rayon,
+    depots,
+    coutSortiCents,
+    fabricants,
+    categories,
+    fournisseurs,
+    nomenclatures,
+  ] = await Promise.all([
     bomAffaire(chantierId),
     prisma.reservationStock.findMany({
       where: { chantierId, etat: "RESERVEE" },
@@ -42,6 +56,12 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
     coutMaterielAffaire(chantierId),
     listerFabricants(),
     listerCategories(),
+    // Le pavé « Achat » n'est rendu qu'avec le droit de voir les prix : sans ce
+    // droit, la liste des fournisseurs n'a pas à partir jusqu'au navigateur.
+    peutPrix ? listerFournisseurs() : Promise.resolve([]),
+    // Le catalogue de points avec leur matériel : c'est la SOURCE des lignes
+    // dérivées, dépliable sous la ligne qu'elle produit.
+    listerNomenclatures(),
   ]);
 
   return (
@@ -64,6 +84,8 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
         chantierId={chantierId}
         lignes={bom.lignes}
         trous={bom.trous}
+        sansMateriel={bom.sansMateriel}
+        nomenclatures={nomenclatures}
         projets={bom.projets}
         coutPrevuCents={bom.coutPrevuCents}
         nbSansPrix={bom.nbSansPrix}
@@ -83,8 +105,9 @@ export default async function Page({ params }: { params: Promise<{ chantierId: s
         }))}
         depots={depots}
         fabricants={fabricants}
+        fournisseurs={fournisseurs}
         categories={categories}
-        peutPrix={peutVoirPrix(session?.user?.role)}
+        peutPrix={peutPrix}
         peutGerer={peutGererReferentiel(session?.user?.role)}
       />
     </div>

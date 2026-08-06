@@ -161,6 +161,49 @@ automate si le besoin dépasse `maxPoints` ou `maxModules`.
 - **Modèles** (`Modele`) : sections pré-remplies (Chaudière, CTA…) insérables en
   un clic ; éditeur = nom + points ordonnés piochés au catalogue.
 
+### Le nom dit CE QUE C'EST, le texte libre dit OÙ
+
+Règle **impérative**, transverse à l'outil, au MCP et aux imports :
+
+| | |
+|---|---|
+| **`nom`** | le **générique**, repris tel quel du catalogue — « Cde contacteur dalle chauffante », « Sonde ambiance », « Commande » |
+| **`note`** (texte libre) | ce qui **distingue** ce point d'un autre identique : le local, la zone, le repère, le n° de trame — « Salle Communale 1 », « CR Mairie » |
+
+Donc « Cde contacteur dalle chauffante Salle Communale **1** » et « … **2** » sont
+**deux fois le même point**, pas deux points. Le catalogue est le **vocabulaire de
+l'entreprise** (un type de point réutilisable d'une affaire à l'autre), jamais un
+journal des points d'un chantier.
+
+Ce n'est pas cosmétique : la **BOM apparie sur le nom EXACT**
+(`magasin/bom.ts` → `PointCatalog.nom`). Un nom localisé = une nomenclature
+introuvable, donc du matériel absent de la liste. Faute de règle écrite, le
+catalogue avait enflé de **63 entrées en une semaine** et les documents portaient
+**342 libellés distincts pour une vingtaine de concepts réels** (quatre synonymes
+pour la sonde d'ambiance, quatre pour la sortie de commande).
+
+Ce qui tient la règle :
+- `nomLocalise()` (`liste-points/model.ts`) — détecteur partagé. Le MCP
+  **refuse** un nom localisé au catalogue (`dumtools_upsert_catalog_point`) ;
+  l'interface se contente d'**avertir** (un humain peut avoir raison).
+- Le générateur GFX **compose `nom + note` à la demande**
+  (`gfx-export/assign.ts`) : le nom générique reste net tant qu'il est unique, et
+  le texte libre ne vient le compléter que pour départager une collision. Sans
+  ça, dix commandes deviendraient « Commande (2) … (10) » dans le programme, et
+  la seule échappatoire serait de remettre le local dans le nom. La modale
+  « Générer GFX » signale les noms encore en doublon.
+- L'aperçu imprime déjà la note sous le libellé (`apercu.tsx`) : sortir le local
+  du nom ne perd rien sur le document client.
+- Remise à niveau d'une base déjà polluée :
+  **`npx tsx scripts/normaliser-points.mts`** (propose une table CSV à valider),
+  puis `--appliquer`. Les lignes gardent leur `id` → affectations aux bornes et
+  suivi de mise en service intacts.
+
+⚠️ L'import GFX/PDF (`pointsToRows`) recopie la **désignation brute de
+l'automate** dans `nom` (`ODM_Dalles_Secretariat`) : c'est la troisième source de
+pollution, et elle est normale — ces noms viennent du programme client. Ils se
+normalisent comme les autres, au script.
+
 ---
 
 ## 6. Documentation Distech

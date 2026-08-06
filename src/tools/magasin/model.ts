@@ -388,6 +388,10 @@ export interface OrigineBom {
   libelle: string;
   quantite: number;
   source: "projet" | "points" | "manuel";
+  /** Nom du point de catalogue d'où vient la ligne (source « points »). C'est la
+   *  clé qui permet de remonter de la ligne de besoin à SA SOURCE : sans elle,
+   *  on voit que le matériel est faux sans pouvoir le corriger. */
+  point?: string;
 }
 
 /** Ce que la BOM ne sait pas chiffrer : un point sans nomenclature, un automate

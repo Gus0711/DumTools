@@ -1,0 +1,352 @@
+﻿libelle_actuel;ou;occurrences;type;documents;action;nom_propose;texte_libre_propose;confiance;motif
+Sonde Retour;documents;22;DI;[DEMO] Cuisine centrale — Laon / [DEMO] Mise aux normes GTB — Chauny / (sans titre) (+11);RENOMMER;Sonde retour;;sûr;variante d'écriture d'un point du catalogue
+M/A Chauffage VMC;documents;3;DO;Ecole Primaire Berthecourt — Automate maître / Ecole Primaire Berthecourt — Coupleur 2 Primaire / Ecole Primaire Berthecourt — Coupleur 1 Maternelle;RENOMMER;Commande;VMC;sûr;synonyme ou regroupement du vocabulaire
+Sonde temp. exterieure;documents;3;COM;Maternelle — Plailly / Montagny Ecole — Automate centralisateur / Centre Culturel Plailly — Automate Chauffage;RENOMMER;Sonde extérieure Ss Fil;;sûr;relecture : point COM = sonde sans fil
+M/A BECS;documents;2;DO;Maternelle — Plailly / Primaire — Plailly;RENOMMER;Commande Chauffe eau;;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage Ballon eau chaude;documents;2;DO;Ecole Primaire Berthecourt — Automate maître / Ecole Primaire Berthecourt — Coupleur 2 Primaire;RENOMMER;Commande Chauffe eau;Ballon eau chaude;sûr;synonyme ou regroupement du vocabulaire
+M/A VMC;documents;2;DO;Maternelle — Plailly / Primaire — Plailly;RENOMMER;Commande VMC;;sûr;synonyme ou regroupement du vocabulaire
+ODM_Cuisine;catalogue + documents;2;DO;Andeville_Jules_Vernes_SE60-S1000 / Maison_Du_Village;SCINDER;Commande;Cuisine;sûr;générique connu du catalogue
+ODM_Perisco;catalogue + documents;2;DO;Andeville_Jules_Vernes_SE60-S1000 / Maison_Du_Village;SCINDER;Commande;Perisco;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Cuisine;catalogue + documents;2;COM;Andeville_Jules_Vernes_SE60-S1000 / Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Cuisine;sûr;générique connu du catalogue
+Sonde temp. Dortoir;documents;2;COM;Maternelle — Plailly / Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Dortoir;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sanitaire;documents;2;COM;Centre Culturel Plailly — Automate Chauffage / Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Sanitaire;sûr;relecture : point COM = sonde sans fil
+Air Extrait : Grande Vitesse;documents;1;DO;Centre Culturel Plailly — Coupleur CTA;GARDER;Air Extrait : Grande Vitesse;;à relire;aucun local repéré — vocabulaire à valider
+Air Extrait : Petite Vitesse;documents;1;DO;Centre Culturel Plailly — Coupleur CTA;GARDER;Air Extrait : Petite Vitesse;;à relire;aucun local repéré — vocabulaire à valider
+Air Neuf : Grande Vitesse;documents;1;DO;Centre Culturel Plailly — Coupleur CTA;GARDER;Air Neuf : Grande Vitesse;;à relire;aucun local repéré — vocabulaire à valider
+Air Neuf : Petite Vitesse;documents;1;DO;Centre Culturel Plailly — Coupleur CTA;GARDER;Air Neuf : Petite Vitesse;;à relire;aucun local repéré — vocabulaire à valider
+Amb_Bureau_2;documents;1;COM;LaLandelle_Mairie;SCINDER;Sonde ambiance Ss Fil;Bureau 2;sûr;relecture : point COM = sonde sans fil
+Amb_Bureau_SIRIS_1;documents;1;COM;LaLandelle_Mairie;SCINDER;Sonde ambiance Ss Fil;Bureau SIRIS 1;sûr;relecture : point COM = sonde sans fil
+Amb_Bureau_SIRIS_2;documents;1;COM;LaLandelle_Mairie;SCINDER;Sonde ambiance Ss Fil;Bureau SIRIS 2;sûr;relecture : point COM = sonde sans fil
+Amb_Salle_Conseil;documents;1;COM;LaLandelle_Mairie;SCINDER;Sonde ambiance Ss Fil;Salle Conseil;sûr;relecture : point COM = sonde sans fil
+Amb_Salle_SIRIS_Etage;documents;1;COM;LaLandelle_Mairie;SCINDER;Sonde ambiance Ss Fil;Salle SIRIS Etage;sûr;relecture : point COM = sonde sans fil
+Amb_Secretariat;documents;1;COM;LaLandelle_Mairie;SCINDER;Sonde ambiance Ss Fil;Secretariat;sûr;relecture : point COM = sonde sans fil
+Ancien_Bureau;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;GARDER;Ancien_Bureau;;à relire;aucun local repéré — vocabulaire à valider
+Ancien_Salle_a_Manger;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Ancien_Salle_a_Manger;à relire;relecture : renommage demandé
+Cde contacteur Cuisine / Dégagement;catalogue + documents;1;DO;Salle Communale — Lalandelle;SCINDER;Commande contacteur;Cuisine / Dégagement;à relire;générique déduit — à confirmer
+Cde contacteur dalle chauffante Salle Communale 1;catalogue + documents;1;DO;Salle Communale — Lalandelle;SCINDER;Commande contacteur;Salle Communale 1 - Dalle;à relire;générique déduit — à confirmer
+Cde contacteur dalle chauffante Salle Communale 2;catalogue + documents;1;DO;Salle Communale — Lalandelle;SCINDER;Commande contacteur;Salle Communale 2 - Dalle;à relire;générique déduit — à confirmer
+Cde contacteur radiant + dalle Salle Communale 1;catalogue + documents;1;DO;Salle Communale — Lalandelle;SCINDER;Commande contacteur;Salle Communale 1 - Dalle+radiant;à relire;générique déduit — à confirmer
+Cde contacteur radiant + dalle Salle Communale 2;catalogue + documents;1;DO;Salle Communale — Lalandelle;SCINDER;Commande contacteur;Salle Communale 2 - Dalle+radiant;à relire;générique déduit — à confirmer
+Cde contacteur Zone sanitaire;catalogue + documents;1;DO;Salle Communale — Lalandelle;SCINDER;Commande contacteur;Zone sanitaire;à relire;générique déduit — à confirmer
+Chaudiere en mode automatique;documents;1;DO;Salle des fêtes — Berthecourt;GARDER;Chaudiere en mode automatique;;à relire;aucun local repéré — vocabulaire à valider
+Chauffage_Reserve;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;SCINDER;Commande Chauffage;Reserve;sûr;regroupement arbitré
+Commande CHD;documents;1;DO;ECY600_UEHC_BETHUNE;RENOMMER;Commande Chaudiere;;à relire;relecture : renommage demandé
+Commande Pompe;documents;1;DO;Sous-Station;RENOMMER;Commande Pompe simple;;à relire;relecture : renommage demandé
+Commande pompes;documents;1;DO;Sous-Station;RENOMMER;Commande pompes double;;à relire;relecture : renommage demandé
+Communication BacNet;documents;1;COM;Sous-Station;GARDER;Communication BacNet;;à relire;aucun local repéré — vocabulaire à valider
+Comptage electricite salle des fetes;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Comptage electricite;salle des fetes;à relire;générique déduit — à confirmer
+Comptage gaz salle des fetes;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Comptage gaz;salle des fetes;à relire;générique déduit — à confirmer
+Compteur Chauffage maternelle;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Compteur Chauffage;maternelle;à relire;générique déduit — à confirmer
+Compteur Chauffage periscolaire;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Compteur Chauffage;periscolaire;à relire;générique déduit — à confirmer
+Compteur Chauffage preau;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Compteur Chauffage;preau;à relire;générique déduit — à confirmer
+Compteur Chauffage primaire;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Compteur Chauffage;primaire;à relire;générique déduit — à confirmer
+Compteur Général Chauffage;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;RENOMMER;Compteur Chauffage;Général;à relire;relecture : renommage demandé
+Compteur General CTA;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;RENOMMER;Compteur Electrique;General CTA;à relire;relecture : renommage demandé
+Compteur Général Éclairage;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;RENOMMER;Compteur Electrique;Général Éclairage;à relire;relecture : renommage demandé
+Compteur General Electricite Centre Culturel;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;RENOMMER;Compteur Electrique;General Electricite Centre Culturel;à relire;relecture : renommage demandé
+Compteur Imesys Chauffage;documents;1;COM;Montagny Ecole — Automate centralisateur;RENOMMER;Compteur Electrique;Chauffage;à relire;relecture : renommage demandé
+Compteur Imesys CTA;documents;1;COM;Montagny Ecole — Automate centralisateur;RENOMMER;Compteur Electrique;CTA;à relire;relecture : renommage demandé
+Compteur Imesys TGBT;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Compteur Electrique;TGBT;à relire;générique déduit — à confirmer
+Compteur Mesure TGBT;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Compteur Electrique;TGBT;à relire;générique déduit — à confirmer
+Convecteur_Stockage_Froid;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande contacteur;Convecteur Stockage Froid;sûr;alignement sur le vocabulaire arbitré
+CR1 - Autorisation Ppes;documents;1;DO;ECY600_UEHC_BETHUNE;RENOMMER;Commande;CR1 - Autorisation Ppes;à relire;relecture : renommage demandé
+CR1 - Defaut ppe 1;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut pompe;CR1 - Defaut ppe 1;à relire;relecture : renommage demandé
+CR1 - Defaut ppe 2;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut pompe;CR1 - Defaut ppe 2;à relire;relecture : renommage demandé
+CR1 - Signal V3V;documents;1;AO;ECY600_UEHC_BETHUNE;RENOMMER;Pilotage V3V;CR1 - Signal V3V;à relire;relecture : renommage demandé
+CR2 - Autorisation Ppes;documents;1;DO;ECY600_UEHC_BETHUNE;RENOMMER;Commande;CR2 - Autorisation Ppes;à relire;relecture : renommage demandé
+CR2 - Defaut ppe 1;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut pompe;CR2 - Defaut ppe 1;à relire;relecture : renommage demandé
+CR2 - Defaut ppe 2;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut pompe;CR2 - Defaut ppe 2;à relire;relecture : renommage demandé
+CR2 - Signal V3V;documents;1;AO;ECY600_UEHC_BETHUNE;RENOMMER;Pilotage V3V;CR2 - Signal V3V;à relire;relecture : renommage demandé
+Cuisine;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Cuisine;à relire;relecture : renommage demandé
+Defaut CHD;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut;Chaudiere;à relire;relecture : renommage demandé
+Defaut Pompe 1;documents;1;DI;Sous-Station;RENOMMER;Defaut pompe 1;;sûr;variante d'écriture d'un point du catalogue
+Defaut Pompe 2;documents;1;DI;Sous-Station;RENOMMER;Defaut pompe 2;;sûr;variante d'écriture d'un point du catalogue
+ECS - Autorisation Ppes;documents;1;DO;ECY600_UEHC_BETHUNE;RENOMMER;Commande ECS - Autorisation Ppes;;à relire;relecture : renommage demandé
+ECS - Defaut Ppe 1;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut pompe;ECS - Defaut Ppe 1;à relire;relecture : renommage demandé
+ECS - Defaut Ppe 2;documents;1;DI;ECY600_UEHC_BETHUNE;RENOMMER;Defaut pompe;ECS - Defaut Ppe 2;à relire;relecture : renommage demandé
+Extracteur GV;documents;1;DO;Salle des fêtes — Berthecourt;GARDER;Extracteur GV;;à relire;aucun local repéré — vocabulaire à valider
+Extracteur PV;documents;1;DO;Salle des fêtes — Berthecourt;GARDER;Extracteur PV;;à relire;aucun local repéré — vocabulaire à valider
+Hall;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Hall;à relire;relecture : renommage demandé
+Infirmerie;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Infirmerie;à relire;relecture : renommage demandé
+Insufflateur GV;documents;1;DO;Salle des fêtes — Berthecourt;GARDER;Insufflateur GV;;à relire;aucun local repéré — vocabulaire à valider
+Insufflateur PV;documents;1;DO;Salle des fêtes — Berthecourt;GARDER;Insufflateur PV;;à relire;aucun local repéré — vocabulaire à valider
+Laverie;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Laverie;à relire;relecture : renommage demandé
+Local_Dechet;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Local Dechet;sûr;alignement sur le vocabulaire arbitré
+M/A Ballon ECS;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;RENOMMER;Commande Chauffe eau;;sûr;synonyme ou regroupement du vocabulaire
+M/A Bureau 1;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Bureau 1;sûr;générique connu du catalogue
+M/A Bureau 2;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Bureau 2;sûr;générique connu du catalogue
+M/A Chauffage Ballon d'eau chaude;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;RENOMMER;Commande Chauffage;Ballon d'eau chaude;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage Bibliotheque;documents;1;DO;Ecole Primaire Berthecourt — Automate maître;RENOMMER;Commande Chauffage;Bibliotheque;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage Circulation;documents;1;DO;Ecole Primaire Berthecourt — Automate maître;SCINDER;Commande Chauffage;Circulation;sûr;regroupement arbitré
+M/A Chauffage cuisine;documents;1;DO;Montagny Ecole — Coupleur CTA/Cuisine;SCINDER;Commande Chauffage;cuisine;sûr;regroupement arbitré
+M/A Chauffage Degagement;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;SCINDER;Commande Chauffage;Degagement;sûr;regroupement arbitré
+M/A Chauffage Directeur;documents;1;DO;Ecole Primaire Berthecourt — Automate maître;RENOMMER;Commande Chauffage;Directeur;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage Dortoir;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;SCINDER;Commande Chauffage;Dortoir;sûr;regroupement arbitré
+M/A Chauffage Preau;documents;1;DO;Ecole Primaire Berthecourt — Automate maître;SCINDER;Commande Chauffage;Preau;sûr;regroupement arbitré
+M/A Chauffage Psychomoteur;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;RENOMMER;Commande Chauffage;Psychomoteur;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage Rangement;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 3 Périscolaire;SCINDER;Commande Chauffage;Rangement;sûr;regroupement arbitré
+M/A Chauffage Rangement (salle des maitres);documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;SCINDER;Commande Chauffage;Rangement (salle des maitres);sûr;regroupement arbitré
+M/A Chauffage Salle informatique;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;SCINDER;Commande Chauffage;Salle informatique;sûr;regroupement arbitré
+M/A Chauffage Salle periscolaire;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 3 Périscolaire;SCINDER;Commande Chauffage;Salle periscolaire;sûr;regroupement arbitré
+M/A Chauffage Sanitaires et couloirs;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;SCINDER;Commande Chauffage;Sanitaires et couloirs;sûr;regroupement arbitré
+M/A Chauffage Sanitaires filles;documents;1;DO;Ecole Primaire Berthecourt — Automate maître;SCINDER;Commande Chauffage;Sanitaires filles;sûr;regroupement arbitré
+M/A Chauffage Sanitaires fixe;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 3 Périscolaire;SCINDER;Commande Chauffage;Sanitaires fixe;sûr;regroupement arbitré
+M/A Chauffage Sanitaires garcons;documents;1;DO;Ecole Primaire Berthecourt — Automate maître;SCINDER;Commande Chauffage;Sanitaires garcons;sûr;regroupement arbitré
+M/A Chauffage SM1 (petite section);documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;SCINDER;Commande Chauffage;SM1 (petite section);sûr;regroupement arbitré
+M/A Chauffage SM2 (moyenne section);documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;SCINDER;Commande Chauffage;SM2 (moyenne section);sûr;regroupement arbitré
+M/A Chauffage SM3 (grande section);documents;1;DO;Ecole Primaire Berthecourt — Coupleur 1 Maternelle;SCINDER;Commande Chauffage;SM3 (grande section);sûr;regroupement arbitré
+M/A Chauffage SP1;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;RENOMMER;Commande Chauffage;SP1;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage SP2;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;RENOMMER;Commande Chauffage;SP2;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage SP3;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;RENOMMER;Commande Chauffage;SP3;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage SP4;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;RENOMMER;Commande Chauffage;SP4;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage SP5;documents;1;DO;Ecole Primaire Berthecourt — Coupleur 2 Primaire;RENOMMER;Commande Chauffage;SP5;sûr;synonyme ou regroupement du vocabulaire
+M/A Chauffage Z3 Salle 1;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Z3 Salle 1;sûr;regroupement arbitré
+M/A Chauffage Z4 Salle 2;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Z4 Salle 2;sûr;regroupement arbitré
+M/A Chauffage Z5 Salle 3;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Z5 Salle 3;sûr;regroupement arbitré
+M/A Chauffage Z6 Salle 4;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Z6 Salle 4;sûr;regroupement arbitré
+M/A Chauffage Z7 Salle informatique;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Z7 Salle informatique;sûr;regroupement arbitré
+M/A Chauffage Z8 Bureau direction;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Z8 Bureau direction;sûr;regroupement arbitré
+M/A Chauffage Zone 1;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Zone 1;sûr;regroupement arbitré
+M/A Chauffage Zone 2;documents;1;DO;Montagny Ecole — Automate centralisateur;SCINDER;Commande Chauffage;Zone 2;sûr;regroupement arbitré
+M/A Classe 1;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Classe 1;sûr;générique connu du catalogue
+M/A Classe 2;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Classe 2;sûr;générique connu du catalogue
+M/A Classe 3;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Classe 3;sûr;générique connu du catalogue
+M/A Classe 4;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Classe 4;sûr;générique connu du catalogue
+M/A Convecteur Degagement Sous-Sol;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande Chauffage;Degagement Sous-Sol;à relire;générique déduit — à confirmer
+M/A Convecteur Local Materiel 1 & 2;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande Chauffage;Materiel 1 & 2;à relire;générique déduit — à confirmer
+M/A Convecteur Local Materiel 3 & 4;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande Chauffage;Materiel 3 & 4;à relire;générique déduit — à confirmer
+M/A Convecteur Sanitaires Hommes & Femmes;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande Chauffage;Sanitaires Hommes & Femmes;à relire;générique déduit — à confirmer
+M/A CTA / TRIAC / Extracteur Cuisine;documents;1;DO;Montagny Ecole — Coupleur CTA/Cuisine;SCINDER;Commande CTA / TRIAC / Extracteur;Cuisine;à relire;générique déduit — à confirmer
+M/A CTA VMC;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;RENOMMER;Commande Cta vmc;;sûr;synonyme ou regroupement du vocabulaire
+M/A Eclairage;documents;1;DO;Maternelle — Plailly;RENOMMER;Commande Eclairage;;sûr;synonyme ou regroupement du vocabulaire
+M/A Eclairage Exterieur;documents;1;DO;Primaire — Plailly;RENOMMER;Commande Eclairage Exterieur;;sûr;synonyme ou regroupement du vocabulaire
+M/A Eclairage Sanitaire Fille;documents;1;DO;Primaire — Plailly;SCINDER;Commande Eclairage;Sanitaire Fille;à relire;générique déduit — à confirmer
+M/A Eclairage Sanitaire Garcon;documents;1;DO;Primaire — Plailly;SCINDER;Commande Eclairage;Sanitaire Garcon;à relire;générique déduit — à confirmer
+M/A Extracteur Salle de Classe;documents;1;DO;Montagny Ecole — Coupleur CTA/Cuisine;SCINDER;Commande Extracteur;Salle de Classe;à relire;générique déduit — à confirmer
+M/A Extracteur sanitaire / sanitaire cuisine;documents;1;DO;Montagny Ecole — Coupleur CTA/Cuisine;SCINDER;Commande Extracteur;sanitaire / sanitaire cuisine;à relire;générique déduit — à confirmer
+M/A General Chauffage Convecteurs;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;RENOMMER;Commande General Chauffage Convecteurs;;sûr;synonyme ou regroupement du vocabulaire
+M/A General Plafond Rayonnant - Grande Salle 1 & 2 - Mezzanine;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande General;Plafond Rayonnant - Grande Salle 1 & 2 - Mezzanine;à relire;générique déduit — à confirmer
+M/A General Plancher Chauffant;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;RENOMMER;Commande General Plancher Chauffant;;sûr;synonyme ou regroupement du vocabulaire
+M/A Hall entrée / Bibliothèque;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Hall entrée / Bibliothèque;sûr;générique connu du catalogue
+M/A Plancher Chauffant CE2;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;CE2;sûr;regroupement arbitré
+M/A Plancher Chauffant Classe 1 (Trames 7-8);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Classe 1 (Trames 7-8);sûr;regroupement arbitré
+M/A Plancher Chauffant Classe 2 (Trames 5-6);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Classe 2 (Trames 5-6);sûr;regroupement arbitré
+M/A Plancher Chauffant Classe 3 (Trames 22-23);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Classe 3 (Trames 22-23);sûr;regroupement arbitré
+M/A Plancher Chauffant CM1 Trames 18-17;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;CM1 Trames 18-17;sûr;regroupement arbitré
+M/A Plancher Chauffant CM2 Trames 16-13;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;CM2 Trames 16-13;sûr;regroupement arbitré
+M/A Plancher Chauffant Couloir CM1+CM2 Trames 19-20;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;Couloir CM1+CM2 Trames 19-20;sûr;regroupement arbitré
+M/A Plancher Chauffant CP;documents;1;DO;Primaire — Plailly;RENOMMER;Commande Plancher Chauffant;CP;sûr;synonyme ou regroupement du vocabulaire
+M/A Plancher Chauffant Degagement / Hall (Trames 13-14);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Degagement / Hall (Trames 13-14);sûr;regroupement arbitré
+M/A Plancher Chauffant Degagement 2 (Trames 15-16);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Degagement 2 (Trames 15-16);sûr;regroupement arbitré
+M/A Plancher Chauffant Degagement CE1;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;Degagement CE1;sûr;regroupement arbitré
+M/A Plancher Chauffant Direction (Trame 12);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Direction (Trame 12);sûr;regroupement arbitré
+M/A Plancher Chauffant Dortoir (Trames 24-25);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Dortoir (Trames 24-25);sûr;regroupement arbitré
+M/A Plancher Chauffant Locaux Professeurs (Trames 9-10);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Locaux Professeurs (Trames 9-10);sûr;regroupement arbitré
+M/A Plancher Chauffant Nouveau CE1;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;Nouveau — CE1;sûr;regroupement arbitré
+M/A Plancher Chauffant Peinture (Trame 18);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Peinture (Trame 18);sûr;regroupement arbitré
+M/A Plancher Chauffant Preau;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;Preau;sûr;regroupement arbitré
+M/A Plancher Chauffant Rangement Administration (Trame 11);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Rangement Administration (Trame 11);sûr;regroupement arbitré
+M/A Plancher Chauffant Rangement Materiel (Trames 19-20);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Rangement Materiel (Trames 19-20);sûr;regroupement arbitré
+M/A Plancher Chauffant Salle Evolution (Trames 1-2-3-4);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Salle Evolution (Trames 1-2-3-4);sûr;regroupement arbitré
+M/A Plancher Chauffant Sanitaire;documents;1;DO;Primaire — Plailly;SCINDER;Commande Plancher Chauffant;Sanitaire;sûr;regroupement arbitré
+M/A Plancher Chauffant Sanitaires Petits (Trame 21);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Sanitaires Petits (Trame 21);sûr;regroupement arbitré
+M/A Plancher Chauffant Tisanerie (Trame 17);documents;1;DO;Maternelle — Plailly;SCINDER;Commande Plancher Chauffant;Tisanerie (Trame 17);sûr;regroupement arbitré
+M/A Repos 1;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Repos 1;sûr;générique connu du catalogue
+M/A Repos 2;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Repos 2;sûr;générique connu du catalogue
+M/A Salle;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Salle;sûr;générique connu du catalogue
+M/A Sanitaire 1;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Sanitaire 1;sûr;générique connu du catalogue
+M/A Sanitaire 2;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Sanitaire 2;sûr;générique connu du catalogue
+M/A Tisanerie;documents;1;DO;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Commande;Tisanerie;sûr;générique connu du catalogue
+M/A Trame Chauffante N°01 : Sas & Entree N°1;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande;Trame Chauffante N°01 : Sas & Entree N°1;sûr;générique connu du catalogue
+M/A Trame Chauffante N°02 : Cuisine & Loge N°02;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande;Trame Chauffante N°02 : Cuisine & Loge N°02;sûr;générique connu du catalogue
+M/A Trame Plancher Chauffant N°03 : Hall N°3;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande;Trame Plancher Chauffant N°03 : Hall N°3;sûr;générique connu du catalogue
+M/A Trame Plancher Chauffant N°04 : Grande Salle N°4;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande;Trame Plancher Chauffant N°04 : Grande Salle N°4;sûr;générique connu du catalogue
+M/A Trame Plancher Chauffant N°05 : Grande Salle N°5;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande;Trame Plancher Chauffant N°05 : Grande Salle N°5;sûr;générique connu du catalogue
+M/A Trame Plancher Chauffant N°06 : Grande Salle N°6;documents;1;DO;Centre Culturel Plailly — Automate Chauffage;SCINDER;Commande;Trame Plancher Chauffant N°06 : Grande Salle N°6;sûr;générique connu du catalogue
+M/A Ventilation;documents;1;DO;Centre Culturel Plailly — Coupleur CTA;RENOMMER;Commande VMC;;sûr;synonyme ou regroupement du vocabulaire
+M/A VMC Sanitaire;documents;1;DO;Maternelle — Plailly;SCINDER;Commande VMC;Sanitaire;à relire;générique déduit — à confirmer
+Manque Eau;documents;1;DI;ECY600_UEHC_BETHUNE;GARDER;Manque Eau;;à relire;aucun local repéré — vocabulaire à valider
+Nouvelle_Salle;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Nouvelle_Salle;à relire;relecture : renommage demandé
+ODM_ BECS VDE village enfant;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffe eau;village enfant;à relire;générique déduit — à confirmer
+ODM_ CHAUFFAGE GRAND HALL;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffage;grand — HALL;sûr;regroupement arbitré
+ODM_ CHAUFFAGE_LOCAL_TECHNIQUE;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffage;local — TECHNIQUE;sûr;regroupement arbitré
+ODM_Association1_Hameau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;Association1 Hameau;sûr;générique connu du catalogue
+ODM_Association2_Hameau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;Association2 Hameau;sûr;générique connu du catalogue
+ODM_Association3_Hameau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;Association3 Hameau;sûr;générique connu du catalogue
+ODM_Association4_Hameau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;Association4 Hameau;sûr;générique connu du catalogue
+ODM_Bureau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;Bureau;sûr;générique connu du catalogue
+ODM_Bureau_Etage;documents;1;DO;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Commande;Bureau Etage;sûr;générique connu du catalogue
+ODM_Bureau_Vestiaires;catalogue + documents;1;DO;Maison_Du_Village;SCINDER;Commande;Bureau Vestiaires;sûr;générique connu du catalogue
+ODM_Cantine;documents;1;DO;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Commande;Cantine;sûr;générique connu du catalogue
+ODM_Couloir_Sanitaire;documents;1;DO;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Commande;Couloir Sanitaire;sûr;générique connu du catalogue
+ODM_DALLE CHAUFFANTE SALLE JEUX;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffage;SALLE JEUX;à relire;générique déduit — à confirmer
+ODM_Dalles_Bureau_Maire;catalogue + documents;1;DO;LaLandelle_Mairie;SCINDER;Commande Chauffage;Bureau Maire;à relire;générique déduit — à confirmer
+ODM_Dalles_Salle_Conseil;catalogue + documents;1;DO;LaLandelle_Mairie;SCINDER;Commande Chauffage;Salle Conseil;à relire;générique déduit — à confirmer
+ODM_Dalles_Secretariat;catalogue + documents;1;DO;LaLandelle_Mairie;SCINDER;Commande Chauffage;Secretariat;à relire;générique déduit — à confirmer
+ODM_Eclairage_Hameau_Enfant;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Eclairage;Hameau Enfant;à relire;générique déduit — à confirmer
+ODM_Grande_Salle;catalogue + documents;1;DO;Maison_Du_Village;SCINDER;Commande;Grande Salle;sûr;générique connu du catalogue
+ODM_Hall_Hameau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;Hall Hameau;sûr;générique connu du catalogue
+ODM_PETITE_SALLE;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;PETITE SALLE;sûr;générique connu du catalogue
+ODM_PLCH_SALLE_JEUX_et_HALL;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Plancher Chauffant;SALLE JEUX et HALL;sûr;regroupement arbitré
+ODM_Rad_Grande_Salle_Mang;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffage;Grande Salle Mang;à relire;générique déduit — à confirmer
+ODM_Rad_Office_Cuisine;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffage;Office Cuisine;à relire;générique déduit — à confirmer
+ODM_Rad_Petite_Salle_Mang;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande Chauffage;Petite Salle Mang;à relire;générique déduit — à confirmer
+ODM_Radiateurs_Bureau_SIRIS;catalogue + documents;1;DO;LaLandelle_Mairie;SCINDER;Commande Chauffage;Bureau SIRIS;à relire;générique déduit — à confirmer
+ODM_Radiateurs_Reunion_SIRIS;catalogue + documents;1;DO;LaLandelle_Mairie;RENOMMER;Commande Chauffage;Reunion SIRIS;sûr;alignement sur le vocabulaire arbitré
+ODM_SALLE DE REPOS;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;SALLE DE REPOS;sûr;générique connu du catalogue
+ODM_SALLE DE TRAVAIL;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;SALLE DE TRAVAIL;sûr;générique connu du catalogue
+ODM_Sanitaire_Grde_Salle;catalogue + documents;1;DO;Maison_Du_Village;SCINDER;Commande;Sanitaire Grde Salle;sûr;générique connu du catalogue
+ODM_Sanitaire_Perisco;catalogue + documents;1;DO;Maison_Du_Village;SCINDER;Commande;Sanitaire Perisco;sûr;générique connu du catalogue
+ODM_SANITAIRE_RESERVE;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;SANITAIRE RESERVE;sûr;générique connu du catalogue
+ODM_SAS_Secondaire;catalogue + documents;1;DO;Maison_Du_Village;RENOMMER;Commande;SAS Secondaire;sûr;alignement sur le vocabulaire arbitré
+ODM_SAS_Tour;catalogue + documents;1;DO;Maison_Du_Village;RENOMMER;Commande;SAS Tour;sûr;alignement sur le vocabulaire arbitré
+ODM_TISANNERIE;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;TISANNERIE;sûr;générique connu du catalogue
+ODM_TRAVAUX_MANUEL_PEINTURE;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande;TRAVAUX MANUEL PEINTURE;sûr;générique connu du catalogue
+ODM_VMC_Hameau;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;SCINDER;Commande VMC;Hameau;à relire;générique déduit — à confirmer
+OMD_VMC-village_enfants;documents;1;DO;Coye_La_Foret_Village_enfants_S1000;RENOMMER;Commande VMC;village enfants;sûr;synonyme ou regroupement du vocabulaire
+Ouverture volet d'air neuf;documents;1;DO;Salle des fêtes — Berthecourt;GARDER;Ouverture volet d'air neuf;;à relire;aucun local repéré — vocabulaire à valider
+Pompe 1 centrale d'air;documents;1;DO;Salle des fêtes — Berthecourt;RENOMMER;Commande Pompe 1;centrale d'air;à relire;relecture : renommage demandé
+Pompe 1 radiateur;documents;1;DO;Salle des fêtes — Berthecourt;RENOMMER;Commande Pompe 1;radiateur;à relire;relecture : renommage demandé
+Pompe 2 centrale d'air;documents;1;DO;Salle des fêtes — Berthecourt;RENOMMER;Commande Pompe 2;centrale d'air;à relire;relecture : renommage demandé
+Pompe 2 radiateur;documents;1;DO;Salle des fêtes — Berthecourt;RENOMMER;Commande Pompe 2;radiateur;à relire;relecture : renommage demandé
+Sanitaire_Personnel;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Sanitaire_Personnel;à relire;relecture : renommage demandé
+Sanitaires;catalogue + documents;1;DO;Groupe_Scolaire_Cantine;RENOMMER;Commande;Sanitaires;à relire;relecture : renommage demandé
+Signal TRIAC CTA;documents;1;AO;Montagny Ecole — Coupleur CTA/Cuisine;GARDER;Signal TRIAC CTA;;à relire;aucun local repéré — vocabulaire à valider
+Sonde ambiance Ss Fil — Bar;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Bar;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Bureau directrice;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Bureau directrice;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Bureau étage;documents;1;COM;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Sonde ambiance Ss Fil;Bureau étage;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Cantine 1;documents;1;COM;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Sonde ambiance Ss Fil;Cantine 1;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Cantine 2;documents;1;COM;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Sonde ambiance Ss Fil;Cantine 2;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Couloir vers préau;documents;1;COM;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Sonde ambiance Ss Fil;Couloir vers préau;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Grande salle 1;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Grande salle 1;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Grande salle 2;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Grande salle 2;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Périscolaire;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Périscolaire;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Salle périsco;documents;1;COM;Andeville_Jules_Vernes_SE60-S1000;SCINDER;Sonde ambiance Ss Fil;Salle périsco;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Sanitaires enfants;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Sanitaires enfants;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Sanitaires grande salle;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Sanitaires grande salle;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — SAS secondaire;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;SAS secondaire;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — SAS tour;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;SAS tour;sûr;générique connu du catalogue
+Sonde ambiance Ss Fil — Vestiaires;catalogue + documents;1;COM;Maison_Du_Village;SCINDER;Sonde ambiance Ss Fil;Vestiaires;sûr;générique connu du catalogue
+Sonde Soufflage;documents;1;AI;Centre Culturel Plailly — Coupleur CTA;RENOMMER;Sonde soufflage;;sûr;variante d'écriture d'un point du catalogue
+Sonde temp. ambiante Atelier;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Atelier;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Cantine / Enseignants;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Cantine / Enseignants;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Circulation cantine;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Circulation cantine;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Circulation classe;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Circulation classe;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Cuisine;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Cuisine;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Cuisine 2;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Cuisine 2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Hall;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Hall;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Salle 1;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Salle 1;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Salle 2;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Salle 2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Salle 3;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Salle 3;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante Salle informatique;documents;1;COM;Montagny Ecole — Automate centralisateur;SCINDER;Sonde ambiance Ss Fil;Salle informatique;sûr;relecture : point COM = sonde sans fil
+Sonde temp. ambiante WC;documents;1;COM;Montagny Ecole — Automate centralisateur;RENOMMER;Sonde ambiance Ss Fil;Wc;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Bibliotheque;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;RENOMMER;Sonde ambiance Ss Fil;Bibliotheque;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Bureau directeur;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Bureau directeur;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Bureau Direction;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Bureau Direction;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Classe 1;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Classe 1;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Classe 2;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Classe 2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Classe 3;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Classe 3;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Couloir CM1+CM2 - Primaire;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Couloir CM1+CM2 - Primaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Couloir maternelle;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Couloir maternelle;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Couloir preau;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Couloir preau;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Couloir primaire;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Couloir primaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Cuisine;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Cuisine;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Deg 2;documents;1;COM;Maternelle — Plailly;RENOMMER;Sonde ambiance Ss Fil;Deg 2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Deg. Hall;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Deg. — Hall;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Degagement CE1;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Degagement CE1;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Entree;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;RENOMMER;Sonde ambiance Ss Fil;Entree;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Evolution;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Evolution;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Grande Salle - Fond;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Grande Salle - Fond;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Grande Salle - Scene;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Grande Salle - Scene;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Hall;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Hall;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Mezzanine;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;RENOMMER;Sonde ambiance Ss Fil;Mezzanine;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Peinture;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Peinture;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Preau;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Preau;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Preau 1 - Primaire;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Preau 1 - Primaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Preau 2 - Primaire;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Preau 2 - Primaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Rangement;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Rangement;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Rangement periscolaire;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Rangement periscolaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Rgt Admin;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Rgt Admin;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle CE1;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Salle CE1;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle CE2;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Salle CE2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle CM1;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Salle CM1;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle CM2;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Salle CM2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle CP;documents;1;COM;Primaire — Plailly;SCINDER;Sonde ambiance Ss Fil;Salle CP;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle des maitres;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle des maitres;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle informatique;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle informatique;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle periscolaire;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle periscolaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Primaire 1;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle Primaire 1;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Primaire 2;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle Primaire 2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Primaire 3;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle Primaire 3;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Primaire 4;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle Primaire 4;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Primaire 5;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle Primaire 5;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Profs;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Salle Profs;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle psychomoteur;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Salle psychomoteur;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Rangement 1 & 2;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Salle Rangement 1 & 2;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Salle Rangement 3 & 4;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Salle Rangement 3 & 4;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sanitaire periscolaire;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Sanitaire periscolaire;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sanitaires;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Sanitaires;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sanitaires filles;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Sanitaires filles;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sanitaires garcons;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Sanitaires garcons;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sanitaires maternelle;documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;Sanitaires maternelle;sûr;relecture : point COM = sonde sans fil
+Sonde temp. SM1 (petite section);documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;SM1 (petite section);sûr;relecture : point COM = sonde sans fil
+Sonde temp. SM2 (moyenne section);documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;SM2 (moyenne section);sûr;relecture : point COM = sonde sans fil
+Sonde temp. SM3 (grande section);documents;1;COM;Ecole Primaire Berthecourt — Automate maître;SCINDER;Sonde ambiance Ss Fil;SM3 (grande section);sûr;relecture : point COM = sonde sans fil
+Sonde temp. Sous-Sol Degagement;documents;1;COM;Centre Culturel Plailly — Automate Chauffage;SCINDER;Sonde ambiance Ss Fil;Sous-Sol Degagement;sûr;relecture : point COM = sonde sans fil
+Sonde temp. Tisanerie;documents;1;COM;Maternelle — Plailly;SCINDER;Sonde ambiance Ss Fil;Tisanerie;sûr;relecture : point COM = sonde sans fil
+Temperature air neuf;documents;1;AI;Salle des fêtes — Berthecourt;RENOMMER;Sonde Air Neuf;;sûr;relecture : sonde de gaine, entrée de catalogue existante
+Temperature air repris;documents;1;AI;Salle des fêtes — Berthecourt;RENOMMER;Sonde Air Repris;;sûr;relecture : sonde de gaine, entrée de catalogue existante
+Temperature air souffle;documents;1;AI;Salle des fêtes — Berthecourt;RENOMMER;Sonde Air Soufflé;;sûr;relecture : sonde de gaine, entrée de catalogue existante
+Température Bureau 2 / Réserve 2;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Bureau 2 / Réserve 2;sûr;relecture : point COM = sonde sans fil
+Température Bureau Directrice;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Bureau Directrice;sûr;relecture : point COM = sonde sans fil
+Température Classe 1;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Classe 1;sûr;relecture : point COM = sonde sans fil
+Température Classe 2;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Classe 2;sûr;relecture : point COM = sonde sans fil
+Température Classe 3;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Classe 3;sûr;relecture : point COM = sonde sans fil
+Température Classe 4;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Classe 4;sûr;relecture : point COM = sonde sans fil
+Temperature cuisine;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;cuisine;sûr;relecture : point COM = sonde sans fil
+Température Cuisine / Dégagement;catalogue + documents;1;COM;Salle Communale — Lalandelle;SCINDER;Sonde ambiance Ss Fil;Cuisine / Dégagement;sûr;relecture : point COM = sonde sans fil
+Temperature depart chaudiere;documents;1;AI;Salle des fêtes — Berthecourt;RENOMMER;Sonde départ chaudiere;;sûr;synonyme ou regroupement du vocabulaire
+Temperature depart eau chaude CTA;documents;1;COM;Salle des fêtes — Berthecourt;RENOMMER;Sonde départ constant CTA;;sûr;synonyme ou regroupement du vocabulaire
+Temperature depart eau chaude grande salle;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde départ;grande salle;à relire;générique déduit — à confirmer
+Temperature depart eau chaude petite salle;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde départ;petite salle;à relire;générique déduit — à confirmer
+Température Entrée / Bibliothèque;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;RENOMMER;Sonde ambiance Ss Fil;Entrée / Bibliothèque;sûr;relecture : point COM = sonde sans fil
+Température extérieure;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;RENOMMER;Sonde extérieure Ss Fil;;sûr;relecture : point COM = sonde sans fil
+Temperature grande salle;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;grande salle;sûr;relecture : point COM = sonde sans fil
+Température Grande Salle 1;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Grande Salle 1;sûr;relecture : point COM = sonde sans fil
+Température Grande Salle 2;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Grande Salle 2;sûr;relecture : point COM = sonde sans fil
+Temperature hall d'entree;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;hall d'entree;sûr;relecture : point COM = sonde sans fil
+Temperature petite salle;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;petite salle;sûr;relecture : point COM = sonde sans fil
+Température Repos 1;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Repos 1;sûr;relecture : point COM = sonde sans fil
+Température Repos 2;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Repos 2;sûr;relecture : point COM = sonde sans fil
+Temperature retour eau chaude CTA;documents;1;COM;Salle des fêtes — Berthecourt;RENOMMER;Sonde retour CTA;;sûr;synonyme ou regroupement du vocabulaire
+Temperature retour eau chaude grande salle;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde retour;grande salle;à relire;générique déduit — à confirmer
+Temperature retour eau chaude petite salle;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde retour;petite salle;à relire;générique déduit — à confirmer
+Température Salle Communale 1;catalogue + documents;1;COM;Salle Communale — Lalandelle;SCINDER;Sonde ambiance Ss Fil;Salle Communale 1;sûr;relecture : point COM = sonde sans fil
+Température Salle Communale 2;catalogue + documents;1;COM;Salle Communale — Lalandelle;SCINDER;Sonde ambiance Ss Fil;Salle Communale 2;sûr;relecture : point COM = sonde sans fil
+Température Sanitaire 1;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Sanitaire 1;sûr;relecture : point COM = sonde sans fil
+Température Sanitaire 2;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Sanitaire 2;sûr;relecture : point COM = sonde sans fil
+Temperature sanitaires femmes;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;sanitaires femmes;sûr;relecture : point COM = sonde sans fil
+Temperature sanitaires handicapes;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;sanitaires handicapes;sûr;relecture : point COM = sonde sans fil
+Temperature sanitaires hommes;documents;1;COM;Salle des fêtes — Berthecourt;SCINDER;Sonde ambiance Ss Fil;sanitaires hommes;sûr;relecture : point COM = sonde sans fil
+Température Tisanerie;documents;1;COM;Maternelle Petit Bouton Nacré — Andeville;SCINDER;Sonde ambiance Ss Fil;Tisanerie;sûr;relecture : point COM = sonde sans fil
+Température Zone sanitaire;catalogue + documents;1;COM;Salle Communale — Lalandelle;SCINDER;Sonde ambiance Ss Fil;Zone sanitaire;sûr;relecture : point COM = sonde sans fil
+test;documents;1;;(sans titre);GARDER;test;;à relire;aucun local repéré — vocabulaire à valider
+Tp depart CHD;documents;1;AI;ECY600_UEHC_BETHUNE;RENOMMER;Sonde départ chaudiere;;sûr;synonyme ou regroupement du vocabulaire
+Tp depart CR1;documents;1;AI;ECY600_UEHC_BETHUNE;RENOMMER;Sonde départ CR1;;sûr;synonyme ou regroupement du vocabulaire
+Tp depart CR2;documents;1;AI;ECY600_UEHC_BETHUNE;RENOMMER;Sonde départ CR2;;sûr;synonyme ou regroupement du vocabulaire
+Tp depart Primaire ECS;documents;1;AI;ECY600_UEHC_BETHUNE;SCINDER;Sonde départ;Primaire ECS;sûr;générique connu du catalogue
+Tp exterieur;documents;1;AI;ECY600_UEHC_BETHUNE;GARDER;Tp exterieur;;à relire;aucun local repéré — vocabulaire à valider
+Vanne chauffage Y1 (ouverture);documents;1;DO;Salle des fêtes — Berthecourt;RENOMMER;Pilotage Vanne chauffage Y1 (ouverture);;à relire;relecture : renommage demandé
+Vanne chauffage Y2 (fermeture);documents;1;DO;Salle des fêtes — Berthecourt;RENOMMER;Pilotage Vanne chauffage Y2 (fermeture);;à relire;relecture : renommage demandé
+Vanne depart chauffage petite salle;documents;1;AO;Salle des fêtes — Berthecourt;SCINDER;Pilotage V3V CR1;petite salle;à relire;générique déduit — à confirmer
+Vanne depart eau chaude CTA;documents;1;AO;Salle des fêtes — Berthecourt;RENOMMER;Pilotage V3V CTA;CTA;à relire;relecture : renommage demandé
+Chauffage ancien bureau;catalogue;0;DO;;SCINDER;Commande Chauffage;ancien bureau;sûr;regroupement arbitré
+Chauffage ancienne salle a manger;catalogue;0;DO;;SCINDER;Commande Chauffage;ancienne salle a manger;sûr;regroupement arbitré
+Chauffage cuisine;catalogue;0;DO;;SCINDER;Commande Chauffage;cuisine;sûr;regroupement arbitré
+Chauffage garcons;catalogue;0;DO;;SCINDER;Commande Chauffage;garcons;sûr;regroupement arbitré
+Chauffage infirmerie + douche;catalogue;0;DO;;SCINDER;Commande Chauffage;infirmerie + douche;sûr;regroupement arbitré
+Chauffage laverie;catalogue;0;DO;;SCINDER;Commande Chauffage;laverie;sûr;regroupement arbitré
+Chauffage nouvelle salle a manger;catalogue;0;DO;;SCINDER;Commande Chauffage;nouvelle salle a manger;sûr;regroupement arbitré
+Chauffage reserve;catalogue;0;DO;;SCINDER;Commande Chauffage;reserve;sûr;regroupement arbitré
+Chauffage sanitaire personnel;catalogue;0;DO;;SCINDER;Commande Chauffage;sanitaire personnel;sûr;regroupement arbitré
+Chauffage SAS + Hall;catalogue;0;DO;;SCINDER;Commande Chauffage;SAS + Hall;sûr;regroupement arbitré
