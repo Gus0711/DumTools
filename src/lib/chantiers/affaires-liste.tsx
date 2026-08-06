@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { iciAvecFiltres, useSyncUrl } from "@/lib/filtres-url";
+import { avecRetour } from "@/lib/retour";
 import { Briefcase, RotateCcw, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Combobox, EnteteBloc, EtatVide, type ComboOption } from "@/ui";
@@ -121,12 +122,16 @@ export function AffairesListe({
   // Les états ne s'écrivent que s'ils s'écartent du défaut (voir filtres-url).
   // La chaîne vide est un choix légitime (« aucun état retenu ») : on la note
   // avec un marqueur, sinon elle serait confondue avec « pas de filtre ».
-  useSyncUrl({
+  const qs = useSyncUrl({
     q: query,
     client,
     suivi,
     etats: etatsParDefaut ? "" : [...etats].join(",") || "aucun",
   });
+  // Chaque affaire emporte l'adresse de la liste TELLE QU'ELLE EST : le lien
+  // « ← Affaires » de la fiche y ramènera, filtres compris. Sans ça, seule la
+  // flèche du navigateur retrouvait la sélection.
+  const retourIci = iciAvecFiltres("/affaires", qs);
 
   function reinitialiser() {
     setQuery("");
@@ -293,7 +298,7 @@ export function AffairesListe({
                 <tr key={a.id}>
                   <td className="cell-title cell-card-title cell-wrap">
                     <Link
-                      href={`/affaires/${a.id}`}
+                      href={avecRetour(`/affaires/${a.id}`, retourIci)}
                       className="group inline-flex items-center gap-2 transition-colors hover:text-brand"
                     >
                       <Briefcase className="h-4 w-4 shrink-0 text-subtle transition-colors group-hover:text-brand" />

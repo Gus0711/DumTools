@@ -8,7 +8,16 @@ import { Button, Input } from "@/ui";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { renommerClient, supprimerClient } from "./actions";
 
-export function ClientFicheHeader({ id, nom }: { id: string; nom: string }) {
+export function ClientFicheHeader({
+  id,
+  nom,
+  retour,
+}: {
+  id: string;
+  nom: string;
+  /** D'où l'on vient — la liste avec sa recherche (voir lib/retour). */
+  retour: { href: string; label: string };
+}) {
   const router = useRouter();
   const [valeur, setValeur] = useState(nom);
   const [erreur, setErreur] = useState("");
@@ -44,11 +53,11 @@ export function ClientFicheHeader({ id, nom }: { id: string; nom: string }) {
     <div className="anim-rise mb-6">
       <TitreEcran estampille="Client" titre={nom} />
       <Link
-        href="/clients"
+        href={retour.href}
         className="group -my-1 mb-1.5 inline-flex min-h-[2.5rem] items-center gap-1.5 py-1 text-sm text-muted transition-colors hover:text-fg sm:my-0 sm:mb-2.5 sm:min-h-0 sm:py-0"
       >
         <ArrowLeft className="h-4 w-4 transition-transform duration-150 group-hover:-translate-x-0.5" />
-        Clients
+        {retour.label}
       </Link>
       <div className="bloc flex flex-wrap items-end justify-between gap-3 px-4 py-4 md:px-6">
         <span aria-hidden className="rule-signal anim-sweep absolute inset-x-0 top-0 z-10 h-[3px]" />

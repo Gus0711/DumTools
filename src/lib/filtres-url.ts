@@ -29,8 +29,15 @@ import { useEffect } from "react";
  *
  * À n'appeler QU'UNE FOIS par écran, avec tous ses filtres : deux appels
  * concurrents s'écraseraient l'un l'autre.
+ *
+ * Retourne la chaîne de requête — de quoi fabriquer « reviens ICI » sur les
+ * liens sortants (`avecRetour`, lib/retour). L'adresse du navigateur suffit
+ * tant qu'on revient par la flèche ; elle ne suffit plus dès qu'on revient par
+ * le lien « ← Affaires » de la fiche, qui, lui, doit savoir où était la liste.
  */
-export function useSyncUrl(filtres: Record<string, string | boolean | null | undefined>) {
+export function useSyncUrl(
+  filtres: Record<string, string | boolean | null | undefined>,
+): string {
   // La chaîne est calculée pendant le rendu : c'est une dépendance stable, donc
   // l'effet ne se déclenche que quand un filtre change réellement.
   const p = new URLSearchParams();
@@ -43,6 +50,13 @@ export function useSyncUrl(filtres: Record<string, string | boolean | null | und
   useEffect(() => {
     window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
   }, [qs]);
+
+  return qs;
+}
+
+/** L'adresse de l'écran courant, filtres compris — à donner à `avecRetour`. */
+export function iciAvecFiltres(chemin: string, qs: string): string {
+  return qs ? `${chemin}?${qs}` : chemin;
 }
 
 /** Lecture d'un booléen posé par `useSyncUrl` (« 1 » = vrai). */

@@ -6,7 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { Archive, ArrowLeftRight, Plus, Search, TriangleAlert } from "lucide-react";
 import { Badge, Button, Chiffre, Input, RangeeChiffres } from "@/ui";
 import { cn } from "@/lib/cn";
-import { boolUrl, useSyncUrl } from "@/lib/filtres-url";
+import { boolUrl, iciAvecFiltres, useSyncUrl } from "@/lib/filtres-url";
+import { avecRetour } from "@/lib/retour";
 import { EditeurProduit } from "./editeur-produit";
 import { SaisieMouvement, type AffaireChoix } from "./saisie-mouvement";
 import {
@@ -55,12 +56,17 @@ export function Rayon({
   // Les archivés sont chargés mais masqués : on les retrouve d'un clic, sans
   // aller-retour serveur, et sans encombrer le rayon au quotidien.
   const [avecArchives, setAvecArchives] = useState(() => boolUrl(params.get("archives")));
-  useSyncUrl({
-    q,
-    cat: categorieId === "TOUTES" ? "" : categorieId,
-    alertes: seulementAlertes,
-    archives: avecArchives,
-  });
+  // Le produit emporte l'adresse du rayon : son « ← Le rayon » y ramène avec la
+  // recherche et les filtres (voir lib/retour).
+  const retourIci = iciAvecFiltres(
+    "/outils/magasin",
+    useSyncUrl({
+      q,
+      cat: categorieId === "TOUTES" ? "" : categorieId,
+      alertes: seulementAlertes,
+      archives: avecArchives,
+    }),
+  );
   const [mouvement, setMouvement] = useState<{ produitId?: string } | null>(null);
   const [creation, setCreation] = useState(false);
 
@@ -220,7 +226,7 @@ export function Rayon({
               <tr key={l.id} className={cn(!l.actif && "opacity-55")}>
                 <td className="cell-title cell-card-title cell-wrap">
                   <Link
-                    href={`/outils/magasin/produits/${l.id}`}
+                    href={avecRetour(`/outils/magasin/produits/${l.id}`, retourIci)}
                     className="group inline-flex items-baseline gap-2 transition-colors hover:text-brand"
                   >
                     <span className="ref shrink-0">{l.refInterne}</span>

@@ -5,6 +5,7 @@ import {FileStack, Hash} from "lucide-react";
 import { getClient } from "@/lib/clients/queries";
 import { listerRealisationsClient } from "@/lib/clients/providers";
 import { ClientFicheHeader } from "@/lib/clients/client-fiche-header";
+import { lienRetour } from "@/lib/retour";
 import { EnteteSection } from "@/ui";
 
 export async function generateMetadata({
@@ -23,10 +24,13 @@ function fmtDate(d: Date) {
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ retour?: string }>;
 }) {
   const { id } = await params;
+  const { retour } = await searchParams;
   const client = await getClient(id);
   if (!client) notFound();
 
@@ -34,7 +38,11 @@ export default async function Page({
 
   return (
     <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
-      <ClientFicheHeader id={client.id} nom={client.nom} />
+      <ClientFicheHeader
+        id={client.id}
+        nom={client.nom}
+        retour={lienRetour(retour, { href: "/clients", label: "Clients" })}
+      />
 
       <section>
         <EnteteSection icone={FileStack} titre="Réalisations" compteur={realisations.length} />

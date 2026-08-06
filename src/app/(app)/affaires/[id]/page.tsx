@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Cpu, FileStack, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
 import { Button, EnteteBloc, EtatVide, JaugeES, Repere, type CompteES } from "@/ui";
 import { cn } from "@/lib/cn";
-import { avecRetour } from "@/lib/retour";
+import { avecRetour, lienRetour } from "@/lib/retour";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { etatLabel } from "@/lib/chantiers/etats";
 import { auth } from "@/auth";
@@ -87,8 +87,16 @@ function Avancement({ tests }: { tests: AvancementTests }) {
   );
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  /** `retour` = la liste d'où l'on vient, filtres compris (voir lib/retour). */
+  searchParams: Promise<{ retour?: string }>;
+}) {
   const { id } = await params;
+  const { retour } = await searchParams;
   const affaire = await getAffaire(id);
   if (!affaire) notFound();
 
@@ -195,6 +203,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         suiviParId={affaire.suiviParId}
         suiviParNom={affaire.suiviParNom}
         utilisateurs={utilisateurs}
+        retour={lienRetour(retour, { href: "/affaires", label: "Affaires" })}
       />
 
       {/* ---- Avancement : la frise des 7 jalons, ET les repères chiffrés ---

@@ -80,6 +80,7 @@ export function AffaireFicheHeader({
   suiviParId,
   suiviParNom,
   utilisateurs,
+  retour,
 }: {
   id: string;
   nom: string;
@@ -93,6 +94,8 @@ export function AffaireFicheHeader({
   suiviParNom: string | null;
   /** Comptes actifs, pour le menu « Suivi par ». */
   utilisateurs: { id: string; nom: string }[];
+  /** D'où l'on vient — la liste TELLE QU'ELLE ÉTAIT, filtres compris (lib/retour). */
+  retour: { href: string; label: string };
 }) {
   const router = useRouter();
   const [valNom, setValNom] = useState(nom);
@@ -213,12 +216,14 @@ export function AffaireFicheHeader({
 
   return (
     <div className="anim-rise">
+      {/* Le retour rejoint la liste D'OÙ L'ON VIENT (ses filtres compris), pas
+          un « /affaires » nu qui remettrait le tableau à son défaut. */}
       <Link
-        href="/affaires"
+        href={retour.href}
         className="group -my-1 mb-1.5 inline-flex min-h-[2.5rem] items-center gap-1.5 py-1 text-sm text-muted transition-colors hover:text-fg sm:my-0 sm:mb-2.5 sm:min-h-0 sm:py-0"
       >
         <ArrowLeft className="h-4 w-4 transition-transform duration-150 group-hover:-translate-x-0.5" />
-        Affaires
+        {retour.label}
       </Link>
 
       <div className="bloc">

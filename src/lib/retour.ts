@@ -29,8 +29,11 @@ const LIBELLES: [prefixe: string, label: string][] = [
   ["/outils/notes", "Les notes"],
   ["/outils/wiki", "Le wiki"],
   ["/affaires/", "L'affaire"],
-  ["/affaires", "Les affaires"],
-  ["/clients", "Les clients"],
+  ["/affaires", "Affaires"],
+  // Les libellés reprennent MOT POUR MOT celui que l'écran affiche déjà quand
+  // on arrive sans origine : un retour ne doit pas changer de nom selon le
+  // chemin emprunté.
+  ["/clients", "Clients"],
   ["/", "L'accueil"],
 ];
 

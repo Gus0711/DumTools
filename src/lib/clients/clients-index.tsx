@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Building2, Search } from "lucide-react";
 import { Input } from "@/ui";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { iciAvecFiltres, useSyncUrl } from "@/lib/filtres-url";
+import { avecRetour } from "@/lib/retour";
 import type { ClientResume } from "./queries";
 
 function fmtDate(d: Date) {
@@ -17,7 +18,9 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
   // pas remettre la liste à zéro (voir lib/filtres-url).
   const params = useSearchParams();
   const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
-  useSyncUrl({ q: recherche });
+  // Chaque client emporte l'adresse de la liste : le « ← Clients » de sa fiche
+  // y ramène avec la recherche, pas seulement la flèche du navigateur.
+  const retourIci = iciAvecFiltres("/clients", useSyncUrl({ q: recherche }));
 
   const filtres = useMemo(() => {
     const q = recherche.trim().toLowerCase();
@@ -64,7 +67,7 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
                 <tr key={c.id}>
                   <td className="cell-wrap cell-card-title">
                     <Link
-                      href={`/clients/${c.id}`}
+                      href={avecRetour(`/clients/${c.id}`, retourIci)}
                       className="cell-title inline-flex items-center gap-2 hover:text-brand"
                     >
                       <Building2 className="h-4 w-4 shrink-0 text-subtle" />
