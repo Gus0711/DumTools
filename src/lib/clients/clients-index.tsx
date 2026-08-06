@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Building2, Search } from "lucide-react";
 import { Input } from "@/ui";
+import { useSyncUrl } from "@/lib/filtres-url";
 import type { ClientResume } from "./queries";
 
 function fmtDate(d: Date) {
@@ -11,7 +13,11 @@ function fmtDate(d: Date) {
 }
 
 export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
-  const [recherche, setRecherche] = useState("");
+  // La recherche vit dans l'URL : ouvrir une fiche client puis revenir ne doit
+  // pas remettre la liste à zéro (voir lib/filtres-url).
+  const params = useSearchParams();
+  const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
+  useSyncUrl({ q: recherche });
 
   const filtres = useMemo(() => {
     const q = recherche.trim().toLowerCase();

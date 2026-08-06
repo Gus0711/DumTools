@@ -21,6 +21,7 @@ import { BESOINS_ARMOIRE } from "./armoire";
 import {
   changerBesoinArmoire,
   changerEtatAffaire,
+  changerSuiviPar,
   libererNumeroWhy,
   modifierAffaire,
   supprimerAffaire,
@@ -32,6 +33,30 @@ import {
  * éditable sur place — pas de mode « modifier » : on écrit là où on lit, et le
  * bouton d'enregistrement n'apparaît que si quelque chose a bougé.
  * ========================================================================== */
+
+/**
+ * Une valeur qu'on choisit dans un MENU : affichée immédiatement, corrigée si
+ * le serveur finit par dire autre chose.
+ *
+ * Sans ça, un `<select>` piloté par la prop serveur reste sur son ancienne
+ * valeur — grisé — pendant tout l'aller-retour : action, puis re-rendu complet
+ * de la fiche (frise, projets, matériel, notes, fichiers, scans). Le choix est
+ * pourtant déjà fait et déjà valide côté client ; le faire attendre ne protège
+ * de rien, ça donne juste l'impression que « ça tourne ».
+ *
+ * Le réalignement se fait PENDANT LE RENDU (pas dans un effet) : c'est le
+ * patron recommandé par React pour un état dérivé d'une prop, et l'effet
+ * équivalent est refusé par le lint du projet.
+ */
+function useChoixServeur(valeurServeur: string) {
+  const [vue, setVue] = useState(valeurServeur);
+  const [derniereProp, setDerniereProp] = useState(valeurServeur);
+  if (derniereProp !== valeurServeur) {
+    setDerniereProp(valeurServeur);
+    setVue(valeurServeur);
+  }
+  return [vue, setVue] as const;
+}
 
 /** Champ éditable « à plat » : ni boîte ni ombre, juste un filet sous la valeur. */
 const CHAMP_PLAT = cn(
@@ -52,6 +77,9 @@ export function AffaireFicheHeader({
   clientNom,
   numeroWhy,
   clients,
+  suiviParId,
+  suiviParNom,
+  utilisateurs,
 }: {
   id: string;
   nom: string;
@@ -60,11 +88,19 @@ export function AffaireFicheHeader({
   clientNom: string;
   numeroWhy: string | null;
   clients: string[];
+  /** Qui suit l'affaire chez nous. Null = personne d'attitré. */
+  suiviParId: string | null;
+  suiviParNom: string | null;
+  /** Comptes actifs, pour le menu « Suivi par ». */
+  utilisateurs: { id: string; nom: string }[];
 }) {
   const router = useRouter();
   const [valNom, setValNom] = useState(nom);
   const [valClient, setValClient] = useState(clientNom);
   const [valWhy, setValWhy] = useState(numeroWhy ?? "");
+  // Les deux menus s'affichent tout de suite (voir useChoixServeur).
+  const [valArmoire, setValArmoire] = useChoixServeur(besoinArmoire ?? "");
+  const [valSuivi, setValSuivi] = useChoixServeur(suiviParId ?? "");
   const [erreur, setErreur] = useState("");
   // Suppression en deux temps : le premier clic arme, le second exécute.
   const [confirmeSuppr, setConfirmeSuppr] = useState(false);
@@ -128,13 +164,48 @@ export function AffaireFicheHeader({
     });
   }
 
+  /* ---- Rafraîchir, ou pas -------------------------------------------------
+     `router.refresh()` re-rend la fiche ENTIÈRE (frise, projets, matériel,
+     notes, fichiers, scans) et invalide le cache de routeur, ce qui relance au
+     passage le préchargement de tous les liens visibles. C'est cher. On ne le
+     paie donc que si un AUTRE morceau de l'écran dépend de la valeur :
+       · besoin armoire → oui : il alimente le jalon « Armoire » de la frise et
+         le bandeau « schéma d'armoire manquant » ;
+       · suivi par      → non : rien d'autre sur la fiche ne l'affiche. La liste
+         des affaires, elle, est réévaluée à la navigation (l'action appelle
+         déjà `revalidatePath("/affaires")`).
+     Vérifié : sans refresh, la frise ne bouge pas — la réponse de l'action ne
+     suffit pas à réactualiser l'arbre ici. */
+
   function changerArmoire(valeur: string) {
+    const avant = valArmoire;
+    setValArmoire(valeur); // affiché tout de suite
     setErreur("");
     start(async () => {
       try {
         await changerBesoinArmoire(id, valeur ? (valeur as BesoinArmoire) : null);
-        router.refresh();
+        router.refresh(); // la frise et l'alerte en dépendent
       } catch (e) {
+        setValArmoire(avant); // refusé : on rend la main à la vérité du serveur
+        setErreur(e instanceof Error ? e.message : "Erreur");
+      }
+    });
+  }
+
+  function changerSuivi(valeur: string) {
+    const avant = valSuivi;
+    setValSuivi(valeur);
+    setErreur("");
+    start(async () => {
+      try {
+        // Refus attendu (compte désactivé) : RETOURNÉ, pas lancé.
+        const r = await changerSuiviPar(id, valeur || null);
+        if (r?.erreur) {
+          setValSuivi(avant);
+          setErreur(r.erreur);
+        }
+      } catch (e) {
+        setValSuivi(avant);
         setErreur(e instanceof Error ? e.message : "Erreur");
       }
     });
@@ -242,12 +313,14 @@ export function AffaireFicheHeader({
         {/* Rail du cycle — la barre de progression de l'affaire, pleine largeur. */}
         <CycleAffaire etat={etat} pending={pending} onChanger={changerEtat} />
 
-        {/* Pavé de références — TROIS COLONNES ÉGALES. En flex, le champ Client
-            portait `flex-1` et mangeait toute la largeur restante : les trois
+        {/* Pavé de références — COLONNES ÉGALES. En flex, le champ Client
+            portait `flex-1` et mangeait toute la largeur restante : les
             références n'avaient aucune raison d'être hiérarchisées ainsi. Une
             grille à parts égales les aligne, et les filets de séparation
-            tombent à intervalle régulier. */}
-        <div className="grid grid-cols-1 border-t border-hairline bg-surface-2 sm:grid-cols-3">
+            tombent à intervalle régulier. À quatre champs, on passe par deux
+            colonnes avant d'aller à quatre : « Besoin armoire » et « Suivi par »
+            ne tiennent pas côte à côte sur une tablette. */}
+        <div className="grid grid-cols-1 border-t border-hairline bg-surface-2 sm:grid-cols-2 lg:grid-cols-4">
           <Champ label="Client">
             <Combobox
               value={valClient}
@@ -269,18 +342,46 @@ export function AffaireFicheHeader({
             />
           </Champ>
 
-          <Champ label="Besoin armoire" pourId="besoin-armoire">
+          {/* Plus de `disabled={pending}` : un menu qu'on vient d'ouvrir et de
+              choisir n'a aucune raison de se verrouiller le temps du réseau.
+              L'enregistrement se signale par le point laiton du libellé. */}
+          <Champ label="Besoin armoire" pourId="besoin-armoire" enCours={pending}>
             <select
               id="besoin-armoire"
-              value={besoinArmoire ?? ""}
+              value={valArmoire}
               onChange={(e) => changerArmoire(e.target.value)}
-              disabled={pending}
               className={cn(CHAMP_PLAT, "cursor-pointer")}
             >
               <option value="">Non défini</option>
               {BESOINS_ARMOIRE.map((b) => (
                 <option key={b.value} value={b.value}>
                   {b.label}
+                </option>
+              ))}
+            </select>
+          </Champ>
+
+          {/* « Suivi par » : qui s'en occupe CHEZ NOUS. C'est un repère, pas un
+              droit d'accès — l'affaire reste ouverte à tout le monde. Le menu
+              s'applique au changement, comme le besoin armoire : pas de bouton
+              « enregistrer » pour une valeur qu'on choisit dans une liste. */}
+          <Champ label="Suivi par" pourId="suivi-par" enCours={pending}>
+            <select
+              id="suivi-par"
+              value={valSuivi}
+              onChange={(e) => changerSuivi(e.target.value)}
+              className={cn(CHAMP_PLAT, "cursor-pointer", !valSuivi && "text-subtle")}
+            >
+              <option value="">Personne</option>
+              {/* Le titulaire n'est plus dans les actifs (compte désactivé) :
+                  on l'ajoute quand même, sinon le menu afficherait « Personne »
+                  alors que la base dit le contraire. */}
+              {suiviParId && !utilisateurs.some((u) => u.id === suiviParId) && (
+                <option value={suiviParId}>{suiviParNom ?? "Compte désactivé"} (inactif)</option>
+              )}
+              {utilisateurs.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.nom}
                 </option>
               ))}
             </select>
@@ -300,11 +401,16 @@ export function AffaireFicheHeader({
 function Champ({
   label,
   pourId,
+  enCours = false,
   className,
   children,
 }: {
   label: string;
   pourId?: string;
+  /** Une écriture est en vol : un point laiton à côté du libellé. Discret par
+   *  choix — le champ affiche déjà la bonne valeur, il ne se passe rien que
+   *  l'utilisateur doive attendre. */
+  enCours?: boolean;
   className?: string;
   children: React.ReactNode;
 }) {
@@ -313,19 +419,28 @@ function Champ({
       className={cn(
         // min-w-0 : en grille, une colonne `1fr` vaut `min-width:auto` par
         // défaut — un nom de client à rallonge élargirait sa colonne et
-        // casserait l'égalité des trois.
+        // casserait l'égalité des colonnes.
         "min-w-0 border-b border-hairline px-4 py-2 last:border-b-0",
         "sm:border-b-0 sm:border-r sm:last:border-r-0 md:px-6",
         className,
       )}
     >
-      {pourId ? (
-        <label className="stamp" htmlFor={pourId}>
-          {label}
-        </label>
-      ) : (
-        <span className="stamp">{label}</span>
-      )}
+      <span className="flex items-center gap-1.5">
+        {pourId ? (
+          <label className="stamp" htmlFor={pourId}>
+            {label}
+          </label>
+        ) : (
+          <span className="stamp">{label}</span>
+        )}
+        {enCours && (
+          <span
+            aria-hidden
+            title="Enregistrement…"
+            className="signal-accent led led-cur shrink-0"
+          />
+        )}
+      </span>
       <div className="mt-0.5">{children}</div>
     </div>
   );

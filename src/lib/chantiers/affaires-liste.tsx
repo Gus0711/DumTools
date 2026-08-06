@@ -2,12 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useSyncUrl } from "@/lib/filtres-url";
 import { Briefcase, RotateCcw, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Combobox, EnteteBloc, EtatVide, type ComboOption } from "@/ui";
 import type { EtatAffaire } from "@/generated/prisma/enums";
 import type { AffaireResume } from "./queries";
-import { ETATS_ACTIFS, ETATS_AFFAIRE } from "./etats";
+import { ETATS_AFFAIRE, ETATS_VUE_DEFAUT } from "./etats";
 import { EtatBadge, ETAT_TONE, SynoptiqueMini } from "./etat-badge";
 
 function fmtDate(d: Date) {
@@ -22,12 +24,40 @@ function norm(s: string): string {
     .replace(/[̀-ͯ]/g, "");
 }
 
-export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
-  const [query, setQuery] = useState("");
-  // Par défaut : uniquement les affaires actives (Devis, Commande, En cours) —
-  // Livrée / Clôturée / Corbeille restent accessibles en cliquant leur puce.
-  const [etats, setEtats] = useState<Set<EtatAffaire>>(new Set(ETATS_ACTIFS));
-  const [client, setClient] = useState("");
+/** Les états retenus, lus depuis l'URL. Absent = le défaut (« En cours ») ;
+ *  « aucun » = l'utilisateur a tout décoché, ce qui n'est pas la même chose. */
+function etatsDepuisUrl(brut: string | null): Set<EtatAffaire> {
+  if (brut === null) return new Set(ETATS_VUE_DEFAUT);
+  if (brut === "aucun") return new Set();
+  const connus = new Set<string>(ETATS_AFFAIRE.map((e) => e.value));
+  // On ignore ce qu'on ne reconnaît pas : une URL bricolée ne doit pas casser
+  // l'écran, juste filtrer moins.
+  return new Set(brut.split(",").filter((v): v is EtatAffaire => connus.has(v)));
+}
+
+export function AffairesListe({
+  affaires,
+  moiId,
+}: {
+  affaires: AffaireResume[];
+  /** Pour l'option « Moi » du filtre « Suivi par ». Null si non connecté. */
+  moiId?: string | null;
+}) {
+  /* --- Les filtres vivent dans l'URL ------------------------------------- *
+     Sinon, ouvrir une affaire puis revenir en arrière remet le tableau à son
+     défaut : on retrouve « En cours » alors qu'on travaillait sur « Commande ».
+     L'URL est aussi ce qui se met en favori et se colle dans un message. */
+  const params = useSearchParams();
+  const [query, setQuery] = useState(() => params.get("q") ?? "");
+  // "" = tout le monde ; "AUCUN" = les affaires que personne ne suit.
+  const [suivi, setSuivi] = useState(() => params.get("suivi") ?? "");
+  // Par défaut : uniquement « En cours » — ce sur quoi on travaille. Les autres
+  // états (devis en attente, livrées, clôturées, corbeille) restent accessibles
+  // en cliquant leur puce, qui annonce déjà son compte.
+  const [etats, setEtats] = useState<Set<EtatAffaire>>(() =>
+    etatsDepuisUrl(params.get("etats")),
+  );
+  const [client, setClient] = useState(() => params.get("client") ?? "");
 
   // Clients réellement présents dans les affaires (pour l'autocomplétion).
   const clientOptions = useMemo<ComboOption[]>(
@@ -46,19 +76,34 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
     return m;
   }, [affaires]);
 
+  // Qui suit quelque chose, et combien — la liste vient des affaires, pas de
+  // l'annuaire : filtrer sur quelqu'un qui ne suit rien ne sert à rien.
+  const suiveurs = useMemo(() => {
+    const m = new Map<string, { nom: string; n: number }>();
+    for (const a of affaires) {
+      if (!a.suiviParId) continue;
+      const e = m.get(a.suiviParId);
+      if (e) e.n++;
+      else m.set(a.suiviParId, { nom: a.suiviParNom ?? "—", n: 1 });
+    }
+    return [...m.entries()].sort((x, y) => x[1].nom.localeCompare(y[1].nom));
+  }, [affaires]);
+  const nbSansSuivi = affaires.filter((a) => !a.suiviParId).length;
+
   const filtrees = useMemo(() => {
     const q = norm(query.trim());
     const cl = norm(client.trim());
     return affaires.filter((a) => {
       if (etats.size > 0 && !etats.has(a.etat)) return false;
       if (cl && !norm(a.clientNom).includes(cl)) return false;
+      if (suivi === "AUCUN" ? a.suiviParId !== null : suivi && a.suiviParId !== suivi) return false;
       if (q) {
-        const cible = norm(`${a.nom} ${a.clientNom} ${a.numeroWhy ?? ""}`);
+        const cible = norm(`${a.nom} ${a.clientNom} ${a.numeroWhy ?? ""} ${a.suiviParNom ?? ""}`);
         if (!cible.includes(q)) return false;
       }
       return true;
     });
-  }, [affaires, query, etats, client]);
+  }, [affaires, query, etats, client, suivi]);
 
   function toggleEtat(e: EtatAffaire) {
     setEtats((prev) => {
@@ -70,12 +115,24 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
   }
 
   const etatsParDefaut =
-    etats.size === ETATS_ACTIFS.length && ETATS_ACTIFS.every((e) => etats.has(e));
-  const filtreActif = query.trim() !== "" || client !== "" || !etatsParDefaut;
+    etats.size === ETATS_VUE_DEFAUT.length && ETATS_VUE_DEFAUT.every((e) => etats.has(e));
+  const filtreActif = query.trim() !== "" || client !== "" || suivi !== "" || !etatsParDefaut;
+
+  // Les états ne s'écrivent que s'ils s'écartent du défaut (voir filtres-url).
+  // La chaîne vide est un choix légitime (« aucun état retenu ») : on la note
+  // avec un marqueur, sinon elle serait confondue avec « pas de filtre ».
+  useSyncUrl({
+    q: query,
+    client,
+    suivi,
+    etats: etatsParDefaut ? "" : [...etats].join(",") || "aucun",
+  });
+
   function reinitialiser() {
     setQuery("");
-    setEtats(new Set(ETATS_ACTIFS));
+    setEtats(new Set(ETATS_VUE_DEFAUT));
     setClient("");
+    setSuivi("");
   }
 
   // Base vide et liste filtrée vide sont deux situations différentes : la
@@ -131,6 +188,35 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
             placeholder="Filtrer par client…"
           />
         </div>
+
+        {/* « Suivi par » : le seul filtre qui répond à « qu'est-ce qui est à
+            moi ». Chaque entrée annonce son compte — on sait avant de cliquer
+            si ça vaut le coup. */}
+        <select
+          value={suivi}
+          onChange={(e) => setSuivi(e.target.value)}
+          aria-label="Filtrer par personne qui suit l'affaire"
+          className={cn(
+            "h-9 w-44 shrink-0 cursor-pointer rounded-md border border-border bg-surface px-2 text-sm",
+            "transition-[border-color] duration-150 hover:border-brand/40 focus:border-brand focus:outline-none",
+            suivi ? "text-fg" : "text-subtle",
+          )}
+        >
+          <option value="">Suivi par : tous</option>
+          {moiId && suiveurs.some(([id]) => id === moiId) && (
+            <option value={moiId}>
+              Moi ({suiveurs.find(([id]) => id === moiId)?.[1].n})
+            </option>
+          )}
+          {suiveurs
+            .filter(([id]) => id !== moiId)
+            .map(([id, s]) => (
+              <option key={id} value={id}>
+                {s.nom} ({s.n})
+              </option>
+            ))}
+          {nbSansSuivi > 0 && <option value="AUCUN">Personne ({nbSansSuivi})</option>}
+        </select>
 
         {/* Les puces gardent leur défilement horizontal au téléphone : six états
             ne tiennent pas sur 390 px, et les empiler mangerait l'écran. */}
@@ -196,6 +282,7 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                 <th>Affaire</th>
                 <th>Client</th>
                 <th>N° Why</th>
+                <th>Suivi par</th>
                 <th>État</th>
                 <th className="cell-num">Réal.</th>
                 <th>Modifié</th>
@@ -218,6 +305,17 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
                     {a.numeroWhy ? (
                       <span className="ref rounded bg-surface-2 px-1.5 py-0.5 text-fg">
                         {a.numeroWhy}
+                      </span>
+                    ) : (
+                      <span className="text-subtle">—</span>
+                    )}
+                  </td>
+                  {/* Qui s'en occupe chez nous. Une affaire sans personne se
+                      voit : c'est justement ce qu'on cherche du regard. */}
+                  <td data-label="Suivi par">
+                    {a.suiviParNom ? (
+                      <span className={cn(a.suiviParId === moiId && "font-semibold text-fg")}>
+                        {a.suiviParNom}
                       </span>
                     ) : (
                       <span className="text-subtle">—</span>

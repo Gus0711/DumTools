@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CornerDownLeft, FileText, Loader2, Search } from "lucide-react";
+import { useSyncUrl } from "@/lib/filtres-url";
 import { rechercherWiki } from "./actions";
 import { segmentsSurlignes } from "./model";
 import type { WikiResultatRecherche } from "./queries";
@@ -28,7 +30,11 @@ function Extrait({ texte }: { texte: string }) {
 }
 
 export function RechercheWiki() {
-  const [q, setQ] = useState("");
+  // La requête vit dans l'URL : ouvrir une page trouvée puis revenir relance la
+  // même recherche au lieu de rendre la boîte vide (voir lib/filtres-url).
+  const params = useSearchParams();
+  const [q, setQ] = useState(() => params.get("q") ?? "");
+  useSyncUrl({ q });
   // On mémorise la requête associée à la réponse : les résultats ne s'affichent
   // que s'ils correspondent à la saisie courante (pas de flash de résultats
   // périmés, et aucun setState synchrone dans l'effet).

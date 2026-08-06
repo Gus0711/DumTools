@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Globe, Hash, NotebookPen, Search } from "lucide-react";
 import { Input } from "@/ui";
+import { useSyncUrl } from "@/lib/filtres-url";
 import { fmtDateHeure, fmtRelatif } from "@/lib/dates";
 import type { NoteResume } from "./queries";
 
@@ -12,7 +14,11 @@ import type { NoteResume } from "./queries";
  * extrait du contenu sous chaque titre. */
 
 export function NotesIndex({ notes }: { notes: NoteResume[] }) {
-  const [recherche, setRecherche] = useState("");
+  // Recherche rangée dans l'URL : revenir d'une note ne remet pas la liste à
+  // plat (voir lib/filtres-url).
+  const params = useSearchParams();
+  const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
+  useSyncUrl({ q: recherche });
 
   const filtrees = useMemo(() => {
     const q = recherche.trim().toLowerCase();

@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { CircuitBoard, Search, Unlink } from "lucide-react";
 import { Input } from "@/ui";
 import { cn } from "@/lib/cn";
+import { boolUrl, useSyncUrl } from "@/lib/filtres-url";
 import { SupprimerProjet } from "./supprimer-projet";
 import type { ProjetResume } from "./queries";
 
@@ -16,9 +18,16 @@ export function ProjetsFiltrables({
   /** Ouvre la liste déjà filtrée sur les projets sans affaire (?sans-affaire=1). */
   orphelinsParDefaut?: boolean;
 }) {
-  const [recherche, setRecherche] = useState("");
-  const [client, setClient] = useState("");
-  const [orphelinsSeuls, setOrphelinsSeuls] = useState(orphelinsParDefaut);
+  // Filtres rangés dans l'URL : ouvrir un projet puis revenir ne remet pas la
+  // liste à plat (voir lib/filtres-url). L'entrée « ?sans-affaire=1 » venue du
+  // tableau de bord reste le défaut de la case « orphelins ».
+  const params = useSearchParams();
+  const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
+  const [client, setClient] = useState(() => params.get("client") ?? "");
+  const [orphelinsSeuls, setOrphelinsSeuls] = useState(
+    () => boolUrl(params.get("orphelins")) || orphelinsParDefaut,
+  );
+  useSyncUrl({ q: recherche, client, orphelins: orphelinsSeuls });
   const nbOrphelins = projets.filter((p) => p.orphelin).length;
 
   const clients = useMemo(

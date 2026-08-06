@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Archive, ArrowLeftRight, Plus, Search, TriangleAlert } from "lucide-react";
 import { Badge, Button, Chiffre, Input, RangeeChiffres } from "@/ui";
 import { cn } from "@/lib/cn";
+import { boolUrl, useSyncUrl } from "@/lib/filtres-url";
 import { EditeurProduit } from "./editeur-produit";
 import { SaisieMouvement, type AffaireChoix } from "./saisie-mouvement";
 import {
@@ -44,12 +46,21 @@ export function Rayon({
   peutPrix: boolean;
   peutGerer: boolean;
 }) {
-  const [q, setQ] = useState("");
-  const [categorieId, setCategorieId] = useState("TOUTES");
-  const [seulementAlertes, setSeulementAlertes] = useState(false);
+  // Recherche et filtres rangés dans l'URL : ouvrir une fiche produit puis
+  // revenir ne doit pas rendre le rayon entier (voir lib/filtres-url).
+  const params = useSearchParams();
+  const [q, setQ] = useState(() => params.get("q") ?? "");
+  const [categorieId, setCategorieId] = useState(() => params.get("cat") ?? "TOUTES");
+  const [seulementAlertes, setSeulementAlertes] = useState(() => boolUrl(params.get("alertes")));
   // Les archivés sont chargés mais masqués : on les retrouve d'un clic, sans
   // aller-retour serveur, et sans encombrer le rayon au quotidien.
-  const [avecArchives, setAvecArchives] = useState(false);
+  const [avecArchives, setAvecArchives] = useState(() => boolUrl(params.get("archives")));
+  useSyncUrl({
+    q,
+    cat: categorieId === "TOUTES" ? "" : categorieId,
+    alertes: seulementAlertes,
+    archives: avecArchives,
+  });
   const [mouvement, setMouvement] = useState<{ produitId?: string } | null>(null);
   const [creation, setCreation] = useState(false);
 

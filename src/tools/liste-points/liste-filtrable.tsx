@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { FileText, Search } from "lucide-react";
 import { Input } from "@/ui";
+import { useSyncUrl } from "@/lib/filtres-url";
 import { SupprimerListe } from "./supprimer-liste";
 import type { ListeResume } from "./queries";
 
@@ -12,8 +14,11 @@ function fmtDate(d: Date | null) {
 }
 
 export function ListeFiltrable({ docs }: { docs: ListeResume[] }) {
-  const [recherche, setRecherche] = useState("");
-  const [client, setClient] = useState("");
+  // Filtres dans l'URL (voir lib/filtres-url).
+  const params = useSearchParams();
+  const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
+  const [client, setClient] = useState(() => params.get("client") ?? "");
+  useSyncUrl({ q: recherche, client });
 
   const clients = useMemo(
     () =>

@@ -54,6 +54,10 @@ model User {
   /// `updatedById` sur chaque modèle. Les écritures techniques (synchro kDrive,
   /// propagation de dénormalisation, réordonnancement) n'y touchent pas.
   chantiersModifies     Chantier[]          @relation("ChantierModifie")
+  /// Affaires que cette personne suit (« Suivi par » sur la fiche Affaire) —
+  /// qui s'en occupe chez nous, à ne pas confondre avec l'auteur de la dernière
+  /// modification ci-dessus.
+  chantiersSuivis       Chantier[]          @relation("ChantierSuivi")
   affectationsModifiees AffectationProjet[] @relation("AffectationModifiee")
   notesModifiees        Note[]              @relation("NoteModifiee")
   visitesModifiees      Visite[]            @relation("VisiteModifiee")
@@ -183,6 +187,11 @@ model Chantier {
   kdriveDirId   String?
   clientId      String
   client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  /// Qui suit l'affaire CHEZ NOUS (« Suivi par » sur la fiche et dans la liste).
+  /// Null = personne d'attitré. Se vide si le compte est supprimé — l'affaire,
+  /// elle, reste. À ne pas confondre avec `updatedById` (dernière modification).
+  suiviParId    String?
+  suiviPar      User?          @relation("ChantierSuivi", fields: [suiviParId], references: [id], onDelete: SetNull)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   /// Auteur de la dernière modification HUMAINE (fil d'activité). Null = jamais
@@ -206,6 +215,7 @@ model Chantier {
   exemplaires        Exemplaire[]
 
   @@index([clientId])
+  @@index([suiviParId])
 }
 
 /// Tâche (todo) d'une affaire — kanban « À faire / En cours / Terminé » de la

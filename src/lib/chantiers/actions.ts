@@ -72,7 +72,10 @@ export async function creerAffaire(p: {
   let affaire: { id: string };
   try {
     affaire = await prisma.chantier.create({
-      data: { nom, numeroWhy, clientId, updatedById: userId },
+      // « Suivi par » revient à celui qui crée l'affaire : dans neuf cas sur
+      // dix c'est lui qui s'en occupe, et un champ vide par défaut ne se
+      // remplit jamais. Un menu sur la fiche permet de le passer à un autre.
+      data: { nom, numeroWhy, clientId, suiviParId: userId, updatedById: userId },
       select: { id: true },
     });
   } catch (e) {
@@ -264,6 +267,32 @@ export async function changerBesoinArmoire(
   await prisma.chantier.update({
     where: { id },
     data: { besoinArmoire, updatedById: userId },
+  });
+  revalidate(id);
+}
+
+/** « Suivi par » : qui s'occupe de l'affaire chez nous. `null` = personne
+ *  d'attitré (l'affaire reste visible de tous — c'est un repère, pas un droit
+ *  d'accès). Le compte doit être actif : on n'attribue pas une affaire à
+ *  quelqu'un qui est parti. */
+export async function changerSuiviPar(
+  id: string,
+  suiviParId: string | null,
+): Promise<{ erreur: string } | void> {
+  const userId = await requireUserId();
+
+  if (suiviParId) {
+    const u = await prisma.user.findUnique({
+      where: { id: suiviParId },
+      select: { actif: true },
+    });
+    if (!u) return { erreur: "Utilisateur introuvable." };
+    if (!u.actif) return { erreur: "Ce compte est désactivé." };
+  }
+
+  await prisma.chantier.update({
+    where: { id },
+    data: { suiviParId, updatedById: userId },
   });
   revalidate(id);
 }

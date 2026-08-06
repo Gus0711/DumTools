@@ -6,8 +6,9 @@
 // rapide, tri visuel) plutôt que des cartes. Clic sur une ligne → la fiche.
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useSyncUrl } from "@/lib/filtres-url";
 import {
   ClipboardList,
   Download,
@@ -109,7 +110,10 @@ export function IndexReponses({
 }) {
   const router = useRouter();
   const [reponses, setReponses] = useState(reponsesInitiales);
-  const [q, setQ] = useState("");
+  // Recherche dans l'URL : revenir d'une réponse ne remet pas la table à plat.
+  const params = useSearchParams();
+  const [q, setQ] = useState(() => params.get("q") ?? "");
+  useSyncUrl({ q });
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<string | null>(null);
 

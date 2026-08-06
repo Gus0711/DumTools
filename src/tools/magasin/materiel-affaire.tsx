@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Badge, Button, Chiffre, EnteteSection, Input, Label, RangeeChiffres } from "@/ui";
 import { cn } from "@/lib/cn";
+import { avecRetour } from "@/lib/retour";
 import {
   associerTrou,
   basculerHorsFourniture,
@@ -1026,8 +1027,13 @@ export function MaterielAffaire({
               return [
                 <tr key={l.produitId} className={cn(l.horsFourniture && "text-muted")}>
                   <td className="cell-title cell-card-title cell-wrap">
+                    {/* On emporte d'où l'on vient : la fiche produit ramène ici
+                        plutôt qu'au rayon (voir lib/retour). */}
                     <Link
-                      href={`/outils/magasin/produits/${l.produitId}`}
+                      href={avecRetour(
+                        `/outils/magasin/produits/${l.produitId}`,
+                        `/outils/magasin/affaires/${chantierId}`,
+                      )}
                       className="inline-flex items-baseline gap-2 transition-colors hover:text-brand"
                     >
                       <span className="ref shrink-0">{l.refInterne}</span>

@@ -2,7 +2,9 @@
 
 import { type ReactNode, useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Check, FileText, Loader2, Minus, RotateCcw, Search, Tag, X } from "lucide-react";
+import { useSyncUrl } from "@/lib/filtres-url";
 import { rechercherWiki } from "./actions";
 import { segmentsSurlignes, type FiltresWiki } from "./model";
 import type {
@@ -21,6 +23,23 @@ import type {
  * facettes puis classe par pertinence. */
 
 type EtatTag = "inc" | "exc";
+
+/** Les tags dans l'URL : « gtb:inc,armoire:exc ». Un tag inconnu ou un état
+ *  bricolé est ignoré — une adresse trafiquée filtre moins, elle ne casse pas
+ *  l'écran. */
+function tagsDepuisUrl(brut: string | null): Map<string, EtatTag> {
+  const m = new Map<string, EtatTag>();
+  if (!brut) return m;
+  for (const morceau of brut.split(",")) {
+    const [slug, etat] = morceau.split(":");
+    if (slug && (etat === "inc" || etat === "exc")) m.set(slug, etat);
+  }
+  return m;
+}
+
+function tagsVersUrl(etats: Map<string, EtatTag>): string {
+  return [...etats.entries()].map(([slug, etat]) => `${slug}:${etat}`).join(",");
+}
 
 /* --- Surlignage des extraits (identique à la barre rapide) -------------------- */
 function Extrait({ texte }: { texte: string }) {
@@ -191,11 +210,25 @@ function Bloc({ titre, children }: { titre: ReactNode; children: ReactNode }) {
 }
 
 export function RechercheAvanceeWiki({ catalogue }: { catalogue: OptionsRecherche }) {
-  const [q, setQ] = useState("");
-  const [etats, setEtats] = useState<Map<string, EtatTag>>(new Map());
-  const [modeTags, setModeTags] = useState<"et" | "ou">("et");
-  const [rubriqueSlug, setRubriqueSlug] = useState<string | null>(null);
-  const [auteurId, setAuteurId] = useState<string | null>(null);
+  /* Toutes les facettes vivent dans l'URL (voir lib/filtres-url) : on ouvre une
+     page trouvée, on revient, et la recherche est encore là. C'est aussi ce qui
+     rend une recherche à facettes PARTAGEABLE — « tiens, regarde ce que donne
+     ce croisement de tags » tient alors dans un lien. */
+  const params = useSearchParams();
+  const [q, setQ] = useState(() => params.get("q") ?? "");
+  const [etats, setEtats] = useState<Map<string, EtatTag>>(() => tagsDepuisUrl(params.get("tags")));
+  const [modeTags, setModeTags] = useState<"et" | "ou">(() =>
+    params.get("mode") === "ou" ? "ou" : "et",
+  );
+  const [rubriqueSlug, setRubriqueSlug] = useState<string | null>(() => params.get("rubrique"));
+  const [auteurId, setAuteurId] = useState<string | null>(() => params.get("auteur"));
+  useSyncUrl({
+    q,
+    tags: tagsVersUrl(etats),
+    mode: modeTags === "ou" ? "ou" : "",
+    rubrique: rubriqueSlug,
+    auteur: auteurId,
+  });
   const [rep, setRep] = useState<{ cle: string; res: WikiResultatRecherche[] } | null>(null);
   const [pending, start] = useTransition();
 

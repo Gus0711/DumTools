@@ -46,8 +46,15 @@ export const ETATS_AFFAIRE: { value: EtatAffaire; label: string; aide: string }[
  *  c'est une sortie de piste). Sert au fil d'étapes de la fiche Affaire. */
 export const CYCLE_AFFAIRE = ETATS_AFFAIRE.filter((e) => e.value !== "CORBEILLE");
 
-/** États affichés par défaut sur le tableau de bord (affaires « actives »). */
+/** Ce qu'« affaire active » VEUT DIRE — sert aux compteurs (accueil, chiffres
+ *  du tableau de bord) et aux extraits de parc. */
 export const ETATS_ACTIFS: EtatAffaire[] = ["DEVIS", "COMMANDE", "EN_COURS"];
+
+/** Les puces cochées à l'OUVERTURE de la liste des affaires. Plus étroit que
+ *  `ETATS_ACTIFS` : à l'ouverture on veut ce sur quoi on travaille, pas les
+ *  chiffrages en attente de réponse. Les autres états restent à un clic, et
+ *  leur puce annonce déjà son compte. */
+export const ETATS_VUE_DEFAUT: EtatAffaire[] = ["EN_COURS"];
 
 export function etatLabel(etat: EtatAffaire): string {
   return ETATS_AFFAIRE.find((e) => e.value === etat)?.label ?? etat;

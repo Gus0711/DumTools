@@ -13,6 +13,7 @@ import { getVisiteDetail } from "@/tools/visites/queries";
 import { FicheActionsVisite } from "@/tools/visites/fiche-actions";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { cn } from "@/lib/cn";
+import { lienRetour } from "@/lib/retour";
 import { Cartouche } from "@/ui";
 
 export const metadata: Metadata = { title: "Visite" };
@@ -87,8 +88,15 @@ function EnAttente({ n }: { n: number }) {
   );
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ retour?: string }>;
+}) {
   const { id } = await params;
+  const { retour } = await searchParams;
   const [visite, affaires] = await Promise.all([getVisiteDetail(id), listerAffaires()]);
   if (!visite) notFound();
 
@@ -101,7 +109,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
       <Cartouche
         estampille="Visite de chantier"
-        retour={{ href: "/outils/visites", label: "Toutes les visites" }}
+        retour={lienRetour(retour, { href: "/outils/visites", label: "Toutes les visites" })}
         titre={visite.titre}
         statut={
           <span

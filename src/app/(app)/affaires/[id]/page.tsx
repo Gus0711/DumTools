@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Cpu, FileStack, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
 import { Button, EnteteBloc, EtatVide, JaugeES, Repere, type CompteES } from "@/ui";
 import { cn } from "@/lib/cn";
+import { avecRetour } from "@/lib/retour";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { etatLabel } from "@/lib/chantiers/etats";
 import { auth } from "@/auth";
@@ -191,6 +192,9 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         clientNom={affaire.clientNom}
         numeroWhy={affaire.numeroWhy}
         clients={clients.map((c) => c.nom)}
+        suiviParId={affaire.suiviParId}
+        suiviParNom={affaire.suiviParNom}
+        utilisateurs={utilisateurs}
       />
 
       {/* ---- Avancement : la frise des 7 jalons, ET les repères chiffrés ---
@@ -461,7 +465,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                 {realisations.map((r) => (
                   <tr key={`${r.toolId}:${r.id}`}>
                     <td className="cell-title cell-card-title cell-wrap">
-                      <Link href={r.href} className="transition-colors hover:text-brand">
+                      {/* On emporte l'affaire : la fiche ouverte ramènera ici,
+                          pas à l'index de son outil (voir lib/retour). */}
+                      <Link
+                        href={avecRetour(r.href, `/affaires/${id}`)}
+                        className="transition-colors hover:text-brand"
+                      >
                         {r.titre}
                       </Link>
                     </td>

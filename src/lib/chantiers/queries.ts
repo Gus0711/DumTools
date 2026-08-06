@@ -36,6 +36,9 @@ export interface AffaireResume {
   updatedAt: Date;
   /** Nombre d'artefacts rattachés, tous outils confondus. */
   nbRealisations: number;
+  /** Qui suit l'affaire chez nous. Null = personne d'attitré. */
+  suiviParId: string | null;
+  suiviParNom: string | null;
 }
 
 /** Liste de toutes les affaires (tableau de bord). */
@@ -49,6 +52,7 @@ export async function listerAffaires(): Promise<AffaireResume[]> {
       etat: true,
       updatedAt: true,
       client: { select: { nom: true } },
+      suiviPar: { select: { id: true, nom: true } },
       _count: { select: { affectations: true } },
     },
   });
@@ -60,6 +64,8 @@ export async function listerAffaires(): Promise<AffaireResume[]> {
     clientNom: a.client.nom,
     updatedAt: a.updatedAt,
     nbRealisations: a._count.affectations,
+    suiviParId: a.suiviPar?.id ?? null,
+    suiviParNom: a.suiviPar?.nom ?? null,
   }));
 }
 
@@ -137,6 +143,12 @@ export interface AffaireDetail {
   besoinArmoire: BesoinArmoire | null;
   clientId: string;
   clientNom: string;
+  /** Qui suit l'affaire chez nous. Null = personne d'attitré. Le nom est repris
+   *  même si le compte a été désactivé depuis : sinon le menu de la fiche, qui
+   *  ne liste que les actifs, afficherait « Personne » alors que la base dit le
+   *  contraire. */
+  suiviParId: string | null;
+  suiviParNom: string | null;
 }
 
 export async function getAffaire(id: string): Promise<AffaireDetail | null> {
@@ -149,7 +161,9 @@ export async function getAffaire(id: string): Promise<AffaireDetail | null> {
       etat: true,
       besoinArmoire: true,
       clientId: true,
+      suiviParId: true,
       client: { select: { nom: true } },
+      suiviPar: { select: { nom: true } },
     },
   });
   if (!a) return null;
@@ -161,5 +175,7 @@ export async function getAffaire(id: string): Promise<AffaireDetail | null> {
     besoinArmoire: a.besoinArmoire,
     clientId: a.clientId,
     clientNom: a.client.nom,
+    suiviParId: a.suiviParId,
+    suiviParNom: a.suiviPar?.nom ?? null,
   };
 }

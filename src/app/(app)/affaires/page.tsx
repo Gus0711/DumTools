@@ -77,7 +77,7 @@ export default async function Page() {
         </Link>
       )}
 
-      <AffairesListe affaires={affaires} />
+      <AffairesListe affaires={affaires} moiId={session?.user?.id ?? null} />
     </div>
   );
 }

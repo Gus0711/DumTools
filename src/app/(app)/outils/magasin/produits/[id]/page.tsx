@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { Badge, Cartouche } from "@/ui";
 import { listerAffaires } from "@/lib/chantiers/queries";
+import { lienRetour } from "@/lib/retour";
 import { FicheProduitVue } from "@/tools/magasin/fiche-produit";
 import {
   formatEuros,
@@ -29,8 +30,15 @@ export async function generateMetadata({
   return { title: fiche ? `${fiche.refInterne} — Magasin` : "Produit — Magasin" };
 }
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ retour?: string }>;
+}) {
   const { id } = await params;
+  const { retour } = await searchParams;
   const session = await auth();
   const role = session?.user?.role;
 
@@ -55,7 +63,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         titre={fiche.designation}
         titreTexte={fiche.designation}
         sousTitre={fiche.fabricantNom ?? undefined}
-        retour={{ href: "/outils/magasin", label: "Le rayon" }}
+        retour={lienRetour(retour, { href: "/outils/magasin", label: "Le rayon" })}
         statut={
           fiche.actif ? (
             fiche.stock <= 0 ? (
