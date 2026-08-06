@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Unlink } from "lucide-react";
-import { Chiffre, RangeeChiffres } from "@/ui";
+import { Cartouche, Chiffre, RangeeChiffres } from "@/ui";
 import { auth } from "@/auth";
-import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { compterProjetsOrphelins } from "@/tools/affectation-es/queries";
 import { listerAffaires, listerMesTaches } from "@/lib/chantiers/queries";
 import { listerClients } from "@/lib/clients/queries";
@@ -13,6 +12,14 @@ import { AffairesListe } from "@/lib/chantiers/affaires-liste";
 import { MesTaches } from "@/lib/chantiers/mes-taches";
 
 export const metadata: Metadata = { title: "Affaires" };
+
+/* =============================================================================
+ * LE TABLEAU DE BORD DES AFFAIRES
+ * Même rythme que l'accueil : un en-tête estampillé sous le filet des cinq
+ * signaux, la rangée de chiffres collée dessous, puis des blocs qui portent
+ * chacun leur titre. Le titre de la liste et ses filtres sont DANS le cadre du
+ * tableau — c'est ce qui manquait pour que l'écran se lise comme l'accueil.
+ * ========================================================================== */
 
 export default async function Page() {
   const session = await auth();
@@ -29,22 +36,13 @@ export default async function Page() {
 
   return (
     <div className="mx-auto max-w-[1700px] px-4 py-5 md:px-7 md:py-7">
-      <TitreEcran estampille="Référentiel" titre="Affaires" />
-
-      <section className="anim-rise mb-6">
-        <div className="bloc flex flex-wrap items-end justify-between gap-x-8 gap-y-4 px-4 py-5 md:px-6">
-          <div className="min-w-0">
-            <p className="stamp">Une affaire par numéro Why</p>
-            <h1 className="mt-2 font-display text-[clamp(1.8rem,1.1rem+2.2vw,2.9rem)] font-bold leading-none tracking-[-0.035em] text-fg">
-              Affaires
-            </h1>
-            <p className="mt-2.5 max-w-2xl text-sm leading-relaxed text-muted">
-              Elle regroupe tout ce qui est produit pour un client, à travers tous les outils.
-              Le suivi commercial reste dans WhySoft.
-            </p>
-          </div>
-          <NouvelleAffaire clients={clients.map((c) => c.nom)} />
-        </div>
+      <section className="mb-4">
+        <Cartouche
+          estampille="Référentiel"
+          titre="Affaires"
+          description="Une affaire par numéro Why. Elle regroupe tout ce qui est produit pour un client, à travers tous les outils — le suivi commercial, lui, reste dans WhySoft."
+          actions={<NouvelleAffaire clients={clients.map((c) => c.nom)} />}
+        />
 
         <RangeeChiffres className="-mt-px">
           <Chiffre label="Total" valeur={affaires.length} />
@@ -55,7 +53,7 @@ export default async function Page() {
       </section>
 
       {mesTaches.length > 0 && (
-        <section className="mb-6">
+        <section className="mb-4">
           <MesTaches taches={mesTaches} limite={8} />
         </section>
       )}
@@ -66,7 +64,7 @@ export default async function Page() {
       {nbOrphelins > 0 && (
         <Link
           href="/outils/affectation-es?sans-affaire=1"
-          className="mb-5 flex items-center gap-2.5 border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm text-fg transition-colors hover:bg-accent/15"
+          className="mb-4 flex items-center gap-2.5 border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm text-fg transition-colors hover:bg-accent/15"
         >
           <Unlink className="h-4 w-4 shrink-0 text-accent" />
           <span>

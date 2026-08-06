@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Boxes, Cpu, FileStack, FolderOpen, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
-import { Button, JaugeES, type CompteES } from "@/ui";
+import { Cpu, FileStack, Globe, Hash, Layers, NotebookPen, Plus, TriangleAlert } from "lucide-react";
+import { Button, EnteteBloc, EtatVide, JaugeES, Repere, type CompteES } from "@/ui";
+import { cn } from "@/lib/cn";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { etatLabel } from "@/lib/chantiers/etats";
 import { auth } from "@/auth";
@@ -11,7 +12,7 @@ import { listerClients } from "@/lib/clients/queries";
 import { listerUtilisateursActifs } from "@/lib/users/queries";
 import { listerRealisationsAffaire } from "@/lib/chantiers/providers";
 import type { EtatAffaire } from "@/generated/prisma/enums";
-import { TOOLS_AFFAIRE, getTool } from "@/tools/registry";
+import { TOOLS_AFFAIRE, classeSignal, getTool } from "@/tools/registry";
 import { calculerJalons } from "@/lib/chantiers/jalons";
 import { FriseCycle } from "@/lib/chantiers/frise-cycle";
 import { AffaireFicheHeader } from "@/lib/chantiers/affaire-fiche-header";
@@ -28,6 +29,16 @@ import { listerScansAffaire } from "@/tools/modems/queries";
 import { ScansAffaire } from "@/tools/modems/scans-affaire";
 import { BlocMaterielAffaire } from "@/tools/magasin/bloc-affaire";
 import { peutVoirPrix } from "@/tools/magasin/model";
+
+/* =============================================================================
+ * LA FICHE AFFAIRE
+ * Même grammaire que l'accueil : la page n'est PAS une pile de titres flottants
+ * suivis de tableaux, c'est une planche de BLOCS. Chaque section est un cadre au
+ * trait fin qui porte son propre en-tête (`EnteteBloc`) — icône au signal de
+ * l'outil dont elle vient, titre, compteur, action — et sa table est une
+ * `.data-table` comme partout ailleurs. Un vide est dessiné, jamais un cadre
+ * pointillé avec du gris dedans.
+ * ========================================================================== */
 
 export async function generateMetadata({
   params,
@@ -51,65 +62,6 @@ const TON_ETAT: Record<EtatAffaire, "neutre" | "brand" | "accent" | "success" | 
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("fr-FR");
-}
-
-/** Titre de section réutilisable (icône + libellé + pastille de compte). */
-function SectionTitle({
-  icon,
-  children,
-  count,
-}: {
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  /** Omis quand la section n'a pas de compte à afficher (un « 0 » mentirait). */
-  count?: number;
-}) {
-  return (
-    <h2 className="flex items-center gap-2.5">
-      {icon}
-      <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
-        {children}
-      </span>
-      {count != null && (
-        <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
-          {count}
-        </span>
-      )}
-    </h2>
-  );
-}
-
-/**
- * Un repère chiffré de l'affaire, sur UNE ligne.
- *
- * Remplace le gros `<Chiffre>` : ces nombres sont des repères qu'on consulte,
- * pas le sujet de l'écran. Quatre compteurs d'atelier empilés au-dessus de la
- * frise disaient trois fois la même chose (où en est l'affaire) en trois blocs.
- * Ils vivent maintenant sur la ligne de titre de l'Avancement.
- */
-function Repere({
-  label,
-  valeur,
-  detail,
-  ton = "neutre",
-}: {
-  label: string;
-  valeur: React.ReactNode;
-  detail?: string;
-  ton?: "neutre" | "success" | "danger";
-}) {
-  const TON = {
-    neutre: "text-fg",
-    success: "text-success",
-    danger: "text-danger",
-  } as const;
-  return (
-    <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="stamp">{label}</span>
-      <span className={`font-mono text-sm font-semibold tabular-nums ${TON[ton]}`}>{valeur}</span>
-      {detail && <span className="text-xs text-subtle">{detail}</span>}
-    </span>
-  );
 }
 
 /** Avancement de mise en service : pastilles colorées OK / défaut / à tester. */
@@ -194,10 +146,38 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     { ok: 0, defaut: 0, nonTeste: 0, total: 0 },
   );
 
+  // Les deux gestes de création de la fiche. Définis une fois, posés deux fois :
+  // dans l'en-tête du bloc, et au centre de l'état vide — un vide qui ne propose
+  // rien oblige à remonter chercher le bouton.
+  const ajouterAutomate = (
+    <form
+      action={async () => {
+        "use server";
+        await creerProjetPourAffaire(id);
+      }}
+    >
+      <Button type="submit" size="sm" variant="outline">
+        <Plus className="h-4 w-4" /> Ajouter un automate
+      </Button>
+    </form>
+  );
+
+  const ajouterNote = (
+    <form
+      action={async () => {
+        "use server";
+        await creerNotePourAffaire(id);
+      }}
+    >
+      <Button type="submit" size="sm" variant="outline">
+        <Plus className="h-4 w-4" /> Nouvelle note
+      </Button>
+    </form>
+  );
+
   return (
-    /* space-y-6 et non 8 : dix sections espacées de 2rem faisaient défiler
-       autant de vide que de contenu. */
-    <div className="mx-auto max-w-[1700px] space-y-6 px-4 py-4 md:px-7 md:py-5">
+    /* space-y-4 : le même pas que l'accueil entre deux planches. */
+    <div className="mx-auto max-w-[1700px] space-y-4 px-4 py-4 md:px-7 md:py-5">
       <TitreEcran
         estampille="Affaire"
         titre={affaire.nom}
@@ -218,51 +198,52 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               documents) tenaient auparavant leur propre bandeau au-dessus,
               suivi d'un second pour la répartition des signaux : trois blocs
               empilés pour répondre à une seule question — où en est l'affaire.
-              Les chiffres se lisent maintenant sur la ligne de titre, la frise
-              en dessous, la répartition en pied. ---------------------------- */}
-      <FriseCycle
-        jalons={jalons}
-        reperes={
-          <>
-            <Repere
-              label="Automates"
-              valeur={projets.length}
-              detail={nbModules > 0 ? `${nbModules} mod.` : undefined}
-            />
-            <Repere label="E/S" valeur={totalES} />
-            <Repere
-              label="MES"
-              valeur={`${testsTotal.ok}/${testsTotal.total}`}
-              ton={
-                testsTotal.defaut > 0
-                  ? "danger"
-                  : testsTotal.total > 0 && testsTotal.ok === testsTotal.total
-                    ? "success"
-                    : "neutre"
-              }
-              detail={testsTotal.defaut > 0 ? `${testsTotal.defaut} en défaut` : undefined}
-            />
-            <Repere
-              label="Documents"
-              valeur={documents.length}
-              detail={`${notes.length} note${notes.length > 1 ? "s" : ""}`}
-            />
-          </>
-        }
-        signaux={totalES > 0 ? <JaugeES compte={repartitionES} /> : undefined}
-      />
+              L'alerte d'armoire, quand il y en a une, se clipse sous la frise
+              dans la même planche : elle dit quoi faire de ce qu'on vient de
+              lire, ce n'est pas un sujet à part. ---------------------------- */}
+      <div className="planche">
+        <FriseCycle
+          jalons={jalons}
+          reperes={
+            <>
+              <Repere
+                label="Automates"
+                valeur={projets.length}
+                detail={nbModules > 0 ? `${nbModules} mod.` : undefined}
+              />
+              <Repere label="E/S" valeur={totalES} />
+              <Repere
+                label="MES"
+                valeur={`${testsTotal.ok}/${testsTotal.total}`}
+                ton={
+                  testsTotal.defaut > 0
+                    ? "danger"
+                    : testsTotal.total > 0 && testsTotal.ok === testsTotal.total
+                      ? "success"
+                      : "neutre"
+                }
+                detail={testsTotal.defaut > 0 ? `${testsTotal.defaut} en défaut` : undefined}
+              />
+              <Repere
+                label="Documents"
+                valeur={documents.length}
+                detail={`${notes.length} note${notes.length > 1 ? "s" : ""}`}
+              />
+            </>
+          }
+          signaux={totalES > 0 ? <JaugeES compte={repartitionES} /> : undefined}
+        />
 
-      {/* ---- Alerte « schéma d'armoire manquant » : la frise dit l'état, ce
-              bandeau dit quoi FAIRE. Rien quand tout va bien. --------------- */}
-      {besoinNouvelleArmoire && !schemaArmoireOk && (
-        <div className="-mt-6 flex items-center gap-2 rounded-lg border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
-          <TriangleAlert className="h-4 w-4 shrink-0" />
-          <span>
-            Nouvelle armoire à fabriquer — <strong>schéma d&apos;armoire manquant</strong> :
-            déposez-le dans le dossier « {DOSSIER_SCHEMA_ARMOIRE} » des documents.
-          </span>
-        </div>
-      )}
+        {besoinNouvelleArmoire && !schemaArmoireOk && (
+          <p className="flex items-center gap-2 border border-danger/45 bg-danger/10 px-4 py-2.5 text-sm text-danger">
+            <TriangleAlert className="h-4 w-4 shrink-0" />
+            <span>
+              Nouvelle armoire à fabriquer — <strong>schéma d&apos;armoire manquant</strong> :
+              déposez-le dans le dossier « {DOSSIER_SCHEMA_ARMOIRE} » des documents.
+            </span>
+          </p>
+        )}
+      </div>
 
       {/* ---- Tâches (todo kanban de l'affaire) ----------------------------- */}
       <TachesKanban
@@ -272,114 +253,101 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         moiId={session?.user?.id ?? null}
       />
 
-      {/* ---- Projet GTB (automates de l'affaire) --------------------------- */}
-      <section>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <SectionTitle icon={<Cpu className="h-4 w-4 text-muted" />} count={projets.length}>
-            Projet GTB
-          </SectionTitle>
-          <form
-            action={async () => {
-              "use server";
-              await creerProjetPourAffaire(id);
-            }}
-          >
-            <Button type="submit" size="sm" variant="outline">
-              <Plus className="h-4 w-4" /> Ajouter un automate
-            </Button>
-          </form>
-        </div>
+      {/* ---- Projet GTB + Matériel ----------------------------------------- *
+              Une seule planche : on lit les automates, puis ce qu'ils coûtent en
+              pièces. Le matériel EN DÉRIVE — les séparer d'un blanc laissait
+              croire à deux sujets. */}
+      <div className="planche">
+        <section className={cn("bloc", classeSignal("ai"))}>
+          <EnteteBloc
+            icone={Cpu}
+            titre="Projet GTB"
+            compteur={projets.length}
+            mention="les automates de l'affaire"
+            actions={ajouterAutomate}
+          />
 
-        {projets.length === 0 ? (
-          <div className="border border-dashed border-border bg-surface p-12 text-center text-muted">
-            Aucun automate. Cliquez sur « Ajouter un automate » pour créer un
-            Projet GTB rattaché à cette affaire.
-          </div>
+          {projets.length === 0 ? (
+            <EtatVide
+              dessin="automate"
+              titre="Aucun automate"
+              texte="Un Projet GTB porte un automate, ses modules et ses points. Créez le premier : il naîtra déjà rattaché à cette affaire."
+              action={ajouterAutomate}
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="data-table table-cards">
+                <thead>
+                  <tr>
+                    <th>Automate</th>
+                    <th>Contrôleur</th>
+                    <th className="cell-num">E/S</th>
+                    <th>Mise en service</th>
+                    <th>Modifié</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projets.map((p) => (
+                    <tr key={p.id}>
+                      <td className="cell-title cell-card-title cell-wrap">
+                        <Link href={p.href} className="transition-colors hover:text-brand">
+                          {p.nom}
+                        </Link>
+                      </td>
+                      <td data-label="Contrôleur">{p.controller || "—"}</td>
+                      <td data-label="E/S" className="cell-num">
+                        {p.nbPoints}
+                      </td>
+                      <td data-label="Mise en service">
+                        <Avancement tests={p.tests} />
+                      </td>
+                      <td data-label="Modifié">{fmtDate(p.updatedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <BlocMaterielAffaire chantierId={id} peutPrix={peutVoirPrix(session?.user?.role)} />
+      </div>
+
+      {/* ---- Notes (documents riches de l'affaire) ------------------------- */}
+      <section className={cn("bloc", classeSignal("ao"))}>
+        <EnteteBloc
+          icone={NotebookPen}
+          titre="Notes"
+          compteur={notes.length}
+          mention="comptes rendus, brouillons"
+          actions={ajouterNote}
+        />
+
+        {notes.length === 0 ? (
+          <EtatVide
+            dessin="carnet"
+            titre="Aucune note"
+            texte="Un document riche rattaché à l'affaire : compte rendu de réunion, relevé, mémo de mise en service."
+            action={ajouterNote}
+          />
         ) : (
-          <div className="overflow-x-auto border border-hairline bg-surface">
-            <table className="table-cards w-full border-collapse text-sm">
+          <div className="overflow-x-auto">
+            <table className="data-table table-cards">
               <thead>
-                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                  <th className="px-4 py-2.5 font-medium">Automate</th>
-                  <th className="px-4 py-2.5 font-medium">Contrôleur</th>
-                  <th className="px-4 py-2.5 font-medium">E/S</th>
-                  <th className="px-4 py-2.5 font-medium">Mise en service</th>
-                  <th className="px-4 py-2.5 font-medium">Modifié</th>
+                <tr>
+                  <th>Note</th>
+                  <th>Détail</th>
+                  <th>Auteur</th>
+                  <th>Modifiée</th>
                 </tr>
               </thead>
               <tbody>
-                {projets.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                  >
-                    <td className="cell-card-title px-4 py-2.5">
-                      <Link href={p.href} className="font-medium text-fg hover:text-brand">
-                        {p.nom}
-                      </Link>
-                    </td>
-                    <td data-label="Contrôleur" className="px-4 py-2.5 text-muted">{p.controller || "—"}</td>
-                    <td data-label="E/S" className="px-4 py-2.5 tabular-nums text-muted">{p.nbPoints}</td>
-                    <td data-label="Mise en service" className="px-4 py-2.5">
-                      <Avancement tests={p.tests} />
-                    </td>
-                    <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(p.updatedAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      {/* ---- Matériel (outil Magasin) — juste sous le Projet GTB, dont il
-              dérive : on lit les automates, puis ce qu'ils coûtent en pièces. */}
-      <section>
-        <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-          <SectionTitle icon={<Boxes className="h-4 w-4 text-muted" />}>Matériel</SectionTitle>
-          <p className="text-xs text-subtle">
-            dérivé des projets GTB et des listes de points, confronté au stock
-          </p>
-        </div>
-        <BlocMaterielAffaire chantierId={id} peutPrix={peutVoirPrix(session?.user?.role)} />
-      </section>
-
-      {/* ---- Notes (documents riches de l'affaire) ------------------------- */}
-      <section>
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <SectionTitle icon={<NotebookPen className="h-4 w-4 text-muted" />} count={notes.length}>
-            Notes
-          </SectionTitle>
-          <form
-            action={async () => {
-              "use server";
-              await creerNotePourAffaire(id);
-            }}
-          >
-            <Button type="submit" size="sm" variant="outline">
-              <Plus className="h-4 w-4" /> Nouvelle note
-            </Button>
-          </form>
-        </div>
-
-        {notes.length === 0 ? (
-          <div className="border border-dashed border-border bg-surface p-8 text-center text-muted">
-            Aucune note. Cliquez sur « Nouvelle note » pour ouvrir un document
-            rattaché à cette affaire.
-          </div>
-        ) : (
-          <div className="overflow-x-auto border border-hairline bg-surface">
-            <table className="table-cards w-full border-collapse text-sm">
-              <tbody>
                 {notes.map((n) => (
-                  <tr
-                    key={n.id}
-                    className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                  >
-                    <td className="cell-card-title px-4 py-2.5">
+                  <tr key={n.id}>
+                    <td className="cell-title cell-card-title cell-wrap">
                       <Link
                         href={`/outils/notes/${n.id}`}
-                        className="inline-flex items-center gap-2 font-medium text-fg hover:text-brand"
+                        className="inline-flex items-center gap-2 transition-colors hover:text-brand"
                       >
                         <span className="min-w-0 truncate">{n.titre}</span>
                         {n.partagee && (
@@ -390,13 +358,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                         )}
                       </Link>
                     </td>
-                    <td data-label="Détail" className="px-4 py-2.5 text-muted">{n.resume}</td>
-                    <td data-label="Auteur" className="px-4 py-2.5 whitespace-nowrap text-muted">
-                      {n.auteur ?? "—"}
+                    <td data-label="Détail" className="cell-wrap">
+                      {n.resume}
                     </td>
-                    <td data-label="Modifiée" className="px-4 py-2.5 whitespace-nowrap text-muted">
-                      {fmtDate(n.updatedAt)}
-                    </td>
+                    <td data-label="Auteur">{n.auteur ?? "—"}</td>
+                    <td data-label="Modifiée">{fmtDate(n.updatedAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -405,135 +371,120 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         )}
       </section>
 
-      {/* ---- Fichiers kDrive (sections par dossier) ------------------------ */}
-      <section>
-        <DepotRapide chantierId={id} count={documents.length} />
-
+      {/* ---- Fichiers kDrive ----------------------------------------------- *
+              Un seul bloc : l'en-tête (dépôt, lien vers l'outil), puis un bandeau
+              par dossier. Auparavant chaque dossier avait son propre cadre, et
+              la barre de dépôt flottait au-dessus sans cadre du tout. */}
+      <DepotRapide chantierId={id} count={documents.length}>
         {parDossier.length === 0 ? (
-          <div className="border border-dashed border-border bg-surface p-12 text-center text-muted">
-            Aucun fichier déposé pour cette affaire. Cliquez sur « Déposer un
-            fichier » pour en ajouter un sans quitter l&apos;affaire.
-          </div>
+          <EtatVide
+            dessin="pochette"
+            titre="Aucun fichier déposé"
+            texte="Glissez un fichier ici via « Déposer un fichier » : il part sur kDrive dans le dossier de l'affaire, sans quitter cet écran."
+          />
         ) : (
-          <div className="space-y-4">
-            {parDossier.map((g) => (
-              <div key={g.dossier} className="overflow-hidden border border-hairline bg-surface">
-                <div className="flex items-center gap-2 border-b border-border bg-surface-2 px-4 py-2">
-                  <FolderOpen className="h-4 w-4 text-brand" />
-                  <span className="text-sm font-medium text-fg">{g.dossier}</span>
-                  <span className="rounded-full bg-surface px-2 py-0.5 text-xs tabular-nums text-muted">
-                    {g.fichiers.length}
-                  </span>
-                </div>
-                <table className="table-cards w-full border-collapse text-sm">
-                  <tbody>
-                    {g.fichiers.map((f: DocResume) => (
-                      <tr
-                        key={f.id}
-                        className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                      >
-                        <td className="cell-card-title px-4 py-2.5">
-                          {/* Le nom ouvre LE fichier (spool ou kDrive), pas la
-                              page de dépôt — même route que la liste Documents. */}
-                          <a
-                            href={`/api/documents/${f.id}/download`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="font-medium text-fg hover:text-brand"
-                          >
-                            {f.nom}
-                          </a>
-                        </td>
-                        <td data-label="Taille" className="px-4 py-2.5 whitespace-nowrap tabular-nums text-muted">
-                          {formatTaille(f.taille)}
-                        </td>
-                        <td data-label="kDrive" className="px-4 py-2.5">
-                          <span
-                            className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${STATUT_TON[f.statutSync]}`}
-                          >
-                            {STATUT_LABEL[f.statutSync]}
-                          </span>
-                        </td>
-                        <td data-label="Auteur" className="px-4 py-2.5 whitespace-nowrap text-muted">
-                          {f.auteur ?? "—"}
-                        </td>
-                        <td data-label="Déposé" className="px-4 py-2.5 whitespace-nowrap text-muted">
-                          {fmtDate(f.createdAt)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))}
-          </div>
+          parDossier.map((g, i) => (
+            <div key={g.dossier}>
+              <EnteteBloc
+                titre={g.dossier}
+                compteur={g.fichiers.length}
+                className={cn(i > 0 && "border-t border-hairline")}
+              />
+              <table className="data-table table-cards">
+                <tbody>
+                  {g.fichiers.map((f: DocResume) => (
+                    <tr key={f.id}>
+                      <td className="cell-title cell-card-title cell-wrap">
+                        {/* Le nom ouvre LE fichier (spool ou kDrive), pas la
+                            page de dépôt — même route que la liste Documents. */}
+                        <a
+                          href={`/api/documents/${f.id}/download`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="transition-colors hover:text-brand"
+                        >
+                          {f.nom}
+                        </a>
+                      </td>
+                      <td data-label="Taille" className="cell-num">
+                        {formatTaille(f.taille)}
+                      </td>
+                      <td data-label="kDrive">
+                        <span
+                          className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${STATUT_TON[f.statutSync]}`}
+                        >
+                          {STATUT_LABEL[f.statutSync]}
+                        </span>
+                      </td>
+                      <td data-label="Auteur">{f.auteur ?? "—"}</td>
+                      <td data-label="Déposé">{fmtDate(f.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))
         )}
-      </section>
+      </DepotRapide>
 
       {/* ---- Scans (outil Scanner) — masqué si l'affaire n'en a aucun ----- */}
       {scans.length > 0 && (
-        <section>
-          <ScansAffaire
-            scans={scans}
-            affaireNom={affaire.nom}
-            hrefOutil={getTool("scan-modems")?.href ?? "/"}
-          />
-        </section>
+        <ScansAffaire
+          scans={scans}
+          affaireNom={affaire.nom}
+          hrefOutil={getTool("scan-modems")?.href ?? "/"}
+        />
       )}
 
       {/* ---- Autres réalisations (agrégat des outils SANS section dédiée) -- */}
       {realisations.length > 0 && (
-        <section>
-          <div className="mb-3">
-            <SectionTitle icon={<FileStack className="h-4 w-4 text-muted" />} count={realisations.length}>
-              Autres réalisations
-            </SectionTitle>
-            <p className="mt-1 text-xs text-subtle">
-              Ce qui est rattaché à l&apos;affaire par les autres outils (visites…) — les
-              automates, notes et fichiers ont leur section ci-dessus.
-            </p>
-          </div>
+        <section className="bloc">
+          <EnteteBloc
+            icone={FileStack}
+            titre="Autres réalisations"
+            compteur={realisations.length}
+            mention="visites et autres outils"
+          />
 
-          <div className="overflow-x-auto border border-hairline bg-surface">
-            <table className="table-cards w-full border-collapse text-sm">
+          <div className="overflow-x-auto">
+            <table className="data-table table-cards">
               <thead>
-                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-                  <th className="px-4 py-2.5 font-medium">Réalisation</th>
-                  <th className="px-4 py-2.5 font-medium">Outil</th>
-                  <th className="px-4 py-2.5 font-medium">N° Why</th>
-                  <th className="px-4 py-2.5 font-medium">Détail</th>
-                  <th className="px-4 py-2.5 font-medium">Modifié</th>
+                <tr>
+                  <th>Réalisation</th>
+                  <th>Outil</th>
+                  <th>N° Why</th>
+                  <th>Détail</th>
+                  <th>Modifié</th>
                 </tr>
               </thead>
               <tbody>
                 {realisations.map((r) => (
-                  <tr
-                    key={`${r.toolId}:${r.id}`}
-                    className="border-b border-border-soft last:border-0 hover:bg-surface-2"
-                  >
-                    <td className="cell-card-title px-4 py-2.5">
-                      <Link href={r.href} className="font-medium text-fg hover:text-brand">
+                  <tr key={`${r.toolId}:${r.id}`}>
+                    <td className="cell-title cell-card-title cell-wrap">
+                      <Link href={r.href} className="transition-colors hover:text-brand">
                         {r.titre}
                       </Link>
                     </td>
-                    <td data-label="Outil" className="px-4 py-2.5 text-muted">
-                      <span className="inline-flex items-center gap-1">
+                    <td data-label="Outil">
+                      <span className="inline-flex items-center gap-1.5">
                         <Layers className="h-3 w-3 text-subtle" />
                         {r.toolNom}
                       </span>
                     </td>
-                    <td data-label="N° Why" className="px-4 py-2.5 text-muted">
+                    <td data-label="N° Why">
                       {r.numeroWhy ? (
-                        <span className="inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-fg">
+                        <span className="ref inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-fg">
                           <Hash className="h-3 w-3 text-subtle" />
                           {r.numeroWhy}
                         </span>
                       ) : (
-                        "—"
+                        <span className="text-subtle">—</span>
                       )}
                     </td>
-                    <td data-label="Détail" className="px-4 py-2.5 text-muted">{r.resume}</td>
-                    <td data-label="Modifié" className="px-4 py-2.5 text-muted">{fmtDate(r.updatedAt)}</td>
+                    <td data-label="Détail" className="cell-wrap">
+                      {r.resume}
+                    </td>
+                    <td data-label="Modifié">{fmtDate(r.updatedAt)}</td>
                   </tr>
                 ))}
               </tbody>

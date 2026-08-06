@@ -355,6 +355,11 @@ export interface LigneNomenclature {
   designation: string;
   quantite: number;
   optionnel: boolean;
+  /** Groupe de variantes ; null = ligne toujours fournie. Deux lignes d'un même
+   *  groupe sont interchangeables — l'affaire tranche (voir VarianteBom). */
+  variante: string | null;
+  /** L'option retenue tant que l'affaire n'a rien choisi. */
+  parDefaut: boolean;
 }
 
 /** Une ligne de la BOM d'une affaire, avec sa provenance. */
@@ -381,6 +386,14 @@ export interface LigneBom {
    *  place ou fourni par un autre lot. La ligne reste visible et sort des
    *  totaux (`manquant` forcé à 0). */
   horsFourniture: boolean;
+  /**
+   * Les groupes de variantes dont CETTE ligne est la fourniture retenue — donc
+   * ce qu'on peut échanger sans quitter le tableau. Presque toujours 0 ou 1.
+   *
+   * Le choix se fait ICI, sur la ligne, et non dans un pavé en tête d'écran :
+   * avec une variante on lit les deux, avec quinze on ne lit plus rien.
+   */
+  variantes: VarianteBom[];
 }
 
 export interface OrigineBom {
@@ -410,10 +423,37 @@ export interface TrouBom {
   typeIo?: string | null;
 }
 
-export type GenreTrou = "automate" | "module" | "point";
+export type GenreTrou = "automate" | "module" | "point" | "variante";
 
 export const GENRE_TROU_LABEL: Record<GenreTrou, string> = {
   automate: "Automate",
   module: "Module",
   point: "Point",
+  variante: "Choix à faire",
 };
+
+/**
+ * Un groupe de variantes à trancher sur CETTE affaire : « la sonde radio, c'est
+ * du Milesight ou de l'Enless ? ». Les lignes d'un groupe sont interchangeables
+ * — jamais additionnées.
+ */
+export interface VarianteBom {
+  pointCatalogId: string;
+  /** Nom du point de catalogue (« Sonde ambiance Ss Fil »). */
+  point: string;
+  /** Nom du groupe (« Sonde radio »). */
+  variante: string;
+  /** Nombre de points de ce nom dans l'affaire — donc la quantité en jeu. */
+  occurrences: number;
+  /** L'option retenue : le choix de l'affaire, sinon le défaut du catalogue. */
+  choisiId: string | null;
+  /** true si `choisiId` vient du défaut et non d'une décision prise ici. */
+  parDefaut: boolean;
+  options: {
+    nomenclatureId: string;
+    produitId: string;
+    refInterne: string;
+    designation: string;
+    quantite: number;
+  }[];
+}

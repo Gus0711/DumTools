@@ -66,6 +66,7 @@ model User {
   inventairesOuverts    Inventaire[]
   reservationsStock     ReservationStock[]
   materielHorsFourniture MaterielHorsFourniture[]
+  choixVariantes        ChoixVarianteAffaire[]
   importsMagasin        ImportMagasin[]
   depotsDetenus         Depot[]
 }
@@ -201,6 +202,7 @@ model Chantier {
   reservationsStock  ReservationStock[]
   lignesMateriel     LigneMaterielAffaire[]
   materielHorsFourniture MaterielHorsFourniture[]
+  choixVariantes     ChoixVarianteAffaire[]
   exemplaires        Exemplaire[]
 
   @@index([clientId])
@@ -276,6 +278,7 @@ model PointCatalog {
   /// 0-10V/4-20mA/PWM/D). Null = défaut selon le type. Permet une affectation
   /// directement correcte à l'insertion. Voir INPUT_SIGNALS/OUTPUT_SIGNALS.
   signal    String?
+  choixVariantes ChoixVarianteAffaire[]
   createdAt DateTime @default(now())
 }
 
@@ -1400,9 +1403,52 @@ model NomenclaturePoint {
   quantite       Int          @default(1)
   /// Optionnel = proposé mais pas compté d'office dans la BOM.
   optionnel      Boolean      @default(false)
+  /// Nom du groupe de VARIANTES auquel cette ligne appartient — null = toujours
+  /// fournie. Deux lignes du même groupe sont INTERCHANGEABLES : « Sonde
+  /// ambiance Ss Fil » se réalise en Milesight OU en Enless, jamais les deux.
+  /// Techniquement c'est le même point ; seule la fourniture change, et elle
+  /// change d'une affaire à l'autre — d'où `ChoixVarianteAffaire`.
+  /// ⚠️ Sans ce champ, deux produits sur un même point s'ADDITIONNENT : huit
+  /// sondes radio commandées en devenaient seize.
+  variante       String?
+  /// La variante retenue quand l'affaire n'a rien choisi. Sans défaut, la BOM
+  /// signale un trou (« choix à faire ») plutôt que de trancher à votre place.
+  parDefaut      Boolean      @default(false)
+
+  choix ChoixVarianteAffaire[]
 
   @@unique([pointCatalogId, produitId])
   @@index([produitId])
+  @@index([pointCatalogId, variante])
+}
+
+/// « Sur CETTE affaire, la sonde radio est de l'Enless. »
+///
+/// La nomenclature d'un point est GLOBALE (c'est le vocabulaire) ; le choix de
+/// fourniture, lui, appartient à l'affaire. Poser ce choix ici garde la BOM
+/// **dérivée** : rien n'est recopié, le jour où le point gagne un accessoire
+/// toutes les affaires en profitent. Absence de ligne = on prend le défaut.
+model ChoixVarianteAffaire {
+  id             String @id @default(cuid())
+  chantierId     String
+  chantier       Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  pointCatalogId String
+  pointCatalog   PointCatalog @relation(fields: [pointCatalogId], references: [id], onDelete: Cascade)
+  /// Le groupe de variantes tranché (miroir de NomenclaturePoint.variante).
+  variante       String
+  /// La ligne de nomenclature retenue. Supprimer la variante du catalogue
+  /// efface le choix : il ne veut plus rien dire.
+  nomenclatureId String
+  nomenclature   NomenclaturePoint @relation(fields: [nomenclatureId], references: [id], onDelete: Cascade)
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([chantierId, pointCatalogId, variante])
+  @@index([nomenclatureId])
+  @@index([pointCatalogId])
 }
 
 /// Complément de BOM saisi à la main sur une affaire : ce que la dérivation ne

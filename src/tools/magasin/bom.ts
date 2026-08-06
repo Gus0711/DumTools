@@ -2,7 +2,7 @@ import "server-only";
 import { prisma } from "@/lib/db";
 import { normalizeControllerReference, type Project } from "@/tools/affectation-es/model";
 import type { PointRow } from "@/tools/liste-points/model";
-import type { LigneBom, OrigineBom, TrouBom } from "./model";
+import type { LigneBom, OrigineBom, TrouBom, VarianteBom } from "./model";
 
 /* =============================================================================
  * LA BOM D'UNE AFFAIRE — DÉRIVÉE, PAS SAISIE
@@ -38,6 +38,13 @@ export interface BomAffaire {
    * introuvable. Le réglage est GLOBAL : le défaire vaut pour toutes les affaires.
    */
   sansMateriel: { nom: string; occurrences: number }[];
+  /**
+   * Les groupes de variantes que CETTE affaire met en jeu, avec l'option
+   * retenue. Toujours renvoyés, même quand le défaut suffit : c'est l'endroit
+   * où l'on voit — et où l'on change — que les huit sondes radio sont de
+   * l'Enless et non du Milesight.
+   */
+  variantes: VarianteBom[];
 }
 
 interface Accumulateur {
@@ -153,19 +160,39 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       ? prisma.pointCatalog.findMany({
           where: { nom: { in: [...nomsPoints.keys()] } },
           select: {
+            id: true,
             nom: true,
             sansMateriel: true,
             nomenclature: {
-              select: { produitId: true, quantite: true, optionnel: true },
+              select: {
+                id: true,
+                produitId: true,
+                quantite: true,
+                optionnel: true,
+                variante: true,
+                parDefaut: true,
+                produit: { select: { refInterne: true, designation: true } },
+              },
             },
           },
         })
       : Promise.resolve([]),
   ]);
 
+  // Ce que l'affaire a déjà tranché : « ici, la sonde radio est de l'Enless ».
+  const choixAffaire = new Map<string, string>(
+    (
+      await prisma.choixVarianteAffaire.findMany({
+        where: { chantierId },
+        select: { pointCatalogId: true, variante: true, nomenclatureId: true },
+      })
+    ).map((c) => [`${c.pointCatalogId}|${c.variante}`, c.nomenclatureId]),
+  );
+
   const produitAutomate = new Map(automates.map((a) => [a.reference, a.produitId]));
   const produitModule = new Map(modules.map((m) => [m.type, m.produitId]));
   const nomenclatureParPoint = new Map(pointsCatalogue.map((p) => [p.nom, p.nomenclature]));
+  const pointParNom = new Map(pointsCatalogue.map((p) => [p.nom, p]));
   // Points explicitement marqués « aucun matériel » : ils sont RÉGLÉS, pas
   // oubliés — ni ligne de BOM, ni trou signalé.
   const sansMateriel = new Set(pointsCatalogue.filter((p) => p.sansMateriel).map((p) => p.nom));
@@ -201,21 +228,67 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
   }
 
   const reduitsAuSilence: { nom: string; occurrences: number }[] = [];
+  const variantes: VarianteBom[] = [];
   for (const [nom, { occurrences, typeIo }] of nomsPoints) {
     if (sansMateriel.has(nom)) {
       reduitsAuSilence.push({ nom, occurrences });
       continue;
     }
+    const point = pointParNom.get(nom);
     const nomenclature = nomenclatureParPoint.get(nom);
-    if (!nomenclature || nomenclature.length === 0) {
+    if (!point || !nomenclature || nomenclature.length === 0) {
       noterTrou("point", nom, nom, occurrences, typeIo);
       continue;
     }
+
+    // Les lignes SANS groupe : toujours fournies (l'accessoire du point).
     for (const n of nomenclature) {
-      if (n.optionnel) continue;
+      if (n.optionnel || n.variante) continue;
       ajouter(acc, n.produitId, n.quantite * occurrences, {
         libelle: `${occurrences} × ${nom}`,
         quantite: n.quantite * occurrences,
+        source: "points",
+        point: nom,
+      });
+    }
+
+    // Les lignes d'un même groupe sont INTERCHANGEABLES : une seule est retenue.
+    const groupes = new Map<string, typeof nomenclature>();
+    for (const n of nomenclature) {
+      if (n.optionnel || !n.variante) continue;
+      const g = groupes.get(n.variante) ?? [];
+      g.push(n);
+      groupes.set(n.variante, g);
+    }
+
+    for (const [variante, options] of groupes) {
+      const choisiId = choixAffaire.get(`${point.id}|${variante}`) ?? null;
+      const retenue =
+        options.find((o) => o.id === choisiId) ?? options.find((o) => o.parDefaut) ?? null;
+      variantes.push({
+        pointCatalogId: point.id,
+        point: nom,
+        variante,
+        occurrences,
+        choisiId: retenue?.id ?? null,
+        parDefaut: !choisiId,
+        options: options.map((o) => ({
+          nomenclatureId: o.id,
+          produitId: o.produitId,
+          refInterne: o.produit.refInterne,
+          designation: o.produit.designation,
+          quantite: o.quantite,
+        })),
+      });
+      // Aucun choix, aucun défaut : on le DIT plutôt que de trancher au hasard
+      // — additionner les options gonflerait la commande d'autant de marques.
+      if (!retenue) {
+        noterTrou("variante", `${point.id}|${variante}`, `${nom} — ${variante}`, occurrences, typeIo);
+        continue;
+      }
+      ajouter(acc, retenue.produitId, retenue.quantite * occurrences, {
+        libelle: `${occurrences} × ${nom}`,
+        quantite: retenue.quantite * occurrences,
         source: "points",
         point: nom,
       });
@@ -243,7 +316,8 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       coutPrevuCents: 0,
       nbSansPrix: 0,
       nbHorsFourniture: 0,
-      sansMateriel: [],
+      sansMateriel: reduitsAuSilence,
+      variantes,
     };
   }
 
@@ -364,6 +438,11 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
       manquant: exclue ? 0 : Math.max(0, a.besoin - dejaCouvert),
       pmpCents: prix,
       horsFourniture: exclue,
+      // Les groupes dont CE produit est la fourniture retenue : c'est ce qui
+      // rend l'échange possible depuis la ligne elle-même.
+      variantes: variantes.filter(
+        (v) => v.options.find((o) => o.nomenclatureId === v.choisiId)?.produitId === a.produitId,
+      ),
     });
   }
 
@@ -384,5 +463,6 @@ export async function bomAffaire(chantierId: string): Promise<BomAffaire> {
     nbSansPrix,
     nbHorsFourniture,
     sansMateriel: reduitsAuSilence.sort((a, b) => b.occurrences - a.occurrences),
+    variantes: variantes.sort((a, b) => b.occurrences - a.occurrences),
   };
 }

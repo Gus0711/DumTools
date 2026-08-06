@@ -745,6 +745,8 @@ export async function listerNomenclatures(): Promise<PointAvecNomenclature[]> {
       designation: n.produit.designation,
       quantite: n.quantite,
       optionnel: n.optionnel,
+      variante: n.variante,
+      parDefaut: n.parDefaut,
     })),
   }));
 }

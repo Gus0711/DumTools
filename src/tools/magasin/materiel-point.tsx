@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Ban, Loader2, Plus, Trash2 } from "lucide-react";
+import { Ban, Loader2, Plus, Shuffle, Star, Trash2 } from "lucide-react";
 import { Badge, Button, Input, Label } from "@/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -10,6 +10,11 @@ import {
   supprimerNomenclature,
 } from "./actions";
 import type { PointAvecNomenclature } from "./queries";
+
+/** Nom du groupe de variantes créé depuis l'interface. Le modèle en accepte
+ *  plusieurs par point ; en pratique un seul suffit — « la fourniture de ce
+ *  point », déclinée en Milesight ou en Enless. */
+const GROUPE_PAR_DEFAUT = "Fourniture";
 import type { ProduitChoix } from "./saisie-mouvement";
 
 /* =============================================================================
@@ -151,6 +156,70 @@ export function MaterielPoint({
               <span className="ref">{l.refInterne}</span>
               <span className="text-fg">{l.designation}</span>
               {l.optionnel && <span className="text-subtle">(option)</span>}
+              {l.variante && (
+                <span className="text-subtle">
+                  au choix{l.parDefaut ? " · défaut" : ""}
+                </span>
+              )}
+              {peutGerer && (
+                <>
+                  <button
+                    type="button"
+                    // « Au choix » : cette ligne devient une des fournitures
+                    // possibles, jamais additionnée aux autres du même groupe.
+                    title={
+                      l.variante
+                        ? "Repasser en fourniture systématique"
+                        : "Cette ligne est une fourniture possible parmi d'autres"
+                    }
+                    disabled={pending}
+                    onClick={() =>
+                      run(() =>
+                        enregistrerNomenclature({
+                          pointCatalogId: point.id,
+                          produitId: l.produitId,
+                          quantite: l.quantite,
+                          optionnel: l.optionnel,
+                          variante: l.variante ? null : GROUPE_PAR_DEFAUT,
+                          parDefaut: false,
+                        }),
+                      )
+                    }
+                    className="text-subtle transition-colors hover:text-brand disabled:opacity-50"
+                  >
+                    <Shuffle className="h-3.5 w-3.5" />
+                  </button>
+                  {l.variante && (
+                    <button
+                      type="button"
+                      title={
+                        l.parDefaut
+                          ? "Ne plus proposer par défaut"
+                          : "Retenir par défaut quand l'affaire n'a rien choisi"
+                      }
+                      disabled={pending}
+                      onClick={() =>
+                        run(() =>
+                          enregistrerNomenclature({
+                            pointCatalogId: point.id,
+                            produitId: l.produitId,
+                            quantite: l.quantite,
+                            optionnel: l.optionnel,
+                            variante: l.variante,
+                            parDefaut: !l.parDefaut,
+                          }),
+                        )
+                      }
+                      className={cn(
+                        "transition-colors disabled:opacity-50",
+                        l.parDefaut ? "text-brand" : "text-subtle hover:text-brand",
+                      )}
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </>
+              )}
               {peutGerer && (
                 <button
                   type="button"

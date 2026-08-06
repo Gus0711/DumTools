@@ -8,6 +8,7 @@ import {
   Ban,
   Blocks,
   Boxes,
+  Check,
   Info,
   Link2,
   Loader2,
@@ -16,6 +17,7 @@ import {
   PackageX,
   Plus,
   Search,
+  Shuffle,
   Trash2,
   TriangleAlert,
   Undo2,
@@ -25,6 +27,7 @@ import { cn } from "@/lib/cn";
 import {
   associerTrou,
   basculerHorsFourniture,
+  choisirVariante,
   enregistrerLigneMateriel,
   marquerPointSansMateriel,
   reserver,
@@ -88,7 +91,9 @@ function categorieProbable(genre: TrouBom["genre"]): string | undefined {
 }
 
 interface Reparation {
-  genre: TrouBom["genre"];
+  /** « variante » est exclu : un choix de fourniture ne se répare pas en
+   *  reliant un produit, il se tranche dans le bloc « Variantes ». */
+  genre: Exclude<TrouBom["genre"], "variante">;
   cle: string;
   typeIo: string | null;
   recherche: string;
@@ -255,6 +260,8 @@ export function MaterielAffaire({
   const [tousLesSilences, setTousLesSilences] = useState(false);
   /** `${produitId}:${nomDuPoint}` du bloc de nomenclature déplié, ou null. */
   const [pointOuvert, setPointOuvert] = useState<string | null>(null);
+  /** `${produitId}|${pointCatalogId}|${variante}` du menu de fourniture ouvert. */
+  const [echange, setEchange] = useState<string | null>(null);
 
   const produitsFiltres = (recherche: string) => {
     const f = recherche.trim().toLowerCase();
@@ -393,7 +400,11 @@ export function MaterielAffaire({
           </div>
 
           <ul className="divide-y divide-hairline border-t border-hairline">
-            {(tousLesTrous ? trous : trous.slice(0, 6)).map((t) => (
+            {(tousLesTrous ? trous : trous.slice(0, 6)).map((t) => {
+              // « variante » n'est pas un produit manquant mais un choix de
+              // fourniture : il se tranche dans le bloc « Variantes », pas ici.
+              const genreReparable = t.genre === "variante" ? null : t.genre;
+              return (
               <li key={`${t.genre}:${t.cle}`}>
                 <div className="flex flex-wrap items-center gap-2 px-4 py-2.5">
                   <Badge tone="neutral">{GENRE_TROU_LABEL[t.genre]}</Badge>
@@ -421,7 +432,11 @@ export function MaterielAffaire({
                       Aucun matériel
                     </Button>
                   )}
-                  {peutGerer ? (
+                  {!genreReparable ? (
+                    <span className="text-xs text-muted">
+                      Choisir la fourniture dans « Variantes »
+                    </span>
+                  ) : peutGerer ? (
                     <Button
                       size="sm"
                       variant={reparation?.cle === t.cle ? "outline" : "primary"}
@@ -430,7 +445,7 @@ export function MaterielAffaire({
                           reparation?.cle === t.cle && reparation.genre === t.genre
                             ? null
                             : {
-                                genre: t.genre,
+                                genre: genreReparable,
                                 cle: t.cle,
                                 typeIo: t.typeIo ?? null,
                                 recherche: "",
@@ -579,7 +594,8 @@ export function MaterielAffaire({
                   </div>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
 
           {!tousLesTrous && trous.length > 6 && (
@@ -1017,6 +1033,66 @@ export function MaterielAffaire({
                       <span className="ref shrink-0">{l.refInterne}</span>
                       <span className="min-w-0">{l.designation}</span>
                     </Link>
+                    {/* La fourniture se change ICI, sur la ligne : un pavé en
+                        tête d'écran se lit à une variante, plus à quinze. */}
+                    {l.variantes.map((v) => (
+                      <button
+                        key={`${v.pointCatalogId}|${v.variante}`}
+                        type="button"
+                        disabled={pending}
+                        onClick={() =>
+                          setEchange((e) =>
+                            e === `${l.produitId}|${v.pointCatalogId}|${v.variante}`
+                              ? null
+                              : `${l.produitId}|${v.pointCatalogId}|${v.variante}`,
+                          )
+                        }
+                        title={`${v.options.length} fournitures possibles pour « ${v.point} »`}
+                        className="ml-2 inline-flex items-center gap-1 align-middle text-xs text-subtle transition-colors hover:text-brand disabled:opacity-50"
+                      >
+                        <Shuffle className="h-3.5 w-3.5" />
+                        {v.parDefaut ? "par défaut" : "au choix"}
+                      </button>
+                    ))}
+                    {l.variantes.map((v) =>
+                      echange === `${l.produitId}|${v.pointCatalogId}|${v.variante}` ? (
+                        <ul
+                          key={`m-${v.pointCatalogId}|${v.variante}`}
+                          className="mt-1.5 border border-hairline bg-surface-2"
+                        >
+                          {v.options.map((o) => (
+                            <li key={o.nomenclatureId}>
+                              <button
+                                type="button"
+                                disabled={pending}
+                                onClick={() =>
+                                  run(
+                                    () =>
+                                      choisirVariante({
+                                        chantierId,
+                                        pointCatalogId: v.pointCatalogId,
+                                        variante: v.variante,
+                                        nomenclatureId: o.nomenclatureId,
+                                      }),
+                                    () => setEchange(null),
+                                  )
+                                }
+                                className={cn(
+                                  "flex w-full items-baseline gap-2 border-b border-hairline px-2.5 py-1.5 text-left text-xs transition-colors last:border-0 hover:bg-surface disabled:opacity-50",
+                                  o.nomenclatureId === v.choisiId && "text-brand",
+                                )}
+                              >
+                                <span className="ref shrink-0">{o.refInterne}</span>
+                                <span className="min-w-0 flex-1 truncate">{o.designation}</span>
+                                {o.nomenclatureId === v.choisiId && (
+                                  <Check className="h-3.5 w-3.5 shrink-0" />
+                                )}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null,
+                    )}
                   </td>
                   <td data-label="Origine" className="text-xs text-muted">
                     <ul className="space-y-0.5">

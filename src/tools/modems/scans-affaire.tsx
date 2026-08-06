@@ -10,7 +10,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Download, ExternalLink, ScanLine } from "lucide-react";
-import { Button } from "@/ui";
+import { Button, EnteteBloc } from "@/ui";
 import { estLignePhoto, estModem, formatLabel } from "./model";
 import type { ModemScanRow } from "./queries";
 import { cleJour, libelleJour } from "./periodes";
@@ -62,58 +62,55 @@ export function ScansAffaire({
     <>
       {apercu && <Visionneuse url={apercu} onFermer={() => setApercu(null)} />}
 
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-fg">
-            <ScanLine className="h-4 w-4 text-muted" />
-            Scans
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums text-muted">
-              {scans.length}
-            </span>
-          </h2>
-          <p className="mt-1 text-xs text-subtle">
-            Codes scannés sur cette affaire{total.modems > 0 && `, dont ${total.modems} modem${total.modems > 1 ? "s" : ""}`}
-            {total.photos > 0 && ` · ${total.photos} photo${total.photos > 1 ? "s" : ""}`}
-            . Groupés par jour.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => telechargerCsv(scans, affaireNom)}
-          >
-            <Download className="h-4 w-4" /> Export CSV
-          </Button>
-          <Link
-            href={hrefOutil}
-            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-brand"
-          >
-            Ouvrir le Scanner <ExternalLink className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-      </div>
+      {/* Le bleu du signal « AI » — celui du Scanner dans le registre. */}
+      <section className="bloc signal-ai">
+        <EnteteBloc
+          icone={ScanLine}
+          titre="Scans"
+          compteur={scans.length}
+          mention={[
+            total.modems > 0 && `${total.modems} modem${total.modems > 1 ? "s" : ""}`,
+            total.photos > 0 && `${total.photos} photo${total.photos > 1 ? "s" : ""}`,
+            "groupés par jour",
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+          actions={
+            <>
+              <Link
+                href={hrefOutil}
+                className="inline-flex items-center gap-1.5 text-xs text-muted transition-colors hover:text-fg"
+              >
+                Ouvrir le Scanner <ExternalLink className="h-3.5 w-3.5" />
+              </Link>
+              <Button size="sm" variant="outline" onClick={() => telechargerCsv(scans, affaireNom)}>
+                <Download className="h-4 w-4" /> Export CSV
+              </Button>
+            </>
+          }
+        />
 
-      <div className="overflow-x-auto border border-hairline bg-surface">
-        <table className="table-cards w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-subtle">
-              <th className="px-4 py-2.5 font-medium">Réseau / Contenu</th>
-              <th className="px-4 py-2.5 font-medium">Type</th>
-              <th className="px-4 py-2.5 font-medium">N° série</th>
-              <th className="px-4 py-2.5 font-medium">IMEI</th>
-              <th className="px-4 py-2.5 font-medium">Photos</th>
-              <th className="px-4 py-2.5 font-medium">Groupe</th>
-              <th className="px-4 py-2.5 font-medium">Note</th>
-              <th className="px-4 py-2.5 font-medium whitespace-nowrap">Heure</th>
-            </tr>
-          </thead>
-          {jours.map((j) => {
+        <div className="overflow-x-auto">
+          <table className="data-table table-cards">
+            <thead>
+              <tr>
+                <th>Réseau / Contenu</th>
+                <th>Type</th>
+                <th>N° série</th>
+                <th>IMEI</th>
+                <th>Photos</th>
+                <th>Groupe</th>
+                <th>Note</th>
+                <th>Heure</th>
+              </tr>
+            </thead>
+            {jours.map((j) => {
             const replie = replies.has(j.cle);
             return (
               <tbody key={j.cle}>
-                <tr className="border-b border-border-soft bg-surface-2">
-                  <td colSpan={8} className="cell-card-title px-3 py-1.5">
+                {/* Le bandeau du jour : même grain que l'entête d'un bloc. */}
+                <tr className="bg-surface-2">
+                  <td colSpan={8} className="cell-card-title !py-1.5">
                     <div className="flex w-full items-center gap-2">
                       <button
                         type="button"
@@ -126,11 +123,11 @@ export function ScansAffaire({
                             replie ? "" : "rotate-90"
                           }`}
                         />
-                        <span className="truncate text-sm font-semibold text-fg">
+                        <span className="font-display truncate text-sm font-semibold text-fg">
                           {j.libelle}
                         </span>
                       </button>
-                      <span className="shrink-0 rounded-full bg-surface px-2 py-0.5 text-xs tabular-nums text-muted">
+                      <span className="shrink-0 rounded bg-surface px-1.5 py-0.5 font-mono text-xs tabular-nums text-muted">
                         {j.lignes.length}
                       </span>
                       <button
@@ -146,8 +143,11 @@ export function ScansAffaire({
                 </tr>
                 {!replie &&
                   j.lignes.map((l) => (
-                    <tr key={l.id} className="border-b border-border-soft hover:bg-surface-2">
-                      <td data-label="Réseau / Contenu" className="cell-card-title px-4 py-2.5 font-medium text-fg">
+                    <tr key={l.id}>
+                      <td
+                        data-label="Réseau / Contenu"
+                        className="cell-title cell-card-title cell-wrap"
+                      >
                         {estModem(l) ? (
                           (l.ssid ?? "—")
                         ) : estLignePhoto(l) ? (
@@ -156,14 +156,14 @@ export function ScansAffaire({
                           </span>
                         ) : (
                           <span
-                            className="block max-w-[22rem] truncate font-mono text-xs font-normal text-muted"
+                            className="ref block max-w-[22rem] truncate font-normal text-muted"
                             title={l.raw}
                           >
                             {l.raw}
                           </span>
                         )}
                       </td>
-                      <td data-label="Type" className="px-4 py-2.5">
+                      <td data-label="Type">
                         <span
                           className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${
                             estModem(l) ? "bg-brand-soft text-brand" : "bg-surface-2 text-muted"
@@ -172,13 +172,13 @@ export function ScansAffaire({
                           {formatLabel(l.format, l)}
                         </span>
                       </td>
-                      <td data-label="N° série" className="px-4 py-2.5 tabular-nums text-muted">
+                      <td data-label="N° série" className="ref">
                         {l.serie ?? "—"}
                       </td>
-                      <td data-label="IMEI" className="px-4 py-2.5 tabular-nums text-muted">
+                      <td data-label="IMEI" className="ref">
                         {l.imei ?? "—"}
                       </td>
-                      <td data-label="Photos" className="px-4 py-2.5">
+                      <td data-label="Photos">
                         {/* Lecture seule : l'ajout et la suppression se font
                             dans le Scanner, pas depuis la fiche affaire. */}
                         <VignettesPhotos
@@ -186,13 +186,11 @@ export function ScansAffaire({
                           onOuvrir={(ph) => setApercu(urlPhoto(ph))}
                         />
                       </td>
-                      <td data-label="Groupe" className="px-4 py-2.5 text-muted">
-                        {l.groupe ?? "—"}
-                      </td>
-                      <td data-label="Note" className="px-4 py-2.5 text-muted">
+                      <td data-label="Groupe">{l.groupe ?? "—"}</td>
+                      <td data-label="Note" className="cell-wrap">
                         {l.note || "—"}
                       </td>
-                      <td data-label="Heure" className="px-4 py-2.5 whitespace-nowrap text-xs text-muted">
+                      <td data-label="Heure" className="text-xs">
                         {fmtHeure.format(new Date(l.scanneLe))}
                         {l.auteur && <span className="block text-subtle">{l.auteur}</span>}
                       </td>
@@ -201,8 +199,9 @@ export function ScansAffaire({
               </tbody>
             );
           })}
-        </table>
-      </div>
+          </table>
+        </div>
+      </section>
     </>
   );
 }

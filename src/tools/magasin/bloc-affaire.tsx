@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Boxes, PackageX, TriangleAlert } from "lucide-react";
+import { EnteteBloc, Repere } from "@/ui";
 import { prisma } from "@/lib/db";
 import { bomAffaire } from "./bom";
 import { coutMaterielAffaire } from "./queries";
@@ -44,54 +45,44 @@ export async function BlocMaterielAffaire({
   const totalBesoin = aFournir.reduce((s, l) => s + l.besoin, 0);
 
   return (
-    <div className="border border-hairline bg-surface">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3.5">
-        <div>
-          <span className="stamp block">Besoin</span>
-          <span className="font-display text-xl font-bold tabular-nums text-fg">
-            {totalBesoin}
-          </span>
-          <span className="ml-1.5 text-xs text-muted">
-            article{totalBesoin > 1 ? "s" : ""} · {aFournir.length} réf.
-          </span>
-        </div>
-
-        <div>
-          <span className="stamp block">Déjà sorti</span>
-          <span className="font-display text-xl font-bold tabular-nums text-fg">{totalSorti}</span>
-          {peutPrix && coutSortiCents > 0 && (
-            <span className="ml-1.5 text-xs text-muted">{formatEuros(coutSortiCents)}</span>
-          )}
-        </div>
-
-        <div>
-          <span className="stamp block">Manque</span>
-          <span
-            className={`font-display text-xl font-bold tabular-nums ${
-              totalManquant > 0 ? "text-danger" : "text-success"
-            }`}
+    /* Le vert du signal « DO » — celui de l'outil Magasin dans le registre. */
+    <section className="bloc signal-do">
+      <EnteteBloc
+        icone={Boxes}
+        titre="Matériel"
+        mention="dérivé des projets GTB et des points, confronté au stock"
+        actions={
+          <Link
+            href={`/outils/magasin/affaires/${chantierId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand transition-colors hover:text-brand-strong"
           >
-            {totalManquant}
-          </span>
-        </div>
+            Voir le matériel
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        }
+      />
 
-        {peutPrix && (
-          <div>
-            <span className="stamp block">Coût prévu</span>
-            <span className="font-display text-xl font-bold tabular-nums text-fg">
-              {formatEuros(bom.coutPrevuCents)}
-            </span>
-          </div>
-        )}
-
-        <Link
-          href={`/outils/magasin/affaires/${chantierId}`}
-          className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
-        >
-          <Boxes className="h-4 w-4" />
-          Voir le matériel
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+      {/* Les chiffres du magasin se lisent comme les repères de l'Avancement :
+          une ligne, un libellé estampillé collé devant chaque nombre. Quatre
+          gros compteurs empilés faisaient concurrence à la frise du cycle, qui
+          est le vrai sujet du haut de fiche. */}
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 px-4 py-2.5">
+        <Repere
+          label="Besoin"
+          valeur={totalBesoin}
+          detail={`article${totalBesoin > 1 ? "s" : ""} · ${aFournir.length} réf.`}
+        />
+        <Repere
+          label="Déjà sorti"
+          valeur={totalSorti}
+          detail={peutPrix && coutSortiCents > 0 ? formatEuros(coutSortiCents) : undefined}
+        />
+        <Repere
+          label="Manque"
+          valeur={totalManquant}
+          ton={totalManquant > 0 ? "danger" : "success"}
+        />
+        {peutPrix && <Repere label="Coût prévu" valeur={formatEuros(bom.coutPrevuCents)} />}
       </div>
 
       {bom.trous.length > 0 && (
@@ -128,6 +119,6 @@ export async function BlocMaterielAffaire({
           </span>
         </p>
       )}
-    </div>
+    </section>
   );
 }

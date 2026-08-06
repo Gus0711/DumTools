@@ -888,15 +888,51 @@ export async function enregistrerNomenclature(p: {
   produitId: string;
   quantite: number;
   optionnel?: boolean;
+  /** Groupe de variantes ; vide = ligne toujours fournie. */
+  variante?: string | null;
+  /** Option retenue quand l'affaire n'a rien choisi. */
+  parDefaut?: boolean;
 }): Promise<void> {
   await acteurReferentiel();
   const quantite = entierPositif(p.quantite, "Quantité");
-  await prisma.nomenclaturePoint.upsert({
-    where: {
-      pointCatalogId_produitId: { pointCatalogId: p.pointCatalogId, produitId: p.produitId },
-    },
-    create: { ...p, quantite, optionnel: Boolean(p.optionnel) },
-    update: { quantite, optionnel: Boolean(p.optionnel) },
+  const variante = texteOuNull(p.variante);
+  const parDefaut = Boolean(variante) && Boolean(p.parDefaut);
+  const champs = { quantite, optionnel: Boolean(p.optionnel), variante, parDefaut };
+
+  await prisma.$transaction(async (tx) => {
+    await tx.nomenclaturePoint.upsert({
+      where: {
+        pointCatalogId_produitId: { pointCatalogId: p.pointCatalogId, produitId: p.produitId },
+      },
+      create: { pointCatalogId: p.pointCatalogId, produitId: p.produitId, ...champs },
+      update: champs,
+    });
+    if (!variante) return;
+    // Un seul défaut par groupe : le poser sur une ligne le retire des autres.
+    // Deux défauts se seraient départagés par l'ordre de lecture — donc au
+    // hasard, et le hasard se commande en huit exemplaires.
+    if (parDefaut) {
+      await tx.nomenclaturePoint.updateMany({
+        where: { pointCatalogId: p.pointCatalogId, variante, produitId: { not: p.produitId } },
+        data: { parDefaut: false },
+      });
+      return;
+    }
+    // Un groupe SANS défaut ne produit aucune ligne de BOM : il n'y aurait donc
+    // rien sur quoi cliquer pour échanger la fourniture. La première variante
+    // d'un groupe en devient le défaut — modifiable d'un clic, sur la ligne.
+    const dejaUnDefaut = await tx.nomenclaturePoint.findFirst({
+      where: { pointCatalogId: p.pointCatalogId, variante, parDefaut: true },
+      select: { id: true },
+    });
+    if (!dejaUnDefaut) {
+      await tx.nomenclaturePoint.update({
+        where: {
+          pointCatalogId_produitId: { pointCatalogId: p.pointCatalogId, produitId: p.produitId },
+        },
+        data: { parDefaut: true },
+      });
+    }
   });
   revalidatePath("/configuration/points");
   revalidatePath(`${RAYON}/produits/${p.produitId}`);
@@ -980,6 +1016,65 @@ export async function basculerHorsFourniture(p: {
   } else {
     await prisma.materielHorsFourniture.deleteMany({
       where: { chantierId: p.chantierId, produitId: p.produitId },
+    });
+  }
+  revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
+  revalidatePath(`/affaires/${p.chantierId}`);
+}
+
+/**
+ * « Sur cette affaire, la sonde radio est de l'Enless. »
+ *
+ * Trancher un groupe de variantes pour UNE affaire. Le catalogue, lui, ne bouge
+ * pas : deux produits interchangeables y restent déclarés, et une autre affaire
+ * pourra choisir l'autre. `nomenclatureId` null remet le défaut du catalogue —
+ * choisir et dé-choisir sont exactement symétriques.
+ *
+ * Choisir n'est PAS un geste de référentiel : c'est une décision de chantier,
+ * ouverte à tous ceux qui travaillent l'affaire.
+ */
+export async function choisirVariante(p: {
+  chantierId: string;
+  pointCatalogId: string;
+  variante: string;
+  nomenclatureId: string | null;
+}): Promise<void> {
+  const a = await acteur();
+  const variante = texte(p.variante);
+  if (!variante) throw new Error("Groupe de variantes manquant");
+  const ou = {
+    chantierId_pointCatalogId_variante: {
+      chantierId: p.chantierId,
+      pointCatalogId: p.pointCatalogId,
+      variante,
+    },
+  };
+
+  if (!p.nomenclatureId) {
+    await prisma.choixVarianteAffaire.deleteMany({
+      where: { chantierId: p.chantierId, pointCatalogId: p.pointCatalogId, variante },
+    });
+  } else {
+    // L'option doit appartenir AU groupe qu'on tranche : sans ce contrôle, un
+    // identifiant périmé (variante renommée, produit retiré) poserait un choix
+    // muet — la BOM retomberait sur le défaut sans jamais dire pourquoi.
+    const option = await prisma.nomenclaturePoint.findUnique({
+      where: { id: p.nomenclatureId },
+      select: { pointCatalogId: true, variante: true },
+    });
+    if (!option || option.pointCatalogId !== p.pointCatalogId || option.variante !== variante) {
+      throw new Error("Cette option n'appartient pas à ce groupe de variantes");
+    }
+    await prisma.choixVarianteAffaire.upsert({
+      where: ou,
+      create: {
+        chantierId: p.chantierId,
+        pointCatalogId: p.pointCatalogId,
+        variante,
+        nomenclatureId: p.nomenclatureId,
+        createdById: a.id,
+      },
+      update: { nomenclatureId: p.nomenclatureId },
     });
   }
   revalidatePath(`${RAYON}/affaires/${p.chantierId}`);

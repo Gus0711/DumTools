@@ -182,13 +182,14 @@ export function TachesKanban({
        à dire s'il reste du travail ; un clic ouvre le tableau.
        `open` est absent, donc non contrôlé : le navigateur tient l'état et on
        ne re-rend rien au pliage. */
-    <details className="group">
-      <summary className="mb-3 flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden">
+    /* Le laiton : les tâches ne sont pas un outil, elles appartiennent au pivot.
+       Replié, le bloc n'est qu'une barre de titre — d'où le filet du bas qu'on
+       n'allume qu'à l'ouverture, sinon il doublerait la bordure du cadre. */
+    <details className="bloc group signal-accent [&:not([open])>summary]:border-b-0">
+      <summary className="bloc-entete cursor-pointer list-none flex-wrap gap-y-1.5 [&::-webkit-details-marker]:hidden">
         <ChevronRight className="h-4 w-4 shrink-0 text-subtle transition-transform duration-150 group-open:rotate-90" />
-        <ListTodo className="h-4 w-4 shrink-0 text-brand" />
-        <span className="font-display text-sm font-semibold uppercase tracking-[0.08em] text-fg">
-          Tâches
-        </span>
+        <ListTodo className="text-signal h-4 w-4 shrink-0" />
+        <h2 className="font-display text-sm font-semibold text-fg">Tâches</h2>
 
         {/* LE SIGNAL, section repliée. La .led-cur du synoptique respirait trop
             discrètement pour un bandeau fermé qu'il faut REMARQUER : on passe à
@@ -213,12 +214,12 @@ export function TachesKanban({
       </summary>
 
       {erreur && (
-        <p className="mb-2 flex items-center gap-1.5 text-sm text-danger">
-          <TriangleAlert className="h-4 w-4" /> {erreur}
+        <p className="flex items-center gap-1.5 border-b border-hairline bg-danger/8 px-4 py-2 text-sm text-danger">
+          <TriangleAlert className="h-4 w-4 shrink-0" /> {erreur}
         </p>
       )}
 
-      <div className="grid items-start gap-3 sm:grid-cols-3">
+      <div className="grid items-start gap-3 p-3 sm:grid-cols-3 md:p-4">
         {COLONNES_TACHES.map((col, colIndex) => {
           const cartes = colonne(col.etat);
           const enSurvol = dragId != null && cible?.etat === col.etat;

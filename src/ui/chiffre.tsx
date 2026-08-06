@@ -65,6 +65,33 @@ export function Chiffre({
   );
 }
 
+/**
+ * LE REPÈRE — le petit frère du chiffre, sur UNE ligne.
+ *
+ * Pour les nombres qu'on CONSULTE au fil d'un en-tête de bloc (automates, E/S,
+ * manquants…) plutôt que ceux qu'on lit de l'autre bout de l'atelier. Même
+ * règle : toujours son libellé estampillé collé devant, jamais un nombre nu.
+ */
+export function Repere({
+  label,
+  valeur,
+  detail,
+  ton = "neutre",
+}: {
+  label: string;
+  valeur: React.ReactNode;
+  detail?: React.ReactNode;
+  ton?: Ton;
+}) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="stamp">{label}</span>
+      <span className={cn("font-mono text-sm font-semibold tabular-nums", TON[ton])}>{valeur}</span>
+      {detail && <span className="text-xs text-subtle">{detail}</span>}
+    </span>
+  );
+}
+
 /** Rangée de chiffres bord à bord — les blocs partagent leurs filets. */
 export function RangeeChiffres({
   children,

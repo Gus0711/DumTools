@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Briefcase, RotateCcw, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { Combobox, EtatVide, type ComboOption } from "@/ui";
+import { Combobox, EnteteBloc, EtatVide, type ComboOption } from "@/ui";
 import type { EtatAffaire } from "@/generated/prisma/enums";
 import type { AffaireResume } from "./queries";
 import { ETATS_ACTIFS, ETATS_AFFAIRE } from "./etats";
@@ -93,37 +93,48 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
   }
 
   return (
-    <div>
-      {/* --- Barre de recherche + filtres --- */}
-      <div className="mb-4 space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative min-w-56 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher (nom, client, n° Why)…"
-              className={cn(
-                "h-9 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-sm text-fg shadow-sm",
-                "transition-[border-color,box-shadow] duration-150",
-                "placeholder:text-subtle hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
-              )}
-            />
-          </div>
+    /* Le laiton : l'affaire est le pivot, pas un outil. */
+    <section className="bloc signal-accent">
+      {/* --- Entête + bandeau de tri ---------------------------------------- *
+          La barre de recherche flottait au-dessus du tableau, sans cadre : rien
+          ne disait qu'elle le commandait. Titre et compte dans l'entête du bloc,
+          les champs et les puces d'état dans un bandeau juste dessous — comme le
+          bandeau « Total E/S » du parc d'affaires sur l'accueil. */}
+      <EnteteBloc
+        icone={Briefcase}
+        titre="Les affaires"
+        mention={`${filtrees.length} / ${affaires.length} affiché${filtrees.length > 1 ? "s" : ""}`}
+      />
 
-          <div className="w-56">
-            <Combobox
-              value={client}
-              onInput={setClient}
-              onPick={(o) => setClient(o.value)}
-              options={clientOptions}
-              placeholder="Filtrer par client…"
-            />
-          </div>
+      <div className="flex flex-wrap items-center gap-2 border-b border-hairline px-3 py-2">
+        <div className="relative min-w-52 max-w-96 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Rechercher (nom, client, n° Why)…"
+            className={cn(
+              "h-9 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-sm text-fg",
+              "transition-[border-color,box-shadow] duration-150",
+              "placeholder:text-subtle hover:border-brand/40 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20",
+            )}
+          />
         </div>
 
-        <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="w-48 shrink-0">
+          <Combobox
+            value={client}
+            onInput={setClient}
+            onPick={(o) => setClient(o.value)}
+            options={clientOptions}
+            placeholder="Filtrer par client…"
+          />
+        </div>
+
+        {/* Les puces gardent leur défilement horizontal au téléphone : six états
+            ne tiennent pas sur 390 px, et les empiler mangerait l'écran. */}
+        <div className="ml-auto flex min-w-0 items-center gap-1.5 overflow-x-auto sm:flex-wrap sm:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {ETATS_AFFAIRE.map((e) => {
             const actif = etats.has(e.value);
             const n = parEtat.get(e.value) ?? 0;
@@ -157,39 +168,28 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
               <RotateCcw className="h-3.5 w-3.5" /> Réinitialiser
             </button>
           )}
-
-          <span className="ml-auto hidden shrink-0 text-xs tabular-nums text-subtle sm:block">
-            {filtrees.length} / {affaires.length} affaire{affaires.length > 1 ? "s" : ""}
-          </span>
         </div>
-
-        {/* Au téléphone le compte sort du défilement horizontal : on doit
-            pouvoir le lire sans faire glisser les puces. */}
-        <p className="text-xs tabular-nums text-subtle sm:hidden">
-          {filtrees.length} / {affaires.length} affaire{affaires.length > 1 ? "s" : ""}
-        </p>
       </div>
+
 
       {/* --- Tableau --- */}
       {filtrees.length === 0 ? (
-        <div className="bloc">
-          <EtatVide
-            icone={Search}
-            titre="Aucune affaire ne correspond"
-            texte="Élargissez les états retenus, ou effacez la recherche."
-            action={
-              <button
-                type="button"
-                onClick={reinitialiser}
-                className="text-sm font-semibold text-brand hover:underline"
-              >
-                Réinitialiser les filtres
-              </button>
-            }
-          />
-        </div>
+        <EtatVide
+          icone={Search}
+          titre="Aucune affaire ne correspond"
+          texte="Élargissez les états retenus, ou effacez la recherche."
+          action={
+            <button
+              type="button"
+              onClick={reinitialiser}
+              className="text-sm font-semibold text-brand hover:underline"
+            >
+              Réinitialiser les filtres
+            </button>
+          }
+        />
       ) : (
-        <div className="bloc overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="data-table table-cards">
             <thead>
               <tr>
@@ -239,6 +239,6 @@ export function AffairesListe({ affaires }: { affaires: AffaireResume[] }) {
           </table>
         </div>
       )}
-    </div>
+    </section>
   );
 }
