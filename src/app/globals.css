@@ -816,9 +816,29 @@
 }
 
 @layer components {
+  /* ⚠️ `backwards` ET NON `both` sur tout ce qui anime un TRANSFORM.
+   *
+   * Avec `both`, l'élément retient l'état final de l'animation une fois
+   * celle-ci terminée. Or la dernière image de `rise` est `transform: none`,
+   * que le navigateur retient sous forme de `matrix(1,0,0,1,0,0)` — une
+   * matrice identité, qui ne déplace rien MAIS qui fait de l'élément le bloc
+   * conteneur de ses descendants en `position: fixed`.
+   *
+   * Conséquence observée : la fenêtre de création d'un produit se calait sur
+   * le conteneur de page au lieu de l'écran. Rayon non filtré, ce conteneur
+   * mesurait 12 000 px et la fenêtre tombait dans la zone visible ; avec un
+   * filtre restrictif il tombait à 601 px, et la feuille de 828 px, centrée
+   * dedans, débordait de 64 px AU-DESSUS de l'écran — hors d'atteinte, rien
+   * à faire défiler pour aller la chercher.
+   *
+   * `backwards` tient l'état de départ AVANT le démarrage (indispensable pour
+   * les cascades, qui attendent leur délai sans clignoter) et rend la main à
+   * la feuille de style à la fin. Comme la dernière image de ces animations EST
+   * l'état naturel de l'élément, il n'y a aucune différence visible. */
+
   /* Entrée d'un bloc : le geste par défaut de l'appli. */
   .anim-rise {
-    animation: rise var(--t-block) var(--ease) both;
+    animation: rise var(--t-block) var(--ease) backwards;
   }
   .anim-fade {
     animation: fade-in var(--t-enter) var(--ease) both;
@@ -842,14 +862,14 @@
   /* Entrée de page : posée sur le conteneur de contenu, rejouée à chaque
      navigation (la clé de route force le remontage). */
   .anim-page {
-    animation: rise var(--t-block) var(--ease) both;
+    animation: rise var(--t-block) var(--ease) backwards;
   }
 
   /* Cascade courte : les 10 premiers enfants entrent l'un après l'autre,
      le reste arrive groupé (une liste de 300 lignes ne défile pas pendant
      6 secondes). */
   .stagger > * {
-    animation: rise var(--t-block) var(--ease) both;
+    animation: rise var(--t-block) var(--ease) backwards;
   }
   .stagger > *:nth-child(1)  { animation-delay: 0ms; }
   .stagger > *:nth-child(2)  { animation-delay: 26ms; }
