@@ -765,3 +765,65 @@ les libellés de ligne, le nom de lot et l'objet du devis.
       documents riches** du §14 : c'est le seul chantier que celui-ci alourdit
       (le PDF des notes, `pdf-note.ts`, sait déjà le faire — il est réutilisable).
 - [ ] Trancher les questions ouvertes du §10 à l'usage.
+
+---
+
+## 17. Dupliquer, et viser un prix (2026-08-07)
+
+Deux ajouts issus de la relecture de l'outil livré. Le reste de cette relecture
+est en attente dans [`amelioration_devis.md`](amelioration_devis.md).
+
+### 17.1 Duplication — à ne pas confondre avec la révision
+
+|  | Numéro | Chaînage | Sert à |
+|---|---|---|---|
+| **Nouvelle révision** | le **même** | `parentId` → la version précédente | poursuivre **une** négociation, en gardant la trace de ce qui a été chiffré avant |
+| **Dupliquer** | un **nouveau** | aucun | ouvrir le devis **d'à côté** : la même chaufferie pour un autre client |
+
+D'où deux boutons aux libellés explicites plutôt qu'un seul « dupliquer » : ce
+sont deux gestes différents, et les confondre casse la numérotation ou perd
+l'historique de négociation.
+
+Une copie repart en **brouillon**, **sans date d'émission**, quel que soit
+l'état de la source — on duplique aussi bien un devis accepté qu'un refusé. Les
+**prix restent figés tels qu'ils étaient** : c'est une copie, pas un
+rechiffrage. « Tout rafraîchir » est là pour ça, et reste un geste explicite
+(§2.1). Les médias des textes riches sont **recopiés**, pas partagés : supprimer
+la source ne doit pas vider les images de la copie.
+
+### 17.2 Le prix cible — l'inverse du chiffrage
+
+Le moteur va du déboursé vers le prix. En négociation, la question part de
+l'autre bout : **« le client veut 60 000 € »**. Le champ « Atteindre un prix
+(net HT) » calcule la remise globale nécessaire, **et annonce la marge qui
+resterait** avant d'appliquer quoi que ce soit.
+
+Deux refus explicites plutôt qu'un calcul silencieux :
+
+- une cible **au-dessus du total** ne produit pas une remise négative — un
+  devis ne se gonfle pas par une remise, ce sont les prix qui montent ;
+- **sans aucun déboursé connu**, on ne prétend pas simuler une marge.
+
+Et le cas qui justifie la fonction : quand la cible fait passer la fourniture
+**à perte**, c'est dit en rouge, chiffres à l'appui.
+
+### 17.3 Au passage : la marge tenait compte de tout, sauf de la remise globale
+
+La remise globale porte sur le **total**, pas sur les lignes. La marge affichée,
+elle, se calculait sur les totaux de lignes — donc **elle ignorait complètement
+la remise globale et se surestimait d'autant**, exactement au moment où l'on
+vient de lâcher du prix.
+
+La marge affichée est désormais la marge **nette** : la remise est répartie au
+prorata du poids de la fourniture dans le vendu.
+
+```
+Fourniture vendue 10 000 (déboursé 6 000) + prestations 10 000 → total 20 000
+Remise globale 10 %  =  2 000
+   la fourniture pèse la moitié du vendu → elle en encaisse 1 000
+   marge brute  : 10 000 − 6 000 = 4 000   (ce qui s'affichait avant)
+   marge nette  :  9 000 − 6 000 = 3 000   (ce qu'on encaisse vraiment)
+```
+
+Sur un devis **sans** remise globale, les deux coïncident : rien ne change à
+l'écran. Quand il y en a une, la marge brute reste lisible en dessous, en petit.

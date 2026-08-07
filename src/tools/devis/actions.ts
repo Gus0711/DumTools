@@ -390,6 +390,114 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
   return { id: cree.id };
 }
 
+/**
+ * Duplique un devis vers un NOUVEAU NUMÉRO — quel que soit son état.
+ *
+ * À ne pas confondre avec `nouvelleRevision`, et la différence n'est pas
+ * cosmétique :
+ *
+ *   révision  → MÊME numéro, révision suivante, chaînée au parent. C'est la
+ *               négociation d'une même affaire, dont on garde la trace.
+ *   copie     → NOUVEAU numéro, révision 1, aucun parent. C'est le devis
+ *               d'à côté : la même chaufferie pour un autre client.
+ *
+ * Une copie repart donc en BROUILLON, sans date d'émission, et prend le numéro
+ * suivant du compteur. Les prix restent figés tels qu'ils étaient : c'est une
+ * copie, pas un rechiffrage — « Tout rafraîchir » est là pour ça, et c'est un
+ * geste explicite (docs/DEVIS.md §2.1).
+ */export async function dupliquerDevis(id: string): Promise<{ id: string; numero: string }> {
+  const a = await acteur();
+  const source = await prisma.devis.findUnique({
+    where: { id },
+    include: {
+      lots: { orderBy: { ordre: "asc" } },
+      lignes: { orderBy: { ordre: "asc" } },
+      medias: true,
+    },
+  });
+  if (!source) throw new Error("Devis introuvable");
+
+  // Les médias des textes libres sont RECOPIÉS, pas partagés. Sans ça, la v2
+  // citerait des binaires appartenant à la v1 : purger ou supprimer la v1
+  // ferait disparaître des images de la v2. Chaque révision reste un document
+  // autosuffisant — c'est la même doctrine que les prix figés.
+  const copies = await copierMedias(source.medias);
+
+  const annee = new Date().getFullYear();
+  const numero = formatNumeroDevis(annee, await prochainRang(annee));
+
+  const cree = await prisma.$transaction(async (tx) => {
+    const d = await tx.devis.create({
+      data: {
+        numero,
+        revision: 1,
+        // AUCUN lien vers la source : une copie n'est pas une révision. La
+        // révision poursuit une négociation sur le même numéro ; la copie ouvre
+        // une autre affaire, qui vivra sa vie.
+        parentId: null,
+        titre: source.titre ? `${source.titre} (copie)` : "",
+        etat: "BROUILLON",
+        emisLe: null,
+        clientNom: source.clientNom,
+        clientId: source.clientId,
+        numeroWhy: source.numeroWhy,
+        chantierId: source.chantierId,
+        coefDefautMillieme: source.coefDefautMillieme,
+        tauxTvaCentieme: source.tauxTvaCentieme,
+        remiseGlobalePourMille: source.remiseGlobalePourMille,
+        remiseGlobaleCents: source.remiseGlobaleCents,
+        validiteJours: source.validiteJours,
+        note: source.note,
+        createdById: a.id,
+        updatedById: a.id,
+      },
+    });
+    const idLot = new Map<string, string>();
+    for (const l of source.lots) {
+      const nouveau = await tx.lotDevis.create({
+        data: { devisId: d.id, titre: l.titre, ordre: l.ordre, note: l.note },
+      });
+      idLot.set(l.id, nouveau.id);
+    }
+    if (source.lignes.length > 0) {
+      await tx.ligneDevis.createMany({
+        data: source.lignes.map((l) => ({
+          devisId: d.id,
+          lotId: l.lotId ? (idLot.get(l.lotId) ?? null) : null,
+          ordre: l.ordre,
+          genre: l.genre,
+          produitId: l.produitId,
+          prestationId: l.prestationId,
+          designation: l.designation,
+          refInterne: l.refInterne,
+          unite: l.unite,
+          quantiteMillieme: l.quantiteMillieme,
+          debourseCents: l.debourseCents,
+          coefMillieme: l.coefMillieme,
+          origineCoef: l.origineCoef,
+          pvUnitaireCents: l.pvUnitaireCents,
+          remisePourMille: l.remisePourMille,
+          option: l.option,
+          note: l.note,
+          // Le document riche suit, avec ses URLs média réécrites vers les
+          // copies. La version repart à 0 : c'est un autre document.
+          contenu: reecrireMedias(l.contenu, copies.correspondance),
+          version: 0,
+        })),
+      });
+    }
+    if (copies.lignes.length > 0) {
+      await tx.devisMedia.createMany({
+        data: copies.lignes.map((m) => ({ ...m, devisId: d.id })),
+      });
+    }
+    return d;
+  });
+
+  rafraichirEcrans(cree.id);
+  return { id: cree.id, numero: cree.numero };
+}
+
 /* =============================================================================
  * LES LOTS
  * ========================================================================== */

@@ -500,6 +500,19 @@ export interface TotauxDevis {
   /** Taux de marge sur le vendu, en centièmes de pourcent. Null si rien à
    *  comparer (aucune ligne chiffrée en déboursé). */
   tauxMargeFournitureCentieme: number | null;
+  /**
+   * La marge une fois la REMISE GLOBALE encaissée.
+   *
+   * La remise globale porte sur le total, pas sur les lignes : la marge brute
+   * ci-dessus l'ignore donc complètement et surestime d'autant. On répartit la
+   * remise au prorata de ce que la fourniture pèse dans le vendu — c'est la
+   * seule façon d'obtenir un chiffre qu'on puisse défendre après négociation.
+   *
+   * Sans remise globale, ces valeurs sont identiques aux brutes.
+   */
+  venduFournitureNetCents: number;
+  margeFournitureNetteCents: number;
+  tauxMargeFournitureNetteCentieme: number | null;
   /** Lignes chiffrées sans déboursé connu — dites, jamais comptées zéro. */
   nbSansPrix: number;
   /** Lignes dont le déboursé figé diffère du prix de référence d'aujourd'hui. */
@@ -611,6 +624,15 @@ export function calculerDevis(
 
   const margeFournitureCents = venduFournitureCents - debourseCents;
 
+  // La part de remise globale qui retombe sur la fourniture, au prorata de son
+  // poids dans le vendu. Sur un devis sans remise globale, c'est zéro.
+  const partRemiseFourniture =
+    remiseGlobaleCents > 0 && totalHtCents > 0
+      ? arrondi((remiseGlobaleCents * venduFournitureCents) / totalHtCents)
+      : 0;
+  const venduFournitureNetCents = venduFournitureCents - partRemiseFourniture;
+  const margeFournitureNetteCents = venduFournitureNetCents - debourseCents;
+
   return {
     lots: groupes,
     totalHtCents,
@@ -625,6 +647,12 @@ export function calculerDevis(
     tauxMargeFournitureCentieme:
       venduFournitureCents > 0
         ? arrondi((margeFournitureCents * 10_000) / venduFournitureCents)
+        : null,
+    venduFournitureNetCents,
+    margeFournitureNetteCents,
+    tauxMargeFournitureNetteCentieme:
+      venduFournitureNetCents > 0
+        ? arrondi((margeFournitureNetteCents * 10_000) / venduFournitureNetCents)
         : null,
     nbSansPrix,
     nbPerimees,
@@ -659,6 +687,83 @@ export function resoudreRemiseGlobale(
     return arrondi((totalHtCents * entete.remiseGlobalePourMille) / MILLE);
   }
   return 0;
+}
+
+/* =============================================================================
+ * LE PRIX CIBLE — l'inverse du chiffrage
+ *
+ * Le moteur va du déboursé vers le prix. En négociation, la question part de
+ * l'autre bout : « le client veut 60 000 € ». Sans cet outil on tâtonne sur la
+ * remise, et surtout on ne voit pas à quel moment on est passé sous la ligne.
+ *
+ * La cible porte sur le NET HT — c'est le montant qui se négocie. La TVA suit,
+ * elle ne se discute pas.
+ * ========================================================================== */
+
+export interface SimulationCible {
+  /** Remise globale nécessaire pour atteindre la cible, en centimes. */
+  remiseCents: number;
+  /** La même, en pour mille du total HT — pour la lire en pourcentage. */
+  remisePourMille: number;
+  /** Marge sur la fourniture qui resterait, remise encaissée. Null si aucune
+   *  ligne n'a de déboursé connu : on ne simule pas ce qu'on ignore. */
+  margeNetteCents: number | null;
+  tauxMargeNetteCentieme: number | null;
+  /** La cible est au-dessus du total : il n'y a rien à remiser. On ne propose
+   *  JAMAIS une remise négative — un devis ne se gonfle pas par une remise, on
+   *  remonte les prix. */
+  cibleAuDessus: boolean;
+  /** La marge restante est nulle ou négative : on vend à perte sur la
+   *  fourniture. Le dire est tout l'intérêt de la simulation. */
+  aPerte: boolean;
+}
+
+/**
+ * Ce qu'il faudrait remiser pour atteindre `cibleNetCents`, et ce qu'il
+ * resterait comme marge.
+ *
+ * ⚠️ La marge simulée tient compte de la remise, au prorata du poids de la
+ * fourniture dans le vendu (même règle que `calculerDevis`). Répondre avec la
+ * marge brute donnerait un chiffre systématiquement trop beau — précisément au
+ * moment où l'on décide de lâcher du prix.
+ */
+export function simulerPrixCible(
+  t: Pick<TotauxDevis, "totalHtCents" | "venduFournitureCents" | "debourseCents">,
+  cibleNetCents: number,
+): SimulationCible {
+  const cible = Math.max(0, Math.round(cibleNetCents));
+  const brut = t.totalHtCents - cible;
+  const cibleAuDessus = brut <= 0;
+  const remiseCents = cibleAuDessus ? 0 : Math.min(brut, t.totalHtCents);
+  const remisePourMille =
+    t.totalHtCents > 0 ? arrondi((remiseCents * MILLE) / t.totalHtCents) : 0;
+
+  if (t.debourseCents <= 0) {
+    return {
+      remiseCents,
+      remisePourMille,
+      margeNetteCents: null,
+      tauxMargeNetteCentieme: null,
+      cibleAuDessus,
+      aPerte: false,
+    };
+  }
+
+  const part =
+    remiseCents > 0 && t.totalHtCents > 0
+      ? arrondi((remiseCents * t.venduFournitureCents) / t.totalHtCents)
+      : 0;
+  const venduNet = t.venduFournitureCents - part;
+  const margeNetteCents = venduNet - t.debourseCents;
+
+  return {
+    remiseCents,
+    remisePourMille,
+    margeNetteCents,
+    tauxMargeNetteCentieme: venduNet > 0 ? arrondi((margeNetteCents * 10_000) / venduNet) : null,
+    cibleAuDessus,
+    aPerte: margeNetteCents <= 0,
+  };
 }
 
 /* =============================================================================

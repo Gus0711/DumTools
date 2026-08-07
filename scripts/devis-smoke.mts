@@ -29,6 +29,7 @@ import {
   pvDepuisDebourse,
   resumeTexteLigne,
   resoudreRemiseGlobale,
+  simulerPrixCible,
   texteNu,
   type ContenuRiche,
   type GrilleCoefs,
@@ -519,6 +520,86 @@ console.log("\n13. Devis complet");
     "résumé borné (une désignation n'est pas un roman)",
     resumeTexteLigne(contenuTexteSimple("x".repeat(400))).length <= 160,
   );
+}
+
+/* =============================================================================
+ * 14. LA MARGE APRÈS REMISE GLOBALE
+ * La remise globale porte sur le TOTAL, pas sur les lignes : l'ignorer
+ * surestimerait la marge exactement au moment où l'on vient de lâcher du prix.
+ * ========================================================================== */
+console.log("\n14. Marge nette de la remise globale");
+
+{
+  // Fourniture 10 000 (déboursé 6 000) + une prestation à 10 000 : la
+  // fourniture pèse la moitié du vendu, elle encaisse donc la moitié de la
+  // remise.
+  const lignes = [
+    ligne({ pvUnitaireCents: 1000000, debourseCents: 600000 }),
+    ligne({ genre: "PRESTATION", produitId: null, debourseCents: null, pvUnitaireCents: 1000000 }),
+  ];
+  const t = calculerDevis({ ...ENTETE_NU, remiseGlobalePourMille: 100 }, [], lignes);
+  egal("total HT", t.totalHtCents, 2000000);
+  egal("remise globale 10 %", t.remiseGlobaleCents, 200000);
+  egal("marge BRUTE (avant remise)", t.margeFournitureCents, 400000);
+  egal("… la fourniture n'encaisse que SA part de remise", t.venduFournitureNetCents, 900000);
+  egal("marge NETTE", t.margeFournitureNetteCents, 300000);
+  verifier(
+    "la marge nette est bien inférieure à la brute",
+    t.margeFournitureNetteCents < t.margeFournitureCents,
+  );
+}
+{
+  // Sans remise globale, net et brut coïncident : rien ne change à l'écran
+  // pour l'immense majorité des devis.
+  const t = calculerDevis(ENTETE_NU, [], [ligne({ pvUnitaireCents: 10000, debourseCents: 6000 })]);
+  egal("sans remise, net = brut", t.margeFournitureNetteCents, t.margeFournitureCents);
+}
+
+/* =============================================================================
+ * 15. LE PRIX CIBLE — l'inverse du chiffrage
+ * ========================================================================== */
+console.log("\n15. Prix cible");
+
+{
+  const base = { totalHtCents: 2000000, venduFournitureCents: 1000000, debourseCents: 600000 };
+  const s1 = simulerPrixCible(base, 1800000);
+  egal("remise nécessaire pour viser 18 000", s1.remiseCents, 200000);
+  egal("… soit 10 %", s1.remisePourMille, 100);
+  egal("… marge restante, remise encaissée au prorata", s1.margeNetteCents, 300000);
+  verifier("… et ce n'est pas à perte", !s1.aPerte);
+
+  // Le cas qui doit crier : viser si bas qu'on vend la fourniture à perte.
+  const s2 = simulerPrixCible(base, 1100000);
+  verifier("viser trop bas est signalé à perte", s2.aPerte);
+  verifier("… avec une marge négative", (s2.margeNetteCents ?? 0) < 0);
+
+  // Une cible AU-DESSUS du total ne doit pas produire une remise négative :
+  // un devis ne se gonfle pas par une remise, on remonte les prix.
+  const s3 = simulerPrixCible(base, 2500000);
+  verifier("cible au-dessus du total : signalée", s3.cibleAuDessus);
+  egal("… et aucune remise proposée", s3.remiseCents, 0);
+
+  // Sans aucun déboursé connu, on ne prétend pas simuler une marge.
+  const s4 = simulerPrixCible({ ...base, debourseCents: 0 }, 1800000);
+  egal("aucun déboursé → pas de marge simulée", s4.margeNetteCents, null);
+  egal("… mais la remise reste calculable", s4.remiseCents, 200000);
+}
+{
+  // La cohérence qui compte : appliquer la remise simulée doit donner
+  // exactement la marge annoncée.
+  const lignes = [
+    ligne({ pvUnitaireCents: 1000000, debourseCents: 600000 }),
+    ligne({ genre: "PRESTATION", produitId: null, debourseCents: null, pvUnitaireCents: 1000000 }),
+  ];
+  const t0 = calculerDevis(ENTETE_NU, [], lignes);
+  const sim = simulerPrixCible(t0, 1700000);
+  const t1 = calculerDevis(
+    { ...ENTETE_NU, remiseGlobaleCents: sim.remiseCents },
+    [],
+    lignes,
+  );
+  egal("la cible est atteinte au centime", t1.netHtCents, 1700000);
+  egal("la marge annoncée est celle obtenue", t1.margeFournitureNetteCents, sim.margeNetteCents);
 }
 
 /* --- Verdict --------------------------------------------------------------- */

@@ -12,6 +12,7 @@ import {
   Copy,
   FolderPlus,
   GitBranch,
+  Copy as CopyIcon,
   GripVertical,
   Plus,
   RefreshCw,
@@ -33,6 +34,7 @@ import {
   ajouterProduitAvecAssocies,
   deplacerLigne,
   deplacerLot,
+  dupliquerDevis,
   majEnteteDevis,
   majLigne,
   majLot,
@@ -64,6 +66,7 @@ import {
   parsePourcent,
   parseQuantite,
   parseRemise,
+  simulerPrixCible,
   type DevisComplet,
   type EtatDevis,
   type GenreLigne,
@@ -296,6 +299,12 @@ export function EditeurDevis({
           onRevision={() =>
             agir(async () => {
               const r = await nouvelleRevision(entete.id);
+              router.push(`/perso/gus/devis/${r.id}`);
+            })
+          }
+          onDupliquer={() =>
+            agir(async () => {
+              const r = await dupliquerDevis(entete.id);
               router.push(`/perso/gus/devis/${r.id}`);
             })
           }
@@ -1360,6 +1369,7 @@ function PanneauTotaux({
   agir,
   onSupprime,
   onRevision,
+  onDupliquer,
 }: {
   entete: DevisComplet["entete"];
   totaux: ReturnType<typeof calculerDevis>;
@@ -1367,6 +1377,7 @@ function PanneauTotaux({
   agir: (fn: () => Promise<unknown>) => void;
   onSupprime: () => void;
   onRevision: () => void;
+  onDupliquer: () => void;
 }) {
   const [confirme, setConfirme] = useState(false);
 
@@ -1449,18 +1460,32 @@ function PanneauTotaux({
         <h2 className="stamp mb-3">Marge sur la fourniture</h2>
         <dl className="space-y-1.5 text-sm">
           <Poste label="Déboursé" valeur={formatEuros(totaux.debourseCents)} />
-          <Poste label="Vendu (fourniture)" valeur={formatEuros(totaux.venduFournitureCents)} />
+          <Poste
+            label="Vendu (fourniture)"
+            valeur={formatEuros(totaux.venduFournitureNetCents)}
+          />
+          {/* La marge affichée est la marge NETTE : la remise globale porte sur
+              le total, pas sur les lignes, et l'ignorer surestimerait la marge
+              exactement au moment où l'on vient de lâcher du prix. */}
           <Poste
             label="Marge"
             valeur={
-              totaux.tauxMargeFournitureCentieme === null
+              totaux.tauxMargeFournitureNetteCentieme === null
                 ? "—"
-                : `${formatEuros(totaux.margeFournitureCents)} · ${formatPourcent(totaux.tauxMargeFournitureCentieme)}`
+                : `${formatEuros(totaux.margeFournitureNetteCents)} · ${formatPourcent(totaux.tauxMargeFournitureNetteCentieme)}`
             }
             fort
-            ton={totaux.margeFournitureCents <= 0 ? "danger" : undefined}
+            ton={totaux.margeFournitureNetteCents <= 0 ? "danger" : undefined}
           />
+          {totaux.remiseGlobaleCents > 0 && totaux.tauxMargeFournitureCentieme !== null && (
+            <p className="pt-0.5 text-xs text-subtle">
+              Avant remise globale : {formatEuros(totaux.margeFournitureCents)} ·{" "}
+              {formatPourcent(totaux.tauxMargeFournitureCentieme)}
+            </p>
+          )}
         </dl>
+
+        <PrixCible entete={entete} totaux={totaux} enCours={enCours} agir={agir} />
         {totaux.nbSansPrix > 0 && (
           <p className="mt-3 flex items-start gap-2 border-t border-border pt-3 text-xs text-warning">
             <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -1480,6 +1505,13 @@ function PanneauTotaux({
       <div className="mt-4 space-y-2">
         <Button variant="outline" className="w-full" disabled={enCours} onClick={onRevision}>
           <GitBranch className="h-4 w-4" /> Nouvelle révision
+        </Button>
+        {/* Deux gestes voisins qu'il ne faut pas confondre : la révision
+            poursuit CE devis (même numéro, chaînée) ; la copie en ouvre un
+            autre (nouveau numéro, aucun lien). D'où les deux libellés
+            explicites plutôt qu'un seul bouton « dupliquer ». */}
+        <Button variant="outline" className="w-full" disabled={enCours} onClick={onDupliquer}>
+          <CopyIcon className="h-4 w-4" /> Dupliquer — nouveau devis
         </Button>
         {confirme ? (
           <div className="border border-danger/40 bg-danger/10 p-3 text-sm">
@@ -1507,6 +1539,101 @@ function PanneauTotaux({
         )}
       </div>
     </aside>
+  );
+}
+
+/* -----------------------------------------------------------------------------
+ * LE PRIX CIBLE — l'inverse du chiffrage
+ *
+ * Le moteur va du déboursé vers le prix ; en négociation la question part de
+ * l'autre bout (« le client veut 60 000 € »). On simule AVANT d'appliquer, et
+ * on annonce la marge qui resterait — c'est le seul moment où l'on décide de
+ * lâcher du prix, donc le seul où le chiffre doit être exact.
+ * -------------------------------------------------------------------------- */
+
+function PrixCible({
+  entete,
+  totaux,
+  enCours,
+  agir,
+}: {
+  entete: DevisComplet["entete"];
+  totaux: ReturnType<typeof calculerDevis>;
+  enCours: boolean;
+  agir: (fn: () => Promise<unknown>) => void;
+}) {
+  const [saisie, setSaisie] = useState("");
+  const cible = parseEuros(saisie);
+  const simulation =
+    cible === null ? null : simulerPrixCible(totaux, cible);
+
+  return (
+    <div className="mt-3 border-t border-border pt-3">
+      <Label htmlFor="cible">Atteindre un prix (net HT)</Label>
+      <div className="mt-1 flex gap-2">
+        <Input
+          id="cible"
+          value={saisie}
+          onChange={(e) => setSaisie(e.target.value)}
+          placeholder="ex. 60 000 €"
+          disabled={enCours}
+          className="text-sm tabular-nums"
+        />
+        <Button
+          variant="outline"
+          size="md"
+          disabled={enCours || !simulation || simulation.cibleAuDessus}
+          onClick={() =>
+            agir(async () => {
+              await majEnteteDevis(entete.id, {
+                remiseGlobaleCents: simulation!.remiseCents,
+              });
+              setSaisie("");
+            })
+          }
+        >
+          Appliquer
+        </Button>
+      </div>
+
+      {simulation === null ? (
+        <p className="mt-1 text-xs text-subtle">
+          On calcule la remise globale qu&apos;il faudrait, et ce qu&apos;il resterait de marge.
+        </p>
+      ) : simulation.cibleAuDessus ? (
+        <p className="mt-1 text-xs text-subtle">
+          Ce prix est au-dessus du total HT ({formatEuros(totaux.totalHtCents)}) : il n&apos;y a
+          rien à remiser. Un devis ne se gonfle pas par une remise — ce sont les prix qui montent.
+        </p>
+      ) : (
+        <div className="mt-1.5 space-y-0.5 text-xs">
+          <p className="text-muted">
+            Remise nécessaire :{" "}
+            <strong className="text-fg">
+              {formatEuros(simulation.remiseCents)} ·{" "}
+              {formatPourcent(simulation.remisePourMille * 10)}
+            </strong>
+          </p>
+          {simulation.margeNetteCents === null ? (
+            <p className="text-subtle">
+              Aucun déboursé connu : impossible de dire ce qu&apos;il resterait de marge.
+            </p>
+          ) : (
+            <p className={cn(simulation.aPerte ? "text-danger" : "text-muted")}>
+              {simulation.aPerte ? "⚠ À perte sur la fourniture : " : "Marge restante : "}
+              <strong>
+                {formatEuros(simulation.margeNetteCents)}
+                {simulation.tauxMargeNetteCentieme !== null &&
+                  ` · ${formatPourcent(simulation.tauxMargeNetteCentieme)}`}
+              </strong>
+            </p>
+          )}
+          <p className="text-subtle">
+            La main d&apos;œuvre n&apos;entre pas dans ce calcul : son coût n&apos;est pas connu.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
