@@ -7,11 +7,16 @@
 >
 > **Statut : V0.1 IMPLÉMENTÉE le 2026-08-07** — les phases 1 à 4 d'un coup, à la
 > demande d'Augustin. `tsc`, `eslint` et `next build` passent ; le moteur est
-> couvert par **90 contrôles** (`npx tsx scripts/devis-smoke.mts`) et l'outil a
-> été **déroulé en navigateur réel contre la vraie base** — 39 contrôles, dont
-> le figé des prix, le rafraîchissement, la révision et le cloisonnement Achats.
-> **Voir §13 pour l'état réel, les écarts et ce qu'il reste à faire.**
-> Les sections 1 à 12 sont conservées telles quelles comme trace de conception.
+> couvert par **106 contrôles** (`npx tsx scripts/devis-smoke.mts`) et l'outil a
+> été **déroulé en navigateur réel contre la vraie base** — 39 contrôles à la
+> livraison, dont le figé des prix, le rafraîchissement, la révision et le
+> cloisonnement Achats, puis **34 de plus** pour le texte riche (§14) et **14**
+> pour le correctif d'autosave (§14.3).
+>
+> **Les sections 1 à 12 sont la trace de CONCEPTION**, conservées telles quelles.
+> **L'état réel se lit à partir du §13** : livré et vérifié (§13), texte libre en
+> document riche (§14), associations de produits à l'ajout (§15), champs
+> modifiables (§16), et **ce qu'il reste à faire (§17)**.
 >
 > **Outil de développement**, rangé dans **ToolGus** (`/perso/gus/devis`) le
 > temps qu'il fasse ses preuves ; conçu dès le départ pour être promu outil
@@ -694,18 +699,6 @@ le lot ne contenait que des textes. Il compte désormais les lignes qui **pèsen
 dans le sous-total** — options *et* textes exclus, ce que la règle du §13
 disait déjà.
 
-### Ce qu'il reste à faire
-
-- [ ] **L'ouvrir soi-même** et chiffrer une vraie affaire de bout en bout —
-      c'est le seul juge du rythme de saisie.
-- [ ] **Amorcer les prestations** (les quatre ou cinq facturées le plus souvent)
-      et poser les coefficients par catégorie.
-- [ ] **La restitution client** (§8, phase 5) : PDF à en-tête, mentions,
-      conditions — à cadrer une fois le moteur éprouvé. **Elle devra rendre les
-      documents riches** : c'est le seul chantier que le §14 alourdit (le PDF des
-      notes, `pdf-note.ts`, sait déjà le faire — il est réutilisable).
-- [ ] Trancher les questions ouvertes du §10 à l'usage.
-
 ---
 
 ## 15. Associations de produits — la proposition à l'ajout (2026-08-07)
@@ -754,3 +747,21 @@ les libellés de ligne, le nom de lot et l'objet du devis.
 > compilation — « 1 **lignesans** prix ». Le bloc voisin, sans entité, gardait la
 > sienne. Corrigé par un `{" "}` explicite. Le dépôt utilisant `&apos;` partout,
 > le piège existe sans doute ailleurs.
+
+---
+
+## 17. Ce qu'il reste à faire
+
+- [ ] **L'ouvrir soi-même** et chiffrer une vraie affaire de bout en bout —
+      c'est le seul juge du rythme de saisie. Rien de ce qui précède n'a encore
+      servi sur un devis réel.
+- [ ] **Amorcer les prestations** (les quatre ou cinq facturées le plus souvent)
+      et poser les coefficients par catégorie.
+- [ ] **Amorcer les associations** sur les articles qui en appellent d'autres
+      (§15) : un automate sans son alimentation ne propose rien, et la
+      fonctionnalité reste invisible tant que la table est vide.
+- [ ] **La restitution client** (§8, phase 5) : PDF à en-tête, mentions,
+      conditions — à cadrer une fois le moteur éprouvé. **Elle devra rendre les
+      documents riches** du §14 : c'est le seul chantier que celui-ci alourdit
+      (le PDF des notes, `pdf-note.ts`, sait déjà le faire — il est réutilisable).
+- [ ] Trancher les questions ouvertes du §10 à l'usage.
