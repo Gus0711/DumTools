@@ -521,6 +521,53 @@
     background-color: var(--rail-soft);
   }
 
+  /* --- Champ modifiable EN PLACE ----------------------------------------- *
+   * Dans une table de saisie, un input sans bordure est invisible : on ne sait
+   * pas ce qui se corrige et ce qui se lit. Mais border une cellule sur deux
+   * ferait une grille dans la grille.
+   *
+   * Le compromis de la maison : une CASE CREUSÉE — la même surface que le fond
+   * d'entête, un filet en pointillé sous la valeur. Elle se voit d'un coup
+   * d'œil sans peser, le survol la cerne, le focus l'allume au marine. C'est le
+   * vocabulaire du formulaire de cartouche : une case à remplir sur un plan. */
+  .champ-inline {
+    border: 1px solid transparent;
+    border-bottom-color: var(--hairline);
+    border-bottom-style: dashed;
+    border-radius: 3px;
+    background-color: color-mix(in srgb, var(--surface-2) 62%, transparent);
+    padding: 0.1rem 0.3rem;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease;
+  }
+  .champ-inline::placeholder {
+    color: var(--subtle);
+  }
+  .champ-inline:hover:not(:disabled) {
+    border-color: var(--border);
+    border-bottom-style: solid;
+    background-color: var(--surface-2);
+  }
+  .champ-inline:focus {
+    outline: none;
+    border-color: var(--brand);
+    border-bottom-style: solid;
+    background-color: var(--surface);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 20%, transparent);
+  }
+  .champ-inline:disabled {
+    background-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  /* Variante « libellé » : même grammaire, mais elle porte du texte long sur
+     plusieurs lignes — pas de troncature, pas de hauteur fixe. */
+  .champ-inline-texte {
+    display: block;
+    width: 100%;
+  }
+
   /* --- Tables « qualité instrument » ------------------------------------- *
    * Conteneur + table cohérents pour toutes les listes de l'appli.
    * Entête collante teintée, lignes aérées, survol net, filet fin.

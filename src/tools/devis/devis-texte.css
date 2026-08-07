@@ -1,0 +1,60 @@
+/* Le texte libre d'une ligne de devis vit DANS un tableau, pas sur une feuille.
+ * Ce fichier ne fait que resserrer le gabarit des notes (notes.css, chargé
+ * juste avant) : mêmes variables, autres valeurs. Aucun #hex, aucun réglage de
+ * couleur — la charte reste celle du document riche. */
+
+.devis-texte {
+  /* La gouttière des notes réserve 54 px aux poignées de bloc : dans une
+     cellule de tableau, c'est un trou. En LECTURE il n'y a aucune poignée à
+     loger, donc rien à réserver. */
+  --note-gouttiere: 0px;
+  --note-marge-droite: 0px;
+  /* Le tableau du devis est en `text-sm` : le document s'y aligne, sinon la
+     ligne de commentaire pèse visuellement plus lourd que les articles. */
+  font-size: 0.875rem;
+}
+
+/* En ÉDITION, les poignées et le « + » de BlockNote se posent à gauche du
+   texte : on leur rend juste la place qu'il leur faut. */
+.devis-texte-edition {
+  --note-gouttiere: 26px;
+  --note-marge-droite: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding-block: 0.25rem;
+}
+
+/* Pas de respiration de fin de document : les 14vh de blanc des notes servent à
+   « écrire au milieu de l'écran », ce qui n'a aucun sens dans une rangée. */
+.devis-texte .bn-editor,
+.devis-texte:not(.note-doc-lecture) .bn-editor {
+  padding-block: 0.15rem;
+  line-height: 1.55;
+}
+
+/* Le premier bloc ne prend pas de marge haute : il doit s'aligner sur la
+   poignée de la rangée, comme le libellé d'une ligne d'article. */
+.devis-texte .bn-block-outer:first-child > .bn-block > .bn-block-content {
+  padding-top: 0;
+}
+
+/* Un titre dans un commentaire de devis reste un titre de commentaire : il ne
+   doit pas écraser le nom des articles qui l'entourent. BlockNote dimensionne
+   ses titres par une variable (`font-size: var(--level)`) — on la redéfinit
+   plutôt que de lutter à coups de `font-size` sur trois sélecteurs. */
+.devis-texte [data-level="1"] {
+  --level: 1.35em;
+}
+.devis-texte [data-level="2"] {
+  --level: 1.15em;
+}
+.devis-texte [data-level="3"] {
+  --level: 1em;
+}
+
+/* Une image collée dans un devis illustre, elle ne s'affiche pas en pleine
+   page : on la borne pour que la rangée reste une rangée. */
+.devis-texte .bn-visual-media {
+  max-height: 22rem;
+  object-fit: contain;
+}

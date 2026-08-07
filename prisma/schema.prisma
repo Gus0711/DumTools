@@ -73,6 +73,11 @@ model User {
   choixVariantes        ChoixVarianteAffaire[]
   importsMagasin        ImportMagasin[]
   depotsDetenus         Depot[]
+  /// Devis (ToolGus) — voir la section « Outil Devis » en fin de schéma.
+  devisCrees            Devis[]             @relation("DevisCree")
+  devisModifies         Devis[]             @relation("DevisModifie")
+  coefsVenteModifies    CoefVente[]
+  associationsProduit   AssociationProduit[]
 }
 
 /// Jeton d'accès MCP émis par le flux OAuth du serveur MCP (« Ajouter un
@@ -110,6 +115,7 @@ model Client {
   documents     Document[]
   visites       Visite[]
   notes         Note[]
+  devis         Devis[]
   /// Nom EXACT du dossier de ce client sur kDrive, s'il diffère de `nom` (accents,
   /// casse, suffixe juridique…). Null = on utilise `nom` (après normalisation).
   /// Sert à la résolution du chemin kDrive (voir src/lib/kdrive).
@@ -213,6 +219,7 @@ model Chantier {
   materielHorsFourniture MaterielHorsFourniture[]
   choixVariantes     ChoixVarianteAffaire[]
   exemplaires        Exemplaire[]
+  devis              Devis[]
 
   @@index([clientId])
   @@index([suiviParId])
@@ -1212,16 +1219,83 @@ model Produit {
   exemplaires     Exemplaire[]
   lignesInventaire LigneInventaire[]
   nomenclature    NomenclaturePoint[]
+  /// « Ce produit en appelle d'autres » — voir AssociationProduit.
+  associations       AssociationProduit[] @relation("AssociationSource")
+  associationsInverses AssociationProduit[] @relation("AssociationCible")
   reservations    ReservationStock[]
   lignesMateriel  LigneMaterielAffaire[]
   horsFourniture  MaterielHorsFourniture[]
   automates       AutomateModele[]
   modules         ModuleModele[]
+  /// Devis : lien conservé pour PROPOSER un rafraîchissement de prix, jamais
+  /// pour afficher (la ligne de devis porte sa propre copie — docs/DEVIS.md §2.1).
+  lignesDevis     LigneDevis[]
 
   @@index([categorieId])
   @@index([fabricantId])
   @@index([refFabricant])
   @@index([fournisseurId])
+}
+
+/// ACCESSOIRE : proposé EN PLUS, on en coche autant qu'on veut (l'alimentation
+///              et le coffret d'un automate).
+/// VARIANTE   : proposé À LA PLACE des autres du même `groupe` — un seul, ou
+///              aucun (« Type de bus : 8UI ou 4UI4UO »).
+///
+/// Même vocabulaire que la nomenclature d'un point (NomenclaturePoint.variante) :
+/// deux mécanismes distincts, une seule langue.
+enum TypeAssociation {
+  ACCESSOIRE
+  VARIANTE
+}
+
+/// « Ce produit en appelle d'autres. »
+///
+/// Un fait sur le PRODUIT, vrai partout — pas une préférence de devis : c'est
+/// pourquoi la table vit dans le Magasin et non dans l'outil Devis. Le devis
+/// s'en sert pour PROPOSER à l'ajout d'une ligne ; la BOM d'affaire pourra s'en
+/// servir plus tard sans reprise de données.
+///
+/// ⚠️ Aucune CASCADE : si l'associé a lui-même des associés, on ne les propose
+/// pas. Un clic qui en ouvre cinq n'est plus une aide.
+model AssociationProduit {
+  id String @id @default(cuid())
+
+  /// Le produit DÉCLENCHEUR (celui qu'on ajoute).
+  produitId String
+  produit   Produit @relation("AssociationSource", fields: [produitId], references: [id], onDelete: Cascade)
+  /// Le produit PROPOSÉ.
+  associeId String
+  associe   Produit @relation("AssociationCible", fields: [associeId], references: [id], onDelete: Cascade)
+
+  type TypeAssociation @default(ACCESSOIRE)
+  /// Nom du groupe de variantes (« Type de bus »). Null pour un accessoire ;
+  /// obligatoire pour une variante — c'est lui qui rend les options exclusives.
+  groupe String?
+
+  /// Quantité proposée. Corrigeable dans la proposition avant validation.
+  quantite Int @default(1)
+  /// La quantité se MULTIPLIE par celle du déclencheur : vrai pour l'accessoire
+  /// à l'unité (une alimentation par automate), faux pour ce qui est mutualisé
+  /// (un seul coffret pour trois automates). Sans ce réglage, l'une des deux
+  /// familles serait toujours à corriger à la main.
+  parUnite Boolean @default(true)
+  /// Coché (accessoire) ou retenu (variante) par défaut dans la proposition.
+  parDefaut Boolean @default(true)
+
+  note  String @default("")
+  ordre Int    @default(0)
+
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  /// Un même associé ne peut pas être proposé deux fois par le même produit —
+  /// donc jamais accessoire ET variante à la fois.
+  @@unique([produitId, associeId])
+  @@index([produitId])
+  @@index([associeId])
 }
 
 /// Un code lu au scan → un produit. Appris UNE fois, valable pour toujours :
@@ -1555,4 +1629,249 @@ model ImportMagasin {
   createdAt   DateTime @default(now())
 
   @@index([createdAt])
+}
+
+// ---- Outil « Devis » (ToolGus) ---------------------------------------------
+//
+// LES TROIS PRINCIPES (docs/DEVIS.md §2) :
+//
+//  1. LE DEVIS FIGE, LE MAGASIN VIT. Chaque ligne COPIE désignation, déboursé,
+//     coefficient et prix de vente au moment de l'ajout. Le lien vers le produit
+//     est conservé, mais il ne sert QU'À PROPOSER un rafraîchissement : un devis
+//     rouvert trois mois plus tard doit afficher ce qui a été chiffré.
+//
+//  2. UN SEUL CHEMIN DE CALCUL : déboursé × coefficient = prix de vente. Le
+//     coefficient se lit en cascade (ligne → produit → catégorie → devis) et son
+//     ORIGINE voyage avec lui.
+//
+//  3. CE QU'ON NE SAIT PAS CHIFFRER EST DIT. Une ligne sans déboursé connu n'est
+//     jamais comptée pour zéro : elle est exclue et signalée.
+
+enum EtatDevis {
+  BROUILLON
+  EMIS
+  ACCEPTE
+  REFUSE
+}
+
+model Devis {
+  id String @id @default(cuid())
+  /// Format maison : DT{AA}{NNNN} — DT260052 = 52ᵉ devis de 2026.
+  /// Attribué à la CRÉATION (un brouillon abandonné laisse un trou : renuméroter
+  /// ferait bouger une référence déjà citée au téléphone).
+  numero   String
+  /// Une révision NE CONSOMME PAS de numéro : v1 et v2 partagent DT260052.
+  revision Int    @default(1)
+  /// Chaînage des révisions : v2 pointe vers v1. Null = première version.
+  parentId String?
+  parent   Devis?  @relation("DevisRevision", fields: [parentId], references: [id], onDelete: SetNull)
+  enfants  Devis[] @relation("DevisRevision")
+
+  titre String    @default("")
+  etat  EtatDevis @default(BROUILLON)
+
+  /// Rattachements — portés dès le premier jour bien que l'outil reste hors
+  /// PROVIDERS : la promotion en outil métier se fera sans reprise de données.
+  clientNom  String    @default("")
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  numeroWhy  String?
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id], onDelete: SetNull)
+
+  /// Coefficient par défaut, en MILLIÈMES (1350 = ×1,350). Copié du réglage
+  /// global à la création puis FIGÉ : changer la politique de la maison ne doit
+  /// pas modifier un devis déjà chiffré.
+  coefDefautMillieme Int @default(1350)
+  /// Taux de TVA en CENTIÈMES DE POURCENT (2000 = 20,00 % ; 0 = autoliquidation).
+  tauxTvaCentieme    Int @default(2000)
+  /// Remise globale, EXCLUSIVE : l'une des deux, jamais les deux (voir actions).
+  remiseGlobalePourMille Int?
+  remiseGlobaleCents     Int?
+  validiteJours          Int    @default(30)
+  note                   String @default("")
+
+  emisLe      DateTime?
+  createdById String?
+  createdBy   User?     @relation("DevisCree", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?     @relation("DevisModifie", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lots   LotDevis[]
+  lignes LigneDevis[]
+  medias DevisMedia[]
+
+  @@unique([numero, revision])
+  @@index([clientId])
+  @@index([chantierId])
+  @@index([etat])
+  @@index([parentId])
+}
+
+/// Regroupement affiché avec son sous-total (« Fourniture GTB », « Armoire »,
+/// « Main d'œuvre », ou un bâtiment). Une ligne sans lot se range en fin de devis.
+model LotDevis {
+  id      String @id @default(cuid())
+  devisId String
+  devis   Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  titre   String
+  /// Insertion au point médian des voisins (même patron que TacheAffaire.ordre) :
+  /// pas de renumérotation globale à chaque déplacement.
+  ordre   Float
+  note    String @default("")
+
+  lignes LigneDevis[]
+
+  @@index([devisId, ordre])
+}
+
+/// PRODUIT    : article du Magasin — déboursé × coefficient.
+/// PRESTATION : entrée du référentiel de main d'œuvre, au TAUX DE VENTE.
+/// LIBRE      : le « divers » — libellé et prix saisis à la main.
+/// TEXTE      : commentaire intercalé, sans quantité ni montant.
+enum GenreLigne {
+  PRODUIT
+  PRESTATION
+  LIBRE
+  TEXTE
+}
+
+model LigneDevis {
+  id      String     @id @default(cuid())
+  devisId String
+  devis   Devis      @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  lotId   String?
+  lot     LotDevis?  @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  ordre   Float
+  genre   GenreLigne
+
+  /// Lien vers la source. Il ne sert QU'À PROPOSER un rafraîchissement (§2.1) :
+  /// se vider ne casse rien, tout ce qui s'affiche est copié ci-dessous.
+  produitId    String?
+  produit      Produit?    @relation(fields: [produitId], references: [id], onDelete: SetNull)
+  prestationId String?
+  prestation   Prestation? @relation(fields: [prestationId], references: [id], onDelete: SetNull)
+
+  // --- LA COPIE (c'est elle qui fait foi) -----------------------------------
+  designation String
+  /// Document riche d'une ligne TEXTE (blocs BlockNote, même moteur que Notes
+  /// et Wiki). `designation` en reste le RÉSUMÉ EN TEXTE BRUT, recalculé à
+  /// chaque sauvegarde : tout ce qui lit une ligne sans savoir la rendre
+  /// (index, export, futur PDF) continue d'avoir une phrase lisible.
+  /// Null = ligne jamais passée en riche (l'éditeur l'amorce depuis
+  /// `designation`) ; `[]` = document volontairement vide.
+  contenu     Json?
+  /// Verrou optimiste du document riche uniquement (cf. useSauvegardeDocument).
+  /// Les autres champs de la ligne s'écrivent sans garde : ce sont des cases
+  /// indépendantes, pas un texte qu'on se dispute.
+  version     Int    @default(0)
+  refInterne  String?
+  unite       String @default("U")
+  /// Quantité en MILLIÈMES (2500 = 2,5) : les heures se comptent en demies, et
+  /// on ne met pas de flottant dans un calcul de prix.
+  quantiteMillieme Int @default(1000)
+  /// Déboursé unitaire copié à l'ajout. Null = inconnu (ligne exclue des totaux
+  /// et comptée dans nbSansPrix) ou sans objet (PRESTATION, LIBRE, TEXTE).
+  debourseCents    Int?
+  /// Coefficient réellement appliqué, copié. Null si le PV est saisi en direct.
+  coefMillieme     Int?
+  /// D'où venait ce coefficient : "ligne" | "produit" | "categorie" | "devis".
+  /// Copié pour que l'explication survive à un changement de réglage.
+  origineCoef      String @default("devis")
+  /// Prix de vente unitaire retenu, en centimes. TOUJOURS renseigné : c'est le
+  /// seul champ dont dépendent les totaux.
+  pvUnitaireCents  Int    @default(0)
+
+  /// Remise de ligne, en pour mille (50 = 5,0 %).
+  remisePourMille Int     @default(0)
+  /// Option : affichée et chiffrée, mais HORS TOTAL. Elle se négocie, on ne la
+  /// supprime pas — sinon on reperd le chiffrage à chaque aller-retour.
+  option          Boolean @default(false)
+  note            String  @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([devisId, ordre])
+  @@index([lotId])
+  @@index([produitId])
+  @@index([prestationId])
+}
+
+/// Média d'un document riche de devis (image collée, pièce jointe). Le parent
+/// est le DEVIS, pas la ligne : une ligne se supprime et se déplace, le média
+/// doit survivre au brouillon en cours. Servi par /api/devis/media/[id], sous
+/// la même garde que le reste de l'outil (le déboursé se lit sur les images de
+/// tarif aussi bien que dans une colonne).
+model DevisMedia {
+  id       String @id
+  devisId  String
+  devis    Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  /// Nom de fichier d'origine (affichage / téléchargement).
+  nom      String @default("")
+  mimeType String @default("application/octet-stream")
+  taille   Int    @default(0)
+  /// Chemin du binaire sur le disque de la VM.
+  fichier  String
+
+  createdAt DateTime @default(now())
+
+  @@index([devisId])
+}
+
+/// Référentiel de main d'œuvre, au TAUX DE VENTE (pas de coût interne — décision
+/// de cadrage). Conséquence assumée : l'outil ne connaît que la marge sur la
+/// FOURNITURE, et ne doit jamais afficher « marge du devis ».
+model Prestation {
+  id             String  @id @default(cuid())
+  libelle        String  @unique
+  /// h | j | forfait | U
+  unite          String  @default("h")
+  prixVenteCents Int     @default(0)
+  /// Regroupement d'affichage (« Bureau d'études », « Terrain »…).
+  famille        String  @default("")
+  ordre          Int     @default(0)
+  /// Archivée : retirée des choix, conservée sur les devis qui la portent.
+  actif          Boolean @default(true)
+  note           String  @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lignes LigneDevis[]
+}
+
+/// Les coefficients de vente, dans une table À L'OUTIL — et non en colonnes
+/// posées sur Produit / CategorieProduit. Deux raisons : (1) l'outil est en
+/// développement, tout ce qu'il ajoute doit pouvoir disparaître sans toucher au
+/// Magasin qui tourne ; (2) un coefficient n'est pas une propriété de l'article,
+/// c'est une POLITIQUE COMMERCIALE — elle se révise en bloc et elle a une date.
+model CoefVente {
+  id String @id @default(cuid())
+  /// GLOBAL | CATEGORIE | PRODUIT
+  portee  String
+  /// Id de la CategorieProduit ou du Produit visé ; null pour GLOBAL.
+  /// Pas de FK : la table appartient à l'outil et doit pouvoir être retirée d'un
+  /// bloc. Une cible disparue est simplement ignorée par la cascade.
+  cibleId String?
+  coefMillieme Int
+  note         String @default("")
+
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([portee, cibleId])
+}
+
+/// Compteur de numérotation, une ligne par année. L'attribution passe par un
+/// UPDATE atomique — un `max + 1` lu puis écrit donnerait deux fois le même
+/// numéro sur deux créations simultanées.
+model CompteurDevis {
+  /// Année sur 4 chiffres (2026) ; le numéro n'en garde que les deux derniers.
+  annee   Int @id
+  dernier Int @default(0)
 }

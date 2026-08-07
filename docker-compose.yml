@@ -67,6 +67,9 @@ services:
       # Photos prises depuis le Scanner (installation d'un modem, plaque
       # illisible, réserve) — rattachées à un scan, donc à une affaire.
       SCANS_MEDIA_DIR: /data/scans-media
+      # Images et pièces jointes collées dans les textes libres d'un devis.
+      # Aucune route publique : servies sous garde Achats comme le reste.
+      DEVIS_MEDIA_DIR: /data/devis-media
     volumes:
       - spool_data:/data/spool
       - visites_media:/data/visites-media
@@ -75,6 +78,7 @@ services:
       - formulaires_media:/data/formulaires-media
       - ndf_media:/data/ndf-media
       - scans_media:/data/scans-media
+      - devis_media:/data/devis-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -128,3 +132,4 @@ volumes:
   formulaires_media:
   ndf_media:
   scans_media:
+  devis_media:

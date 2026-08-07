@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Boxes, CircuitBoard, ClipboardCheck, ClipboardList, FlaskConical, FolderOpen, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
+import { Boxes, CircuitBoard, ClipboardCheck, ClipboardList, FileSpreadsheet, FlaskConical, FolderOpen, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
 
 /* =============================================================================
  * REGISTRE D'OUTILS
@@ -164,6 +164,22 @@ export const TOOLS: Tool[] = [
     status: "disponible",
     signal: "di",
     proprietaire: "gus",
+  },
+  {
+    id: "devis",
+    nom: "Devis",
+    description:
+      "Le chiffrage : le prix de vente se déduit du déboursé du magasin par un coefficient (réglable par catégorie, par article, ou forcé sur la ligne). Lots, options, remises, TVA — et le matériel d'une affaire repris d'un clic.",
+    icon: FileSpreadsheet,
+    href: "/perso/gus/devis",
+    status: "en-cours",
+    // Violet « ce qu'on émet » — libre dans l'espace perso, où le signal de
+    // Notes n'entre jamais en concurrence (les outils perso sont hors du rail).
+    signal: "ao",
+    proprietaire: "gus",
+    // Prix d'achat ET coefficients de marge : le même périmètre que les prix du
+    // Magasin. La garde des écrans et celle des actions lisent peutVoirDevis().
+    roles: ["ADMIN", "ACHATS"],
   },
   {
     id: "notes-de-frais",

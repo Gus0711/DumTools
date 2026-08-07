@@ -5,6 +5,7 @@ import { Badge, Cartouche } from "@/ui";
 import { listerAffaires } from "@/lib/chantiers/queries";
 import { lienRetour } from "@/lib/retour";
 import { FicheProduitVue } from "@/tools/magasin/fiche-produit";
+import { AssociationsProduit } from "@/tools/magasin/associations-produit";
 import {
   formatEuros,
   peutCorrigerStock,
@@ -13,6 +14,8 @@ import {
 } from "@/tools/magasin/model";
 import {
   ficheProduit,
+  groupesDassociation,
+  listerAssociations,
   listerCategories,
   listerDepots,
   listerFabricants,
@@ -45,14 +48,17 @@ export default async function Page({
   const fiche = await ficheProduit(id);
   if (!fiche) notFound();
 
-  const [depots, affaires, fournisseurs, rayon, fabricants, categories] = await Promise.all([
-    listerDepots(),
-    listerAffaires(),
-    listerFournisseurs(),
-    listerRayon(),
-    listerFabricants(),
-    listerCategories(),
-  ]);
+  const [depots, affaires, fournisseurs, rayon, fabricants, categories, associations, groupesConnus] =
+    await Promise.all([
+      listerDepots(),
+      listerAffaires(),
+      listerFournisseurs(),
+      listerRayon(),
+      listerFabricants(),
+      listerCategories(),
+      listerAssociations(id),
+      groupesDassociation(),
+    ]);
 
   const prix = peutVoirPrix(role);
 
@@ -127,6 +133,15 @@ export default async function Page({
         peutPrix={prix}
         peutGerer={peutGererReferentiel(role)}
         peutCorriger={peutCorrigerStock(role)}
+      />
+
+      {/* « Ce produit en appelle d'autres » — réglé ICI parce que c'est un fait
+          sur le produit, vrai partout, et non une préférence de devis. */}
+      <AssociationsProduit
+        produitId={fiche.id}
+        associations={associations}
+        groupesConnus={groupesConnus}
+        peutGerer={peutGererReferentiel(role)}
       />
     </div>
   );

@@ -94,6 +94,16 @@ export interface OptionsMenuSlash {
    *  rattaché à aucune affaire : annoncer « ou document GED de l'affaire » y
    *  promettrait un sélecteur toujours vide. */
   avecDocumentsGed?: boolean;
+  /**
+   * Retire les blocs qui n'ont de sens que dans une note de travail : bloc de
+   * code, HTML embarqué, table de données typée.
+   *
+   * Posé par le DEVIS, dont les textes libres finissent sous les yeux d'un
+   * client. Le SCHÉMA, lui, reste entier : un document se rend toujours avec le
+   * schéma qui l'a produit, et un devis peut hériter d'un bloc collé depuis une
+   * note. On filtre ce qu'on PROPOSE, jamais ce qu'on sait lire.
+   */
+  sansBlocsTechniques?: boolean;
 }
 
 /** Items du menu « / » : les blocs standard (libellés français via la locale),
@@ -104,8 +114,14 @@ export function itemsMenuSlash(
   editor: EditeurNotes,
   options: OptionsMenuSlash = {},
 ): DefaultReactSuggestionItem[] {
-  const { avecDocumentsGed = true } = options;
-  const defauts = getDefaultReactSlashMenuItems(editor);
+  const { avecDocumentsGed = true, sansBlocsTechniques = false } = options;
+  // Le titre vient du MÊME dictionnaire que celui qui a fabriqué l'item :
+  // comparer sur lui est exact, là où une chaîne écrite ici se désynchroniserait
+  // à la première retouche de la locale. (BlockNote n'expose pas la `key` de
+  // l'item côté React — sinon on filtrerait dessus.)
+  const defauts = getDefaultReactSlashMenuItems(editor).filter(
+    (i) => !sansBlocsTechniques || i.title !== dictionnaireNotes.slash_menu.code_block.title,
+  );
   const sautDePage = getPageBreakReactSlashMenuItems(editor);
   const groupeBase = dictionnaireNotes.slash_menu.divider.group;
   let finGroupeBase = -1;
@@ -120,8 +136,7 @@ export function itemsMenuSlash(
           ...sautDePage,
           ...defauts.slice(finGroupeBase + 1),
         ];
-  return [
-    ...standards,
+  const metier: DefaultReactSuggestionItem[] = [
     {
       title: "Table de données",
       subtext: "Colonnes typées (texte, nombre, date, choix…), tri et filtre",
@@ -142,6 +157,11 @@ export function itemsMenuSlash(
       icon: <Code2 size={18} />,
       onItemClick: () => insertOrUpdateBlockForSlashMenu(editor, { type: "embedHtml" }),
     },
+  ];
+
+  return [
+    ...standards,
+    ...(sansBlocsTechniques ? [] : metier),
     {
       title: avecDocumentsGed ? "Carte lien / document" : "Carte lien",
       subtext: avecDocumentsGed

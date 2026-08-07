@@ -647,3 +647,74 @@ par code-barres appris), rôle **`ACHATS`** dans `/configuration/utilisateurs`.
 - [ ] Étiquettes maison, camion en dépôt réel, outils MCP : quand le besoin viendra.
 
 ---
+
+---
+
+## 14. Associations de produits — « ce produit en appelle d'autres » (2026-08-07)
+
+Un automate appelle son alimentation et son coffret ; une sonde de gaine appelle
+son doigt de gant. Jusqu'ici il fallait s'en souvenir et les chercher un par un.
+
+`AssociationProduit` pose ce fait **sur le produit**, pas sur le devis — c'est le
+même arbitrage que §2 : ce qui est vrai partout appartient au référentiel. La
+BOM d'affaire pourra s'en servir plus tard **sans reprise de données**.
+
+### Deux natures, et la distinction porte tout
+
+| | Comportement | Exemple |
+|---|---|---|
+| `ACCESSOIRE` | proposé **en plus** ; on en coche autant qu'on veut, ou aucun | l'alimentation **et** le coffret |
+| `VARIANTE` | proposé **à la place** des autres de son `groupe` : un seul, ou aucun | « Type de bus » : 8UI **ou** 4UI4UO |
+
+Même vocabulaire que `NomenclaturePoint.variante` (un *point* appelle des
+produits) : deux mécanismes distincts, une seule langue.
+
+### Le réglage qui fait tout le travail : `parUnite`
+
+La quantité de l'associé **suit ou ne suit pas** celle du déclencheur :
+
+```
+3 × ECY-600  →  Alimentation  parUnite=true   →  3   (une par automate)
+             →  Coffret       parUnite=false  →  1   (un pour les trois)
+```
+
+Sans ce réglage, l'une des deux familles serait **toujours** à corriger à la
+main — et c'est précisément la correction qu'on ne fait pas. Les deux quantités
+arrivent donc pré-remplies justes, et restent corrigeables avant validation.
+
+### Trois garde-fous, côté serveur
+
+1. un produit ne s'appelle **pas lui-même** ;
+2. une `VARIANTE` **exige un groupe** : c'est lui qui rend les options
+   exclusives, sans lui elle serait exclusive avec rien ;
+3. `@@unique([produitId, associeId])` — un même associé ne peut pas être à la
+   fois accessoire et variante ; une seconde saisie **met à jour**.
+
+### Ce qui est délibérément absent
+
+- **Aucune cascade.** Si l'associé a lui-même des associés, on ne les propose
+  pas : un clic qui en ouvre cinq n'est plus une aide.
+- **Aucune réciprocité.** A→D n'implique pas D→A.
+- **Rien n'est imposé.** « Aucun » est une option à part entière d'un groupe de
+  variantes, et tout accessoire se décoche. On ne vend pas une fourniture que
+  personne n'a demandée.
+
+### Où ça se règle, où ça se voit
+
+- **Réglage** : section « Ce produit en appelle d'autres » sur
+  `/outils/magasin/produits/[id]` — réservée à `ACHATS`/`ADMIN`, comme le reste
+  du référentiel. Le formulaire annonce le résultat avant d'enregistrer
+  (« pour 3 de cet article, le devis proposera 3 × … »).
+- **Usage** : à l'ajout d'une ligne de devis. Un article **sans** association
+  s'ajoute d'un clic, exactement comme avant ; un article associé ouvre la
+  proposition, et **rien n'est posé tant qu'on n'a pas validé** — y compris le
+  déclencheur. Renoncer, c'est renoncer à l'ajout, pas se retrouver avec une
+  ligne à moitié posée.
+- Un associé **archivé** au magasin n'est plus proposé (on le vendrait sans
+  pouvoir l'acheter) mais reste visible sur la fiche, pour pouvoir retirer la
+  règle.
+
+Vérifications : `npx tsx scripts/associations-smoke.mts` (21 contrôles du
+rangement et du calcul de quantité) + parcours navigateur complet (20 contrôles :
+réglage, proposition, quantités pré-remplies, variante exclusive, coefficient
+rejoué pour chaque associé).

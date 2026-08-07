@@ -457,3 +457,123 @@ export interface VarianteBom {
     quantite: number;
   }[];
 }
+
+/* =============================================================================
+ * ASSOCIATIONS DE PRODUITS — « ce produit en appelle d'autres »
+ *
+ * Un fait sur le PRODUIT, vrai partout : c'est pourquoi la table vit ici et non
+ * dans l'outil Devis (le devis s'en sert pour proposer ; la BOM d'affaire
+ * pourra s'en servir plus tard, sans reprise de données).
+ *
+ * Deux types, et la distinction porte tout :
+ *   ACCESSOIRE  on en coche autant qu'on veut (alimentation ET coffret) ;
+ *   VARIANTE    un seul par `groupe`, ou aucun (« Type de bus »).
+ * ========================================================================== */
+
+export type TypeAssociation = "ACCESSOIRE" | "VARIANTE";
+
+export const TYPE_ASSOCIATION_LABEL: Record<TypeAssociation, string> = {
+  ACCESSOIRE: "Accessoire",
+  VARIANTE: "Variante",
+};
+
+export const TYPE_ASSOCIATION_AIDE: Record<TypeAssociation, string> = {
+  ACCESSOIRE: "Proposé EN PLUS. On peut en cocher plusieurs, ou aucun.",
+  VARIANTE: "Proposé À LA PLACE des autres de son groupe : un seul, ou aucun.",
+};
+
+export function estTypeAssociation(v: unknown): v is TypeAssociation {
+  return v === "ACCESSOIRE" || v === "VARIANTE";
+}
+
+/** Une association telle qu'elle se règle sur la fiche produit. */
+export interface AssociationVue {
+  id: string;
+  associeId: string;
+  refInterne: string;
+  designation: string;
+  unite: string;
+  /** Prix de référence de l'associé — pour juger le réglage sans le quitter. */
+  debourseCents: number | null;
+  actif: boolean;
+  type: TypeAssociation;
+  groupe: string | null;
+  quantite: number;
+  parUnite: boolean;
+  parDefaut: boolean;
+  note: string;
+  ordre: number;
+}
+
+/**
+ * La quantité à proposer pour un associé, selon la quantité du déclencheur.
+ *
+ * `parUnite` est la seule chose qui distingue l'accessoire à l'unité (une
+ * alimentation par automate) de ce qui est mutualisé (un seul coffret pour
+ * trois automates). Sans ce réglage, l'une des deux familles serait toujours à
+ * corriger à la main — et c'est justement la correction qu'on ne fait pas.
+ *
+ * `quantiteDeclencheur` est en unités entières (pas en millièmes) : on ne
+ * commande pas 2,5 automates, et une quantité fractionnaire se borne à 1 plutôt
+ * que de proposer 0 accessoire.
+ */
+export function quantiteProposee(
+  a: Pick<AssociationVue, "quantite" | "parUnite">,
+  quantiteDeclencheur: number,
+): number {
+  const base = Math.max(1, Math.round(a.quantite));
+  if (!a.parUnite) return base;
+  return base * Math.max(1, Math.round(quantiteDeclencheur));
+}
+
+/** Un groupe de variantes prêt à afficher : ses options, et celle retenue. */
+export interface GroupeVariantes {
+  nom: string;
+  options: AssociationVue[];
+  /** L'option cochée à l'ouverture : le `parDefaut` du groupe, sinon aucune.
+   *  Aucune n'est un choix légitime — on ne force pas une fourniture. */
+  choisiParDefaut: string | null;
+}
+
+/**
+ * Range les associations d'un produit pour la proposition : les accessoires
+ * d'un côté, les groupes de variantes de l'autre.
+ *
+ * Une VARIANTE sans groupe nommé serait exclusive avec rien du tout : elle est
+ * traitée comme un accessoire plutôt que d'ouvrir un groupe fantôme (la saisie
+ * est empêchée côté action, ceci n'est qu'un filet).
+ */
+export function rangerAssociations(assocs: AssociationVue[]): {
+  accessoires: AssociationVue[];
+  groupes: GroupeVariantes[];
+} {
+  const tri = (a: AssociationVue, b: AssociationVue) =>
+    a.ordre - b.ordre || a.designation.localeCompare(b.designation);
+
+  const accessoires: AssociationVue[] = [];
+  const parGroupe = new Map<string, AssociationVue[]>();
+
+  for (const a of assocs) {
+    if (!a.actif) continue; // un article archivé ne se propose plus
+    if (a.type === "VARIANTE" && a.groupe) {
+      const liste = parGroupe.get(a.groupe);
+      if (liste) liste.push(a);
+      else parGroupe.set(a.groupe, [a]);
+    } else {
+      accessoires.push(a);
+    }
+  }
+
+  const groupes: GroupeVariantes[] = [...parGroupe.entries()]
+    .map(([nom, options]) => {
+      const tries = [...options].sort(tri);
+      return {
+        nom,
+        options: tries,
+        choisiParDefaut: tries.find((o) => o.parDefaut)?.id ?? null,
+      };
+    })
+    .sort((a, b) => a.nom.localeCompare(b.nom));
+
+  return { accessoires: accessoires.sort(tri), groupes };
+}

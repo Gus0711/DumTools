@@ -10,6 +10,8 @@ import {
   type ExemplaireVue,
   type LigneNomenclature,
   type MouvementVue,
+  type AssociationVue,
+  estTypeAssociation,
   type ProduitRayon,
   type SourcePrix,
   type TypeDepot,
@@ -104,7 +106,7 @@ export interface PrixProduit {
  * vient d'être créé n'affiche aucun prix nulle part, ce qui donne l'impression
  * que la fonction ne marche pas.
  */
-async function prixParProduit(): Promise<Map<string, PrixProduit>> {
+export async function prixParProduit(): Promise<Map<string, PrixProduit>> {
   const [moyens, derniers] = await Promise.all([
     prisma.$queryRaw<{ produitId: string; total: number; qte: number }[]>`
       SELECT "produitId",
@@ -963,4 +965,54 @@ export async function coutMaterielAffaire(chantierId: string): Promise<number> {
 /** Libellé court réutilisé dans les résumés. */
 export function resumeValeur(cents: number): string {
   return formatEuros(cents);
+}
+
+/* --- Associations de produits ---------------------------------------------- */
+
+/**
+ * Les associations d'un produit (« ce produit en appelle d'autres »), avec le
+ * prix de l'associé — on règle une association en voyant ce qu'elle coûtera,
+ * sans quitter l'écran.
+ */
+export async function listerAssociations(produitId: string): Promise<AssociationVue[]> {
+  const lignes = await prisma.associationProduit.findMany({
+    where: { produitId },
+    orderBy: [{ ordre: "asc" }, { id: "asc" }],
+    include: {
+      associe: {
+        select: { id: true, refInterne: true, designation: true, unite: true, actif: true },
+      },
+    },
+  });
+  if (lignes.length === 0) return [];
+
+  const prix = await prixParProduit();
+  return lignes.map((a) => ({
+    id: a.id,
+    associeId: a.associe.id,
+    refInterne: a.associe.refInterne,
+    designation: a.associe.designation,
+    unite: a.associe.unite,
+    debourseCents: prixReference(prix.get(a.associe.id)).cents,
+    actif: a.associe.actif,
+    type: estTypeAssociation(a.type) ? a.type : "ACCESSOIRE",
+    groupe: a.groupe,
+    quantite: a.quantite,
+    parUnite: a.parUnite,
+    parDefaut: a.parDefaut,
+    note: a.note,
+    ordre: a.ordre,
+  }));
+}
+
+/** Les noms de groupes de variantes déjà utilisés — pour proposer plutôt que
+ *  laisser retaper (« Type de bus » écrit deux fois fait deux groupes). */
+export async function groupesDassociation(): Promise<string[]> {
+  const lignes = await prisma.associationProduit.findMany({
+    where: { groupe: { not: null } },
+    select: { groupe: true },
+    distinct: ["groupe"],
+    orderBy: { groupe: "asc" },
+  });
+  return lignes.map((l) => l.groupe!).filter(Boolean);
 }

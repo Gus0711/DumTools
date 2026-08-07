@@ -1412,3 +1412,88 @@ export async function relierModeleAuProduit(p: {
   revalidatePath("/configuration/materiel");
   if (produitId) revalidatePath(`${RAYON}/produits/${produitId}`);
 }
+
+/* =============================================================================
+ * ASSOCIATIONS DE PRODUITS
+ * « Ce produit en appelle d'autres » — voir AssociationProduit dans le schéma.
+ * ========================================================================== */
+
+const RAYON_ASSOC = "/outils/magasin";
+
+/**
+ * Crée ou met à jour une association. Trois garde-fous, tous nécessaires :
+ *
+ *  1. un produit ne s'appelle pas LUI-MÊME (ajouter A proposerait A) ;
+ *  2. une VARIANTE sans groupe nommé serait exclusive avec rien — le groupe est
+ *     ce qui rend les options mutuellement exclusives, il est donc obligatoire ;
+ *  3. `@@unique([produitId, associeId])` : le même associé ne peut pas être à la
+ *     fois accessoire et variante. On met donc à jour au lieu d'empiler deux
+ *     règles contradictoires.
+ */
+export async function enregistrerAssociation(saisie: {
+  id?: string;
+  produitId: string;
+  associeId: string;
+  type?: string;
+  groupe?: string | null;
+  quantite?: number;
+  parUnite?: boolean;
+  parDefaut?: boolean;
+  note?: string;
+  ordre?: number;
+}): Promise<{ id: string }> {
+  const a = await acteurReferentiel();
+
+  const produitId = texte(saisie.produitId);
+  const associeId = texte(saisie.associeId);
+  if (!produitId || !associeId) throw new Error("Produit et associé sont nécessaires");
+  if (produitId === associeId) {
+    throw new Error("Un produit ne peut pas s'appeler lui-même");
+  }
+
+  const type = texte(saisie.type).toUpperCase() || "ACCESSOIRE";
+  if (type !== "ACCESSOIRE" && type !== "VARIANTE") throw new Error("Type d'association inconnu");
+
+  const groupe = type === "VARIANTE" ? texteOuNull(saisie.groupe) : null;
+  if (type === "VARIANTE" && !groupe) {
+    throw new Error("Une variante a besoin d'un nom de groupe : c'est lui qui rend le choix exclusif");
+  }
+
+  const data = {
+    type: type as "ACCESSOIRE" | "VARIANTE",
+    groupe,
+    quantite: Math.max(1, entierPositif(saisie.quantite ?? 1, "Quantité")),
+    parUnite: saisie.parUnite === undefined ? true : Boolean(saisie.parUnite),
+    parDefaut: saisie.parDefaut === undefined ? true : Boolean(saisie.parDefaut),
+    note: texte(saisie.note),
+    ordre: Math.round(Number(saisie.ordre ?? 0)) || 0,
+  };
+
+  const existante = await prisma.associationProduit.findFirst({
+    where: { produitId, associeId },
+    select: { id: true },
+  });
+
+  const ligne = existante
+    ? await prisma.associationProduit.update({
+        where: { id: existante.id },
+        data,
+        select: { id: true },
+      })
+    : await prisma.associationProduit.create({
+        data: { ...data, produitId, associeId, createdById: a.id },
+        select: { id: true },
+      });
+
+  revalidatePath(`${RAYON_ASSOC}/produits/${produitId}`);
+  return ligne;
+}
+
+export async function supprimerAssociation(id: string): Promise<void> {
+  await acteurReferentiel();
+  const ligne = await prisma.associationProduit.delete({
+    where: { id },
+    select: { produitId: true },
+  });
+  revalidatePath(`${RAYON_ASSOC}/produits/${ligne.produitId}`);
+}

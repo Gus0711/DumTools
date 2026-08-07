@@ -63,6 +63,7 @@ next-env.d.ts
 .formulaires-media/
 .ndf-media/
 .scans-media/
+.devis-media/
 # Sorties du test de bout en bout des notes de frais (scripts/ndf-smoke.mts).
 .ndf-smoke/
 
