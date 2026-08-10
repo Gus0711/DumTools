@@ -27,6 +27,10 @@ model User {
   id                    String              @id @default(cuid())
   email                 String              @unique
   nom                   String
+  /// Fonction dans l'entreprise (« Directeur », « Chargé d'affaires »). Sert à
+  /// SIGNER les documents qui sortent chez le client : un devis se signe d'un
+  /// nom ET d'une qualité. Vide = seul le nom est imprimé.
+  fonction              String              @default("")
   passwordHash          String
   role                  Role                @default(MEMBRE)
   actif                 Boolean             @default(true)
@@ -76,6 +80,8 @@ model User {
   /// Devis (ToolGus) — voir la section « Outil Devis » en fin de schéma.
   devisCrees            Devis[]             @relation("DevisCree")
   devisModifies         Devis[]             @relation("DevisModifie")
+  messagesDevis         MessageDevis[]      @relation("MessageDevisAuteur")
+  lecturesFilDevis      LectureFilDevis[]   @relation("LectureFilDevisUser")
   coefsVenteModifies    CoefVente[]
   associationsProduit   AssociationProduit[]
 }
@@ -1689,7 +1695,48 @@ model Devis {
   remiseGlobalePourMille Int?
   remiseGlobaleCents     Int?
   validiteJours          Int    @default(30)
-  note                   String @default("")
+
+  /// LA CHAÎNE DE RÉVISIONS, dénormalisée — c'est l'identité du FIL.
+  /// Posée à sa propre valeur d'id à la création, RECOPIÉE par une révision,
+  /// NEUVE par une duplication.
+  /// ⚠️ Pourquoi ne pas remonter `parentId` ? Il est en `onDelete: SetNull` :
+  /// supprimer la v1 casse la chaîne et la v2 se retrouverait orpheline de son
+  /// propre fil. Une colonne dénormalisée survit à cette rupture, et transforme
+  /// la lecture du fil en une requête sur un index plutôt qu'une remontée
+  /// récursive à chaque ouverture. (docs/DEVIS-FIL.md §4.1)
+  filId                  String @default("")
+
+  // --- LA RESTITUTION CLIENT (docs/DEVIS.md §21) -----------------------------
+  /// Le pavé destinataire du document, TEL QU'IL S'IMPRIME (une ligne par
+  /// ligne). Ce n'est pas l'adresse du client : c'est celle de CE devis — un
+  /// service (« Comptabilité Fournisseurs »), une TSA de facturation, une
+  /// personne (« À l'attention de M. … ») changent d'une affaire à l'autre,
+  /// comme le montrent les deux devis historiques. Vide = seul `clientNom`.
+  /// Le jour où `Client` portera une adresse, elle servira à PRÉ-REMPLIR ce
+  /// pavé, jamais à le remplacer (le devis fige, principe n°1).
+  destinataire    String    @default("")
+  /// Jeton du lien public `/d/{jeton}`. Le devis PUBLIÉ se lit à sa source :
+  /// la page rend l'état courant de la base, pas un instantané (choix assumé,
+  /// cf. §21.2) — d'où l'horodatage « mis à jour le » en clair sur le document
+  /// et le journal de consultation ci-dessous.
+  jetonPartage    String?   @unique
+  /// Échéance du lien, calée par défaut sur la validité du devis. Un jeton échu
+  /// RESTE en base pour être prolongé à la même URL : seul `partageActif()`
+  /// juge, jamais la présence du jeton (règle du socle de partage).
+  partageExpireLe DateTime?
+  /// Première publication — la date que le document porte comme « établi le ».
+  publieLe        DateTime?
+
+  /// Ce que le client voit du chiffrage. Le défaut est le devis détaillé (le
+  /// document de la maison) ; on replie au sous-total de lot quand l'affaire ne
+  /// doit pas s'éplucher ligne à ligne.
+  montrerPrixUnitaires  Boolean @default(true)
+  montrerSousTotauxLots Boolean @default(true)
+  /// Les options en fin de document, sous « Options non comprises ».
+  montrerOptions        Boolean @default(true)
+
+  consultations DevisConsultation[]
+  messages      MessageDevis[]
 
   emisLe      DateTime?
   createdById String?
@@ -1704,10 +1751,33 @@ model Devis {
   medias DevisMedia[]
 
   @@unique([numero, revision])
+  @@index([filId])
   @@index([clientId])
   @@index([chantierId])
   @@index([etat])
   @@index([parentId])
+}
+
+/// Une ouverture du lien public. Écrite par une BALISE côté navigateur, jamais
+/// pendant le rendu de la page : un aspirateur de liens (aperçu de messagerie,
+/// antivirus de la boîte mail du client) ne fait pas tourner de JavaScript et ne
+/// doit pas se compter comme une lecture — sinon la seule question qu'on se pose
+/// (« l'a-t-il ouvert ? ») reçoit toujours oui.
+model DevisConsultation {
+  id      String @id @default(cuid())
+  devisId String
+  devis   Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  /// Le jeton par lequel on est entré — un lien révoqué puis regénéré ne mélange
+  /// pas ses lectures avec celles du précédent.
+  jeton   String
+
+  vuLe DateTime @default(now())
+  /// IP tronquée (deux premiers octets en v4, /32 en v6) : on veut distinguer
+  /// deux lecteurs, pas identifier une personne.
+  ip        String @default("")
+  userAgent String @default("")
+
+  @@index([devisId, vuLe])
 }
 
 /// Regroupement affiché avec son sous-total (« Fourniture GTB », « Armoire »,
@@ -1816,9 +1886,75 @@ model DevisMedia {
   /// Chemin du binaire sur le disque de la VM.
   fichier  String
 
+  /// Pièce jointe d'un MESSAGE du fil (null = image d'un texte libre de ligne).
+  /// ⚠️ C'est ce champ qui décide de la purge ET de la copie en révision :
+  /// `purgerMediasDevis` doit épargner les pièces de message (aucune ligne ne
+  /// les cite, elles seraient effacées du disque à la frappe suivante), et
+  /// `copierMedias` ne doit pas les recopier (le fil est partagé par toute la
+  /// chaîne). Voir docs/DEVIS-FIL.md §5.
+  messageId String?
+  message   MessageDevis? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  /// Versée dans la GED de l'affaire. Le versement COPIE, il ne déplace pas :
+  /// la pièce reste dans le fil, et cette date sert à ne pas la verser deux
+  /// fois sans le dire. (docs/DEVIS-FIL.md §8)
+  verseeLe  DateTime?
+
   createdAt DateTime @default(now())
 
   @@index([devisId])
+  @@index([messageId])
+}
+
+/// UN MESSAGE DU FIL — ce que les gens écrivent au sujet d'un devis.
+///
+/// `evenement` porte les faits que le modèle ne sait pas retenir tout seul :
+/// aujourd'hui les changements d'état vers ACCEPTÉ / REFUSÉ / BROUILLON, qui
+/// n'ont aucune colonne de date (contrairement à `emisLe` et `publieLe`, dont
+/// la frise se déduit). Un message d'événement n'a pas de `corps` saisi : il se
+/// rend depuis `evenement` + `donnees`.
+model MessageDevis {
+  id      String @id @default(cuid())
+  /// La conversation — c'est LUI qu'on interroge, jamais une remontée de parentId.
+  filId   String
+  /// La version depuis laquelle le message a été écrit (pastille « v2 »).
+  /// ⚠️ SetNull et non Cascade : supprimer la v1 ne doit pas effacer la
+  /// négociation qui a mené à la v2 — c'est exactement la mémoire qu'on
+  /// cherche à garder. Un message orphelin se rend « version supprimée ».
+  devisId String?
+  devis   Devis?  @relation(fields: [devisId], references: [id], onDelete: SetNull)
+
+  corps    String  @default("")
+  auteurId String?
+  auteur   User?   @relation("MessageDevisAuteur", fields: [auteurId], references: [id], onDelete: SetNull)
+  /// Remonté en tête du fil : « le client veut la livraison en octobre ».
+  epingle  Boolean @default(false)
+
+  /// Fait automatique plutôt que phrase écrite (null = message humain).
+  evenement String?
+  donnees   Json?
+
+  createdAt DateTime  @default(now())
+  /// Renseignée à la première modification — l'écran affiche « modifié ».
+  modifieLe DateTime?
+
+  pieces DevisMedia[]
+
+  @@index([filId, createdAt])
+  @@index([devisId])
+}
+
+/// « Qu'est-ce qui est arrivé depuis ma dernière visite ? »
+/// Écrite à l'OUVERTURE DE L'ONGLET, pas au chargement de la page : ouvrir un
+/// devis pour corriger un prix ne vaut pas « j'ai lu ».
+model LectureFilDevis {
+  userId String
+  user   User   @relation("LectureFilDevisUser", fields: [userId], references: [id], onDelete: Cascade)
+  filId  String
+  vuLe   DateTime @default(now())
+
+  @@id([userId, filId])
+  @@index([filId])
 }
 
 /// Référentiel de main d'œuvre, au TAUX DE VENTE (pas de coût interne — décision
@@ -1874,4 +2010,50 @@ model CompteurDevis {
   /// Année sur 4 chiffres (2026) ; le numéro n'en garde que les deux derniers.
   annee   Int @id
   dernier Int @default(0)
+}
+
+/// L'identité de la maison et ses conditions de vente — LIGNE UNIQUE (`id` fixé
+/// à "societe", d'où un simple upsert sans compteur ni garde).
+///
+/// Tout est GLOBAL, aucune surcharge par devis : c'est la décision prise le
+/// 2026-08-08, et les deux devis historiques la confirment (même règlement,
+/// même acompte, même durée annoncée sur les deux). Le jour où une affaire
+/// demandera un acompte à 30 %, le champ descendra sur `Devis` — pas avant.
+///
+/// Volontairement du TEXTE, pas des nombres, pour tout ce qui ne sert qu'à être
+/// imprimé (« SAS au capital de 38 112,25 € ») : le document ne calcule rien
+/// avec, et une mention légale mal modélisée est une mention légale fausse.
+model ReglageSociete {
+  id String @id @default("societe")
+
+  raisonSociale String @default("")
+  /// « SAS au capital de 38 112,25 € » — la ligne qui suit le nom dans le pied.
+  formeCapital  String @default("")
+  adresse       String @default("")
+  codePostal    String @default("")
+  /// Sert aussi de lieu d'émission (« CHARMES, le 26/06/2026 »).
+  ville         String @default("")
+  telephone     String @default("")
+  email         String @default("")
+  siteWeb       String @default("")
+
+  rcs          String @default("")
+  codeApe      String @default("")
+  tvaIntracom  String @default("")
+
+  iban String @default("")
+  bic  String @default("")
+
+  /// Conditions financières imprimées sur chaque devis.
+  reglement            String @default("Virement")
+  conditionsReglement  String @default("30 jours NET")
+  /// Acompte demandé, en POUR MILLE du TTC (500 = 50 %). 0 = aucun acompte, et
+  /// la ligne disparaît du document plutôt que d'annoncer « acompte 0 % ».
+  acomptePourMille     Int    @default(500)
+  /// « 15 jours » — annoncé tel quel, sans être un délai contractuel calculé.
+  dureeRealisation     String @default("")
+  /// Encart « Remarques particulières ». Vide = encart absent.
+  remarques            String @default("")
+
+  updatedAt DateTime @updatedAt
 }

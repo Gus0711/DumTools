@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Boxes, Percent, Plus, Trash2, TriangleAlert, Wrench, X } from "lucide-react";
-import { Badge, Button, Input, Label } from "@/ui";
+import { Badge, Button, EnteteBloc, Input, Label } from "@/ui";
 import { cn } from "@/lib/cn";
 import {
   enregistrerCoef,
@@ -11,6 +11,7 @@ import {
   supprimerCoef,
   supprimerPrestation,
 } from "./actions";
+import { SocieteBloc } from "./societe-devis";
 import {
   UNITES_PRESTATION,
   formatCoef,
@@ -18,6 +19,7 @@ import {
   parseCoef,
   parseEuros,
   type PrestationVue,
+  type SocieteVue,
 } from "./model";
 import type { ArticleChoix, CoefLigneVue } from "./queries";
 
@@ -36,26 +38,37 @@ export function ReferentielsDevis({
   coefs,
   categories,
   coefGlobal,
+  societe,
 }: {
   prestations: PrestationVue[];
   coefs: CoefLigneVue[];
   categories: { id: string; nom: string }[];
   coefGlobal: number;
+  /** L'identité de la maison — troisième table de l'écran, d'une autre nature :
+   *  elle ne chiffre rien, elle s'imprime. */
+  societe: SocieteVue;
 }) {
   const router = useRouter();
-  const [enCours, demarrer] = useTransition();
+  const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  function agir(fn: () => Promise<unknown>) {
+  /* Pas de `useTransition` : une écriture n'est pas un changement de vue, et
+     React se réserve le droit d'interrompre puis de rejouer un rendu de
+     transition — la réponse du serveur s'y perdait une fois sur cinq (mesuré
+     sur l'éditeur, voir le commentaire de `agir` là-bas). Ici le
+     rafraîchissement explicite reste nécessaire : deux des quatre actions de
+     cet écran ne revalident pas de chemin. */
+  async function agir(fn: () => Promise<unknown>) {
     setErreur(null);
-    demarrer(async () => {
-      try {
-        await fn();
-        router.refresh();
-      } catch (e) {
-        setErreur(e instanceof Error ? e.message : "Opération impossible");
-      }
-    });
+    setEnCours(true);
+    try {
+      await fn();
+      router.refresh();
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : "Opération impossible");
+    } finally {
+      setEnCours(false);
+    }
   }
 
   return (
@@ -74,6 +87,7 @@ export function ReferentielsDevis({
         agir={agir}
       />
       <PrestationsBloc prestations={prestations} enCours={enCours} agir={agir} />
+      <SocieteBloc societe={societe} enCours={enCours} agir={agir} />
     </div>
   );
 }
@@ -103,11 +117,13 @@ function CoefficientsBloc({
   const parProduit = coefs.filter((c) => c.portee === "PRODUIT");
 
   return (
-    <section className="bloc">
-      <header className="bloc-entete flex items-center gap-2">
-        <Percent className="h-4 w-4 text-accent" />
-        <span className="flex-1 font-display font-semibold text-fg">Coefficients de vente</span>
-      </header>
+    <section className="bloc signal-ao">
+      <EnteteBloc
+        icone={Percent}
+        titre="Coefficients de vente"
+        compteur={parCategorie.length + parProduit.length}
+        mention="la politique commerciale de la maison"
+      />
 
       <div className="p-4">
         <p className="mb-4 max-w-2xl text-sm text-muted">
@@ -442,12 +458,13 @@ function PrestationsBloc({
   const nbArchivees = prestations.filter((p) => !p.actif).length;
 
   return (
-    <section className="bloc">
-      <header className="bloc-entete flex items-center gap-2">
-        <Wrench className="h-4 w-4 text-io-ao" />
-        <span className="flex-1 font-display font-semibold text-fg">Prestations</span>
-        <span className="text-sm text-subtle">{visibles.length}</span>
-      </header>
+    <section className="bloc signal-ao">
+      <EnteteBloc
+        icone={Wrench}
+        titre="Prestations"
+        compteur={visibles.length}
+        mention="ce qu'on sait vendre en main d'œuvre"
+      />
 
       <div className="p-4">
         <p className="mb-4 max-w-2xl text-sm text-muted">

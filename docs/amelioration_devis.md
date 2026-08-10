@@ -137,9 +137,15 @@ se relance ou se révise, c'est une décision commerciale.
 
 ---
 
-## Et toujours : la restitution client
+## ~~Et toujours : la restitution client~~ — FAIT le 2026-08-08
 
-Le **PDF à en-tête** (mentions, conditions de paiement, CGV, validité) reste
-hors périmètre par décision de cadrage — « d'abord un bon moteur ». C'est ce qui
-manque pour que le devis quitte l'application autrement que par un copier-coller.
-Voir [`DEVIS.md`](DEVIS.md) §8, phase 5.
+Le devis **sort** : page publique `/d/{jeton}` à envoyer au client, PDF à
+en-tête imprimé par un vrai navigateur, mentions et conditions réglées une fois
+pour la maison. Cadrage complet et pièges : [`DEVIS.md`](DEVIS.md) §21.
+
+⚠️ **Cela aggrave le défaut n°1 ci-dessus**, en connaissance de cause : le lien
+public sert le devis **à sa source**, donc modifier un devis publié change ce que
+le client a sous les yeux. Trois garde-fous visibles ont été posés à défaut de
+figement (document daté « mis à jour le… », avertissement dans l'éditeur, journal
+de consultation) — voir §21.2. Le vrai remède reste **la révision**, qui garde le
+numéro et ne reprend pas le lien du parent.

@@ -79,3 +79,9 @@ backups/
 
 # Journal du serveur de prod locale (scripts/serve-prod.sh)
 .prod.log
+
+# Devis historiques de la maison — MATÉRIEL DE RÉFÉRENCE, pas du code.
+# Ce sont de VRAIS devis client (numéros, prix, marges) et ce dépôt est PUBLIC :
+# ils servent à caler la mise en page du document (cf. le commentaire de
+# `model.ts`), aucun code ne les lit. Ils restent sur la VM, hors de git.
+public/devis_template/*.pdf

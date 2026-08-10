@@ -27,7 +27,7 @@ export default async function Page({ params }: { params: Promise<{ qui: string }
         retour={{ href: `/perso/${qui}`, label: "ToolGus" }}
         titre={
           <span className="flex items-center gap-2.5">
-            <FileSpreadsheet className="h-6 w-6 text-accent" />
+            <FileSpreadsheet className="text-signal h-6 w-6" />
             Devis
           </span>
         }
@@ -36,12 +36,13 @@ export default async function Page({ params }: { params: Promise<{ qui: string }
         actions={
           <Link
             href={`/perso/${qui}/devis/referentiels`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
+            className="press inline-flex h-[var(--control-h)] items-center gap-2 rounded-md border border-border bg-surface px-4 text-sm font-medium text-fg transition-[background-color,border-color] duration-150 hover:border-brand/45 hover:bg-surface-2"
           >
-            <Settings2 className="h-4 w-4" /> Prestations & coefficients
+            <Settings2 className="h-4 w-4" /> Référentiels
           </Link>
         }
-        className="mb-6"
+        /* Le signal de l'outil (violet « ce qu'on émet »), comme sur l'accueil. */
+        className="signal-ao"
       />
 
       <IndexDevis

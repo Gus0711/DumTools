@@ -8,9 +8,13 @@ import { Prisma } from "@/generated/prisma/client";
 import { resoudreClientId } from "@/lib/clients/queries";
 import { resoudreChantierId } from "@/lib/chantiers/queries";
 import { purgerMediasOrphelins } from "@/lib/medias-document/purge";
+import { dureeParId, echeanceDepuis } from "@/lib/partage/model";
 import { ecrireMedia, lireMedia, supprimerMedia } from "@/lib/medias-document/stockage";
 import { prixParProduit, prixReference } from "@/tools/magasin/queries";
 import { bomAffaire } from "@/tools/magasin/bom";
+import { estCategorie } from "@/tools/documents/model";
+import { ecrireSpool } from "@/tools/documents/spool";
+import { trouverDoublon } from "@/tools/documents/queries";
 import { grilleCoefs } from "./queries";
 import { DEPOT_MEDIAS_DEVIS } from "./stockage";
 import {
@@ -19,7 +23,10 @@ import {
   TEXTE_LIGNE_REPLI,
   coefApplicable,
   contenuTexteSimple,
+  LONGUEUR_MAX_MESSAGE,
+  dureesPartageDevis,
   estEtatDevis,
+  evenementDEtat,
   estGenreLigne,
   formatNumeroDevis,
   ordreEntre,
@@ -28,6 +35,7 @@ import {
   pvDepuisDebourse,
   resumeTexteLigne,
   type ContenuRiche,
+  type EvenementEnregistre,
   type GenreLigne,
   type OrigineCoef,
 } from "./model";
@@ -183,6 +191,9 @@ export async function creerDevis(saisie: {
     },
     select: { id: true, numero: true },
   });
+  // Un devis neuf ouvre SON PROPRE fil. `filId` ne peut pas être posé dans le
+  // `create` — l'id n'existe pas encore : une seconde écriture, immédiate.
+  await prisma.devis.update({ where: { id: d.id }, data: { filId: d.id } });
   rafraichirEcrans(d.id);
   return d;
 }
@@ -199,8 +210,11 @@ export async function majEnteteDevis(
     remiseGlobalePourMille?: number | null;
     remiseGlobaleCents?: number | null;
     validiteJours?: number;
-    note?: string;
     etat?: string;
+    destinataire?: string;
+    montrerPrixUnitaires?: boolean;
+    montrerSousTotauxLots?: boolean;
+    montrerOptions?: boolean;
   },
 ): Promise<void> {
   const a = await acteur();
@@ -213,7 +227,22 @@ export async function majEnteteDevis(
   const data: Record<string, unknown> = { updatedById: a.id };
 
   if (patch.titre !== undefined) data.titre = texte(patch.titre);
-  if (patch.note !== undefined) data.note = texte(patch.note);
+  // Le pavé destinataire garde ses RETOURS À LA LIGNE : c'est une adresse, elle
+  // s'imprime telle qu'on l'a saisie. Seuls les blancs de bord sautent.
+  if (patch.destinataire !== undefined) {
+    data.destinataire = String(patch.destinataire ?? "")
+      .split("\n")
+      .map((l) => l.trimEnd())
+      .join("\n")
+      .trim();
+  }
+  if (patch.montrerPrixUnitaires !== undefined) {
+    data.montrerPrixUnitaires = !!patch.montrerPrixUnitaires;
+  }
+  if (patch.montrerSousTotauxLots !== undefined) {
+    data.montrerSousTotauxLots = !!patch.montrerSousTotauxLots;
+  }
+  if (patch.montrerOptions !== undefined) data.montrerOptions = !!patch.montrerOptions;
   if (patch.validiteJours !== undefined) {
     data.validiteJours = borne(entier(patch.validiteJours, 30), 0, 3650);
   }
@@ -272,7 +301,45 @@ export async function majEnteteDevis(
   }
 
   await prisma.devis.update({ where: { id }, data });
+
+  /* Le fil garde la trace des réponses du client. ⚠️ On n'enregistre QUE ce
+     qu'aucune colonne ne retient : « Émis » a déjà `emisLe`, « publié » a
+     `publieLe` — les inscrire ici donnerait deux lignes pour un seul fait, et
+     la première divergence entre les deux serait un bug illisible.
+     (docs/DEVIS-FIL.md — la règle du §4 bis.) */
+  if (patch.etat !== undefined && estEtatDevis(patch.etat)) {
+    const trace = evenementDEtat(
+      estEtatDevis(actuel.etat) ? actuel.etat : "BROUILLON",
+      patch.etat,
+    );
+    if (trace) await inscrireEvenement(id, trace, a.id);
+  }
+
   rafraichirEcrans(id);
+}
+
+/**
+ * Pose un fait dans le fil. Silencieux en cas d'échec : perdre une ligne de
+ * journal ne doit pas faire échouer le geste qui l'a produite — on vient de
+ * changer l'état d'un devis, c'est ça qui compte.
+ */
+async function inscrireEvenement(
+  devisId: string,
+  evenement: EvenementEnregistre,
+  auteurId: string,
+): Promise<void> {
+  try {
+    const d = await prisma.devis.findUnique({
+      where: { id: devisId },
+      select: { id: true, filId: true },
+    });
+    if (!d) return;
+    await prisma.messageDevis.create({
+      data: { filId: d.filId || d.id, devisId: d.id, evenement, auteurId },
+    });
+  } catch {
+    /* le journal n'est pas la donnée : on ne casse pas l'écriture pour lui */
+  }
 }
 
 export async function supprimerDevis(id: string): Promise<void> {
@@ -305,7 +372,10 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
     include: {
       lots: { orderBy: { ordre: "asc" } },
       lignes: { orderBy: { ordre: "asc" } },
-      medias: true,
+      // ⚠️ `messageId: null` : les pièces jointes du FIL ne sont PAS recopiées.
+      // Le fil est partagé par toute la chaîne de révisions — les recopier les
+      // dupliquerait sur le disque ET dans l'onglet. (docs/DEVIS-FIL.md §5)
+      medias: { where: { messageId: null } },
     },
   });
   if (!source) throw new Error("Devis introuvable");
@@ -328,6 +398,9 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
         numero: source.numero,
         revision: (derniere?.revision ?? source.revision) + 1,
         parentId: source.id,
+        // Le FIL suit la chaîne : v1 et v2 parlent de la même négociation.
+        // `|| source.id` couvre un devis d'avant la reprise (filId vide).
+        filId: source.filId || source.id,
         titre: source.titre,
         etat: "BROUILLON",
         clientNom: source.clientNom,
@@ -339,7 +412,15 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
         remiseGlobalePourMille: source.remiseGlobalePourMille,
         remiseGlobaleCents: source.remiseGlobaleCents,
         validiteJours: source.validiteJours,
-        note: source.note,
+        // La mise en forme du document client suit (destinataire, ce qu'on
+        // montre) : c'est un réglage de présentation, pas un prix. En revanche
+        // NI le jeton NI la date de publication — la v2 n'est pas encore
+        // partie, et le lien de la v1 continue de montrer ce qui a réellement
+        // été envoyé.
+        destinataire: source.destinataire,
+        montrerPrixUnitaires: source.montrerPrixUnitaires,
+        montrerSousTotauxLots: source.montrerSousTotauxLots,
+        montrerOptions: source.montrerOptions,
         createdById: a.id,
         updatedById: a.id,
       },
@@ -412,7 +493,10 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
     include: {
       lots: { orderBy: { ordre: "asc" } },
       lignes: { orderBy: { ordre: "asc" } },
-      medias: true,
+      // ⚠️ `messageId: null` : les pièces jointes du FIL ne sont PAS recopiées.
+      // Le fil est partagé par toute la chaîne de révisions — les recopier les
+      // dupliquerait sur le disque ET dans l'onglet. (docs/DEVIS-FIL.md §5)
+      medias: { where: { messageId: null } },
     },
   });
   if (!source) throw new Error("Devis introuvable");
@@ -447,7 +531,12 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
         remiseGlobalePourMille: source.remiseGlobalePourMille,
         remiseGlobaleCents: source.remiseGlobaleCents,
         validiteJours: source.validiteJours,
-        note: source.note,
+        // Présentation reprise, publication non : la copie est un devis à part,
+        // qui n'a jamais été envoyé à personne.
+        destinataire: source.destinataire,
+        montrerPrixUnitaires: source.montrerPrixUnitaires,
+        montrerSousTotauxLots: source.montrerSousTotauxLots,
+        montrerOptions: source.montrerOptions,
         createdById: a.id,
         updatedById: a.id,
       },
@@ -494,6 +583,9 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
     return d;
   });
 
+  // Une COPIE ouvre un fil NEUF : c'est le devis d'à côté, pas la suite d'une
+  // conversation. (Une révision, elle, hérite du fil de son parent.)
+  await prisma.devis.update({ where: { id: cree.id }, data: { filId: cree.id } });
   rafraichirEcrans(cree.id);
   return { id: cree.id, numero: cree.numero };
 }
@@ -783,7 +875,10 @@ async function purgerMediasDevis(devisId: string): Promise<void> {
     prefixeUrl: PREFIXE_MEDIA_DEVIS,
     candidats: (gardes, avant) =>
       prisma.devisMedia.findMany({
-        where: { devisId, createdAt: { lt: avant }, id: { notIn: gardes } },
+        // ⚠️ `messageId: null` : une pièce jointe du FIL n'est citée par aucune
+        // ligne — sans ce filtre elle serait effacée du disque à la frappe
+        // suivante dans n'importe quel texte libre. (docs/DEVIS-FIL.md §5)
+        where: { devisId, messageId: null, createdAt: { lt: avant }, id: { notIn: gardes } },
         select: { id: true, fichier: true },
       }),
     oublier: async (ids) => {
@@ -957,6 +1052,61 @@ export async function majLigne(
     data: { updatedAt: new Date() },
   });
   rafraichirEcrans(ligne.devisId);
+}
+
+/**
+ * Dupliquer une ligne, JUSTE EN DESSOUS de l'originale.
+ *
+ * Le geste le plus fréquent du chiffrage après l'ajout : la même sonde à un
+ * autre étage, le même automate dans une seconde armoire. Y arriver par le
+ * magasin recoûte une recherche — et surtout **recopie le prix
+ * d'aujourd'hui** : la copie repart alors sur un déboursé différent de son
+ * jumeau, ce que personne ne remarque. On copie donc la LIGNE, telle qu'elle a
+ * été chiffrée (principe n°1 : le devis fige).
+ *
+ * Ce qui NE se copie pas : le document riche d'une ligne TEXTE se copie bien,
+ * lui — ses images sont parentées au devis, pas à la ligne, et le devis est le
+ * même. Rien à recopier sur le disque.
+ */
+export async function dupliquerLigne(ligneId: string): Promise<{ id: string }> {
+  await acteur();
+  const l = await prisma.ligneDevis.findUnique({ where: { id: ligneId } });
+  if (!l) throw new Error("Ligne introuvable");
+
+  // La copie se glisse entre l'originale et sa voisine du dessous : on la
+  // retrouve sous les doigts, pas en bas d'un lot de quarante lignes.
+  const suivante = await prisma.ligneDevis.findFirst({
+    where: { devisId: l.devisId, lotId: l.lotId, ordre: { gt: l.ordre } },
+    orderBy: { ordre: "asc" },
+    select: { ordre: true },
+  });
+
+  const copie = await prisma.ligneDevis.create({
+    data: {
+      devisId: l.devisId,
+      lotId: l.lotId,
+      ordre: ordreEntre(l.ordre, suivante?.ordre ?? null),
+      genre: l.genre,
+      produitId: l.produitId,
+      prestationId: l.prestationId,
+      designation: l.designation,
+      contenu: l.contenu === null ? Prisma.DbNull : (l.contenu as Prisma.InputJsonValue),
+      refInterne: l.refInterne,
+      unite: l.unite,
+      quantiteMillieme: l.quantiteMillieme,
+      debourseCents: l.debourseCents,
+      coefMillieme: l.coefMillieme,
+      origineCoef: l.origineCoef,
+      pvUnitaireCents: l.pvUnitaireCents,
+      remisePourMille: l.remisePourMille,
+      option: l.option,
+      note: l.note,
+    },
+    select: { id: true },
+  });
+
+  rafraichirEcrans(l.devisId);
+  return copie;
 }
 
 export async function supprimerLigne(ligneId: string): Promise<void> {
@@ -1290,6 +1440,154 @@ export async function supprimerCoef(id: string): Promise<void> {
 }
 
 /* =============================================================================
+ * L'IDENTITÉ DE LA MAISON
+ *
+ * Réservée au référentiel : ce sont les mentions légales et les conditions de
+ * vente de l'entreprise, pas un réglage d'écran. Une seule ligne en base, d'où
+ * l'upsert sur un id fixe.
+ * ========================================================================== */
+
+export async function enregistrerSociete(saisie: Record<string, unknown>): Promise<void> {
+  await acteurReferentiel();
+
+  const champsTexte = [
+    "raisonSociale",
+    "formeCapital",
+    "adresse",
+    "codePostal",
+    "ville",
+    "telephone",
+    "email",
+    "siteWeb",
+    "rcs",
+    "codeApe",
+    "tvaIntracom",
+    "iban",
+    "bic",
+    "reglement",
+    "conditionsReglement",
+    "dureeRealisation",
+    "remarques",
+  ] as const;
+
+  const data: Record<string, unknown> = {};
+  for (const cle of champsTexte) {
+    if (saisie[cle] !== undefined) data[cle] = texte(saisie[cle]);
+  }
+  if (saisie.acomptePourMille !== undefined) {
+    // 0 = pas d'acompte (la ligne disparaît du document) ; 1000 = payé d'avance.
+    data.acomptePourMille = borne(entier(saisie.acomptePourMille, 0), 0, 1000);
+  }
+
+  await prisma.reglageSociete.upsert({
+    where: { id: "societe" },
+    update: data,
+    create: { id: "societe", ...data },
+  });
+  revalidatePath(`${RACINE}/referentiels`);
+}
+
+/* =============================================================================
+ * LA PUBLICATION — le lien qu'on envoie au client
+ *
+ * Le lien montre le devis À SA SOURCE (pas un instantané) : c'est le choix pris
+ * le 2026-08-08, et il a une conséquence qu'on assume plutôt que de la cacher —
+ * modifier un devis publié change ce que le client voit. D'où, sur le document,
+ * la date de mise à jour en clair, et ici le journal de consultation : « il l'a
+ * ouvert hier » est ce qui dit s'il faut le prévenir.
+ *
+ * Le jeton est un UUID v4 : non devinable, et l'app est exposée sur internet.
+ * ========================================================================== */
+
+/** Résout une durée de partage offerte pour CE devis en échéance absolue. */
+function echeancePartage(dureeId: string, validiteJours: number): Date | null {
+  const duree = dureeParId(texte(dureeId), dureesPartageDevis(validiteJours));
+  if (!duree) throw new Error("Durée de partage inconnue");
+  // Le catalogue du devis n'offre AUCUN « sans limite » : un lien qui survit à
+  // l'offre qu'il porte laisse un prix périmé accessible au monde entier.
+  if (duree.heures === null) throw new Error("Un devis se partage toujours pour une durée");
+  return echeanceDepuis(duree.heures);
+}
+
+/**
+ * Publie le devis : pose le jeton, l'échéance, et la date d'établissement.
+ *
+ * Passe le devis en ÉMIS s'il était en brouillon — publier EST l'émission, et
+ * laisser un devis « brouillon » dont le client a le lien serait un mensonge de
+ * plus dans la liste. L'état se corrige à la main juste au-dessus si besoin.
+ */
+export async function publierDevis(
+  id: string,
+  dureeId: string,
+): Promise<{ jeton: string; expireLe: string | null }> {
+  const a = await acteur();
+  const d = await prisma.devis.findUnique({
+    where: { id },
+    select: { validiteJours: true, etat: true, emisLe: true, publieLe: true, jetonPartage: true },
+  });
+  if (!d) throw new Error("Devis introuvable");
+
+  const maintenant = new Date();
+  const jeton = d.jetonPartage ?? randomUUID();
+  const expireLe = echeancePartage(dureeId, d.validiteJours);
+
+  await prisma.devis.update({
+    where: { id },
+    data: {
+      jetonPartage: jeton,
+      partageExpireLe: expireLe,
+      // La date d'établissement se pose UNE fois : republier après une
+      // correction ne redate pas l'offre (et ne relance donc pas sa validité).
+      publieLe: d.publieLe ?? maintenant,
+      ...(d.etat === "BROUILLON" ? { etat: "EMIS" as const } : {}),
+      ...(d.emisLe ? {} : { emisLe: maintenant }),
+      updatedById: a.id,
+    },
+  });
+  rafraichirEcrans(id);
+  return { jeton, expireLe: expireLe?.toISOString() ?? null };
+}
+
+/** Repousse l'échéance SANS changer le jeton : le lien déjà envoyé survit. */
+export async function prolongerPartageDevis(
+  id: string,
+  dureeId: string,
+): Promise<{ expireLe: string | null }> {
+  const a = await acteur();
+  const d = await prisma.devis.findUnique({
+    where: { id },
+    select: { validiteJours: true, jetonPartage: true },
+  });
+  if (!d) throw new Error("Devis introuvable");
+  if (!d.jetonPartage) throw new Error("Ce devis n'a pas encore de lien");
+
+  const expireLe = echeancePartage(dureeId, d.validiteJours);
+  await prisma.devis.update({
+    where: { id },
+    data: { partageExpireLe: expireLe, updatedById: a.id },
+  });
+  rafraichirEcrans(id);
+  return { expireLe: expireLe?.toISOString() ?? null };
+}
+
+/**
+ * Coupe le lien. Le jeton est EFFACÉ, pas seulement échu : republier donnera une
+ * autre URL. C'est la différence avec « laisser expirer » — on révoque quand le
+ * document ne doit plus être lu, y compris par qui a gardé le lien.
+ *
+ * Les consultations restent : elles disent ce qui a été lu, et effacer la trace
+ * d'une lecture n'a jamais aidé personne.
+ */
+export async function revoquerPartageDevis(id: string): Promise<void> {
+  const a = await acteur();
+  await prisma.devis.update({
+    where: { id },
+    data: { jetonPartage: null, partageExpireLe: null, updatedById: a.id },
+  });
+  rafraichirEcrans(id);
+}
+
+/* =============================================================================
  * AJOUT AVEC ASSOCIÉS
  * ========================================================================== */
 
@@ -1325,4 +1623,209 @@ export async function ajouterProduitAvecAssocies(
   }
   rafraichirEcrans(devisId);
   return { ajoutees };
+}
+
+
+/* =============================================================================
+ * LE FIL DU DEVIS (docs/DEVIS-FIL.md)
+ *
+ * ⚠️ AUCUN `revalidatePath` ici. Le fil tient son propre état et pose le message
+ * localement — aucun total ne dépend d'un message, et invalider l'écran à
+ * chaque frappe rejouerait les trois pièges mesurés au §20 de DEVIS.md. La
+ * contrepartie est la règle du §14.3 : qui n'invalide pas doit afficher son
+ * propre état.
+ * ========================================================================== */
+
+/** Le fil d'un devis, c'est celui de sa CHAÎNE. Un devis d'avant la reprise
+ *  (filId vide) est sa propre racine. */
+async function filDe(devisId: string): Promise<{ devisId: string; filId: string }> {
+  const d = await prisma.devis.findUnique({
+    where: { id: devisId },
+    select: { id: true, filId: true },
+  });
+  if (!d) throw new Error("Devis introuvable");
+  return { devisId: d.id, filId: d.filId || d.id };
+}
+
+export async function posterMessage(
+  devisId: string,
+  saisie: { corps?: string; pieces?: string[] },
+): Promise<{ id: string }> {
+  const a = await acteur();
+  const { filId } = await filDe(devisId);
+
+  const corps = texte(saisie.corps).slice(0, LONGUEUR_MAX_MESSAGE);
+  const pieces = (saisie.pieces ?? []).filter((x) => typeof x === "string" && x.length > 0);
+  // Un message vide n'est pas un message — sauf s'il porte une pièce jointe :
+  // envoyer une photo sans commentaire est un geste normal.
+  if (!corps && pieces.length === 0) throw new Error("Message vide");
+
+  const message = await prisma.messageDevis.create({
+    data: { filId, devisId, corps, auteurId: a.id },
+    select: { id: true },
+  });
+
+  // Les pièces ont été téléversées AVANT le message (la route média les crée
+  // rattachées au devis). On les raccroche maintenant — et on vérifie qu'elles
+  // appartiennent bien à ce devis : un id de média ne se devine pas, mais il
+  // se recopie.
+  if (pieces.length > 0) {
+    await prisma.devisMedia.updateMany({
+      where: { id: { in: pieces }, devisId, messageId: null },
+      data: { messageId: message.id },
+    });
+  }
+  return message;
+}
+
+export async function modifierMessage(messageId: string, corps: string): Promise<void> {
+  const a = await acteur();
+  const m = await prisma.messageDevis.findUnique({
+    where: { id: messageId },
+    select: { auteurId: true, evenement: true },
+  });
+  if (!m) throw new Error("Message introuvable");
+  // Un fait ne se réécrit pas : il s'est produit.
+  if (m.evenement) throw new Error("Un événement ne se modifie pas");
+  if (m.auteurId !== a.id) throw new Error("On ne modifie que ses propres messages");
+
+  const t = texte(corps).slice(0, LONGUEUR_MAX_MESSAGE);
+  if (!t) throw new Error("Message vide");
+  await prisma.messageDevis.update({
+    where: { id: messageId },
+    data: { corps: t, modifieLe: new Date() },
+  });
+}
+
+/**
+ * Suppression FRANCHE — pas de « message supprimé » en pierre tombale : à trois
+ * personnes, la bureaucratie du tombstone coûte plus qu'elle ne rapporte.
+ * Les pièces jointes partent avec (cascade en base) — mais leurs BINAIRES ne
+ * partent pas tout seuls : on les efface d'abord, sinon ils resteraient sur le
+ * disque sans plus rien pour les désigner (même geste que `supprimerDevis`).
+ */
+export async function supprimerMessage(messageId: string): Promise<void> {
+  const a = await acteur();
+  const m = await prisma.messageDevis.findUnique({
+    where: { id: messageId },
+    select: { auteurId: true, pieces: { select: { fichier: true } } },
+  });
+  if (!m) return;
+  if (m.auteurId !== a.id && a.role !== "ADMIN") {
+    throw new Error("On ne supprime que ses propres messages");
+  }
+  await Promise.all(m.pieces.map((x) => supprimerMedia(x.fichier)));
+  await prisma.messageDevis.delete({ where: { id: messageId } });
+}
+
+/** Épingler : « le client veut la livraison en octobre » ne doit pas se perdre
+ *  dans le défilement. Chacun peut épingler — c'est une aide de lecture
+ *  partagée, pas une propriété. */
+export async function epinglerMessage(messageId: string, epingle: boolean): Promise<void> {
+  await acteur();
+  await prisma.messageDevis.update({
+    where: { id: messageId },
+    data: { epingle: !!epingle },
+  });
+}
+
+/** « J'ai lu » — écrit à l'OUVERTURE DE L'ONGLET, pas au chargement de la page :
+ *  ouvrir un devis pour corriger un prix ne vaut pas une lecture. */
+export async function marquerFilLu(devisId: string): Promise<void> {
+  const a = await acteur();
+  const { filId } = await filDe(devisId);
+  const vuLe = new Date();
+  await prisma.lectureFilDevis.upsert({
+    where: { userId_filId: { userId: a.id, filId } },
+    create: { userId: a.id, filId, vuLe },
+    update: { vuLe },
+  });
+}
+
+
+/* --- Le versement d'une pièce vers la GED de l'affaire ----------------------
+ * PONCTUEL, jamais une synchronisation : le fil et la GED ne peuvent pas rester
+ * d'accord (le devis fige, l'affaire vit). Le versement COPIE — la pièce reste
+ * dans le fil.
+ *
+ * ⚠️ Condition d'existence : `Devis.chantierId` est nullable, `Document.chantierId`
+ * ne l'est pas. Sans affaire il n'y a nulle part où verser — l'écran n'affiche
+ * donc pas le bouton, et l'action refuse en clair plutôt que de créer une ligne
+ * orpheline. (docs/DEVIS-FIL.md §8.1)
+ * -------------------------------------------------------------------------- */
+export async function verserPieceAuGed(
+  pieceId: string,
+  options: { categorie?: string; mode?: "" | "ecraser" | "renommer" } = {},
+): Promise<{ ok: true } | { doublon: true; nom: string }> {
+  const a = await acteur();
+
+  const piece = await prisma.devisMedia.findUnique({
+    where: { id: pieceId },
+    select: {
+      id: true,
+      nom: true,
+      mimeType: true,
+      taille: true,
+      fichier: true,
+      messageId: true,
+      devis: { select: { chantierId: true } },
+    },
+  });
+  if (!piece) throw new Error("Pièce introuvable");
+  if (!piece.messageId) throw new Error("Cette pièce n'appartient pas au fil");
+
+  const chantierId = piece.devis?.chantierId ?? null;
+  if (!chantierId) {
+    throw new Error("Rattachez le devis à une affaire pour verser dans la GED");
+  }
+
+  const categorie = options.categorie && estCategorie(options.categorie)
+    ? options.categorie
+    : "Vente";
+
+  const chantier = await prisma.chantier.findUnique({
+    where: { id: chantierId },
+    select: { id: true, clientId: true, numeroWhy: true },
+  });
+  if (!chantier) throw new Error("Affaire introuvable");
+
+  // Même question que l'outil Documents pose au dépôt, avec le même couple de
+  // réponses : écraser (nouvelle version kDrive) ou renommer.
+  const doublon = await trouverDoublon(chantierId, categorie, piece.nom);
+  if (doublon && !options.mode) return { doublon: true, nom: piece.nom };
+
+  const cible =
+    doublon && options.mode === "ecraser"
+      ? doublon
+      : await prisma.document.create({
+          data: {
+            nom: piece.nom,
+            categorie,
+            mimeType: piece.mimeType,
+            taille: piece.taille,
+            chantierId,
+            clientId: chantier.clientId,
+            numeroWhy: chantier.numeroWhy,
+            politiqueConflit: options.mode === "renommer" ? "RENAME" : "VERSION",
+            statutSync: "EN_ATTENTE",
+            createdById: a.id,
+          },
+          select: { id: true },
+        });
+
+  // Le binaire est RELU depuis le disque des devis et RECOPIÉ dans le spool :
+  // les deux dépôts sont séparés, et la pièce doit survivre à la purge de l'un
+  // comme à celle de l'autre.
+  const binaire = await lireMedia(piece.fichier);
+  const spoolPath = await ecrireSpool(cible.id, piece.nom, binaire);
+  await prisma.document.update({
+    where: { id: cible.id },
+    data: { spoolPath, statutSync: "EN_ATTENTE", tentatives: 0, syncError: null },
+  });
+
+  await prisma.devisMedia.update({
+    where: { id: pieceId },
+    data: { verseeLe: new Date() },
+  });
+  return { ok: true };
 }

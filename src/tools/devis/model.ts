@@ -4,6 +4,7 @@
 //
 // Cadrage complet : docs/DEVIS.md.
 
+import type { DureePartage } from "@/lib/partage/model";
 import { extraireTexte, type NoteContenu } from "@/tools/notes/model";
 
 /* =============================================================================
@@ -442,11 +443,24 @@ export interface DevisEntete {
   remiseGlobalePourMille: number | null;
   remiseGlobaleCents: number | null;
   validiteJours: number;
-  note: string;
+  /** Pavé destinataire du document client, une ligne par ligne. */
+  destinataire: string;
+  /** Publication (docs/DEVIS.md §21) — le lien public et ce qu'il montre. */
+  jetonPartage: string | null;
+  partageExpireLe: Date | null;
+  publieLe: Date | null;
+  montrerPrixUnitaires: boolean;
+  montrerSousTotauxLots: boolean;
+  montrerOptions: boolean;
+  /** Combien de fois le lien a été ouvert, et quand pour la dernière fois. */
+  nbConsultations: number;
+  derniereConsultation: Date | null;
   emisLe: Date | null;
   createdAt: Date;
   updatedAt: Date;
   auteur: string | null;
+  /** Fonction de l'auteur — c'est lui qui signe le document client. */
+  auteurFonction: string | null;
   modifiePar: string | null;
 }
 
@@ -676,6 +690,46 @@ function construireLot(lot: LotDevisVue | null, lignes: LigneCalculee[]): LotCal
  * Si les deux sont posées (donnée héritée, import futur), le montant fixe gagne
  * — c'est le plus explicite des deux, donc le moins surprenant.
  */
+/* =============================================================================
+ * LA CHARGE — ce que le devis représente en travail
+ *
+ * Un devis GTB ne se juge pas qu'en euros : « 58 000 € » ne dit pas si l'on
+ * s'engage sur trois jours ou sur trois semaines. L'information est déjà dans
+ * les lignes (les prestations portent leur unité), elle n'était simplement
+ * jamais totalisée — on la recomptait à la main, ou pas du tout.
+ *
+ * Les OPTIONS en sont exclues, comme des totaux : ce n'est pas du travail
+ * engagé tant que le client ne les a pas prises. Le regroupement se fait par
+ * unité et rien n'est converti — 7 h ne font pas 1 j chez tout le monde, et une
+ * conversion inventée ici serait fausse quelque part.
+ * ========================================================================== */
+
+export interface ChargeUnite {
+  unite: string;
+  /** Total en millièmes, comme les quantités de ligne. */
+  quantiteMillieme: number;
+}
+
+export function chargeMainOeuvre(lignes: LigneDevisVue[]): ChargeUnite[] {
+  const parUnite = new Map<string, number>();
+  for (const l of lignes) {
+    if (l.genre !== "PRESTATION" || l.option) continue;
+    const u = l.unite.trim() || "U";
+    parUnite.set(u, (parUnite.get(u) ?? 0) + l.quantiteMillieme);
+  }
+  return [...parUnite.entries()]
+    .filter(([, q]) => q > 0)
+    // Les unités de temps d'abord (c'est la question qu'on se pose), le reste
+    // ensuite, par ordre alphabétique pour que l'affichage soit stable.
+    .sort((a, b) => rangUnite(a[0]) - rangUnite(b[0]) || a[0].localeCompare(b[0]))
+    .map(([unite, quantiteMillieme]) => ({ unite, quantiteMillieme }));
+}
+
+function rangUnite(u: string): number {
+  const i = ["j", "h", "forfait"].indexOf(u.toLowerCase());
+  return i < 0 ? 99 : i;
+}
+
 export function resoudreRemiseGlobale(
   entete: Pick<DevisEntete, "remiseGlobalePourMille" | "remiseGlobaleCents">,
   totalHtCents: number,
@@ -832,7 +886,255 @@ export interface DevisResume {
   auteur: string | null;
   /** Nombre de révisions ultérieures : une v1 dépassée doit se voir comme telle. */
   nbRevisions: number;
+  /** Le lien client est-il en service MAINTENANT (jeton posé et non échu) ? */
+  publie: boolean;
+  /** Ouvertures du lien — « émis, jamais ouvert » est l'information qui décide
+   *  d'un coup de téléphone. */
+  nbConsultations: number;
 }
+
+/* =============================================================================
+ * LA RESTITUTION CLIENT — le document qui part chez le client
+ *
+ * Cadrage : docs/DEVIS.md §21. Tout ce qui suit est PUR : c'est la seule façon
+ * de vérifier au script (scripts/devis-smoke.mts) ce qu'un client verra, sans
+ * base ni navigateur.
+ *
+ * La règle qui porte tout : ON NE MONTRE JAMAIS LE DÉBOURSÉ, NI LE COEFFICIENT,
+ * NI LA MARGE, NI LA RÉFÉRENCE INTERNE. Le document client se construit depuis
+ * `TotauxDevis` — dont on ne lit que les prix de vente. Un écran interne qui
+ * oublie un chiffre est un désagrément ; un document qui sort le déboursé chez
+ * le client est un incident commercial.
+ * ========================================================================== */
+
+/** Racine de l'URL publique d'un devis. Une seule source de vérité : le panneau
+ *  de partage, la page publique et le générateur de PDF en dépendent. */
+export const BASE_URL_DEVIS_PUBLIC = "/d/";
+
+/** Les médias d'un devis sont derrière une garde Achats ; sur la page publique
+ *  ils passent par la route scopée au jeton (même patron que les notes). */
+export function reecrireMediasPublicsDevis(contenu: ContenuRiche, jeton: string): ContenuRiche {
+  const json = JSON.stringify(contenu ?? []);
+  return JSON.parse(
+    json.replaceAll(PREFIXE_MEDIA_DEVIS, `/api/public/devis/${jeton}/media/`),
+  ) as ContenuRiche;
+}
+
+/* --- L'identité de la maison ------------------------------------------------ */
+
+/** Les réglages société, tels que le document les consomme (miroir de
+ *  `ReglageSociete`, sans `updatedAt`). */
+export interface SocieteVue {
+  raisonSociale: string;
+  formeCapital: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  telephone: string;
+  email: string;
+  siteWeb: string;
+  rcs: string;
+  codeApe: string;
+  tvaIntracom: string;
+  iban: string;
+  bic: string;
+  reglement: string;
+  conditionsReglement: string;
+  acomptePourMille: number;
+  dureeRealisation: string;
+  remarques: string;
+}
+
+/**
+ * Ce que la maison est, à défaut de réglage en base.
+ *
+ * Repris des devis historiques (`public/devis_template/`) : un premier document
+ * imprimé sans pied de page ni IBAN serait pire qu'inutile — il serait faux.
+ * L'écran de réglages sert à CORRIGER ceci, pas à le saisir de zéro.
+ */
+export const SOCIETE_DEFAUT: SocieteVue = {
+  raisonSociale: "DUMORTIER",
+  formeCapital: "SAS au capital de 38 112,25 €",
+  adresse: "ZAC du Château",
+  codePostal: "02800",
+  ville: "CHARMES",
+  telephone: "03 23 38 18 88",
+  email: "dumortier@fareneit.fr",
+  siteWeb: "www.fareneit.fr",
+  rcs: "RCS ST QUENTIN 317 324 119",
+  codeApe: "4615Z",
+  tvaIntracom: "FR 13 317 324 119",
+  iban: "FR76 3002 7177 6100 0192 6410 194",
+  bic: "",
+  reglement: "Virement",
+  conditionsReglement: "30 jours NET",
+  acomptePourMille: 500,
+  dureeRealisation: "15 jours",
+  remarques: "",
+};
+
+/** Les lignes du pied de page légal, dans l'ordre. Une mention absente ne laisse
+ *  pas de séparateur orphelin : c'est tout l'objet de cette fonction. */
+export function mentionsLegales(s: SocieteVue): string[] {
+  const joindre = (parts: (string | false | null | undefined)[], sep = " · ") =>
+    parts
+      .map((p) => (p || "").trim())
+      .filter(Boolean)
+      .join(sep);
+  return [
+    joindre([s.raisonSociale, s.formeCapital]),
+    joindre([
+      s.adresse,
+      joindre([s.codePostal, s.ville], " "),
+      s.telephone && `Tél. ${s.telephone}`,
+      s.email,
+    ]),
+    joindre([
+      s.rcs,
+      s.codeApe && `Code APE ${s.codeApe}`,
+      s.tvaIntracom && `TVA ${s.tvaIntracom}`,
+      s.siteWeb,
+    ]),
+  ].filter(Boolean);
+}
+
+/** Le pavé destinataire : les lignes saisies, ou le seul nom du client à défaut.
+ *  Jamais vide — un devis sans destinataire ne s'envoie pas. */
+export function lignesDestinataire(destinataire: string, clientNom: string): string[] {
+  const lignes = destinataire
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lignes.length > 0) return lignes;
+  return clientNom.trim() ? [clientNom.trim()] : [];
+}
+
+/* --- L'acompte -------------------------------------------------------------- */
+
+/** L'acompte demandé, en centimes du TTC. 0 (donc absent du document) si aucun
+ *  acompte n'est réglé ou si le devis est vide. */
+export function acompteCents(totalTtcCents: number, acomptePourMille: number): number {
+  if (acomptePourMille <= 0 || totalTtcCents <= 0) return 0;
+  return arrondi((totalTtcCents * acomptePourMille) / MILLE);
+}
+
+/* --- La validité ------------------------------------------------------------ */
+
+/** La date jusqu'à laquelle l'offre tient, à partir de sa date d'établissement. */
+export function dateValidite(etabliLe: Date, validiteJours: number): Date {
+  const d = new Date(etabliLe);
+  d.setDate(d.getDate() + Math.max(0, validiteJours));
+  return d;
+}
+
+/**
+ * Les durées offertes au partage d'un devis. La première — et le défaut — est
+ * calée sur la VALIDITÉ de l'offre : un lien qui survit à l'offre qu'il porte
+ * laisse un prix périmé accessible, et c'est exactement ce dont on ne veut pas.
+ * Les autres existent parce qu'une négociation dure parfois plus longtemps que
+ * prévu (le jeton se prolonge alors À LA MÊME URL).
+ */
+export function dureesPartageDevis(validiteJours: number): DureePartage[] {
+  const j = Math.max(1, validiteJours);
+  return [
+    { id: "validite", libelle: `Validité de l'offre (${j} j)`, heures: j * 24 },
+    { id: "60j", libelle: "60 jours", heures: 60 * 24 },
+    { id: "180j", libelle: "6 mois", heures: 180 * 24 },
+  ];
+}
+
+export const DUREE_PARTAGE_DEVIS_DEFAUT = "validite";
+
+/* --- Ce que le client voit du chiffrage ------------------------------------- */
+
+/** Les trois interrupteurs de publication (portés par le devis). */
+export interface OptionsPublication {
+  montrerPrixUnitaires: boolean;
+  montrerSousTotauxLots: boolean;
+  montrerOptions: boolean;
+}
+
+export const PUBLICATION_DEFAUT: OptionsPublication = {
+  montrerPrixUnitaires: true,
+  montrerSousTotauxLots: true,
+  montrerOptions: true,
+};
+
+export interface LotDocument {
+  /** Null pour le groupe « hors lot » : le document ne titre pas ce qui n'a pas
+   *  de titre, il enchaîne simplement les lignes. */
+  titre: string | null;
+  note: string;
+  lignes: LigneCalculee[];
+  sousTotalCents: number;
+}
+
+export interface OptionDocument {
+  /** Le lot d'où l'option vient, pour la situer dans la liste de fin. */
+  lot: string | null;
+  ligne: LigneCalculee;
+}
+
+export interface DocumentClient {
+  lots: LotDocument[];
+  /** Les options, RASSEMBLÉES EN FIN DE DOCUMENT et jamais additionnées au
+   *  total. Vide si le devis n'en porte pas, ou si on a choisi de les taire. */
+  options: OptionDocument[];
+  optionsCents: number;
+  /** Vrai si le document affiche une colonne de prix par ligne. */
+  avecPrixLigne: boolean;
+  avecSousTotaux: boolean;
+}
+
+/**
+ * La vue du devis destinée au client : les lots dans l'ordre, les options
+ * extraites en fin de document, et rien d'autre.
+ *
+ * Les lignes TEXTE traversent telles quelles — ce sont les commentaires qui
+ * expliquent le chiffrage, et c'est précisément ce que le client doit lire.
+ */
+export function documentClient(totaux: TotauxDevis, opts: OptionsPublication): DocumentClient {
+  const lots: LotDocument[] = [];
+  const options: OptionDocument[] = [];
+  let optionsCents = 0;
+
+  for (const g of totaux.lots) {
+    const titre = g.lot?.titre?.trim() || null;
+    const lignes: LigneCalculee[] = [];
+    for (const lc of g.lignes) {
+      if (lc.ligne.option) {
+        optionsCents += lc.totalCents;
+        if (opts.montrerOptions) options.push({ lot: titre, ligne: lc });
+        continue;
+      }
+      lignes.push(lc);
+    }
+    // Un lot vidé de ses seules options ne laisse pas un titre sans rien
+    // dessous : il disparaît du document.
+    if (lignes.length > 0) {
+      lots.push({ titre, note: g.lot?.note ?? "", lignes, sousTotalCents: g.sousTotalCents });
+    }
+  }
+
+  return {
+    lots,
+    options,
+    optionsCents,
+    avecPrixLigne: opts.montrerPrixUnitaires,
+    // Un sous-total de lot n'a de sens que s'il y a PLUSIEURS lots : sur un
+    // devis d'un seul lot, il répéterait le total HT juste au-dessus de lui.
+    avecSousTotaux: opts.montrerSousTotauxLots && lots.length > 1,
+  };
+}
+
+/** Le devis n'a-t-il rien à montrer ? (Un document vide ne se publie pas.) */
+export function documentVide(doc: DocumentClient): boolean {
+  return doc.lots.every((l) => l.lignes.every((x) => !ligneChiffree(x.ligne.genre)));
+}
+
+/* =============================================================================
+ * DIVERS (suite)
+ * ========================================================================== */
 
 /** Point médian entre deux voisins — insertion sans renumérotation globale
  *  (même patron que TacheAffaire.ordre). */
@@ -842,3 +1144,111 @@ export function ordreEntre(avant: number | null, apres: number | null): number {
   if (apres === null) return avant + 1000;
   return (avant + apres) / 2;
 }
+
+
+/* =============================================================================
+ * LE FIL DU DEVIS — la mémoire de ce qui s'est dit autour du chiffrage
+ *
+ * Cadrage complet : docs/DEVIS-FIL.md. Deux natures s'y mêlent dans une seule
+ * colonne de temps :
+ *
+ *  · les FAITS, qui ne s'écrivent pas — ils se DÉDUISENT de ce que le modèle
+ *    retient déjà (créé, émis, publié, ouvert par le client, révision d'une
+ *    version précédente). Aucune écriture, aucune reprise : ils existaient
+ *    depuis toujours, personne ne les avait mis bout à bout ;
+ *  · ce qu'on ÉCRIT — les messages, et les rares faits que le modèle ne sait
+ *    pas retenir (passage à Accepté ou Refusé : aucune colonne ne les date,
+ *    contrairement à `emisLe` et `publieLe`).
+ *
+ * La règle qui décide : **on n'enregistre que ce qu'on ne peut pas déduire.**
+ * Enregistrer « passé à Émis » alors que `emisLe` existe donnerait deux lignes
+ * pour un seul fait, et la première divergence entre les deux serait un bug
+ * qu'on ne saurait pas lire.
+ * ========================================================================== */
+
+/** Les faits qu'on ENREGISTRE, faute de colonne qui les retienne. */
+export const EVENEMENTS_FIL = ["accepte", "refuse", "rouvert"] as const;
+export type EvenementEnregistre = (typeof EVENEMENTS_FIL)[number];
+
+export function estEvenementEnregistre(v: unknown): v is EvenementEnregistre {
+  return typeof v === "string" && (EVENEMENTS_FIL as readonly string[]).includes(v);
+}
+
+/** Ce qu'un changement d'état laisse comme trace — null quand une colonne le
+ *  retient déjà (`emisLe`), ou quand il n'y a rien à dire. */
+export function evenementDEtat(avant: EtatDevis, apres: EtatDevis): EvenementEnregistre | null {
+  if (avant === apres) return null;
+  if (apres === "ACCEPTE") return "accepte";
+  if (apres === "REFUSE") return "refuse";
+  // Revenir en arrière depuis une réponse du client est une décision, pas une
+  // correction de frappe : elle mérite sa ligne. Repasser d'Émis à Brouillon,
+  // non — c'est le geste de quelqu'un qui reprend son chiffrage.
+  if (apres === "BROUILLON" && (avant === "ACCEPTE" || avant === "REFUSE")) return "rouvert";
+  return null;
+}
+
+/** Le genre d'une entrée de fil — il décide de l'icône et du ton. */
+export type GenreEntreeFil =
+  | "message"
+  | "cree"
+  | "revision"
+  | "emis"
+  | "publie"
+  | "consultation"
+  | EvenementEnregistre;
+
+/** Une pièce jointe d'un message. */
+export interface PieceFilVue {
+  id: string;
+  nom: string;
+  mimeType: string;
+  taille: number;
+  /** Versée dans la GED de l'affaire — on ne la verse pas deux fois sans le dire. */
+  verseeLe: Date | null;
+}
+
+/** Une entrée du fil, message ou fait, prête à rendre. */
+export interface EntreeFil {
+  /** Stable : l'id du message, ou une clé dérivée du fait (« emis:<devisId> »). */
+  id: string;
+  genre: GenreEntreeFil;
+  quand: Date;
+  /** Le texte saisi — vide pour un fait. */
+  corps: string;
+  auteur: string | null;
+  auteurId: string | null;
+  epingle: boolean;
+  modifieLe: Date | null;
+  /** La version d'où ça vient : « v2 ». Null si sa version a été supprimée. */
+  revision: number | null;
+  /** Détail d'un fait (nombre de consultations regroupées, n° de révision…). */
+  detail: string | null;
+  pieces: PieceFilVue[];
+}
+
+/** Ce que l'écran reçoit. */
+export interface FilDevis {
+  filId: string;
+  entrees: EntreeFil[];
+  /** Combien de MESSAGES (les faits ne se comptent pas : personne ne les écrit). */
+  nbMessages: number;
+  /** Messages postés depuis la dernière ouverture de l'onglet, par d'autres. */
+  nbNonLus: number;
+}
+
+/** Un fait n'a ni auteur à créditer ni corps à relire : il ne se compte pas
+ *  comme un message, et il ne se modifie pas. */
+export function estFait(genre: GenreEntreeFil): boolean {
+  return genre !== "message";
+}
+
+/** Taille lisible d'une pièce jointe. */
+export function formatTaille(octets: number): string {
+  if (octets < 1024) return `${octets} o`;
+  if (octets < 1024 * 1024) return `${Math.round(octets / 1024)} ko`;
+  return `${(octets / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
+}
+
+/** Un message vide n'est pas un message. Le plafond évite qu'un collage
+ *  malheureux ne fasse d'une colonne de discussion un document. */
+export const LONGUEUR_MAX_MESSAGE = 4000;

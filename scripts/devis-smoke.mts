@@ -11,18 +11,30 @@
  */
 
 import {
+  DUREE_PARTAGE_DEVIS_DEFAUT,
+  PUBLICATION_DEFAUT,
+  SOCIETE_DEFAUT,
+  acompteCents,
   arrondi,
   calculerDevis,
   calculerLigne,
+  chargeMainOeuvre,
   coefApplicable,
   contenuTexteSimple,
+  dateValidite,
+  documentClient,
+  documentVide,
+  dureesPartageDevis,
   formatCoef,
   formatEuros,
   formatNumeroDevis,
   formatQuantite,
   libelleDevis,
+  lignesDestinataire,
+  mentionsLegales,
   ordreEntre,
   parseCoef,
+  reecrireMediasPublicsDevis,
   parseEuros,
   parseQuantite,
   parseRemise,
@@ -600,6 +612,186 @@ console.log("\n15. Prix cible");
   );
   egal("la cible est atteinte au centime", t1.netHtCents, 1700000);
   egal("la marge annoncée est celle obtenue", t1.margeFournitureNetteCents, sim.margeNetteCents);
+}
+
+/* --- La charge en main d'œuvre --------------------------------------------- *
+ * « 58 000 € » ne dit pas si l'on part pour trois jours ou pour trois semaines.
+ * L'information est dans les lignes ; ce qui compte, c'est ce qu'on N'Y MET PAS.
+ * -------------------------------------------------------------------------- */
+console.log("\n▸ La charge en main d'œuvre");
+{
+  const p = (unite: string, q: number, extra: Partial<LigneDevisVue> = {}) =>
+    ligne({
+      genre: "PRESTATION",
+      produitId: null,
+      debourseCents: null,
+      unite,
+      quantiteMillieme: q,
+      ...extra,
+    });
+
+  const c = chargeMainOeuvre([
+    p("h", 7500),
+    p("h", 2500),
+    p("j", 3000),
+    p("forfait", 1000),
+    // Ni les articles ni les textes ne sont du travail.
+    ligne({ pvUnitaireCents: 10000, unite: "U", quantiteMillieme: 12000 }),
+    ligne({ genre: "TEXTE", produitId: null, unite: "U", quantiteMillieme: 5000 }),
+    // Une option n'est pas engagée tant que le client ne l'a pas prise.
+    p("h", 40000, { option: true }),
+  ]);
+
+  egal("les heures sont totalisées", c.find((x) => x.unite === "h")?.quantiteMillieme, 10000);
+  egal("les jours restent des jours (aucune conversion)", c.find((x) => x.unite === "j")?.quantiteMillieme, 3000);
+  egal("les articles n'entrent pas dans la charge", c.some((x) => x.unite === "U"), false);
+  egal("les options non plus", c.find((x) => x.unite === "h")?.quantiteMillieme !== 50000, true);
+  egal("les unités de temps passent devant", c[0]?.unite, "j");
+  egal("un devis sans prestation ne montre rien", chargeMainOeuvre([ligne({})]).length, 0);
+  egal(
+    "une prestation à quantité nulle ne fait pas une ligne vide",
+    chargeMainOeuvre([p("h", 0)]).length,
+    0,
+  );
+}
+
+/* =============================================================================
+ * 16. LE DOCUMENT CLIENT (docs/DEVIS.md §21)
+ *
+ * Ce qu'un client verra est décidé par des fonctions pures : c'est donc ici,
+ * sans base ni navigateur, qu'on vérifie qu'un déboursé ne peut pas sortir, que
+ * les options ne s'additionnent jamais et qu'un lot vidé ne laisse pas un titre
+ * orphelin.
+ * ========================================================================== */
+console.log("\n16. Le document client");
+
+{
+  const lots: LotDevisVue[] = [
+    { id: "L1", titre: "Fourniture", ordre: 1000, note: "Matériel Distech" },
+    { id: "L2", titre: "Main d'œuvre", ordre: 2000, note: "" },
+    { id: "L3", titre: "Rien que des options", ordre: 3000, note: "" },
+  ];
+  const lignes = [
+    ligne({ lotId: "L1", pvUnitaireCents: 100000, quantiteMillieme: 2000 }),
+    ligne({ lotId: "L1", genre: "TEXTE", produitId: null, designation: "Suivant schéma joint" }),
+    ligne({ lotId: "L2", genre: "PRESTATION", produitId: null, pvUnitaireCents: 60000, debourseCents: null }),
+    // Une option dans un lot qui porte AUSSI du ferme.
+    ligne({ lotId: "L2", pvUnitaireCents: 50000, option: true }),
+    // Un lot qui ne porte QUE des options.
+    ligne({ lotId: "L3", pvUnitaireCents: 30000, option: true }),
+  ];
+  const t = calculerDevis(ENTETE_NU, lots, lignes);
+
+  const doc = documentClient(t, PUBLICATION_DEFAUT);
+  egal("les lots vides d'ordinaire disparaissent", doc.lots.length, 2);
+  egal("… celui qui n'avait que des options n'est plus là", doc.lots.some((l) => l.titre === "Rien que des options"), false);
+  egal("les options sont ramassées en fin de document", doc.options.length, 2);
+  egal("… avec le lot d'où elles viennent", doc.options[0]?.lot, "Main d'œuvre");
+  egal("… et leur total reste À PART", doc.optionsCents, 80000);
+  egal("le total du devis les ignore", t.totalHtCents, 260000);
+  egal("le texte libre reste dans le lot, à sa place", doc.lots[0]?.lignes.length, 2);
+  egal("les sous-totaux s'affichent (plusieurs lots)", doc.avecSousTotaux, true);
+
+  // Taire les options les retire du document — sans jamais toucher au total.
+  const sansOptions = documentClient(t, { ...PUBLICATION_DEFAUT, montrerOptions: false });
+  egal("options tues → aucune n'est listée", sansOptions.options.length, 0);
+  egal("… leur montant reste connu de l'appelant", sansOptions.optionsCents, 80000);
+  egal("… et le total n'a pas bougé d'un centime", t.totalHtCents, 260000);
+
+  // Le repli « prix par lot seulement ».
+  const sansPu = documentClient(t, { ...PUBLICATION_DEFAUT, montrerPrixUnitaires: false });
+  egal("prix unitaires masqués", sansPu.avecPrixLigne, false);
+  egal("… les lignes restent listées", sansPu.lots[0]?.lignes.length, 2);
+  egal("… et le sous-total de lot reste, lui", sansPu.lots[0]?.sousTotalCents, 200000);
+}
+
+{
+  // Un sous-total de lot sur un devis d'UN SEUL lot répéterait le total HT juste
+  // au-dessus de lui : il ne s'affiche pas, même demandé.
+  const lots: LotDevisVue[] = [{ id: "L1", titre: "Tout", ordre: 1000, note: "" }];
+  const t = calculerDevis(ENTETE_NU, lots, [ligne({ lotId: "L1", pvUnitaireCents: 10000 })]);
+  egal("un seul lot → pas de sous-total", documentClient(t, PUBLICATION_DEFAUT).avecSousTotaux, false);
+}
+
+{
+  // Le devis vide : rien à publier, et il faut pouvoir le dire.
+  const t = calculerDevis(ENTETE_NU, [], []);
+  egal("un devis sans ligne est un document vide", documentVide(documentClient(t, PUBLICATION_DEFAUT)), true);
+
+  const tTexte = calculerDevis(ENTETE_NU, [], [ligne({ genre: "TEXTE", produitId: null })]);
+  egal(
+    "un devis qui ne porte qu'un commentaire est vide lui aussi",
+    documentVide(documentClient(tTexte, PUBLICATION_DEFAUT)),
+    true,
+  );
+}
+
+console.log("\n▸ L'acompte, la validité, les mentions");
+{
+  egal("acompte 50 % d'un TTC de 2 136,00 €", acompteCents(213600, 500), 106800);
+  egal("acompte 33,3 % — arrondi à la ligne comme le reste", acompteCents(100000, 333), 33300);
+  egal("aucun acompte réglé → aucune ligne sur le document", acompteCents(213600, 0), 0);
+  egal("un devis à zéro n'affiche pas d'acompte", acompteCents(0, 500), 0);
+
+  const etabli = new Date("2026-06-26T10:00:00.000Z");
+  egal("validité 30 jours", dateValidite(etabli, 30).toISOString().slice(0, 10), "2026-07-26");
+  egal("validité 0 jour = le jour même", dateValidite(etabli, 0).toISOString().slice(0, 10), "2026-06-26");
+
+  const durees = dureesPartageDevis(45);
+  egal("la première durée offerte suit la validité de l'offre", durees[0].heures, 45 * 24);
+  egal("… et c'est le défaut", durees[0].id, DUREE_PARTAGE_DEVIS_DEFAUT);
+  verifier(
+    "aucune durée illimitée : un lien ne survit pas à l'offre qu'il porte",
+    durees.every((d) => d.heures !== null),
+  );
+
+  const m = mentionsLegales(SOCIETE_DEFAUT);
+  egal("le pied de page tient en trois lignes", m.length, 3);
+  verifier("… la première nomme la maison", m[0].startsWith("DUMORTIER"));
+  verifier("… la dernière porte le RCS et la TVA", m[2].includes("RCS") && m[2].includes("TVA"));
+
+  // Une maison à moitié renseignée ne doit pas produire de séparateurs orphelins.
+  const partielle = { ...SOCIETE_DEFAUT, formeCapital: "", telephone: "", codeApe: "", siteWeb: "" };
+  const mp = mentionsLegales(partielle);
+  verifier("aucune mention vide ne laisse de « · » perdu", mp.every((l) => !l.includes("· ·") && !l.trim().endsWith("·")));
+  egal("le nom seul reste le nom seul", mp[0], "DUMORTIER");
+}
+
+console.log("\n▸ Le pavé destinataire");
+{
+  egal(
+    "les lignes saisies sont reprises telles quelles",
+    lignesDestinataire("BETON AERO CLIM\n30 RUE DE LA GARE\n02350 CHIVRES", "Autre").length,
+    3,
+  );
+  egal(
+    "les lignes vides sautent",
+    lignesDestinataire("BETON AERO CLIM\n\n  \n30 RUE DE LA GARE", "x").length,
+    2,
+  );
+  egal(
+    "pavé vide → le nom du client",
+    lignesDestinataire("   ", "SOCIÉTÉ NOUVELLE HENRI CONRAUX")[0],
+    "SOCIÉTÉ NOUVELLE HENRI CONRAUX",
+  );
+  egal("ni pavé ni client → rien plutôt qu'une ligne blanche", lignesDestinataire("", "").length, 0);
+}
+
+console.log("\n▸ Les médias d'un texte libre passent par le jeton");
+{
+  const contenu = [
+    { type: "paragraph", content: [{ type: "text", text: "Photo :", styles: {} }] },
+    { type: "image", props: { url: "/api/devis/media/abc-123", caption: "" } },
+  ] as ContenuRiche;
+  const reecrit = JSON.stringify(reecrireMediasPublicsDevis(contenu, "JETON-DE-TEST-0123456789"));
+  verifier(
+    "l'URL interne est remplacée par la route publique scopée",
+    reecrit.includes("/api/public/devis/JETON-DE-TEST-0123456789/media/abc-123"),
+  );
+  verifier(
+    "… et plus aucune URL interne ne subsiste (garde Achats)",
+    !reecrit.includes("/api/devis/media/"),
+  );
 }
 
 /* --- Verdict --------------------------------------------------------------- */

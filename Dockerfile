@@ -25,6 +25,14 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
+# Chromium sans interface : il imprime le document client d'un devis en PDF
+# (src/lib/pdf-navigateur.ts). C'est la page publique du devis elle-même qui est
+# rendue — pas une seconde mise en page tenue à part. Sans ce paquet, la route
+# PDF répond 503 avec un message clair et l'écran retombe sur « Imprimer ».
+# Les polices sont indispensables : sans elles, le PDF sort en carrés vides.
+RUN apk add --no-cache chromium nss freetype harfbuzz ttf-freefont font-noto
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
 
 # Sortie standalone : server.js + node_modules tracés uniquement.

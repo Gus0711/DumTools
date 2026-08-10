@@ -34,6 +34,7 @@ export function Combobox({
   inputClassName,
   autoFocus,
   onInputKeyDown,
+  onBlur,
 }: {
   value: string;
   onInput: (v: string) => void;
@@ -45,6 +46,10 @@ export function Combobox({
   autoFocus?: boolean;
   /** Handler clavier additionnel sur l'input (ex. Tab → nouveau point). */
   onInputKeyDown?: (e: React.KeyboardEvent) => void;
+  /** Sortie du champ — pour enregistrer une saisie LIBRE (qui ne passe par
+   *  aucun `onPick`). Appelé après la fermeture de la liste, sans quoi le clic
+   *  sur une option arriverait après l'enregistrement du texte tapé. */
+  onBlur?: (valeur: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -129,7 +134,16 @@ export function Combobox({
           setActive(-1);
         }}
         onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={(e) => {
+          const saisie = e.target.value;
+          // 150 ms : le temps que le clic sur une option (onMouseDown) passe
+          // devant. Sans ce délai, choisir dans la liste enregistrerait d'abord
+          // le texte tapé, puis l'option — deux écritures pour un geste.
+          setTimeout(() => {
+            setOpen(false);
+            onBlur?.(saisie);
+          }, 150);
+        }}
         onKeyDown={onKeyDown}
         className={cn(
           "h-9 w-full rounded-md border border-border bg-surface px-2.5 text-sm text-fg placeholder:text-subtle",

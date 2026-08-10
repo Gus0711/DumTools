@@ -197,7 +197,7 @@ async function nouveauDevis(
 ) {
   const annee = new Date().getFullYear();
   const numero = formatNumeroDevis(annee, await prochainRang(annee));
-  return prisma.devis.create({
+  const devis = await prisma.devis.create({
     data: {
       numero,
       revision: 1,
@@ -221,12 +221,21 @@ async function nouveauDevis(
       remiseGlobalePourMille: d.remisePourMille ?? null,
       remiseGlobaleCents: d.remiseCents ?? null,
       validiteJours: d.validiteJours ?? 30,
-      note: d.note ?? "",
       emisLe: d.etat === "EMIS" || d.etat === "ACCEPTE" ? new Date() : null,
       createdById: auteurId,
       updatedById: auteurId,
     },
   });
+
+  // Le devis ouvre son propre fil, et l'ancienne « note interne » y devient le
+  // premier message — c'est ce que la migration a fait des vraies notes.
+  await prisma.devis.update({ where: { id: devis.id }, data: { filId: devis.id } });
+  if (d.note) {
+    await prisma.messageDevis.create({
+      data: { filId: devis.id, devisId: devis.id, corps: d.note, auteurId },
+    });
+  }
+  return devis;
 }
 
 /* =============================================================================
@@ -403,9 +412,20 @@ const v2 = await prisma.devis.create({
     // La négociation : remise plus forte que sur la v1.
     remiseGlobalePourMille: 70,
     validiteJours: source!.validiteJours,
-    note: "Révision après négociation du 05/08 : remise portée à 7 %, écran déporté retiré.",
+    // La révision hérite du FIL de son parent : v1 et v2 parlent de la même
+    // négociation.
+    filId: source!.filId || source!.id,
     createdById: auteur.id,
     updatedById: auteur.id,
+  },
+});
+await prisma.messageDevis.create({
+  data: {
+    filId: v2.filId,
+    devisId: v2.id,
+    corps:
+      "Révision après négociation du 05/08 : remise portée à 7 %, écran déporté retiré.",
+    auteurId: auteur.id,
   },
 });
 const idLot = new Map<string, string>();

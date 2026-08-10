@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
 import { listerClients } from "@/lib/clients/queries";
 import { listerAffaires } from "@/lib/chantiers/queries";
-import { getDevis, listerPrestations } from "@/tools/devis/queries";
+import { getDevis, listerFil, listerPrestations } from "@/tools/devis/queries";
 import { EditeurDevis } from "@/tools/devis/editeur-devis";
 import { libelleDevis } from "@/tools/devis/model";
 import { garde } from "../garde";
@@ -16,15 +17,18 @@ export default async function Page({
   params: Promise<{ qui: string; id: string }>;
 }) {
   const { qui, id } = await params;
-  await garde(qui);
+  const { userId } = await garde(qui);
+  const session = await auth();
 
   const devis = await getDevis(id);
   if (!devis) notFound();
 
-  const [prestations, clients, affaires] = await Promise.all([
+  const [prestations, clients, affaires, fil] = await Promise.all([
     listerPrestations(),
     listerClients(),
     listerAffaires(),
+    // Le fil de la CHAÎNE de révisions, pas du seul devis (docs/DEVIS-FIL.md).
+    listerFil(id, userId),
   ]);
 
   return (
@@ -45,6 +49,10 @@ export default async function Page({
           numeroWhy: a.numeroWhy,
           clientNom: a.clientNom,
         }))}
+        qui={qui}
+        fil={fil ?? { filId: id, entrees: [], nbMessages: 0, nbNonLus: 0 }}
+        moiId={userId}
+        moiNom={session?.user?.name ?? session?.user?.email ?? "Moi"}
       />
     </>
   );

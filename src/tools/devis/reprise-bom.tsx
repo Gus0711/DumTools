@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { Boxes, TriangleAlert } from "lucide-react";
-import { Badge, Button } from "@/ui";
+import { Badge, Button, EnteteBloc } from "@/ui";
 import { cn } from "@/lib/cn";
 import { apercuReprise, reprendreBom, type ApercuReprise } from "./actions";
 import { formatEuros } from "./model";
@@ -75,16 +75,17 @@ export function RepriseBom({
   }
 
   return (
-    <div className="bloc anim-rise mt-4">
-      <header className="bloc-entete flex flex-wrap items-center gap-3">
-        <Boxes className="h-4 w-4 text-io-ai" />
-        <span className="flex-1 font-display font-semibold text-fg">
-          Matériel de {chantierNom}
-        </span>
-        <button onClick={onFerme} className="text-sm text-muted hover:text-fg">
-          Fermer
-        </button>
-      </header>
+    <div className="bloc anim-rise signal-ai mt-4">
+      <EnteteBloc
+        icone={Boxes}
+        titre={`Matériel de ${chantierNom}`}
+        mention="dérivé de la nomenclature de l'affaire"
+        actions={
+          <button onClick={onFerme} className="text-sm text-muted hover:text-fg">
+            Fermer
+          </button>
+        }
+      />
 
       {!apercu ? (
         <p className="px-3 py-6 text-center text-sm text-subtle">Lecture de la nomenclature…</p>

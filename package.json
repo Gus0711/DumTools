@@ -36,6 +36,7 @@
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.1.200",
     "pdfmake": "^0.2.23",
+    "playwright-core": "^1.61.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.6.0"
@@ -52,7 +53,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",
-    "playwright-core": "^1.61.1",
     "prisma": "^7.8.0",
     "server-only": "^0.0.1",
     "tailwindcss": "^4",

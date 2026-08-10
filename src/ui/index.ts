@@ -16,5 +16,15 @@ export { Stat } from "./stat";
 export { Chiffre, Repere, RangeeChiffres } from "./chiffre";
 export { JaugeES } from "./jauge-es";
 export type { CompteES } from "./jauge-es";
+export {
+  useColonnes,
+  ReglageColonnes,
+  ColgroupColonnes,
+  EnteteColonnes,
+  basculerTri,
+  classeCellule,
+  labelCellule,
+} from "./colonnes";
+export type { DefColonne, ColonneReglee, ApiColonnes, EtatTri } from "./colonnes";
 export { Kbd } from "./kbd";
 export { Skeleton, SkeletonListe } from "./skeleton";

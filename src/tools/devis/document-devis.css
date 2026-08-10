@@ -1,0 +1,839 @@
+/* Le DOCUMENT CLIENT d'un devis — la seule page de l'application qu'un client
+   voie. Charte de la maison portée sur le papier, comme la liste de points :
+   bandeau or/marine, cartouche, filets, tableau à en-tête marine.
+
+   Trois partis pris, et chacun se paie ailleurs si on l'oublie :
+
+   1. UNE PAGE CONTINUE, pas des feuilles A4 simulées. Le client lit d'abord à
+      l'écran, souvent au téléphone ; les sauts de page sont laissés au
+      navigateur au moment d'imprimer, guidés par des `break-inside`.
+   2. TOUT EST FIGÉ EN pt/mm ET EN #hex, ici seulement. Ce document ne suit ni la
+      densité de l'interface, ni le thème sombre : il doit sortir identique de
+      l'écran d'Augustin, du téléphone du client et du moteur de PDF. C'est la
+      même exception que `impression-print.css`.
+   3. AUCUNE DÉPENDANCE À L'APPLICATION. Tout est scopé sous `.devis-doc` et rien
+      n'emprunte aux utilitaires Tailwind : la page publique ne charge pas la
+      feuille de l'app pour rien, et un reskin de l'interface ne repeint pas un
+      document déjà envoyé chez un client. */
+
+/* Le document porte `print-root` pour être RÉVÉLÉ par le patron d'impression
+   global (`body * { visibility: hidden }` sauf `.print-root *`). Mais ce même
+   patron le cache à l'ÉCRAN — `.print-root { display: none }` — parce que tous
+   ses autres usages sont des aperçus d'impression cachés dans un écran normal.
+   Ici le document EST la page : on rétablit son affichage. Deux classes valent
+   mieux qu'une, aucun `!important` nécessaire.
+   ⚠️ Retirer cette règle rend la page publique BLANCHE, sans aucune erreur ;
+   retirer `print-root` du composant rend le PDF blanc, également en silence. Les
+   deux se tiennent. */
+.devis-doc.print-root {
+  display: block;
+}
+
+.devis-doc {
+  --navy: #003765;
+  --navy-soft: #eef2f7;
+  --or: #c79213;
+  --or-soft: #faf4e4;
+  --or-ligne: #eadfc0;
+  --texte: #1b2733;
+  --muted: #6b7785;
+  --subtle: #8a95a1;
+  --ligne: #d7dee6;
+  --ligne-douce: #e8edf2;
+
+  font-family: "IBM Plex Sans", var(--font-sans-app, ""), "Segoe UI", Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.45;
+  color: var(--texte);
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* La largeur de la feuille : 186 mm = A4 moins les marges d'impression du patron
+   global. À l'écran on n'excède jamais cette largeur — un devis lu sur un grand
+   écran ne doit pas s'étaler sur 30 cm, il doit ressembler au papier. */
+.devis-doc .feuille {
+  width: 100%;
+  max-width: 186mm;
+  margin: 0 auto;
+  padding: 0 5mm;
+  box-sizing: border-box;
+}
+
+/* --- Bandeau d'identité ---------------------------------------------------- */
+.devis-doc .bandeau {
+  display: flex;
+  height: 4px;
+  margin-bottom: 8mm;
+}
+.devis-doc .bandeau i {
+  display: block;
+  height: 4px;
+}
+.devis-doc .bandeau .b1 {
+  background: var(--or);
+  flex: 0 0 30%;
+}
+.devis-doc .bandeau .b2 {
+  background: var(--navy);
+  flex: 1;
+}
+
+/* --- Cartouche ------------------------------------------------------------- */
+.devis-doc .tete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8mm;
+}
+.devis-doc .stamp {
+  color: var(--or);
+  font-size: 7.6pt;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+.devis-doc h1 {
+  font-family: "Archivo", var(--font-display-app, ""), "Segoe UI", Arial, sans-serif;
+  color: var(--navy);
+  font-size: 22pt;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+  margin: 0;
+}
+.devis-doc .objet {
+  font-size: 11pt;
+  color: var(--texte);
+  margin: 3px 0 0;
+  max-width: 110mm;
+}
+.devis-doc .marque img {
+  height: 20mm;
+  width: auto;
+  display: block;
+}
+
+/* Le pavé destinataire : cadre laiton, comme sur les devis de la maison. */
+.devis-doc .pave-client {
+  border: 1px solid var(--or-ligne);
+  background: var(--or-soft);
+  padding: 3.5mm 4mm;
+  min-width: 62mm;
+  max-width: 82mm;
+  font-size: 9.6pt;
+  line-height: 1.4;
+}
+.devis-doc .pave-client .dest-1 {
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/* Les références du document, en mono : numéro, dates, validité. */
+.devis-doc .refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1mm 7mm;
+  border-top: 2px solid var(--navy);
+  border-bottom: 1px solid var(--ligne);
+  padding: 2.5mm 0;
+  margin: 5mm 0 6mm;
+  font-size: 8.4pt;
+  color: var(--muted);
+}
+.devis-doc .refs b {
+  color: var(--navy);
+  font-family: "IBM Plex Mono", var(--font-mono-app, ""), Consolas, monospace;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.devis-doc .refs span {
+  white-space: nowrap;
+}
+
+/* --- Tableau des lignes ---------------------------------------------------- */
+.devis-doc .lot {
+  margin-bottom: 5mm;
+  /* Un titre de lot ne reste jamais seul en bas d'une page. */
+  break-inside: auto;
+}
+.devis-doc .lot-titre {
+  background: var(--or-soft);
+  color: var(--or);
+  border-left: 3px solid var(--or);
+  font-weight: 700;
+  font-size: 8pt;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 2mm 3mm;
+  margin: 0 0 1.5mm;
+  break-after: avoid;
+}
+.devis-doc .lot-note {
+  font-size: 8.6pt;
+  color: var(--muted);
+  margin: 0 0 2mm;
+  padding: 0 1mm;
+}
+
+.devis-doc .lignes-cadre {
+  overflow-x: auto;
+}
+.devis-doc table.lignes {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9.4pt;
+  /* Sous cette largeur, les colonnes de prix se chevaucheraient : le tableau
+     défile alors dans son cadre (téléphone) au lieu d'écraser la désignation. */
+  min-width: 118mm;
+}
+.devis-doc .lignes thead th {
+  background: var(--navy);
+  color: #fff;
+  text-align: left;
+  padding: 2mm 3mm;
+  font-size: 7.4pt;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* L'en-tête se répète en haut de chaque page imprimée — c'est `thead` qui le
+   fait, à condition de ne pas le mettre en `display: block`. */
+.devis-doc .lignes thead {
+  display: table-header-group;
+}
+.devis-doc .lignes th.n,
+.devis-doc .lignes th.p,
+.devis-doc .lignes td.n,
+.devis-doc .lignes td.p {
+  text-align: right;
+}
+.devis-doc .lignes th.u,
+.devis-doc .lignes td.u {
+  text-align: center;
+}
+
+.devis-doc .lignes tbody td {
+  padding: 2mm 3mm;
+  border-bottom: 1px solid var(--ligne-douce);
+  vertical-align: top;
+}
+/* Une ligne de devis ne se coupe pas en deux entre deux pages. */
+.devis-doc .lignes tbody tr {
+  break-inside: avoid;
+}
+.devis-doc .lignes td.des {
+  width: auto;
+}
+.devis-doc .lignes td.n,
+.devis-doc .lignes td.p {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  width: 22mm;
+}
+.devis-doc .lignes td.u {
+  width: 14mm;
+  color: var(--muted);
+}
+.devis-doc .lignes .remise {
+  display: block;
+  font-size: 8.2pt;
+  color: var(--or);
+}
+.devis-doc .lignes .barre {
+  color: var(--subtle);
+  text-decoration: line-through;
+  font-size: 8.4pt;
+}
+
+/* Une ligne TEXTE : le commentaire qui explique le chiffrage. Il prend toute la
+   largeur, sans filet — ce n'est pas un article. */
+.devis-doc .lignes tr.texte td {
+  border-bottom: none;
+  padding: 1mm 3mm 2.5mm;
+  color: var(--texte);
+}
+.devis-doc .lignes tr.texte p {
+  margin: 0;
+  font-size: 9.2pt;
+}
+
+/* Sous-total de lot. */
+.devis-doc .lignes tfoot td {
+  padding: 2mm 3mm;
+  font-size: 9pt;
+  font-weight: 700;
+  color: var(--navy);
+  background: var(--navy-soft);
+  border-top: 1px solid var(--navy);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Options --------------------------------------------------------------- */
+.devis-doc .options {
+  border: 1px solid var(--ligne);
+  border-top: 3px solid var(--or);
+  padding: 3mm 4mm 4mm;
+  margin: 6mm 0;
+  break-inside: avoid;
+}
+.devis-doc .options h2 {
+  font-family: "Archivo", var(--font-display-app, ""), "Segoe UI", Arial, sans-serif;
+  font-size: 10pt;
+  color: var(--navy);
+  margin: 0 0 1mm;
+}
+.devis-doc .options .aide {
+  font-size: 8.4pt;
+  color: var(--muted);
+  margin: 0 0 2.5mm;
+}
+
+/* --- Pied de chiffrage ----------------------------------------------------- */
+.devis-doc .bas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6mm;
+  margin-top: 6mm;
+  break-inside: avoid;
+}
+.devis-doc .bas .gauche {
+  flex: 1 1 88mm;
+  min-width: 0;
+}
+.devis-doc .bas .droite {
+  flex: 0 0 76mm;
+  max-width: 100%;
+}
+
+.devis-doc .encart {
+  border: 1px solid var(--ligne);
+  padding: 3mm 3.5mm;
+  margin-bottom: 4mm;
+  font-size: 9pt;
+}
+.devis-doc .encart h3 {
+  font-size: 7.4pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--or);
+  margin: 0 0 1.5mm;
+}
+.devis-doc .encart p {
+  margin: 0 0 1mm;
+}
+.devis-doc .encart p:last-child {
+  margin-bottom: 0;
+}
+.devis-doc .encart .ref {
+  font-family: "IBM Plex Mono", var(--font-mono-app, ""), Consolas, monospace;
+  font-size: 8.6pt;
+}
+
+/* La cascade des totaux : c'est le seul endroit du document où les chiffres se
+   lisent de loin. */
+.devis-doc .totaux {
+  border: 1px solid var(--navy);
+  font-size: 9.6pt;
+}
+.devis-doc .totaux .l {
+  display: flex;
+  justify-content: space-between;
+  gap: 4mm;
+  padding: 1.8mm 3.5mm;
+  border-bottom: 1px solid var(--ligne-douce);
+}
+.devis-doc .totaux .l:last-child {
+  border-bottom: none;
+}
+.devis-doc .totaux .l span:last-child {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.devis-doc .totaux .l.remise {
+  color: var(--or);
+}
+.devis-doc .totaux .l.ttc {
+  background: var(--navy);
+  color: #fff;
+  font-family: "Archivo", var(--font-display-app, ""), "Segoe UI", Arial, sans-serif;
+  font-size: 12pt;
+  font-weight: 700;
+  padding: 2.5mm 3.5mm;
+}
+.devis-doc .acompte {
+  border: 1px solid var(--or-ligne);
+  background: var(--or-soft);
+  padding: 2.5mm 3.5mm;
+  margin-top: 3mm;
+  font-size: 9.4pt;
+}
+.devis-doc .acompte b {
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Le cadre à signer. Il n'est PAS actionnable : l'acceptation en ligne n'a pas
+   été retenue, le client renvoie le document signé. */
+.devis-doc .accord {
+  border: 1px solid var(--navy);
+  padding: 3mm 3.5mm 12mm;
+  margin-top: 4mm;
+  break-inside: avoid;
+}
+.devis-doc .accord h3 {
+  font-size: 8.4pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--navy);
+  margin: 0 0 2mm;
+}
+.devis-doc .accord .champ {
+  font-size: 9pt;
+  color: var(--muted);
+  margin: 0 0 3mm;
+}
+.devis-doc .accord .champ i {
+  display: inline-block;
+  border-bottom: 1px dotted var(--ligne);
+  min-width: 34mm;
+  font-style: normal;
+}
+
+/* --- Signature ------------------------------------------------------------- */
+.devis-doc .signature {
+  margin: 8mm 0 0;
+  text-align: right;
+  font-size: 9.6pt;
+  break-inside: avoid;
+}
+.devis-doc .signature .nom {
+  font-weight: 700;
+  color: var(--navy);
+}
+.devis-doc .signature .fonction {
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 8.4pt;
+  letter-spacing: 0.06em;
+}
+
+/* --- Pied de page --------------------------------------------------------- */
+.devis-doc .pied {
+  margin-top: 10mm;
+  padding-top: 2.5mm;
+  border-top: 1px solid var(--ligne);
+  text-align: center;
+  font-size: 7.4pt;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.devis-doc .pied b {
+  color: var(--navy);
+}
+
+/* --- Le plan de travail de la page publique -------------------------------- */
+/* Volontairement en DUR, sans les tokens de l'application : la page est servie
+   par le layout racine, donc le thème sombre pourrait s'y appliquer — et un
+   document commercial n'a pas de mode sombre. Le client doit voir la feuille
+   telle qu'elle sortira de son imprimante. */
+.devis-page {
+  min-height: 100vh;
+  background: #eef1f5;
+  padding: 6mm 3mm 14mm;
+}
+.devis-cadre {
+  max-width: 196mm;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #d7dee6;
+  padding: 8mm 0 6mm;
+}
+
+/* Ce qui n'existe qu'à l'écran (barre d'actions du lecteur). */
+.devis-lecteur {
+  max-width: 196mm;
+  margin: 0 auto 4mm;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2mm;
+  align-items: center;
+  justify-content: flex-end;
+  font-family: "IBM Plex Sans", var(--font-sans-app, ""), "Segoe UI", Arial, sans-serif;
+  font-size: 9.5pt;
+  color: #4a5560;
+}
+.devis-lecteur .titre {
+  margin-right: auto;
+  font-weight: 600;
+  color: #003765;
+}
+.devis-lecteur button,
+.devis-lecteur a {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5mm;
+  border: 1px solid #c8d2dc;
+  background: #fff;
+  color: #003765;
+  font: inherit;
+  font-weight: 500;
+  padding: 2mm 3.5mm;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.devis-lecteur button:hover,
+.devis-lecteur a:hover {
+  border-color: #003765;
+  background: #f5f8fb;
+}
+.devis-lecteur .principal {
+  background: #003765;
+  border-color: #003765;
+  color: #fff;
+}
+.devis-lecteur .principal:hover {
+  background: #00294c;
+  border-color: #00294c;
+}
+
+/* =============================================================================
+ * SUR UN TÉLÉPHONE
+ * Le client ouvre le lien depuis sa boîte mail, souvent au doigt. Le document
+ * garde ses proportions de feuille, mais rien ne doit déborder de l'écran : ce
+ * sont les pavés à largeur fixe (destinataire, colonne des totaux) qui poussent.
+ * ========================================================================== */
+@media screen and (max-width: 560px) {
+  .devis-doc .tete {
+    flex-direction: column;
+    gap: 4mm;
+  }
+  .devis-doc .marque {
+    order: -1;
+  }
+  .devis-doc .marque img {
+    height: 15mm;
+  }
+  .devis-doc .pave-client {
+    min-width: 0;
+    max-width: none;
+    /* Le pavé destinataire est posé SOUS le logo par le composant : sur
+       téléphone la marge du haut n'a plus de sens, la colonne est verticale. */
+    margin-top: 3mm !important;
+  }
+  .devis-doc h1 {
+    font-size: 18pt;
+  }
+  /* Les deux colonnes du bas s'empilent : les totaux passent en pleine largeur,
+     là où ils se lisent. */
+  .devis-doc .bas .gauche,
+  .devis-doc .bas .droite {
+    flex: 1 1 100%;
+  }
+  .devis-doc .bas .droite {
+    order: -1;
+  }
+
+  /* La table des lignes se replie en FICHES — même parti que `.table-cards` de
+     l'interface. Le repli plutôt que le défilement : un tableau de prix qu'on
+     balaie de gauche à droite cache justement les colonnes qui comptent, et un
+     client ne devine pas qu'il doit glisser. Les intitulés reviennent depuis
+     `data-label`, posé par le composant. */
+  .devis-doc table.lignes {
+    min-width: 0;
+  }
+  .devis-doc .lignes thead {
+    display: none;
+  }
+  .devis-doc .lignes tbody tr {
+    display: block;
+    padding: 2mm 0 2.5mm;
+    border-bottom: 1px solid var(--ligne-douce);
+  }
+  .devis-doc .lignes tbody td {
+    display: inline-block;
+    width: auto !important;
+    text-align: left !important;
+    border-bottom: none;
+    padding: 0.4mm 3mm;
+  }
+  .devis-doc .lignes tbody td.des {
+    display: block;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.8mm;
+  }
+  .devis-doc .lignes tbody td[data-label]::before {
+    content: attr(data-label) " ";
+    color: var(--muted);
+    font-size: 7.4pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  /* Le total de la ligne passe à la ligne : c'est le chiffre qu'on cherche. */
+  .devis-doc .lignes tbody td[data-label="Total HT"] {
+    display: block;
+    margin-top: 0.6mm;
+  }
+  .devis-doc .lignes tr.texte td {
+    display: block;
+    padding: 1mm 3mm 2mm;
+  }
+  .devis-doc .lignes tfoot td {
+    display: block;
+  }
+}
+
+/* =============================================================================
+ * LE TEXTE RICHE (rendu serveur — src/lib/editeur-riche/rendu-serveur.tsx)
+ * ========================================================================== */
+.devis-doc .rd > *:first-child {
+  margin-top: 0;
+}
+.devis-doc .rd > *:last-child {
+  margin-bottom: 0;
+}
+.devis-doc .rd-p {
+  margin: 0 0 1.5mm;
+}
+.devis-doc .rd-titre {
+  font-family: "Archivo", var(--font-display-app, ""), "Segoe UI", Arial, sans-serif;
+  color: var(--navy);
+  margin: 3mm 0 1.5mm;
+  break-after: avoid;
+}
+.devis-doc h3.rd-titre {
+  font-size: 10.5pt;
+}
+.devis-doc h4.rd-titre {
+  font-size: 9.8pt;
+}
+.devis-doc h5.rd-titre {
+  font-size: 9.2pt;
+}
+/* Les marqueurs sont posés EXPLICITEMENT : le reset de l'application enlève
+   `list-style` à toutes les listes (elles n'en portent jamais dans l'interface).
+   Sans ces deux lignes, une énumération d'un texte libre sort en paragraphes
+   indentés — et une liste sans puces ne se lit plus comme une liste. */
+.devis-doc .rd-ul,
+.devis-doc .rd-ol {
+  margin: 0 0 1.5mm;
+  padding-left: 6mm;
+}
+.devis-doc .rd-ul {
+  list-style: disc outside;
+}
+.devis-doc .rd-ol {
+  list-style: decimal outside;
+}
+.devis-doc .rd-ul li,
+.devis-doc .rd-ol li {
+  margin: 0 0 0.6mm;
+}
+.devis-doc .rd-li-case {
+  list-style: none;
+  margin-left: -5mm;
+}
+.devis-doc .rd-case {
+  margin-right: 1.5mm;
+}
+.devis-doc .rd-cit {
+  margin: 0 0 2mm;
+  padding: 0.5mm 0 0.5mm 3mm;
+  border-left: 2px solid var(--or);
+  color: var(--muted);
+}
+.devis-doc .rd-pre {
+  margin: 0 0 2mm;
+  padding: 2mm 2.5mm;
+  background: #f4f6f9;
+  border: 1px solid var(--ligne-douce);
+  font-family: "IBM Plex Mono", var(--font-mono-app, ""), Consolas, monospace;
+  font-size: 8.2pt;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.devis-doc .rd-code {
+  font-family: "IBM Plex Mono", var(--font-mono-app, ""), Consolas, monospace;
+  font-size: 0.92em;
+  background: #f4f6f9;
+  padding: 0 0.8mm;
+}
+.devis-doc .rd-lien {
+  color: var(--navy);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.devis-doc .rd-enfants {
+  padding-left: 5mm;
+}
+.devis-doc .rd-figure {
+  margin: 2mm 0;
+}
+.devis-doc .rd-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.devis-doc .rd-legende {
+  font-size: 8.2pt;
+  color: var(--muted);
+  margin-top: 1mm;
+}
+.devis-doc .rd-piece,
+.devis-doc .rd-carte {
+  margin: 0 0 1.5mm;
+}
+.devis-doc .rd-carte-desc {
+  color: var(--muted);
+}
+.devis-doc .rd-absent {
+  margin: 0 0 1.5mm;
+  color: var(--subtle);
+  font-size: 8.4pt;
+  font-style: italic;
+}
+.devis-doc .rd-saut {
+  break-after: page;
+}
+.devis-doc .rd-al-center {
+  text-align: center;
+}
+.devis-doc .rd-al-right {
+  text-align: right;
+}
+.devis-doc .rd-al-justify {
+  text-align: justify;
+}
+/* Un tableau collé dans un texte libre : il peut être large, il défile à
+   l'écran plutôt que de déformer la feuille. */
+.devis-doc .rd-table-cadre {
+  overflow-x: auto;
+  margin: 0 0 2mm;
+}
+.devis-doc .rd-table {
+  border-collapse: collapse;
+  font-size: 8.8pt;
+  min-width: 60mm;
+}
+.devis-doc .rd-table th,
+.devis-doc .rd-table td {
+  border: 1px solid var(--ligne);
+  padding: 1.2mm 2mm;
+  text-align: left;
+  vertical-align: top;
+}
+.devis-doc .rd-table th {
+  background: var(--navy-soft);
+  color: var(--navy);
+  font-weight: 700;
+}
+
+/* Les couleurs de caractère de BlockNote — noms, pas hex (voir le renderer). */
+.devis-doc .rd-t-blue { color: #1f6feb; }
+.devis-doc .rd-t-red { color: #b42318; }
+.devis-doc .rd-t-green { color: #1a8a4a; }
+.devis-doc .rd-t-orange { color: #b4690e; }
+.devis-doc .rd-t-purple { color: #7b41c9; }
+.devis-doc .rd-t-yellow { color: #a07c00; }
+.devis-doc .rd-t-gray { color: var(--muted); }
+.devis-doc .rd-t-brown { color: #7a5c3a; }
+.devis-doc .rd-t-pink { color: #b4308a; }
+.devis-doc .rd-f-blue { background: #e5efff; }
+.devis-doc .rd-f-red { background: #fdeceb; }
+.devis-doc .rd-f-green { background: #e6f6ec; }
+.devis-doc .rd-f-orange { background: #fdf0e0; }
+.devis-doc .rd-f-purple { background: #f2eafd; }
+.devis-doc .rd-f-yellow { background: var(--or-soft); }
+.devis-doc .rd-f-gray { background: #f1f4f7; }
+.devis-doc .rd-f-brown { background: #f6efe8; }
+.devis-doc .rd-f-pink { background: #fdeaf5; }
+
+/* =============================================================================
+ * IMPRESSION
+ * Le pied légal se répète-t-il sur chaque page ? Non : Chromium le fait mieux
+ * que nous côté PDF serveur (`footerTemplate`, avec le numéro de page), et un
+ * `position: fixed` répété gâcherait l'impression navigateur en rognant le
+ * contenu. Le document porte donc son pied UNE fois, à la fin — comme une
+ * lettre.
+ * ========================================================================== */
+@media print {
+  /* La barre du lecteur et le cadre de l'écran n'existent pas sur le papier :
+     la feuille occupe la page, un point. */
+  .devis-lecteur {
+    display: none !important;
+  }
+  .devis-page {
+    min-height: 0;
+    background: #fff;
+    padding: 0;
+  }
+  .devis-cadre {
+    max-width: none;
+    border: none;
+    padding: 0;
+  }
+  /* ⚠️ LES DEUX MOITIÉS SONT NÉCESSAIRES, et pour deux raisons opposées.
+     Le patron global pose `position: absolute; inset: 0` sur `.print-root`.
+
+     · On GARDE `position: absolute` : l'aperçu interne vit dans la coquille de
+       l'application, dont le cadre est `h-screen overflow-hidden` avec un
+       `<main>` en `overflow-auto` (src/app/(app)/layout.tsx). Un document laissé
+       dans ce flux est clippé à UNE HAUTEUR D'ÉCRAN — mesuré : 1 page imprimée
+       pour un devis de 4. Un élément absolument positionné n'est pas clippé par
+       l'`overflow` d'un ancêtre NON positionné : c'est ce qui l'en sort.
+     · On relâche `height` et `bottom` : sans ça, `inset: 0` le borne à la
+       hauteur de la première page et la suite est perdue.
+
+     C'est exactement la formule de `impression-print.css` (liste de points),
+     éprouvée en production sur un document multi-pages. */
+  .devis-doc.print-root {
+    height: auto;
+    bottom: auto;
+  }
+  .devis-doc .feuille {
+    max-width: none;
+    padding: 0;
+  }
+  /* Un conteneur qui défile coupe ce qu'il dépasse à l'impression, et empêche
+     `break-inside` de faire son travail : sur le papier, il n'y a rien à faire
+     défiler. */
+  .devis-doc .lignes-cadre,
+  .devis-doc .rd-table-cadre {
+    overflow: visible;
+  }
+
+  /* ⚠️ Un `<tfoot>` SE RÉPÈTE en bas de chaque page, comme un `<thead>` en haut.
+     C'est ce qu'on veut de l'en-tête (les colonnes se relisent page après page),
+     jamais du sous-total : sur un lot qui s'étale sur deux pages, on imprimait
+     « Sous-total du lot : 8 127,00 € » au bas de la première alors que le lot
+     continuait — un total qui n'est pas celui de ce qui est au-dessus est un
+     chiffre qu'on vient nous contester. En groupe de rangées ordinaire, il ne
+     paraît qu'une fois, à sa place. */
+  .devis-doc .lignes tfoot {
+    display: table-row-group;
+  }
+  .devis-doc * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Les liens gardent leur couleur mais pas de surprise d'URL imprimée. */
+  .devis-doc a[href]::after {
+    content: none !important;
+  }
+}
+
+/* Le PDF serveur (`?pdf=1`) : Chromium pose lui-même le pied légal et la
+   pagination sur CHAQUE page — celui du document ferait doublon. */
+.devis-doc.pour-pdf .pied {
+  display: none;
+}

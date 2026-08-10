@@ -669,6 +669,87 @@
     min-width: 0;
   }
 
+  /* --- Variante « réglable » — chacun sa table ---------------------------- *
+   * Les largeurs viennent de variables CSS posées par `useColonnes` (@/ui) sur
+   * un conteneur : plusieurs tables (les lots d'un devis) partagent donc le
+   * même réglage, et le tirage d'une poignée n'écrit QUE dans le DOM.
+   *
+   * `--tbl-min` est un calc() de ces mêmes variables : la table remplit son
+   * cadre tant que les colonnes fixes tiennent (la colonne souple, sans
+   * largeur déclarée, prend ce qui reste) et ne se met à défiler
+   * horizontalement que lorsqu'elles ne tiennent plus. Aucune mesure JS. */
+  .data-table--reglable {
+    table-layout: fixed;
+    width: 100%;
+    min-width: var(--tbl-min, 0px);
+  }
+  .data-table--reglable .cell-wrap {
+    min-width: 0;
+  }
+  /* Coupe à l'ellipse, à demander colonne par colonne : on ne l'impose pas à
+     toute la table, une cellule qui porte un champ de saisie doit pouvoir
+     laisser dépasser son halo de focus. */
+  .data-table .cell-tronque {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* L'argent se lit aligné à droite — le rang des unités doit tomber sous le
+     rang des unités. (`.cell-num`, centré, reste pour les compteurs courts.) */
+  .data-table .cell-droite {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* La poignée de largeur : le bord droit de l'entête. Invisible au repos —
+     un filet de plus par colonne ferait une grille de tableur. */
+  .poignee-colonne {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    width: 9px;
+    cursor: col-resize;
+    touch-action: none;
+    z-index: 2;
+  }
+  .poignee-colonne::after {
+    content: "";
+    position: absolute;
+    inset-block: 22%;
+    right: 0;
+    width: 2px;
+    background-color: transparent;
+    transition: background-color var(--t-hover) var(--ease);
+  }
+  .poignee-colonne:hover::after,
+  .poignee-colonne:focus-visible::after {
+    background-color: var(--brand);
+  }
+  .poignee-colonne:focus-visible {
+    outline: none;
+  }
+  /* Les gestes d'une rangée (monter, descendre, supprimer…) : au repos ils
+     s'effacent — quarante lignes × quatre pictogrammes font une grille qu'on
+     lit avant la donnée. Ils reviennent au survol ET au focus clavier. Le repli
+     n'a lieu que là où il y a un survol : au doigt, ils restent visibles. */
+  @media (hover: hover) {
+    .data-table .actions-rangee {
+      opacity: 0;
+      transition: opacity var(--t-hover) var(--ease);
+    }
+    .data-table tbody tr:hover .actions-rangee,
+    .data-table tbody tr:focus-within .actions-rangee {
+      opacity: 1;
+    }
+  }
+
+  /* Pendant le tirage : le curseur ne change pas selon ce qu'il survole, et
+     rien ne se sélectionne. */
+  .redim-colonne,
+  .redim-colonne * {
+    cursor: col-resize !important;
+    user-select: none !important;
+  }
+
   /* --- Mode « cartes » pour les tables de CONSULTATION sur mobile --------- *
    * Opt-in via .table-cards. En dessous de 640px, chaque ligne devient une
    * carte empilée : l'entête disparaît, chaque cellule affiche son libellé
@@ -741,6 +822,16 @@
     .table-cards tbody td.cell-card-title,
     .table-cards tbody td.cell-wrap {
       min-width: 0;
+    }
+    /* Une table réglable repliée en cartes : les largeurs ne veulent plus rien
+       dire, et `--tbl-min` imposerait un défilement horizontal à une pile de
+       cartes. L'ordre et les colonnes masquées, eux, valent toujours. */
+    .table-cards.data-table--reglable {
+      table-layout: auto;
+      min-width: 0;
+    }
+    .table-cards .cell-droite {
+      text-align: right;
     }
   }
 }
@@ -910,6 +1001,17 @@
      navigation (la clé de route force le remontage). */
   .anim-page {
     animation: rise var(--t-block) var(--ease) backwards;
+  }
+
+  /* --- Un écran-outil qui occupe la fenêtre -------------------------------- *
+   * La coquille donne au `<main>` une hauteur définie, mais elle y range le
+   * contenu dans ce conteneur d'animation — qui, lui, se dimensionne sur son
+   * contenu. Un écran à barres fixes et zone unique de défilement a donc
+   * besoin que le conteneur porte la hauteur : il ne la prend pas tout seul.
+   * On ne l'accorde QU'À qui la demande (`data-plein-page`), pour ne rien
+   * changer aux pages qui défilent normalement. */
+  .anim-page:has(> [data-plein-page]) {
+    height: 100%;
   }
 
   /* Cascade courte : les 10 premiers enfants entrent l'un après l'autre,

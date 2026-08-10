@@ -1,0 +1,152 @@
+/* =============================================================================
+ * L'ÉDITEUR DE DEVIS — mise en page « handoff 2a », habillée à la charte
+ *
+ * Ce qui ne peut PAS s'écrire en utilitaires Tailwind :
+ *  · les décalages de collage (`sticky`) d'un tableau à deux étages d'entêtes ;
+ *  · les deux teintes relevées de la barre de totaux, qui vit sur le BÂTI
+ *    sombre — le vert `--success` du plan de travail y est illisible.
+ *
+ * Aucun #hex : tout vient de l'étage sémantique. Reskin = semantic.css.
+ * ========================================================================== */
+
+.editeur-devis {
+  /* Hauteur de l'entête de colonnes, DÉCLARÉE plutôt que mesurée : c'est elle
+     qui donne son point de collage à l'entête de lot, un cran en dessous. */
+  --ed-h-entete: 2.15rem;
+  --ed-h-lot: 2.35rem;
+}
+
+/* --- Le tableau à deux étages d'entêtes ------------------------------------
+ * Un SEUL tableau pour tous les lots (et non un par lot) : l'entête de
+ * colonnes ne se répète donc pas, et les colonnes de deux lots voisins sont
+ * mécaniquement alignées — c'était le rôle du réglage partagé, c'est
+ * maintenant celui de la structure. */
+.editeur-devis .ed-table thead th {
+  height: var(--ed-h-entete);
+  padding-top: 0;
+  padding-bottom: 0;
+  z-index: 3;
+}
+
+/* ⚠️ Le rembourrage de 1 rem des tables de CONSULTATION ne convient pas à une
+   table de SAISIE serrée : sur une colonne de 94 px il ne restait que 62 px de
+   champ, et « 1 494,00 € » s'y coupait en « 1 494, ». On resserre — la table du
+   chiffrage porte des cases, pas des phrases. */
+.editeur-devis .ed-table :where(thead th, tbody td) {
+  padding-left: 0.45rem;
+  padding-right: 0.45rem;
+}
+.editeur-devis .ed-table :where(thead th, tbody td):first-child {
+  padding-left: 0.7rem;
+}
+.editeur-devis .ed-table :where(thead th, tbody td):last-child {
+  padding-right: 0.7rem;
+}
+
+/* Sauter à un lot depuis le rail ne doit pas le glisser SOUS l'entête collant
+   des colonnes : la marge de défilement réserve exactement sa hauteur. */
+.editeur-devis .ed-lot {
+  scroll-margin-top: calc(var(--ed-h-entete) + 1px);
+}
+
+/* L'entête de lot se colle SOUS celui des colonnes : en descendant dans un
+   devis de soixante lignes, on sait toujours dans quel lot on est. */
+.editeur-devis .ed-lot > td {
+  position: sticky;
+  top: var(--ed-h-entete);
+  z-index: 2;
+  height: var(--ed-h-lot);
+  padding: 0 0.75rem;
+  background-color: var(--surface-2);
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+/* Un lot n'est pas une ligne : il ne prend ni le voile de survol ni le rail
+   laiton que `.data-table` pose sur les rangées. */
+.editeur-devis .ed-table tbody tr.ed-lot:hover,
+.editeur-devis .ed-table tbody tr.ed-saisie:hover {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* La ligne de saisie vit AU BAS DE SON LOT, toujours ouverte : le geste le
+   plus répété de l'outil ne coûte plus le clic qui déplie un champ. */
+.editeur-devis .ed-saisie > td {
+  padding: 0;
+  background-color: color-mix(in oklab, var(--brand-soft) 40%, var(--surface));
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* Pastille de couleur d'un lot — dérivée de son rang, jamais stockée. */
+.ed-puce {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  background-color: var(--signal, var(--brand));
+}
+
+/* --- La barre de totaux : du bâti, pas du plan de travail -------------------
+ * Elle est sombre comme le rail et la barre de chrome. Les teintes d'état y
+ * sont RELEVÉES : le vert et le rouge du plan de travail, posés sur ce fond,
+ * ne se lisent plus (même raison que la variante `-lift` des signaux). */
+.ed-totaux {
+  background-color: var(--chrome);
+  color: var(--chrome-fg);
+  border-top: 1px solid var(--chrome-border);
+  --ed-ok: color-mix(in oklab, var(--success) 55%, white);
+  --ed-ko: color-mix(in oklab, var(--danger) 60%, white);
+}
+/* L'estampille du bâti : la même typographie que `.stamp`, mais la teinte du
+   chrome. On ne cumule PAS les deux classes — `.stamp` porte sa couleur, et
+   laisser la cascade arbitrer entre deux fichiers est un pari, pas un choix. */
+.ed-stamp {
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--chrome-muted);
+}
+.ed-totaux .ed-lbl {
+  color: var(--chrome-muted);
+}
+.ed-ok {
+  color: var(--ed-ok);
+}
+.ed-ko {
+  color: var(--ed-ko);
+}
+.ed-opt {
+  color: var(--chrome-accent);
+}
+
+/* --- Le repli du téléphone --------------------------------------------------
+ * Sous 640 px, `.table-cards` transforme chaque rangée en carte : plus rien
+ * n'est un tableau, donc plus rien ne peut se coller. L'entête de lot devient
+ * un intertitre pleine largeur, la ligne de saisie une carte de plus. */
+@media (max-width: 639.98px) {
+  .editeur-devis .ed-lot > td,
+  .editeur-devis .ed-saisie > td {
+    position: static;
+    height: auto;
+    padding: 0.5rem 0.75rem;
+    white-space: normal;
+  }
+  .editeur-devis .ed-table tbody tr.ed-lot,
+  .editeur-devis .ed-table tbody tr.ed-saisie {
+    border: 0;
+    padding: 0;
+  }
+  /* ⚠️ Une cellule PLEINE LARGEUR n'est pas une cellule de carte : sans
+     libellé, `.table-cards` la range à droite (`justify-content: flex-end`,
+     `text-align: right`) — l'entête de lot sortait alors par la GAUCHE de
+     l'écran, son titre coupé. Elle reprend ici le comportement d'un bloc. */
+  .editeur-devis .ed-table tbody td.ed-cell-pleine {
+    display: block;
+    text-align: left;
+  }
+}
