@@ -79,6 +79,112 @@
   border-bottom: 1px solid var(--hairline);
 }
 
+/* --- LE BLOC FORFAITAIRE ----------------------------------------------------
+ * Un bloc dont le client ne verra qu'une ligne est fait des MÊMES lignes qu'un
+ * bloc détaillé : rien, dans le chiffrage, ne les distingue. Sans marque à
+ * l'écran, on chiffre treize lignes sans savoir qu'il n'en lira qu'une — et ça
+ * ne se découvre qu'après l'envoi.
+ *
+ * D'où le filet vertical : « tout ce qui est à droite de ce trait deviendra une
+ * ligne ». Un `box-shadow` en encart plutôt qu'une bordure — les cellules d'une
+ * `border-collapse` se disputent leurs filets, et l'entête de lot est collant.
+ */
+.editeur-devis tr.ed-forfait > td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--brand);
+}
+.editeur-devis tr.ed-forfait > td {
+  background-color: color-mix(in oklab, var(--brand-soft) 22%, var(--surface));
+}
+.editeur-devis tr.ed-lot.ed-forfait > td {
+  background-color: color-mix(in oklab, var(--brand-soft) 55%, var(--surface-2));
+}
+
+/* La FACE CLIENT : la phrase qu'il lira, et ce qui est compris. Posée dans le
+   tableau, en tête du bloc — pas dans un onglet : on ne doit pas pouvoir
+   chiffrer un forfait sans l'avoir sous les yeux. */
+.editeur-devis .ed-face > td {
+  padding: 0;
+}
+.editeur-devis .ed-face-carte {
+  margin: 0.5rem 0.75rem 0.6rem;
+  padding: 0.55rem 0.7rem 0.45rem;
+  border: 1px dashed color-mix(in oklab, var(--brand) 45%, var(--border));
+  background-color: var(--surface);
+}
+.editeur-devis .ed-face-carte textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  outline: none;
+  /* Les retours à la ligne sont SIGNIFIANTS (une ligne = une puce imprimée) :
+     le champ doit les montrer tels qu'ils sortiront. */
+  white-space: pre-wrap;
+}
+.editeur-devis .ed-face-carte textarea::placeholder {
+  color: var(--subtle);
+}
+.editeur-devis .ed-face-titre {
+  margin-top: 0.25rem;
+  font-family: var(--font-display-app, inherit);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.editeur-devis .ed-face-note {
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--hairline) !important;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.editeur-devis .ed-face-pied {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  color: var(--brand);
+}
+
+/* Le badge de rendu — un RAPPEL, pas un réglage (celui-ci est dans les actions
+   de la rangée, et un même choix offert deux fois dans une même barre finit
+   toujours par se contredire à l'œil). */
+.ed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ed-badge-forfait {
+  color: var(--brand);
+  background-color: color-mix(in oklab, var(--brand) 12%, transparent);
+  border: 1px solid color-mix(in oklab, var(--brand) 35%, transparent);
+}
+.ed-badge-detail {
+  color: var(--subtle);
+  border: 1px solid var(--hairline);
+}
+
+/* Sous 640 px la table se replie en fiches : le filet de gauche n'a plus de
+   première cellule où s'accrocher, il passe sur la rangée entière. */
+@media (max-width: 639px) {
+  .editeur-devis tr.ed-forfait > td:first-child {
+    box-shadow: none;
+  }
+  .editeur-devis tr.ed-forfait {
+    box-shadow: inset 3px 0 0 0 var(--brand);
+  }
+}
+
 /* Pastille de couleur d'un lot — dérivée de son rang, jamais stockée. */
 .ed-puce {
   display: inline-block;

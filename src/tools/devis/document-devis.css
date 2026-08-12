@@ -159,6 +159,11 @@
   /* Un titre de lot ne reste jamais seul en bas d'une page. */
   break-inside: auto;
 }
+/* Un bloc forfaitaire n'a pas de bandeau : le filet tient sa place. */
+.devis-doc .lot-condense {
+  border-top: 1px solid var(--or-ligne);
+  padding-top: 3mm;
+}
 .devis-doc .lot-titre {
   background: var(--or-soft);
   color: var(--or);
@@ -176,6 +181,17 @@
   color: var(--muted);
   margin: 0 0 2mm;
   padding: 0 1mm;
+}
+/* ⚠️ En LISTE (description d'un bloc, une ligne saisie = une puce), il faut
+   RÉTABLIR le marqueur : le reset de l'application efface `list-style`, et une
+   liste sans puces se lit comme un paragraphe cassé. Même piège que les listes
+   d'un texte riche, déjà rencontré une fois sur ce document. */
+.devis-doc ul.lot-note {
+  list-style: disc;
+  padding-left: 5.5mm;
+}
+.devis-doc ul.lot-note li {
+  margin-top: 0.4mm;
 }
 
 .devis-doc .lignes-cadre {
@@ -227,6 +243,59 @@
 }
 .devis-doc .lignes td.des {
   width: auto;
+}
+/* La désignation. Une seule ligne = un paragraphe ; plusieurs = une liste (le
+   composant `Puces` tranche). Un bloc forfaitaire y écrit un vrai paragraphe. */
+.devis-doc .lignes td.des .des-titre {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.devis-doc .lignes td.des ul.des-titre li + li {
+  margin-top: 0.6mm;
+}
+/* La description d'un bloc forfaitaire : ce qui est COMPRIS, sous la phrase.
+   Plus petite et plus grise — c'est un complément, pas l'intitulé. */
+.devis-doc .lignes td.des .des-detail {
+  margin: 1.2mm 0 0;
+  padding-left: 5.5mm;
+  font-size: 8.6pt;
+  color: var(--muted);
+  /* Explicite : sous 560 px, `td.des` passe en gras marine (mode fiches) et le
+     complément hériterait de l'intitulé qu'il complète. */
+  font-weight: 400;
+}
+.devis-doc .lignes td.des ul.des-detail {
+  list-style: disc;
+}
+.devis-doc .lignes td.des ul.des-detail li {
+  margin-top: 0.4mm;
+}
+/* La référence interne — VUE INTERNE UNIQUEMENT (jamais servie au client :
+   `getDevisPublic` renvoie `refInterne: null`). C'est elle qui fait la
+   différence entre un justificatif de composition et un bon de commande. */
+.devis-doc .lignes td.des .des-ref {
+  display: block;
+  margin-top: 0.6mm;
+  font-family: "IBM Plex Mono", var(--font-mono-app, ""), ui-monospace, monospace;
+  font-size: 8pt;
+  font-weight: 400;
+  color: var(--subtle);
+}
+
+/* Le bandeau de la vue interne. ⚠️ Il vit DANS `.print-root` : posé dehors, le
+   patron d'impression global le masquerait et le papier interne ne se
+   distinguerait plus de celui du client. */
+.devis-doc .vue-interne {
+  margin: 0 0 4mm;
+  padding: 2mm 3mm;
+  border: 1px dashed var(--or);
+  background: var(--or-soft);
+  color: var(--or);
+  font-size: 8.4pt;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .devis-doc .lignes td.n,
 .devis-doc .lignes td.p {
@@ -494,6 +563,18 @@
 .devis-lecteur a:hover {
   border-color: #003765;
   background: #f5f8fb;
+}
+/* L'interrupteur du bordereau interne. En pointillé or, comme le bandeau qu'il
+   fait apparaître : ce n'est pas une action du document, c'est un tirage à
+   nous — et ça se voit avant de cliquer. */
+.devis-lecteur .bascule {
+  border-style: dashed;
+  border-color: #c79213;
+  color: #8a6410;
+}
+.devis-lecteur .bascule:hover {
+  border-color: #8a6410;
+  background: #faf4e4;
 }
 .devis-lecteur .principal {
   background: #003765;

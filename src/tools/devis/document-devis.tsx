@@ -24,6 +24,8 @@ import "./document-devis.css";
 import {
   acompteCents,
   calculerDevis,
+  condenserLots,
+  puces,
   dateValidite,
   documentClient,
   formatEuros,
@@ -57,12 +59,25 @@ export interface DocumentDevisProps {
   /** Rendu destiné au PDF serveur : Chromium pose lui-même le pied légal et la
    *  pagination sur chaque page, celui du document ferait doublon. */
   pourPdf?: boolean;
+  /**
+   * LE BORDEREAU INTERNE — les blocs forfaitaires sont montrés détaillés, avec
+   * leur référence interne (docs/DEVIS-DETAIL.md §7).
+   *
+   * ⚠️ Ne vient JAMAIS du devis : c'est un paramètre d'URL de l'aperçu interne,
+   * qui ne vit que le temps d'une requête. Persisté, il serait à un clic de tout
+   * dévoiler au client — le lien public sert le devis vivant.
+   */
+  detailInterne?: boolean;
 }
 
-export function DocumentDevis({ devis, societe, pourPdf }: DocumentDevisProps) {
-  const { entete, lots, lignes } = devis;
+export function DocumentDevis({ devis, societe, pourPdf, detailInterne }: DocumentDevisProps) {
+  const { entete, lots } = devis;
+  // La condensation est IDEMPOTENTE : la page publique reçoit déjà des lignes
+  // condensées par `getDevisPublic` (la garde est dans la requête), l'aperçu
+  // interne reçoit le devis complet. Un seul chemin de rendu pour les deux.
+  const lignes = detailInterne ? devis.lignes : condenserLots(entete, lots, devis.lignes);
   const totaux = calculerDevis(entete, lots, lignes);
-  const doc = documentClient(totaux, entete);
+  const doc = documentClient(totaux, entete, detailInterne);
 
   const etabliLe = entete.publieLe ?? entete.createdAt;
   const valableJusquau = dateValidite(etabliLe, entete.validiteJours);
@@ -130,15 +145,47 @@ export function DocumentDevis({ devis, societe, pourPdf }: DocumentDevisProps) {
           )}
         </div>
 
+        {/* --- Le bandeau de la vue interne --------------------------------- */}
+        {/* ⚠️ DANS `.print-root`, sinon le patron d'impression global le masque
+            (DEVIS.md §21.6) et le papier de la vue interne ne se distingue plus
+            de celui du client — c'est-à-dire au moment où ça compte. */}
+        {detailInterne && (
+          <p className="vue-interne">
+            Vue interne — le client ne voit pas le détail des blocs forfaitaires.
+          </p>
+        )}
+
         {/* --- Le chiffrage ------------------------------------------------- */}
         {doc.lots.map((lot, i) => (
-          <section className="lot" key={lot.titre ?? `hors-lot-${i}`}>
+          <section
+            // Un bloc condensé n'a pas de bandeau de titre (sa phrase le
+            // remplace) : sans un filet, il se colle au sous-total du bloc
+            // précédent et se lit comme sa suite. Visible surtout au téléphone,
+            // où tout est empilé en fiches.
+            className={`lot${lot.condense ? " lot-condense" : ""}`}
+            key={lot.titre ?? `hors-lot-${i}`}
+          >
+            {/* Sur un bloc condensé, `titre` est null (documentClient) : la
+                phrase du client porte déjà l'intitulé, un bandeau au-dessus
+                dirait la même chose à deux centimètres d'écart. */}
             {lot.titre && <h2 className="lot-titre">{lot.titre}</h2>}
-            {lot.note.trim() && <p className="lot-note">{lot.note.trim()}</p>}
+            {/* Sur un bloc DÉTAILLÉ la description couvre tout le bloc, elle se
+                lit donc en tête. Sur un bloc CONDENSÉ elle appartient à la
+                phrase du client et se pose SOUS elle, dans sa cellule — sinon on
+                lirait le détail avant de savoir de quoi il parle. */}
+            {!lot.condense && <Puces texte={lot.note} className="lot-note" />}
             <TableLignes
               lignes={lot.lignes}
-              avecPrix={doc.avecPrixLigne}
-              sousTotal={doc.avecSousTotaux ? lot.sousTotalCents : null}
+              description={lot.condense ? lot.note : ""}
+              // Un bloc condensé porte TOUJOURS son montant : décocher les prix
+              // unitaires veut dire « pas le prix de chaque article », or il n'a
+              // pas d'articles — sa ligne EST son prix. Sans ça, le client reçoit
+              // une phrase et aucun chiffre.
+              avecPrix={doc.avecPrixLigne || lot.condense}
+              // … et jamais de sous-total sous elle : ce serait le même nombre
+              // répété (§6b).
+              sousTotal={doc.avecSousTotaux && !lot.condense ? lot.sousTotalCents : null}
+              avecRef={detailInterne}
             />
           </section>
         ))}
@@ -275,14 +322,44 @@ export function DocumentDevis({ devis, societe, pourPdf }: DocumentDevisProps) {
  * LE TABLEAU DES LIGNES
  * -------------------------------------------------------------------------- */
 
+/**
+ * Un texte libre en puces — UNE LIGNE SAISIE = UNE PUCE.
+ *
+ * ⚠️ Ni `.lot-note` ni `td.des` n'ont de `white-space: pre-wrap` : rendre le
+ * texte tel quel écraserait « 2× départ pour pompe \n 4× pilotage V3V » en un
+ * seul paragraphe, sans la moindre erreur nulle part. C'est bien une liste
+ * d'éléments qu'il faut produire, jamais un `\n` laissé au CSS.
+ *
+ * Une seule ligne se rend en paragraphe : une puce solitaire fait bégayer.
+ */
+function Puces({ texte, className }: { texte: string; className?: string }) {
+  const items = puces(texte);
+  if (items.length === 0) return null;
+  if (items.length === 1) return <p className={className}>{items[0]}</p>;
+  return (
+    <ul className={className}>
+      {items.map((l, i) => (
+        <li key={i}>{l}</li>
+      ))}
+    </ul>
+  );
+}
+
 function TableLignes({
   lignes,
   avecPrix,
   sousTotal,
+  description = "",
+  avecRef = false,
 }: {
   lignes: LigneCalculee[];
   avecPrix: boolean;
   sousTotal: number | null;
+  /** La description d'un bloc condensé, rendue sous sa ligne de synthèse. */
+  description?: string;
+  /** Vue interne : la référence sous la désignation. Sans elle, le bordereau
+   *  n'est pas un bon de commande — c'est tout l'objet du tirage. */
+  avecRef?: boolean;
 }) {
   // Le nombre de colonnes commande le `colSpan` des lignes de texte et du
   // sous-total : le calculer une fois évite trois « 3 ou 5 » dans le rendu.
@@ -305,8 +382,17 @@ function TableLignes({
         </tr>
       </thead>
       <tbody>
-        {lignes.map((lc) => (
-          <LigneDocument key={lc.ligne.id} lc={lc} avecPrix={avecPrix} nbColonnes={nbColonnes} />
+        {lignes.map((lc, i) => (
+          <LigneDocument
+            key={lc.ligne.id}
+            lc={lc}
+            avecPrix={avecPrix}
+            nbColonnes={nbColonnes}
+            // Un bloc condensé n'a qu'une rangée chiffrée — sa synthèse. La
+            // description s'y accroche.
+            description={i === 0 ? description : ""}
+            avecRef={avecRef}
+          />
         ))}
       </tbody>
       {sousTotal !== null && (
@@ -325,10 +411,14 @@ function LigneDocument({
   lc,
   avecPrix,
   nbColonnes,
+  description = "",
+  avecRef = false,
 }: {
   lc: LigneCalculee;
   avecPrix: boolean;
   nbColonnes: number;
+  description?: string;
+  avecRef?: boolean;
 }) {
   const l = lc.ligne;
 
@@ -355,7 +445,14 @@ function LigneDocument({
      savoir quelle colonne est laquelle. */
   return (
     <tr>
-      <td className="des">{l.designation}</td>
+      <td className="des">
+        {/* La désignation d'un bloc condensé est un PARAGRAPHE, souvent en
+            capitales et parfois sur plusieurs lignes : elle passe par la même
+            mécanique de puces que la description. */}
+        <Puces texte={l.designation} className="des-titre" />
+        {avecRef && l.refInterne && <span className="des-ref">{l.refInterne}</span>}
+        <Puces texte={description} className="des-detail" />
+      </td>
       <td className="n" data-label="Qté">
         {formatQuantite(l.quantiteMillieme)}
       </td>

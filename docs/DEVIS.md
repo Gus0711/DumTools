@@ -1568,8 +1568,58 @@ replié sont là, aucun lien résiduel vers `/v2`, l'onglet Publier rend, et
 - [ ] **Le nombre de lots** décide du sort du rail : à deux ou trois lots il
       coûte 160 px pour trois cartes (il est replié par défaut depuis §22.6,
       donc la question est devenue peu urgente).
-- [ ] **Exposer `LotDevis.note`** : elle s'imprime sur le document client
-      (`.lot-note`) et **aucun écran ne permet de l'écrire**. Détail trouvé en
-      cadrant le fil du devis — voir [`DEVIS-FIL.md` §4.3](DEVIS-FIL.md).
-- [ ] **Le fil du devis** — la mémoire de ce qui s'est dit autour du chiffrage.
-      Cadrage complet : [`DEVIS-FIL.md`](DEVIS-FIL.md).
+- [x] ~~**Exposer `LotDevis.note`**~~ — FAIT le 2026-08-12 : elle est devenue la
+      **description du bloc**, éditable dans le cartouche « ce que le client
+      lira » et imprimée **en puces** (une ligne saisie = une puce). Voir
+      [`DEVIS-DETAIL.md`](DEVIS-DETAIL.md).
+- [x] ~~**Le fil du devis**~~ — FAIT le 2026-08-10, [`DEVIS-FIL.md`](DEVIS-FIL.md).
+
+---
+
+## 23. Le bloc du client — ce qu'on chiffre, ce qu'il lit (2026-08-12)
+
+Cadrage et rapport de livraison complets : **[`DEVIS-DETAIL.md`](DEVIS-DETAIL.md)**.
+
+Deux collègues demandaient la même chose sans qu'on le voie : l'un ajoute un
+détail sous « Fabrication armoire électrique », l'autre veut cacher le détail
+d'un « Ensemble de matériel Distech ». Ce sont **les deux faces d'un seul
+besoin** — le premier cache aussi son chiffrage (ses heures de câblage), le
+second ajoute aussi du texte (« COMPRIS DISTECH + PROGRAMMATION »).
+
+**Un lot n'est donc plus un chapitre : c'est un BLOC du client**, avec deux
+faces — les lignes qu'on chiffre, et la désignation + description + prix qu'il
+lit. `LotDevis.rendu` (`DETAILLE` / `CONDENSE`) et `LotDevis.libelleClient`, plus
+une fonction pure `condenserLots()`. **`calculerDevis` n'a pas bougé** : ses 169
+contrôles sont inchangés et verts, c'est la preuve.
+
+Ce qui porte le chantier :
+
+1. **La garde est dans la REQUÊTE.** `getDevisPublic` condense avant de
+   répondre : les lignes réelles d'un bloc forfaitaire ne sortent pas du serveur.
+   Même doctrine que le §21.3, et le test de fuite porte un **témoin négatif**
+   (le bloc détaillé voisin DOIT apparaître) et s'applique **aussi au PDF**.
+2. **Le prix appartient au BLOC, pas à la ligne.** Un bloc condensé affiche
+   toujours son montant — même « prix unitaires » décoché, même sur un devis d'un
+   seul lot — et n'a jamais de sous-total sous lui. Sans cette règle, le client
+   reçoit une phrase et aucun chiffre.
+3. **Jamais le titre ET la phrase.** Sur un bloc condensé, `LotDocument.titre`
+   est `null` : la phrase du client remplace le bandeau, elle ne s'y ajoute pas.
+   Un filet (`.lot-condense`) le sépare du bloc précédent, sans quoi il se lit
+   comme sa suite — surtout au téléphone.
+4. **L'éditeur DESSINE le bloc** : filet vertical, cartouche « ce que le client
+   lira » posé dans le tableau, badge `forfait`/`détaillé` sur l'entête et dans le
+   rail, et **« + Nouveau forfait »** à côté de « Nouveau lot » — assembler le
+   même résultat en quatre gestes ferait contourner l'outil.
+5. **Le bordereau interne** = l'aperçu avec `?detail=1` : bandeau « vue interne »
+   (⚠️ **dans** `.print-root`), détail révélé **avec `refInterne`** — sans la
+   référence fournisseur, la feuille n'est pas un bon de commande. Ce drapeau ne
+   vit que le temps d'une URL : persisté, il serait à un clic de tout dévoiler.
+
+⚠️ **Le type de retour de `condenserLots` est marqué** (`LignesPourClient`) : la
+ligne de synthèse est une `LIBRE` sans déboursé, donc du poison pour tout calcul
+de marge — c'est exactement le défaut qu'on corrige. Le compilateur refuse la
+confusion.
+
+Tests : `devis-smoke` **200/200** (169 d'origine inchangés), `devis-restitution-smoke`
+**63/63**, et **regarder** avec `devis-document-apercu.mts` — trois défauts réels
+(puces perdues, blocs collés, champ tronqué) n'étaient visibles qu'à l'œil.

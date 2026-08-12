@@ -15,6 +15,7 @@ import { cn } from "@/lib/cn";
 import { libelleEcheance, partageActif } from "@/lib/partage/model";
 import {
   majEnteteDevis,
+  majLot,
   prolongerPartageDevis,
   publierDevis,
   revoquerPartageDevis,
@@ -24,6 +25,7 @@ import {
   DUREE_PARTAGE_DEVIS_DEFAUT,
   dureesPartageDevis,
   type DevisComplet,
+  type LotDevisVue,
 } from "./model";
 
 /* -----------------------------------------------------------------------------
@@ -45,12 +47,19 @@ import {
 
 export function BlocPublication({
   entete,
+  lots,
   enCours,
   agir,
+  onVoirLot,
 }: {
   entete: DevisComplet["entete"];
+  /** Les blocs, pour la récapitulation « ce que le client voit de chacun ». */
+  lots: LotDevisVue[];
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
+  /** Sauter au bloc dans le tableau — la récapitulation sert à VÉRIFIER, on
+   *  corrige là où on travaille. */
+  onVoirLot: (lotId: string) => void;
 }) {
   const [dureeId, setDureeId] = useState(DUREE_PARTAGE_DEVIS_DEFAUT);
   const [copie, setCopie] = useState(false);
@@ -146,6 +155,63 @@ export function BlocPublication({
             onChange={(v) => agir(() => majEnteteDevis(entete.id, { montrerOptions: v }))}
           />
         </div>
+
+        {/* LA DERNIÈRE RELECTURE AVANT D'ENVOYER. Le rendu se décide sur le bloc,
+            dans le tableau, là où on travaille — mais un bloc resté détaillé par
+            oubli ne se remarque qu'après le mail. Ici on les voit tous d'un coup.
+            Ce n'est pas un second réglage : c'est le MÊME champ, écrit depuis
+            deux écrans. */}
+        {lots.length > 0 && (
+          <div className="mt-3 border-t border-hairline pt-3">
+            <Label>Ce que le client voit de chaque bloc</Label>
+            <ul className="mt-1.5 space-y-1.5">
+              {lots.map((l) => {
+                const forfait = l.rendu === "CONDENSE";
+                return (
+                  <li key={l.id} className="text-sm">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onVoirLot(l.id)}
+                        title="Aller à ce bloc dans le chiffrage"
+                        className="min-w-0 flex-1 truncate text-left font-medium text-fg transition-colors hover:text-brand"
+                      >
+                        {l.titre || "Bloc sans nom"}
+                      </button>
+                      <span className="flex shrink-0 items-center gap-1">
+                        {(["DETAILLE", "CONDENSE"] as const).map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            disabled={enCours}
+                            aria-pressed={l.rendu === r}
+                            onClick={() => agir(() => majLot(l.id, { rendu: r }))}
+                            className={cn(
+                              "px-1.5 py-0.5 text-[0.68rem] font-semibold uppercase tracking-wide transition-colors",
+                              l.rendu === r
+                                ? "bg-brand/12 text-brand"
+                                : "text-subtle hover:text-fg",
+                            )}
+                          >
+                            {r === "CONDENSE" ? "forfait" : "détaillé"}
+                          </button>
+                        ))}
+                      </span>
+                    </div>
+                    {forfait && (
+                      <p className="mt-0.5 truncate pl-0.5 text-xs text-subtle">
+                        →{" "}
+                        {l.libelleClient.trim().split("\n")[0] || (
+                          <i>sa phrase n&apos;est pas écrite — le titre du bloc servira</i>
+                        )}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
 
 

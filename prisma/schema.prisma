@@ -1782,15 +1782,37 @@ model DevisConsultation {
 
 /// Regroupement affiché avec son sous-total (« Fourniture GTB », « Armoire »,
 /// « Main d'œuvre », ou un bâtiment). Une ligne sans lot se range en fin de devis.
+/// UN LOT EST UN BLOC DU CLIENT (docs/DEVIS-DETAIL.md).
+///
+/// Un bloc a deux faces : ce qu'on CHIFFRE (ses lignes réelles, avec déboursé,
+/// coefficient et marge) et ce que le CLIENT LIT. Sur un bloc « DETAILLE » les
+/// deux coïncident. Sur un bloc « CONDENSE », le client ne reçoit qu'une ligne
+/// de synthèse au sous-total du lot — le détail ne sort même pas du serveur
+/// (`condenserLots` s'applique DANS `getDevisPublic`).
 model LotDevis {
   id      String @id @default(cuid())
   devisId String
   devis   Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  /// Le nom INTERNE du bloc — celui du rail de l'éditeur.
   titre   String
   /// Insertion au point médian des voisins (même patron que TacheAffaire.ordre) :
   /// pas de renumérotation globale à chaque déplacement.
   ordre   Float
+  /// La description NON EXHAUSTIVE du bloc, imprimée sous la désignation :
+  /// « 2× départ pour pompe / 4× pilotage V3V ». Une ligne saisie = une puce.
+  /// Volontairement du texte — ce qu'elle décrit n'est ni exhaustif ni
+  /// modélisable, et tout ce qui serait structuré appellerait un total faux.
   note    String @default("")
+
+  /// Ce que le CLIENT voit de ce bloc : "DETAILLE" (défaut) ou "CONDENSE".
+  /// Une chaîne validée dans l'action et non un enum Postgres — même choix que
+  /// CoefVente.portee : la migration reste triviale et le vocabulaire peut
+  /// grandir (un « détaillé sans prix unitaires » viendra peut-être un jour).
+  rendu         String @default("DETAILLE")
+  /// La désignation que le client LIT quand le bloc est condensé. Vide = le
+  /// titre du lot. ⚠️ Ce n'est PAS un titre : c'est un paragraphe écrit pour le
+  /// client, souvent en capitales, parfois sur plusieurs lignes.
+  libelleClient String @default("")
 
   lignes LigneDevis[]
 

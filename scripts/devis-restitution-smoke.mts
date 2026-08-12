@@ -129,6 +129,16 @@ try {
         create: [
           { titre: "Fourniture GTB", ordre: 1000 },
           { titre: "Main d'œuvre", ordre: 2000 },
+          // LE BLOC FORFAITAIRE (docs/DEVIS-DETAIL.md). Son titre interne, ses
+          // lignes et ses références ne doivent JAMAIS sortir.
+          {
+            titre: "ZZSECRET Matériel Distech + MO",
+            ordre: 3000,
+            rendu: "CONDENSE",
+            libelleClient:
+              "DÉPOSE DE L'ANCIENNE RÉGULATION, POSE ET RACCORDEMENT — COMPRIS DISTECH",
+            note: "2× départ pour pompe\n4× pilotage V3V",
+          },
         ],
       },
     },
@@ -136,6 +146,7 @@ try {
   });
   const lotFourniture = devis.lots.find((l) => l.titre === "Fourniture GTB")!;
   const lotMo = devis.lots.find((l) => l.titre === "Main d'œuvre")!;
+  const lotForfait = devis.lots.find((l) => l.rendu === "CONDENSE")!;
 
   await prisma.ligneDevis.createMany({
     data: [
@@ -187,6 +198,37 @@ try {
         pvUnitaireCents: 54000,
         option: true,
       },
+      // --- Le contenu du BLOC FORFAITAIRE : rien de tout ceci ne doit sortir.
+      {
+        devisId: devis.id,
+        lotId: lotForfait.id,
+        ordre: 5000,
+        genre: "PRODUIT",
+        designation: "ZZSECRET AUTOMATE ECY-S1000-C50",
+        refInterne: "ZZSECRET-S1000",
+        debourseCents: 149400,
+        coefMillieme: 1250,
+        pvUnitaireCents: 186750,
+        quantiteMillieme: 1000,
+        unite: "U",
+      },
+      {
+        devisId: devis.id,
+        lotId: lotForfait.id,
+        ordre: 6000,
+        genre: "PRESTATION",
+        designation: "ZZSECRET Programmation automate",
+        unite: "h",
+        quantiteMillieme: 30000,
+        pvUnitaireCents: 7400,
+      },
+      {
+        devisId: devis.id,
+        lotId: lotForfait.id,
+        ordre: 7000,
+        genre: "TEXTE",
+        designation: "ZZSECRET commentaire interne du bloc",
+      },
     ],
   });
 
@@ -230,10 +272,12 @@ try {
   // Les prix de vente : 2 × 1 050,00 = 2 100,00 ; 3 j × 620,00 = 1 860,00.
   verifier("le prix unitaire de vente est affiché", html.includes("1 050,00"));
   verifier("le total de ligne est affiché", html.includes("2 100,00"));
-  verifier("le total HT est affiché (3 960,00)", html.includes("3 960,00"));
-  verifier("la TVA est affichée (792,00)", html.includes("792,00"));
-  verifier("le TTC est affiché (4 752,00)", html.includes("4 752,00"));
-  verifier("l'acompte est calculé sur le TTC (2 376,00)", html.includes("2 376,00"));
+  // 2 100,00 (fourniture) + 1 860,00 (MO) + 4 087,50 (le bloc forfaitaire).
+  // Un devis MIXTE — c'est le cas normal, pas l'exception (DEVIS-DETAIL.md §1).
+  verifier("le total HT est affiché (8 047,50)", html.includes("8 047,50"));
+  verifier("la TVA est affichée (1 609,50)", html.includes("1 609,50"));
+  verifier("le TTC est affiché (9 657,00)", html.includes("9 657,00"));
+  verifier("l'acompte est calculé sur le TTC (4 828,50)", html.includes("4 828,50"));
   verifier("l'option est listée à part", html.includes("Options"));
   verifier("… et son montant n'entre pas dans le total", !html.includes("5 400,00"));
   verifier("le pied légal est présent", html.includes("RCS"));
@@ -344,8 +388,12 @@ try {
     verifier("… il porte du VRAI texte, extractible", texte.length > 200, `${texte.length} caractères`);
     verifier("… avec le numéro du devis", texte.includes("DT999901"));
     verifier("… la désignation des articles", texte.includes("AUTOMATE DISTECH"));
-    verifier("… et les montants", texte.includes("3 960,00") && texte.includes("4 752,00"));
+    verifier("… et les montants", texte.includes("8 047,50") && texte.includes("9 657,00"));
     verifier("… le déboursé n'y est pas non plus", !texte.includes("840,00"));
+    // Le PDF est l'artefact qui part VRAIMENT chez le client : la garde se
+    // vérifie sur lui aussi, pas seulement sur le HTML dont il est tiré.
+    verifier("… ni le détail d'un bloc forfaitaire", !texte.includes("ZZSECRET"));
+    verifier("… mais bien la phrase qui le remplace", texte.includes("DÉPOSE DE L'ANCIENNE"));
   }
 
   /* --- 7 bis. UN DEVIS QUI FAIT PLUSIEURS PAGES --------------------------
@@ -428,13 +476,54 @@ try {
     verifier("… et le pavé des totaux", compact.includes("TotalTTC"));
   }
 
+  /* --- 7 ter. LE BLOC FORFAITAIRE NE FUIT PAS ---------------------------- */
+  console.log("\n7 ter. Le bloc forfaitaire (docs/DEVIS-DETAIL.md)");
+  {
+    // La garde vit dans `getDevisPublic`, pas dans le composant : ce qui est
+    // vérifié ici, c'est que le détail n'est NULLE PART dans la réponse — ni
+    // rendu, ni embarqué dans la charge utile du client React.
+    const rep = await fetch(`${BASE}/d/${jeton}`);
+    const page = await rep.text();
+
+    verifier("la phrase du client est imprimée", page.includes("DÉPOSE DE L&#x27;ANCIENNE RÉGULATION") || page.includes("DÉPOSE DE L'ANCIENNE RÉGULATION"));
+    verifier("… avec sa description en puces", page.includes("2× départ pour pompe"));
+    // 1 867,50 + 30 h × 74,00 = 4 087,50 € : le sous-total DOIT apparaître,
+    // sinon le client reçoit une phrase sans prix (le piège du §6b).
+    verifier("… et le montant du bloc", page.includes("4 087,50"));
+
+    // ⚠️ LE contrôle qui compte. Un seul « ZZSECRET » suffit à tout invalider.
+    const fuites = (page.match(/ZZSECRET[^"<\s]*/g) ?? []).filter(
+      (m) => !m.startsWith("ZZSECRET-REF"),
+    );
+    verifier(
+      "AUCUNE désignation, référence ni ligne du bloc ne traverse",
+      fuites.length === 0,
+      fuites.slice(0, 5).join(" · "),
+    );
+    verifier("… le titre INTERNE du bloc non plus", !page.includes("Matériel Distech + MO"));
+
+    // Témoin négatif : sans lui, ce test passerait au vert sur une page vide.
+    verifier(
+      "TÉMOIN : le bloc DÉTAILLÉ voisin est bien rendu, lui",
+      page.includes("AUTOMATE DISTECH ECY-303"),
+    );
+
+    // La note d'une LIGNE est interne et ne doit plus être dans la réponse.
+    await prisma.ligneDevis.updateMany({
+      where: { devisId: devis.id, designation: "AUTOMATE DISTECH ECY-303" },
+      data: { note: "ZZNOTEINTERNE négociable à -12 %" },
+    });
+    const page2 = await fetch(`${BASE}/d/${jeton}`).then((r) => r.text());
+    verifier("la note interne d'une ligne ne sort pas non plus", !page2.includes("ZZNOTEINTERNE"));
+  }
+
   /* --- 8. Le rendu PDF de la page ---------------------------------------- */
   console.log("\n8. La page en mode PDF");
   const repVuePdf = await fetch(`${BASE}/d/${jeton}?pdf=1`);
   const htmlPdf = await repVuePdf.text();
   verifier("la barre du lecteur disparaît", !htmlPdf.includes("Télécharger le PDF"));
   verifier("… donc aucune consultation n'est comptée au téléchargement", !htmlPdf.includes("devis-lecteur"));
-  verifier("le document reste entier", htmlPdf.includes("DT999901") && htmlPdf.includes("3 960,00"));
+  verifier("le document reste entier", htmlPdf.includes("DT999901") && htmlPdf.includes("8 047,50"));
   verifier("la classe « pour-pdf » est posée", htmlPdf.includes("pour-pdf"));
 } finally {
   await nettoyer();

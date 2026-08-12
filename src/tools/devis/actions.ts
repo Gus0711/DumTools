@@ -28,6 +28,7 @@ import {
   estEtatDevis,
   evenementDEtat,
   estGenreLigne,
+  estRenduLot,
   formatNumeroDevis,
   ordreEntre,
   peutGererReferentielDevis,
@@ -428,7 +429,17 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
     const idLot = new Map<string, string>();
     for (const l of source.lots) {
       const nouveau = await tx.lotDevis.create({
-        data: { devisId: d.id, titre: l.titre, ordre: l.ordre, note: l.note },
+        // ⚠️ `rendu` et `libelleClient` DOIVENT suivre. Les oublier ne casse
+        // rien de visible : ça DÉCOUVRE simplement au client, à la révision
+        // suivante, le détail qu'on avait choisi de lui cacher.
+        data: {
+          devisId: d.id,
+          titre: l.titre,
+          ordre: l.ordre,
+          note: l.note,
+          rendu: l.rendu,
+          libelleClient: l.libelleClient,
+        },
       });
       idLot.set(l.id, nouveau.id);
     }
@@ -544,7 +555,17 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
     const idLot = new Map<string, string>();
     for (const l of source.lots) {
       const nouveau = await tx.lotDevis.create({
-        data: { devisId: d.id, titre: l.titre, ordre: l.ordre, note: l.note },
+        // ⚠️ `rendu` et `libelleClient` DOIVENT suivre. Les oublier ne casse
+        // rien de visible : ça DÉCOUVRE simplement au client, à la révision
+        // suivante, le détail qu'on avait choisi de lui cacher.
+        data: {
+          devisId: d.id,
+          titre: l.titre,
+          ordre: l.ordre,
+          note: l.note,
+          rendu: l.rendu,
+          libelleClient: l.libelleClient,
+        },
       });
       idLot.set(l.id, nouveau.id);
     }
@@ -594,18 +615,30 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
  * LES LOTS
  * ========================================================================== */
 
-export async function ajouterLot(devisId: string, titre: string): Promise<{ id: string }> {
+/**
+ * Un nouveau bloc. `rendu` est demandé À LA CRÉATION parce que c'est là que ça
+ * se décide : « + Nouveau forfait » pose un bloc déjà condensé, curseur dans la
+ * phrase du client. Assembler le même résultat en quatre gestes (créer, nommer,
+ * basculer, écrire) est le meilleur moyen de faire contourner l'outil.
+ */
+export async function ajouterLot(
+  devisId: string,
+  titre: string,
+  options: { rendu?: string } = {},
+): Promise<{ id: string }> {
   await acteur();
   const dernier = await prisma.lotDevis.findFirst({
     where: { devisId },
     orderBy: { ordre: "desc" },
     select: { ordre: true },
   });
+  const rendu = estRenduLot(options.rendu) ? options.rendu : "DETAILLE";
   const lot = await prisma.lotDevis.create({
     data: {
       devisId,
-      titre: texte(titre) || "Nouveau lot",
+      titre: texte(titre) || (rendu === "CONDENSE" ? "Nouveau forfait" : "Nouveau lot"),
       ordre: ordreEntre(dernier?.ordre ?? null, null),
+      rendu,
     },
     select: { id: true },
   });
@@ -615,14 +648,26 @@ export async function ajouterLot(devisId: string, titre: string): Promise<{ id: 
 
 export async function majLot(
   lotId: string,
-  patch: { titre?: string; note?: string },
+  patch: { titre?: string; note?: string; rendu?: string; libelleClient?: string },
 ): Promise<void> {
   await acteur();
+  // ⚠️ `rendu` est validé ici et pas seulement à l'écran : c'est lui qui décide
+  // de ce qui sort du serveur vers le client. Une valeur inconnue retomberait
+  // sur DETAILLE côté lecture — donc sur un bloc DÉVOILÉ. On refuse plutôt.
+  if (patch.rendu !== undefined && !estRenduLot(patch.rendu)) {
+    throw new Error("Rendu de lot inconnu");
+  }
   const lot = await prisma.lotDevis.update({
     where: { id: lotId },
     data: {
       ...(patch.titre !== undefined ? { titre: texte(patch.titre) || "Lot" } : {}),
       ...(patch.note !== undefined ? { note: texte(patch.note) } : {}),
+      ...(patch.rendu !== undefined ? { rendu: patch.rendu } : {}),
+      // Pas de `texte()` ici : c'est un paragraphe destiné au client, ses
+      // retours à la ligne sont significatifs (une ligne = une puce).
+      ...(patch.libelleClient !== undefined
+        ? { libelleClient: patch.libelleClient.trim() }
+        : {}),
     },
     select: { devisId: true },
   });

@@ -100,6 +100,18 @@ try {
             note: "Matériel Distech Controls, livré et câblé en atelier.",
           },
           { titre: "Prestations", ordre: 2000 },
+          // LE BLOC FORFAITAIRE (docs/DEVIS-DETAIL.md) : une désignation qui est
+          // un PARAGRAPHE en capitales, une description en puces, et derrière
+          // un chiffrage mêlant matériel et main d'œuvre. C'est le cas le plus
+          // dur du document — et il faut le REGARDER.
+          {
+            titre: "Régulation chaufferie — interne",
+            ordre: 3000,
+            rendu: "CONDENSE",
+            libelleClient:
+              "DÉPOSE DE L'ANCIENNE RÉGULATION, POSE, RACCORDEMENT DE LA NOUVELLE RÉGULATION ET CONTRÔLE DES POINTS — COMPRIS DISTECH + PROGRAMMATION + SUPERVISION",
+            note: "2× départ pour pompe\n4× pilotage V3V\n1× pompe de relevage\nMise en service et formation sur site",
+          },
         ],
       },
     },
@@ -107,9 +119,48 @@ try {
   });
   const fourniture = devis.lots.find((l) => l.ordre === 1000)!;
   const prestations = devis.lots.find((l) => l.ordre === 2000)!;
+  const forfait = devis.lots.find((l) => l.ordre === 3000)!;
 
   await prisma.ligneDevis.createMany({
     data: [
+      // --- Le contenu du bloc forfaitaire : invisible sur le document client,
+      //     visible sur le bordereau interne (?detail=1).
+      {
+        devisId: devis.id,
+        lotId: forfait.id,
+        ordre: 9000,
+        genre: "PRODUIT",
+        designation: "AUTOMATE DISTECH ECY-S1000-C50",
+        refInterne: "DIS-S1000-C50",
+        unite: "U",
+        quantiteMillieme: 1000,
+        debourseCents: 149400,
+        coefMillieme: 1250,
+        pvUnitaireCents: 186750,
+      },
+      {
+        devisId: devis.id,
+        lotId: forfait.id,
+        ordre: 9100,
+        genre: "PRODUIT",
+        designation: "ALIMENTATION 24 V 5 A RAIL DIN",
+        refInterne: "ALM-24-5",
+        unite: "U",
+        quantiteMillieme: 1000,
+        debourseCents: 7800,
+        coefMillieme: 1250,
+        pvUnitaireCents: 9750,
+      },
+      {
+        devisId: devis.id,
+        lotId: forfait.id,
+        ordre: 9200,
+        genre: "PRESTATION",
+        designation: "Programmation automate",
+        unite: "h",
+        quantiteMillieme: 30000,
+        pvUnitaireCents: 7400,
+      },
       {
         devisId: devis.id,
         lotId: fourniture.id,

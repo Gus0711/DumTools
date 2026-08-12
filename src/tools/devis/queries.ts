@@ -7,8 +7,11 @@ import {
   SOCIETE_DEFAUT,
   calculerDevis,
   estEtatDevis,
+  condenserLots,
+  designationClient,
   estGenreLigne,
   estOrigineCoef,
+  estRenduLot,
   estEvenementEnregistre,
   reecrireMediasPublicsDevis,
   type ContenuRiche,
@@ -261,7 +264,14 @@ export async function getDevis(id: string): Promise<DevisComplet | null> {
       modifiePar: d.updatedBy?.nom ?? null,
     },
     lots: d.lots.map(
-      (l): LotDevisVue => ({ id: l.id, titre: l.titre, ordre: l.ordre, note: l.note }),
+      (l): LotDevisVue => ({
+        id: l.id,
+        titre: l.titre,
+        ordre: l.ordre,
+        note: l.note,
+        rendu: estRenduLot(l.rendu) ? l.rendu : "DETAILLE",
+        libelleClient: l.libelleClient,
+      }),
     ),
     lignes: d.lignes.map((l): LigneDevisVue => {
       const actuel = l.produitId ? (actuels.get(l.produitId) ?? null) : null;
@@ -349,7 +359,14 @@ export async function listerDevis(f: FiltresDevis = {}): Promise<DevisResume[]> 
 
   return devis.map((d) => {
     const lots = d.lots.map(
-      (l): LotDevisVue => ({ id: l.id, titre: l.titre, ordre: l.ordre, note: l.note }),
+      (l): LotDevisVue => ({
+        id: l.id,
+        titre: l.titre,
+        ordre: l.ordre,
+        note: l.note,
+        rendu: estRenduLot(l.rendu) ? l.rendu : "DETAILLE",
+        libelleClient: l.libelleClient,
+      }),
     );
     const lignes = d.lignes.map(
       (l): LigneDevisVue => ({
@@ -496,6 +513,54 @@ export async function getDevisPublic(jeton: string): Promise<DevisPublic | null>
 
   const societe = await getSociete();
 
+  const lots = d.lots.map((l): LotDevisVue => {
+    const rendu = estRenduLot(l.rendu) ? l.rendu : "DETAILLE";
+    return {
+      id: l.id,
+      // Sur un bloc forfaitaire, le TITRE INTERNE ne sort pas : il porte notre
+      // vocabulaire (« Matériel Distech + MO »), pas celui du client. On envoie
+      // la phrase qu'il doit lire, et rien d'autre.
+      titre: rendu === "CONDENSE" ? designationClient({ ...l, rendu }) : l.titre,
+      ordre: l.ordre,
+      note: l.note,
+      rendu,
+      libelleClient: l.libelleClient,
+    };
+  });
+
+  const lignesReelles = d.lignes.map((l): LigneDevisVue => {
+    const contenu = Array.isArray(l.contenu) ? (l.contenu as ContenuRiche) : null;
+    return {
+      id: l.id,
+      lotId: l.lotId,
+      ordre: l.ordre,
+      genre: estGenreLigne(l.genre) ? l.genre : "LIBRE",
+      produitId: null,
+      prestationId: null,
+      designation: l.designation,
+      contenu: contenu ? reecrireMediasPublicsDevis(contenu, jeton) : null,
+      version: l.version,
+      refInterne: null,
+      unite: l.unite,
+      quantiteMillieme: l.quantiteMillieme,
+      // Le déboursé et le coefficient s'arrêtent ici. Le moteur les accepte
+      // à null et se contente du prix de vente, qui est tout ce dont un
+      // document client a besoin.
+      debourseCents: null,
+      coefMillieme: null,
+      origineCoef: "devis",
+      pvUnitaireCents: l.pvUnitaireCents,
+      remisePourMille: l.remisePourMille,
+      option: l.option,
+      // La note d'une ligne est INTERNE (le pendant de la description d'un
+      // bloc, qui elle est imprimée). Rien ne l'affiche sur le document, et
+      // elle n'a donc rien à faire dans la réponse.
+      note: "",
+      debourseActuelCents: null,
+      majLe: l.updatedAt.toISOString(),
+    };
+  });
+
   return {
     jeton,
     societe,
@@ -538,38 +603,21 @@ export async function getDevisPublic(jeton: string): Promise<DevisPublic | null>
         auteurFonction: d.createdBy?.fonction ?? null,
         modifiePar: null,
       },
-      lots: d.lots.map(
-        (l): LotDevisVue => ({ id: l.id, titre: l.titre, ordre: l.ordre, note: l.note }),
+      lots,
+      // ⚠️ LA CONDENSATION EST FAITE ICI, DANS LA REQUÊTE (docs/DEVIS-DETAIL.md
+      // §4.4). Les lignes réelles d'un bloc forfaitaire ne sortent pas du
+      // serveur — ni dans le HTML, ni dans la charge utile du composant. Ce
+      // n'est pas au document d'y penser : un détail absent de la réponse ne
+      // peut pas fuir par distraction.
+      lignes: condenserLots(
+        {
+          tauxTvaCentieme: d.tauxTvaCentieme,
+          remiseGlobalePourMille: d.remiseGlobalePourMille,
+          remiseGlobaleCents: d.remiseGlobaleCents,
+        },
+        lots,
+        lignesReelles,
       ),
-      lignes: d.lignes.map((l): LigneDevisVue => {
-        const contenu = Array.isArray(l.contenu) ? (l.contenu as ContenuRiche) : null;
-        return {
-          id: l.id,
-          lotId: l.lotId,
-          ordre: l.ordre,
-          genre: estGenreLigne(l.genre) ? l.genre : "LIBRE",
-          produitId: null,
-          prestationId: null,
-          designation: l.designation,
-          contenu: contenu ? reecrireMediasPublicsDevis(contenu, jeton) : null,
-          version: l.version,
-          refInterne: null,
-          unite: l.unite,
-          quantiteMillieme: l.quantiteMillieme,
-          // Le déboursé et le coefficient s'arrêtent ici. Le moteur les accepte
-          // à null et se contente du prix de vente, qui est tout ce dont un
-          // document client a besoin.
-          debourseCents: null,
-          coefMillieme: null,
-          origineCoef: "devis",
-          pvUnitaireCents: l.pvUnitaireCents,
-          remisePourMille: l.remisePourMille,
-          option: l.option,
-          note: l.note,
-          debourseActuelCents: null,
-          majLe: l.updatedAt.toISOString(),
-        };
-      }),
     },
   };
 }

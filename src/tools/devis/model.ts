@@ -419,11 +419,55 @@ export interface LigneDevisVue {
   majLe: string;
 }
 
+/** Comment le CLIENT voit un bloc. Chaîne validée plutôt qu'enum Postgres
+ *  (même choix que `OrigineCoef`) : le vocabulaire peut grandir sans migration. */
+export type RenduLot = "DETAILLE" | "CONDENSE";
+
+export const RENDUS_LOT: RenduLot[] = ["DETAILLE", "CONDENSE"];
+
+export const RENDU_LOT_LABEL: Record<RenduLot, string> = {
+  DETAILLE: "détaillé",
+  CONDENSE: "forfait",
+};
+
+export function estRenduLot(v: unknown): v is RenduLot {
+  return typeof v === "string" && (RENDUS_LOT as string[]).includes(v);
+}
+
+/** Un lot est un BLOC DU CLIENT (docs/DEVIS-DETAIL.md) : ce qu'on chiffre d'un
+ *  côté, ce que le client lit de l'autre. */
 export interface LotDevisVue {
   id: string;
+  /** Le nom INTERNE — celui du rail de l'éditeur. */
   titre: string;
   ordre: number;
+  /** La description non exhaustive, imprimée en puces sous la désignation. */
   note: string;
+  rendu: RenduLot;
+  /** La désignation lue par le client sur un bloc condensé. Vide = `titre`. */
+  libelleClient: string;
+}
+
+/** Ce que le client lira en tête de ce bloc : sa phrase, ou à défaut le titre
+ *  interne. Un seul endroit décide — l'éditeur, le document et la
+ *  récapitulation de publication doivent dire la même chose. */
+export function designationClient(lot: LotDevisVue): string {
+  return lot.libelleClient.trim() || lot.titre.trim();
+}
+
+/**
+ * Un texte libre en puces — une ligne saisie = une puce.
+ *
+ * ⚠️ Le document client n'a `white-space: pre-wrap` NI sur `.lot-note` NI sur
+ * `td.des` : un texte multiligne s'y écraserait en un seul paragraphe, sans que
+ * rien ne le signale. C'est donc bien une liste d'éléments qu'il faut produire,
+ * jamais un `\n` laissé au CSS.
+ */
+export function puces(texte: string): string[] {
+  return texte
+    .split("\n")
+    .map((l) => l.replace(/^[-•*·]\s*/, "").trim())
+    .filter(Boolean);
 }
 
 export interface DevisEntete {
@@ -1062,11 +1106,19 @@ export const PUBLICATION_DEFAUT: OptionsPublication = {
 
 export interface LotDocument {
   /** Null pour le groupe « hors lot » : le document ne titre pas ce qui n'a pas
-   *  de titre, il enchaîne simplement les lignes. */
+   *  de titre, il enchaîne simplement les lignes.
+   *
+   *  ⚠️ Null AUSSI pour un bloc condensé : sa ligne de synthèse porte déjà la
+   *  phrase du client, et un bandeau de titre au-dessus dirait la même chose à
+   *  deux centimètres d'écart. La phrase REMPLACE le titre. */
   titre: string | null;
   note: string;
   lignes: LigneCalculee[];
   sousTotalCents: number;
+  /** Ce bloc est-il servi condensé ? Décide de deux choses que la ligne, seule,
+   *  ne peut pas savoir : son prix s'affiche même quand les prix unitaires sont
+   *  masqués, et aucun sous-total ne se pose sous elle (§6b). */
+  condense: boolean;
 }
 
 export interface OptionDocument {
@@ -1093,26 +1145,45 @@ export interface DocumentClient {
  * Les lignes TEXTE traversent telles quelles — ce sont les commentaires qui
  * expliquent le chiffrage, et c'est précisément ce que le client doit lire.
  */
-export function documentClient(totaux: TotauxDevis, opts: OptionsPublication): DocumentClient {
+export function documentClient(
+  totaux: TotauxDevis,
+  opts: OptionsPublication,
+  /** Vue INTERNE : les blocs condensés sont montrés détaillés (le bordereau).
+   *  ⚠️ Ce drapeau ne se persiste jamais sur le devis — il ne vit que le temps
+   *  d'une URL, sinon il serait à un clic de tout dévoiler au client. */
+  detaille = false,
+): DocumentClient {
   const lots: LotDocument[] = [];
   const options: OptionDocument[] = [];
   let optionsCents = 0;
 
   for (const g of totaux.lots) {
+    const condense = !detaille && g.lot?.rendu === "CONDENSE";
     const titre = g.lot?.titre?.trim() || null;
     const lignes: LigneCalculee[] = [];
     for (const lc of g.lignes) {
       if (lc.ligne.option) {
         optionsCents += lc.totalCents;
+        // ⚠️ Une option d'un bloc condensé ressort NOMMÉMENT ici : le détail
+        // fuit par là. C'est juste (une option est une proposition, le client
+        // doit la lire) — mais l'éditeur avertit au moment où on la coche.
         if (opts.montrerOptions) options.push({ lot: titre, ligne: lc });
         continue;
       }
       lignes.push(lc);
     }
     // Un lot vidé de ses seules options ne laisse pas un titre sans rien
-    // dessous : il disparaît du document.
+    // dessous : il disparaît du document. Idem d'un bloc condensé qui ne
+    // porterait que des lignes TEXTE : « Ensemble … 0,00 € » est pire que rien.
     if (lignes.length > 0) {
-      lots.push({ titre, note: g.lot?.note ?? "", lignes, sousTotalCents: g.sousTotalCents });
+      lots.push({
+        // La phrase du client remplace le bandeau de titre (cf. LotDocument).
+        titre: condense ? null : titre,
+        note: g.lot?.note ?? "",
+        lignes,
+        sousTotalCents: g.sousTotalCents,
+        condense,
+      });
     }
   }
 
@@ -1124,6 +1195,127 @@ export function documentClient(totaux: TotauxDevis, opts: OptionsPublication): D
     // Un sous-total de lot n'a de sens que s'il y a PLUSIEURS lots : sur un
     // devis d'un seul lot, il répéterait le total HT juste au-dessus de lui.
     avecSousTotaux: opts.montrerSousTotauxLots && lots.length > 1,
+  };
+}
+
+/* =============================================================================
+ * LA CONDENSATION — un bloc devient une ligne
+ *
+ * `condenserLots` travaille EN AMONT du moteur : elle prend et rend des
+ * `LigneDevisVue`, c'est-à-dire l'entrée de `calculerDevis`. Un seul sens de
+ * lecture, donc une seule implémentation pour ses deux appelants — la page
+ * publique (qui condense DANS la requête, pour que le détail ne sorte pas du
+ * serveur) et l'aperçu interne (qui condense au rendu, parce qu'il doit pouvoir
+ * montrer les deux versions).
+ * ========================================================================== */
+
+/**
+ * Les lignes telles que le CLIENT doit les recevoir.
+ *
+ * ⚠️ Type MARQUÉ, et ce n'est pas de la coquetterie : la ligne de synthèse est
+ * une `LIBRE` sans déboursé. Calculer une marge dessus reproduirait exactement
+ * le défaut qu'on cherche à corriger (un montant qui sort du déboursé ET du
+ * vendu-fourniture, sans que rien ne le dise). Le compilateur refuse donc de la
+ * confondre avec les vraies lignes.
+ */
+declare const pourClient: unique symbol;
+export type LignesPourClient = LigneDevisVue[] & { readonly [pourClient]: true };
+
+/**
+ * Remplace les lignes de chaque bloc `CONDENSE` par une ligne de synthèse au
+ * sous-total du lot. Les options traversent, les autres blocs ne bougent pas.
+ *
+ * Idempotente : condenser un tableau déjà condensé ne le change plus (la
+ * synthèse d'un bloc réduit à sa synthèse vaut la synthèse). C'est ce qui permet
+ * de l'appliquer À LA FOIS dans la requête publique et dans le document, sans
+ * avoir à savoir laquelle est déjà passée.
+ */
+export function condenserLots(
+  entete: Pick<DevisEntete, "tauxTvaCentieme" | "remiseGlobalePourMille" | "remiseGlobaleCents">,
+  lots: LotDevisVue[],
+  lignes: LigneDevisVue[],
+): LignesPourClient {
+  const aCondenser = lots.filter((l) => l.rendu === "CONDENSE");
+  if (aCondenser.length === 0) return [...lignes] as LignesPourClient;
+
+  // Le sous-total vient du MOTEUR, jamais d'une addition refaite ici : c'est ce
+  // qui garantit qu'un devis condensé et le même devis détaillé annoncent le
+  // même prix au centime (l'invariant vérifié par le smoke).
+  const totaux = calculerDevis(entete, lots, lignes);
+  const sousTotaux = new Map<string, number>();
+  for (const g of totaux.lots) {
+    if (g.lot) sousTotaux.set(g.lot.id, g.sousTotalCents);
+  }
+
+  // Un bloc qui ne porte QUE des commentaires n'a rien à synthétiser : sa
+  // synthèse vaudrait « TRAVAUX — 0,00 € », et un montant nul affiché avec
+  // l'aplomb d'un chiffrage est pire que rien. Le bloc disparaît alors du
+  // document, comme un lot vidé de ses seules options.
+  const aSynthetiser = new Set(
+    aCondenser
+      .filter((lot) =>
+        lignes.some((l) => l.lotId === lot.id && !l.option && ligneChiffree(l.genre)),
+      )
+      .map((lot) => lot.id),
+  );
+
+  const sortie: LigneDevisVue[] = [];
+  const posee = new Set<string>();
+
+  for (const l of [...lignes].sort((a, b) => a.ordre - b.ordre)) {
+    const lot = l.lotId ? aCondenser.find((x) => x.id === l.lotId) : undefined;
+    if (!lot) {
+      sortie.push(l);
+      continue;
+    }
+    // Les options traversent telles quelles : elles sont chiffrées à part, hors
+    // du sous-total, et le client doit pouvoir les lire une par une.
+    if (l.option) {
+      sortie.push(l);
+      continue;
+    }
+    if (!aSynthetiser.has(lot.id)) continue;
+    // Une seule synthèse par bloc, à la place de sa première ligne — l'ordre du
+    // document suit celui du chiffrage.
+    if (posee.has(lot.id)) continue;
+    posee.add(lot.id);
+    sortie.push(ligneSynthese(lot, sousTotaux.get(lot.id) ?? 0, l.ordre));
+  }
+
+  return sortie as LignesPourClient;
+}
+
+/** La ligne unique qui remplace un bloc condensé. */
+function ligneSynthese(lot: LotDevisVue, sousTotalCents: number, ordre: number): LigneDevisVue {
+  return {
+    // Stable et sans collision possible avec un cuid : la même synthèse porte le
+    // même id d'un rendu à l'autre (clé React, ancres d'impression).
+    id: `synth-${lot.id}`,
+    lotId: lot.id,
+    ordre,
+    // LIBRE et non TEXTE : la ligne est CHIFFRÉE, donc `documentVide()` continue
+    // de dire vrai et le sous-total du lot reste le sien.
+    genre: "LIBRE",
+    produitId: null,
+    prestationId: null,
+    designation: designationClient(lot),
+    contenu: null,
+    version: 0,
+    refInterne: null,
+    unite: "forfait",
+    // Quantité 1 et remise nulle : `calculerLigne` rend alors `brut = pv` au
+    // centime, sans le moindre arrondi intermédiaire. Les remises de ligne du
+    // bloc sont déjà encaissées dans le sous-total.
+    quantiteMillieme: MILLE,
+    debourseCents: null,
+    coefMillieme: null,
+    origineCoef: "devis",
+    pvUnitaireCents: sousTotalCents,
+    remisePourMille: 0,
+    option: false,
+    note: "",
+    debourseActuelCents: null,
+    majLe: new Date(0).toISOString(),
   };
 }
 

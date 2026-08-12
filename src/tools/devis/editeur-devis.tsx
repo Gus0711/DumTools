@@ -13,10 +13,13 @@ import {
   ChevronRight,
   Clock,
   Copy as CopyIcon,
+  Eye,
   FolderPlus,
   GitBranch,
   GripVertical,
+  List,
   MoreHorizontal,
+  Package,
   Pin,
   PinOff,
   Plus,
@@ -97,6 +100,8 @@ import {
   type LigneCalculee,
   type LigneDevisVue,
   type LotCalcule,
+  type LotDevisVue,
+  type RenduLot,
   type FilDevis,
   type PrestationVue,
   type TotauxDevis,
@@ -547,6 +552,7 @@ export function EditeurDevis({
           moiId={moiId}
           moiNom={moiNom}
           entete={entetePeinte}
+          lots={devis.lots}
           totaux={totaux}
           charge={charge}
           enCours={enCours}
@@ -1122,7 +1128,9 @@ function RailLots({
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
 }) {
-  const [saisie, setSaisie] = useState<string | null>(null);
+  // La création porte son RENDU dès l'ouverture du champ : « Nouveau forfait »
+  // n'est pas « Nouveau lot » qu'on basculerait ensuite.
+  const [saisie, setSaisie] = useState<{ titre: string; rendu: RenduLot } | null>(null);
 
   /**
    * Sauter à un lot depuis le panneau flottant, ET fixer le rail.
@@ -1199,6 +1207,13 @@ function RailLots({
               {l.lignes.length} ligne{l.lignes.length > 1 ? "s" : ""}
               {l.optionsCents > 0 && " · options"}
             </span>
+            {/* Le rail devient la table des matières du CLIENT : d'un coup
+                d'œil, on voit lesquels de ces blocs il verra détaillés. */}
+            {l.lot && (
+              <span className="mt-1 block">
+                <BadgeRendu forfait={l.lot.rendu === "CONDENSE"} />
+              </span>
+            )}
             <span className="ref mt-0.5 block text-sm font-semibold text-fg">
               {formatEuros(l.sousTotalCents)}
             </span>
@@ -1206,35 +1221,59 @@ function RailLots({
         ))}
 
         {saisie === null ? (
-          <button
-            type="button"
-            onClick={() => setSaisie("")}
-            className="flex min-w-40 shrink-0 items-center justify-center gap-1.5 border border-dashed border-border px-2.5 py-2 text-xs text-muted transition-colors hover:border-brand/45 hover:text-fg lg:min-w-0"
-          >
-            <FolderPlus className="h-3.5 w-3.5" /> Nouveau lot
-          </button>
+          /* DEUX gestes, pas un. Créer un bloc puis le basculer en forfait puis
+             écrire sa phrase fait quatre gestes avant de commencer à chiffrer —
+             et un outil qu'on contourne ne sert à rien. */
+          <div className="flex min-w-40 shrink-0 flex-col gap-1 lg:min-w-0">
+            <button
+              type="button"
+              onClick={() => setSaisie({ titre: "", rendu: "DETAILLE" })}
+              className="flex items-center justify-center gap-1.5 border border-dashed border-border px-2.5 py-2 text-xs text-muted transition-colors hover:border-brand/45 hover:text-fg"
+            >
+              <FolderPlus className="h-3.5 w-3.5" /> Nouveau lot
+            </button>
+            <button
+              type="button"
+              onClick={() => setSaisie({ titre: "", rendu: "CONDENSE" })}
+              title="Un bloc dont le client ne verra qu'une ligne"
+              className="flex items-center justify-center gap-1.5 border border-dashed border-brand/45 px-2.5 py-2 text-xs text-brand transition-colors hover:bg-brand/8 hover:text-fg"
+            >
+              <Package className="h-3.5 w-3.5" /> Nouveau forfait
+            </button>
+          </div>
         ) : (
           <div className="min-w-40 shrink-0 border border-border p-2 lg:min-w-0">
+            <p className="stamp mb-1">
+              {saisie.rendu === "CONDENSE" ? "Nouveau forfait" : "Nouveau lot"}
+            </p>
             <Input
               autoFocus
-              value={saisie}
-              onChange={(e) => setSaisie(e.target.value)}
-              placeholder="Armoire, Bâtiment A…"
+              value={saisie.titre}
+              onChange={(e) => setSaisie({ ...saisie, titre: e.target.value })}
+              placeholder={
+                saisie.rendu === "CONDENSE" ? "Nom interne du forfait…" : "Armoire, Bâtiment A…"
+              }
               className="h-8 text-sm"
               onKeyDown={(e) => {
-                if (e.key === "Enter" && saisie.trim()) {
-                  agir(() => ajouterLot(devisId, saisie.trim()));
+                if (e.key === "Enter" && saisie.titre.trim()) {
+                  agir(() => ajouterLot(devisId, saisie.titre.trim(), { rendu: saisie.rendu }));
                   setSaisie(null);
                 }
                 if (e.key === "Escape") setSaisie(null);
               }}
             />
+            {saisie.rendu === "CONDENSE" && (
+              <p className="mt-1 text-[0.68rem] leading-snug text-subtle">
+                Le client n&apos;en verra qu&apos;une ligne. Sa phrase s&apos;écrit dans le
+                tableau.
+              </p>
+            )}
             <div className="mt-1.5 flex gap-1.5">
               <Button
                 size="sm"
-                disabled={enCours || !saisie.trim()}
+                disabled={enCours || !saisie.titre.trim()}
                 onClick={() => {
-                  agir(() => ajouterLot(devisId, saisie.trim()));
+                  agir(() => ajouterLot(devisId, saisie.titre.trim(), { rendu: saisie.rendu }));
                   setSaisie(null);
                 }}
               >
@@ -1370,10 +1409,17 @@ function BlocLot({
   const nbComptees = lot.lignes.filter(
     (l) => !l.ligne.option && ligneChiffree(l.ligne.genre),
   ).length;
+  // ⚠️ Un bloc forfaitaire ne se voit PAS dans ses lignes : elles sont
+  // identiques à celles d'un bloc détaillé. Sans marque à l'écran, on chiffre
+  // treize lignes sans savoir que le client n'en verra qu'une.
+  const forfait = lot.lot?.rendu === "CONDENSE";
 
   return (
     <>
-      <tr id={`ed-lot-${lotId ?? "hors-lot"}`} className="ed-lot">
+      <tr
+        id={`ed-lot-${lotId ?? "hors-lot"}`}
+        className={cn("ed-lot", forfait && "ed-forfait")}
+      >
         <td colSpan={n} className="ed-cell-pleine">
           <span className="flex flex-wrap items-center gap-2">
             <button
@@ -1396,12 +1442,13 @@ function BlocLot({
                   if (titre !== lot.lot!.titre) agir(() => majLot(lot.lot!.id, { titre }));
                 }}
                 className="champ-inline w-44 font-display text-sm font-semibold text-fg"
-                title="Nom du lot — modifiable"
-                aria-label="Nom du lot"
+                title="Nom du bloc — usage interne"
+                aria-label="Nom du bloc"
               />
             ) : (
               <span className="font-display text-sm font-semibold text-muted">Hors lot</span>
             )}
+            {lot.lot && <BadgeRendu forfait={forfait} />}
             <span className="stamp shrink-0">
               {nbComptees} ligne{nbComptees > 1 ? "s" : ""}
               {lot.optionsCents > 0 && ` · + ${formatEuros(lot.optionsCents)} en option`}
@@ -1414,7 +1461,26 @@ function BlocLot({
               {lot.lot && (
                 <span className="actions-rangee flex items-center gap-0.5">
                   <button
-                    title="Monter le lot"
+                    title={
+                      forfait
+                        ? "Repasser en bloc détaillé — le client verra toutes les lignes"
+                        : "Passer en forfait — le client ne verra qu'une ligne"
+                    }
+                    disabled={enCours}
+                    onClick={() =>
+                      agir(() =>
+                        majLot(lot.lot!.id, { rendu: forfait ? "DETAILLE" : "CONDENSE" }),
+                      )
+                    }
+                    className={cn(
+                      "p-0.5 transition-colors",
+                      forfait ? "text-brand hover:text-fg" : "text-subtle hover:text-fg",
+                    )}
+                  >
+                    {forfait ? <Package className="h-3.5 w-3.5" /> : <List className="h-3.5 w-3.5" />}
+                  </button>
+                  <button
+                    title="Monter le bloc"
                     disabled={enCours}
                     onClick={() => agir(() => deplacerLot(lot.lot!.id, "haut"))}
                     className="p-0.5 text-subtle transition-colors hover:text-fg"
@@ -1422,7 +1488,7 @@ function BlocLot({
                     <ArrowUp className="h-3.5 w-3.5" />
                   </button>
                   <button
-                    title="Descendre le lot"
+                    title="Descendre le bloc"
                     disabled={enCours}
                     onClick={() => agir(() => deplacerLot(lot.lot!.id, "bas"))}
                     className="p-0.5 text-subtle transition-colors hover:text-fg"
@@ -1430,7 +1496,7 @@ function BlocLot({
                     <ArrowDown className="h-3.5 w-3.5" />
                   </button>
                   <button
-                    title="Supprimer le lot (les lignes sont conservées, hors lot)"
+                    title="Supprimer le bloc (les lignes sont conservées, hors lot)"
                     disabled={enCours}
                     onClick={() => agir(() => supprimerLot(lot.lot!.id))}
                     className="p-0.5 text-subtle transition-colors hover:text-danger"
@@ -1444,6 +1510,13 @@ function BlocLot({
         </td>
       </tr>
 
+      {/* LA FACE CLIENT du bloc — dans le tableau, en tête, pas dans un onglet.
+          C'est ce qui répond à « je chiffre, mais que verra-t-il ? » sans
+          changer d'écran. */}
+      {!replie && lot.lot && forfait && (
+        <FaceClient lot={lot.lot} sousTotalCents={lot.sousTotalCents} colSpan={n} agir={agir} />
+      )}
+
       {!replie &&
         lot.lignes.map((lc) => (
           <LigneTableau
@@ -1453,6 +1526,7 @@ function BlocLot({
             colonnes={colonnes}
             enCours={enCours}
             agir={agir}
+            forfait={forfait}
             survolee={surLigne === lc.ligne.id}
             ouvrirTexte={texteNeuf === lc.ligne.id}
             onDragStart={() => (dragId.current = lc.ligne.id)}
@@ -1470,6 +1544,7 @@ function BlocLot({
           colSpan={n}
           devisId={devisId}
           lotId={lotId}
+          forfait={forfait}
           prestations={prestations}
           enCours={enCours}
           agir={agir}
@@ -1479,6 +1554,103 @@ function BlocLot({
         />
       )}
     </>
+  );
+}
+
+/** Un champ qui suit son contenu, entre 2 et 8 lignes — au-delà on défile,
+ *  sinon une description bavarde pousserait le chiffrage hors de l'écran. */
+function hauteurTexte(v: string): number {
+  return Math.min(8, Math.max(2, v.split("\n").length));
+}
+
+/** Le rappel de ce que le client verra du bloc. Pas un réglage — il y en a un
+ *  juste à côté dans les actions de la rangée, et un même choix offert à deux
+ *  endroits d'une même barre finit par se contredire à l'œil. */
+function BadgeRendu({ forfait }: { forfait: boolean }) {
+  return (
+    <span
+      className={cn("ed-badge shrink-0", forfait ? "ed-badge-forfait" : "ed-badge-detail")}
+      title={
+        forfait
+          ? "Le client ne verra qu'une ligne pour ce bloc."
+          : "Le client verra toutes les lignes de ce bloc."
+      }
+    >
+      {forfait ? <Package className="h-3 w-3" /> : <List className="h-3 w-3" />}
+      {forfait ? "forfait" : "détaillé"}
+    </span>
+  );
+}
+
+/* -----------------------------------------------------------------------------
+ * LA FACE CLIENT D'UN BLOC FORFAITAIRE
+ *
+ * Un bloc a deux faces (docs/DEVIS-DETAIL.md) : ce qu'on chiffre — les lignes
+ * ci-dessous — et ce que le client lit. Celle-ci se pose DANS le tableau, en
+ * tête du bloc, et pas dans le panneau de publication : on ne doit pas pouvoir
+ * chiffrer un forfait sans avoir sous les yeux la phrase qui le remplacera.
+ *
+ * Les deux champs partent au `blur`, comme le titre du lot juste au-dessus.
+ * Aucune transition, aucun état à nettoyer : `agir` porte déjà le rafraîchis-
+ * sement (docs/DEVIS.md §20).
+ * -------------------------------------------------------------------------- */
+
+function FaceClient({
+  lot,
+  sousTotalCents,
+  colSpan,
+  agir,
+}: {
+  lot: LotDevisVue;
+  sousTotalCents: number;
+  colSpan: number;
+  agir: (fn: () => Promise<unknown>) => void;
+}) {
+  const [libelle, setLibelle] = useState(lot.libelleClient);
+  const [note, setNote] = useState(lot.note);
+
+  return (
+    <tr className="ed-forfait ed-face">
+      <td colSpan={colSpan} className="ed-cell-pleine">
+        <div className="ed-face-carte">
+          <p className="stamp">Ce que le client lira</p>
+          <textarea
+            value={libelle}
+            onChange={(e) => setLibelle(e.target.value)}
+            onBlur={() => {
+              if (libelle !== lot.libelleClient) {
+                agir(() => majLot(lot.id, { libelleClient: libelle }));
+              }
+            }}
+            // Le champ suit ce qu'on y écrit. Une hauteur fixe coupait la
+            // troisième puce d'une description — et ce qu'on ne voit pas dans
+            // l'éditeur, on ne le relit pas avant l'envoi.
+            rows={hauteurTexte(libelle)}
+            // Le titre du bloc sert de repli côté document : on le montre en
+            // placeholder plutôt que de le recopier dans le champ, sinon on ne
+            // saurait plus si la phrase a été écrite ou héritée.
+            placeholder={lot.titre || "DÉSIGNATION LUE PAR LE CLIENT"}
+            aria-label="Désignation lue par le client"
+            className="ed-face-titre"
+          />
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            onBlur={() => {
+              if (note !== lot.note) agir(() => majLot(lot.id, { note }));
+            }}
+            rows={hauteurTexte(note)}
+            placeholder={"Ce qui est compris — une ligne = une puce\n2× départ pour pompe"}
+            aria-label="Description imprimée sous la désignation"
+            className="ed-face-note"
+          />
+          <p className="ed-face-pied">
+            <Eye className="h-3.5 w-3.5" />
+            Il verra <b>une seule ligne</b> à {formatEuros(sousTotalCents)} HT
+          </p>
+        </div>
+      </td>
+    </tr>
   );
 }
 
@@ -1493,6 +1665,7 @@ function RangeeSaisie({
   colSpan,
   devisId,
   lotId,
+  forfait,
   prestations,
   enCours,
   agir,
@@ -1503,6 +1676,9 @@ function RangeeSaisie({
   colSpan: number;
   devisId: string;
   lotId: string | null;
+  /** Le filet du bloc court jusqu'ici : la ligne de saisie fait partie du bloc,
+   *  ce qu'on y ajoutera sera lui aussi caché au client. */
+  forfait: boolean;
   prestations: PrestationVue[];
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
@@ -1610,7 +1786,11 @@ function RangeeSaisie({
 
   return (
     <>
-      <tr className="ed-saisie" onDragOver={onDragOver} onDrop={onDrop}>
+      <tr
+        className={cn("ed-saisie", forfait && "ed-forfait")}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+      >
         <td colSpan={colSpan} className="ed-cell-pleine">
           <div className="flex flex-wrap items-center gap-2 px-3 py-1.5">
             <Plus className="h-3.5 w-3.5 shrink-0 text-brand" />
@@ -1849,6 +2029,7 @@ function LigneTableau({
   colonnes,
   enCours,
   agir,
+  forfait,
   survolee,
   ouvrirTexte,
   onDragStart,
@@ -1861,6 +2042,10 @@ function LigneTableau({
   colonnes: ColonneReglee[];
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
+  /** La ligne appartient-elle à un bloc forfaitaire ? Décide du filet de gauche
+   *  et de l'avertissement au moment de cocher « option » (elle ressortirait
+   *  nommément en fin de document, et le détail fuirait par là). */
+  forfait: boolean;
   survolee: boolean;
   ouvrirTexte: boolean;
   onDragStart: () => void;
@@ -1884,7 +2069,7 @@ function LigneTableau({
 
   if (!chiffree) {
     return (
-      <tr {...dnd} className={cn("bg-surface-2/40", liseret)}>
+      <tr {...dnd} className={cn("bg-surface-2/40", forfait && "ed-forfait", liseret)}>
         <td className="align-top">
           <Poignee />
         </td>
@@ -1902,7 +2087,7 @@ function LigneTableau({
               onEdition={setEnEdition}
             />
             <span className="shrink-0">
-              <BoutonsLigne l={l} enCours={enCours} agir={agir} />
+              <BoutonsLigne l={l} enCours={enCours} agir={agir} forfait={forfait} />
             </span>
           </span>
         </td>
@@ -2102,7 +2287,7 @@ function LigneTableau({
         );
 
       case "actions":
-        return <BoutonsLigne l={l} enCours={enCours} agir={agir} />;
+        return <BoutonsLigne l={l} enCours={enCours} agir={agir} forfait={forfait} />;
 
       default:
         return null;
@@ -2110,7 +2295,7 @@ function LigneTableau({
   }
 
   return (
-    <tr {...dnd} className={cn(l.option && "opacity-70", liseret)}>
+    <tr {...dnd} className={cn(l.option && "opacity-70", forfait && "ed-forfait", liseret)}>
       {colonnes.map((c) => (
         <td
           key={c.cle}
@@ -2171,10 +2356,12 @@ function BoutonsLigne({
   l,
   enCours,
   agir,
+  forfait,
 }: {
   l: LigneDevisVue;
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
+  forfait: boolean;
 }) {
   return (
     /* `.actions-rangee` : au repos les boutons s'effacent, la colonne de droite
@@ -2211,9 +2398,33 @@ function BoutonsLigne({
       {ligneChiffree(l.genre) && (
         /* L'astérisque : sur un devis, l'option se marque d'une étoile. */
         <button
-          title={l.option ? "Remettre au devis" : "Passer en option (hors total)"}
+          title={
+            l.option
+              ? "Remettre au devis"
+              : forfait
+                ? "Passer en option — ⚠️ elle ressortira NOMMÉMENT en fin de document, hors du forfait"
+                : "Passer en option (hors total)"
+          }
           disabled={enCours}
-          onClick={() => agir(() => majLigne(l.id, { option: !l.option }))}
+          onClick={() => {
+            // ⚠️ Une option d'un bloc forfaitaire est listée telle quelle dans
+            // « Options non comprises » : c'est juste (le client doit lire ce
+            // qu'on lui propose), mais ça PERCE le bloc. On le dit au moment du
+            // clic — après l'envoi, il est trop tard.
+            if (
+              !l.option &&
+              forfait &&
+              !window.confirm(
+                `« ${l.designation} » est dans un bloc forfaitaire.\n\n` +
+                  "En option, elle sera listée NOMMÉMENT en fin de document, " +
+                  "hors du forfait : le client verra cette ligne et son prix.\n\n" +
+                  "Continuer ?",
+              )
+            ) {
+              return;
+            }
+            agir(() => majLigne(l.id, { option: !l.option }));
+          }}
           className={cn(
             "p-1 transition-colors hover:text-accent",
             l.option ? "text-accent" : "text-subtle",
@@ -2256,6 +2467,7 @@ function Panneau({
   moiId,
   moiNom,
   entete,
+  lots,
   totaux,
   charge,
   enCours,
@@ -2269,6 +2481,7 @@ function Panneau({
   moiId: string;
   moiNom: string;
   entete: DevisComplet["entete"];
+  lots: LotDevisVue[];
   totaux: TotauxDevis;
   charge: ChargeUnite[];
   enCours: boolean;
@@ -2336,7 +2549,19 @@ function Panneau({
           />
         )}
         {onglet === "publier" && (
-          <BlocPublication entete={entete} enCours={enCours} agir={agir} />
+          <BlocPublication
+            entete={entete}
+            lots={lots}
+            enCours={enCours}
+            agir={agir}
+            // La récapitulation sert à VÉRIFIER ; on corrige là où on travaille.
+            // Elle renvoie donc au bloc dans le tableau, comme le rail.
+            onVoirLot={(id) =>
+              document
+                .getElementById(`ed-lot-${id}`)
+                ?.scrollIntoView({ block: "start", behavior: "smooth" })
+            }
+          />
         )}
         {onglet === "fil" && (
           <FilDevisPanneau

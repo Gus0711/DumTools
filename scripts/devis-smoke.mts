@@ -20,7 +20,9 @@ import {
   calculerLigne,
   chargeMainOeuvre,
   coefApplicable,
+  condenserLots,
   contenuTexteSimple,
+  designationClient,
   dateValidite,
   documentClient,
   documentVide,
@@ -38,6 +40,7 @@ import {
   parseEuros,
   parseQuantite,
   parseRemise,
+  puces,
   pvDepuisDebourse,
   resumeTexteLigne,
   resoudreRemiseGlobale,
@@ -67,6 +70,12 @@ function egal(nom: string, obtenu: unknown, attendu: unknown) {
 }
 
 /* --- Fabriques ------------------------------------------------------------- */
+
+/** Un lot DÉTAILLÉ par défaut — le comportement historique. Un bloc forfaitaire
+ *  se demande explicitement : `lot({ rendu: "CONDENSE" })`. */
+function lot(p: Partial<LotDevisVue> & Pick<LotDevisVue, "id" | "titre" | "ordre">): LotDevisVue {
+  return { note: "", rendu: "DETAILLE", libelleClient: "", ...p };
+}
 
 let compteur = 0;
 function ligne(p: Partial<LigneDevisVue> = {}): LigneDevisVue {
@@ -328,8 +337,8 @@ console.log("\n8. Lots & sous-totaux");
 
 {
   const lots: LotDevisVue[] = [
-    { id: "lot-b", titre: "Armoire", ordre: 2000, note: "" },
-    { id: "lot-a", titre: "Fourniture", ordre: 1000, note: "" },
+    lot({ id: "lot-b", titre: "Armoire", ordre: 2000, note: "" }),
+    lot({ id: "lot-a", titre: "Fourniture", ordre: 1000, note: "" }),
   ];
   const lignes = [
     ligne({ lotId: "lot-a", pvUnitaireCents: 3240000 }),
@@ -412,8 +421,8 @@ console.log("\n13. Devis complet");
 
 {
   const lots: LotDevisVue[] = [
-    { id: "L1", titre: "Fourniture GTB", ordre: 1000, note: "" },
-    { id: "L2", titre: "Main d'œuvre", ordre: 2000, note: "" },
+    lot({ id: "L1", titre: "Fourniture GTB", ordre: 1000, note: "" }),
+    lot({ id: "L2", titre: "Main d'œuvre", ordre: 2000, note: "" }),
   ];
   const lignes = [
     // 2 automates : déboursé 1 276,00 € ×1,25 = 1 595,00 € l'unité
@@ -667,9 +676,9 @@ console.log("\n16. Le document client");
 
 {
   const lots: LotDevisVue[] = [
-    { id: "L1", titre: "Fourniture", ordre: 1000, note: "Matériel Distech" },
-    { id: "L2", titre: "Main d'œuvre", ordre: 2000, note: "" },
-    { id: "L3", titre: "Rien que des options", ordre: 3000, note: "" },
+    lot({ id: "L1", titre: "Fourniture", ordre: 1000, note: "Matériel Distech" }),
+    lot({ id: "L2", titre: "Main d'œuvre", ordre: 2000, note: "" }),
+    lot({ id: "L3", titre: "Rien que des options", ordre: 3000, note: "" }),
   ];
   const lignes = [
     ligne({ lotId: "L1", pvUnitaireCents: 100000, quantiteMillieme: 2000 }),
@@ -708,7 +717,7 @@ console.log("\n16. Le document client");
 {
   // Un sous-total de lot sur un devis d'UN SEUL lot répéterait le total HT juste
   // au-dessus de lui : il ne s'affiche pas, même demandé.
-  const lots: LotDevisVue[] = [{ id: "L1", titre: "Tout", ordre: 1000, note: "" }];
+  const lots: LotDevisVue[] = [lot({ id: "L1", titre: "Tout", ordre: 1000, note: "" })];
   const t = calculerDevis(ENTETE_NU, lots, [ligne({ lotId: "L1", pvUnitaireCents: 10000 })]);
   egal("un seul lot → pas de sous-total", documentClient(t, PUBLICATION_DEFAUT).avecSousTotaux, false);
 }
@@ -791,6 +800,165 @@ console.log("\n▸ Les médias d'un texte libre passent par le jeton");
   verifier(
     "… et plus aucune URL interne ne subsiste (garde Achats)",
     !reecrit.includes("/api/devis/media/"),
+  );
+}
+
+/* =============================================================================
+ * LE BLOC FORFAITAIRE — condenserLots() (docs/DEVIS-DETAIL.md)
+ *
+ * Un lot « CONDENSE » ne montre au client qu'une ligne de synthèse à son
+ * sous-total. Ce qui se vérifie ici n'est pas l'affichage — c'est que le PRIX ne
+ * bouge pas d'un centime, et que le détail ne traverse pas.
+ * ========================================================================== */
+console.log("\n12. Le bloc forfaitaire");
+
+{
+  const lots = [
+    lot({
+      id: "L1",
+      titre: "Matériel Distech + MO",
+      ordre: 1000,
+      rendu: "CONDENSE",
+      libelleClient: "DÉPOSE DE L'ANCIENNE RÉGULATION, POSE ET RACCORDEMENT",
+      note: "2× départ pour pompe\n4× pilotage V3V",
+    }),
+    lot({ id: "L2", titre: "Équipements de terrain", ordre: 2000 }),
+  ];
+  const lignes = [
+    ligne({ lotId: "L1", designation: "ECY-S1000-C50", pvUnitaireCents: 186750, ordre: 1000 }),
+    ligne({ lotId: "L1", designation: "EXTENSION 4UI4UO", pvUnitaireCents: 30375, ordre: 2000 }),
+    // Une remise de ligne DANS le bloc : elle doit être encaissée dans la
+    // synthèse, pas reportée sur elle (sinon elle s'appliquerait deux fois).
+    ligne({
+      lotId: "L1",
+      designation: "Programmation",
+      pvUnitaireCents: 222000,
+      remisePourMille: 100,
+      ordre: 3000,
+    }),
+    ligne({ lotId: "L1", genre: "TEXTE", designation: "note interne", ordre: 3500 }),
+    ligne({
+      lotId: "L1",
+      designation: "Écran ECY-DISPLAY-15",
+      pvUnitaireCents: 178050,
+      option: true,
+      ordre: 4000,
+    }),
+    ligne({ lotId: "L2", designation: "Sonde extérieure", pvUnitaireCents: 5625, ordre: 5000 }),
+  ];
+
+  const avant = calculerDevis(ENTETE_NU, lots, lignes);
+  const condensees = condenserLots(ENTETE_NU, lots, lignes);
+  const apres = calculerDevis(ENTETE_NU, lots, condensees);
+
+  // ── L'INVARIANT. Si celui-ci tient, le client reçoit le bon prix ; tout le
+  //    reste n'est que mise en page.
+  egal("le total HT est conservé au centime", apres.totalHtCents, avant.totalHtCents);
+  egal("… et les options aussi", apres.optionsCents, avant.optionsCents);
+
+  const synthese = condensees.filter((l) => l.lotId === "L1" && !l.option);
+  egal("un bloc forfaitaire ne rend qu'UNE ligne", synthese.length, 1);
+  egal(
+    "… au sous-total du lot",
+    synthese[0].pvUnitaireCents,
+    avant.lots.find((g) => g.lot?.id === "L1")?.sousTotalCents,
+  );
+  egal("… portant la phrase du client", synthese[0].designation, lots[0].libelleClient);
+  egal("… en forfait, quantité 1", synthese[0].unite, "forfait");
+  egal("… sans remise reportée (elle est déjà dans le sous-total)", synthese[0].remisePourMille, 0);
+  egal("… et CHIFFRÉE, donc le document n'est pas vide", synthese[0].genre, "LIBRE");
+
+  const texte = JSON.stringify(condensees);
+  verifier("aucune désignation du bloc ne traverse", !texte.includes("ECY-S1000-C50"));
+  verifier("… ni la programmation", !texte.includes("Programmation"));
+  verifier("les lignes TEXTE du bloc sont absorbées", !texte.includes("note interne"));
+  // Témoin négatif : un test de fuite qui passe sur une charge vide ne vaut rien.
+  verifier("… mais le bloc DÉTAILLÉ voisin est intact", texte.includes("Sonde extérieure"));
+  verifier("… et l'option ressort nommément (elle perce le bloc, c'est voulu)", texte.includes("ECY-DISPLAY-15"));
+
+  // Idempotence : la garde s'applique DANS la requête publique ET dans le
+  // document. Il faut donc pouvoir condenser deux fois sans rien changer.
+  const deuxFois = condenserLots(ENTETE_NU, lots, condensees);
+  egal("condenser deux fois ne change plus rien", JSON.stringify(deuxFois), texte);
+
+  const doc = documentClient(apres, PUBLICATION_DEFAUT);
+  const blocDoc = doc.lots.find((l) => l.lignes.some((x) => x.ligne.lotId === "L1"));
+  egal("le document sait que le bloc est condensé", blocDoc?.condense, true);
+  egal("… et n'imprime PAS son titre en plus de la phrase", blocDoc?.titre, null);
+  egal("un bloc détaillé garde le sien", doc.lots.find((l) => l.titre)?.titre, "Équipements de terrain");
+}
+
+{
+  // Sans aucun bloc forfaitaire, la fonction ne doit RIEN faire — c'est le cas
+  // de tous les devis existants.
+  const lots = [lot({ id: "L1", titre: "Tout", ordre: 1000 })];
+  const lignes = [ligne({ lotId: "L1", pvUnitaireCents: 10000 })];
+  egal(
+    "un devis sans forfait traverse inchangé",
+    JSON.stringify(condenserLots(ENTETE_NU, lots, lignes)),
+    JSON.stringify(lignes),
+  );
+}
+
+{
+  // Un bloc forfaitaire qui ne porte QUE du texte : sa synthèse vaudrait 0 €.
+  // « Ensemble … 0,00 € » est pire que rien — le document le fait disparaître.
+  const lots = [lot({ id: "L1", titre: "Vide", ordre: 1000, rendu: "CONDENSE" })];
+  const lignes = [ligne({ lotId: "L1", genre: "TEXTE", designation: "juste un mot" })];
+  const t = calculerDevis(ENTETE_NU, lots, condenserLots(ENTETE_NU, lots, lignes));
+  egal("un bloc forfaitaire sans rien à chiffrer disparaît", documentClient(t, PUBLICATION_DEFAUT).lots.length, 0);
+}
+
+{
+  // ⚠️ LE PIÈGE : prix unitaires décochés + bloc forfaitaire. Sans la règle, le
+  // client reçoit une phrase et AUCUN chiffre.
+  const lots = [
+    lot({ id: "L1", titre: "Forfait", ordre: 1000, rendu: "CONDENSE", libelleClient: "TRAVAUX" }),
+  ];
+  const lignes = [ligne({ lotId: "L1", pvUnitaireCents: 1240000 })];
+  const t = calculerDevis(ENTETE_NU, lots, condenserLots(ENTETE_NU, lots, lignes));
+  const doc = documentClient(t, { ...PUBLICATION_DEFAUT, montrerPrixUnitaires: false });
+  egal("prix masqués : le bloc reste marqué condensé", doc.lots[0].condense, true);
+  egal("… et c'est LUI qui décide d'afficher son montant", doc.avecPrixLigne || doc.lots[0].condense, true);
+  egal(
+    "… sans sous-total en double dessous (un seul lot de toute façon)",
+    doc.avecSousTotaux,
+    false,
+  );
+}
+
+{
+  // La VUE INTERNE (le bordereau) : même devis, rien de caché.
+  const lots = [
+    lot({ id: "L1", titre: "Matériel", ordre: 1000, rendu: "CONDENSE", libelleClient: "TRAVAUX" }),
+  ];
+  const lignes = [ligne({ lotId: "L1", designation: "ECY-S1000", pvUnitaireCents: 186750 })];
+  const t = calculerDevis(ENTETE_NU, lots, lignes);
+  const doc = documentClient(t, PUBLICATION_DEFAUT, true);
+  egal("vue interne : le bloc n'est pas traité en condensé", doc.lots[0].condense, false);
+  egal("… son titre revient", doc.lots[0].titre, "Matériel");
+  verifier(
+    "… et le détail est là",
+    doc.lots[0].lignes.some((l) => l.ligne.designation === "ECY-S1000"),
+  );
+}
+
+console.log("\n▸ Les puces : une ligne saisie = une puce");
+{
+  egal("les lignes vides sautent", puces("a\n\n  \nb").length, 2);
+  egal("un tiret déjà tapé n'est pas doublé", puces("- 2× départ")[0], "2× départ");
+  egal("une puce déjà tapée non plus", puces("• 4× V3V")[0], "4× V3V");
+  egal("rien à dire → rien", puces("   ").length, 0);
+}
+
+console.log("\n▸ La désignation du client");
+{
+  const l = lot({ id: "x", titre: "Interne", ordre: 0, libelleClient: "  CE QUE LE CLIENT LIT  " });
+  egal("la phrase du client gagne", designationClient(l), "CE QUE LE CLIENT LIT");
+  egal(
+    "… et à défaut, le titre du bloc sert de repli",
+    designationClient(lot({ id: "y", titre: "Interne", ordre: 0 })),
+    "Interne",
   );
 }
 
