@@ -5,7 +5,12 @@
 // Cadrage complet : docs/DEVIS.md.
 
 import type { DureePartage } from "@/lib/partage/model";
-import { extraireTexte, type NoteContenu } from "@/tools/notes/model";
+import {
+  contenuTexteSimple,
+  extraireTexte,
+  texteNu,
+  type NoteContenu,
+} from "@/tools/notes/model";
 
 /* =============================================================================
  * LES TROIS PRINCIPES
@@ -101,6 +106,12 @@ export function ligneChiffree(genre: GenreLigne): boolean {
 /** Document riche — mêmes blocs que les notes (le schéma est partagé). */
 export type ContenuRiche = NoteContenu;
 
+/* `texteNu` et `contenuTexteSimple` ont rejoint le socle partagé
+ * (`@/tools/notes/model`) le 2026-09-02, quand les TÂCHES sont devenues le 4ᵉ
+ * consommateur du moteur de document. Ils sont ré-exportés ici pour que rien
+ * de ce qui lit `@/tools/devis/model` n'ait à changer d'adresse. */
+export { contenuTexteSimple, texteNu };
+
 /** 25 Mo : on colle des photos d'armoire et des fiches techniques, pas des
  *  vidéos. (Les notes montent à 50 Mo ; un devis n'a pas cet usage.) */
 export const TAILLE_MAX_MEDIA_DEVIS = 25 * 1024 * 1024;
@@ -117,75 +128,29 @@ export function urlMediaDevis(mediaId: string): string {
  *  une ligne sans aucun libellé ne se retrouve plus dans une liste. */
 export const TEXTE_LIGNE_REPLI = "Commentaire";
 
-/** Un document d'un seul paragraphe portant `texte`. Sert à amorcer une ligne :
- *  celle qu'on vient de créer en tapant sa phrase, et celle d'avant la bascule
- *  en riche (contenu null), qu'on ouvre sur son ancienne désignation. */
-export function contenuTexteSimple(texte: string): ContenuRiche {
-  const t = texte.trim();
-  if (!t) return [];
-  return [{ type: "paragraph", content: [{ type: "text", text: t, styles: {} }] }];
-}
-
-/** Props qu'un bloc porte SANS avoir été mis en forme — BlockNote les écrit
- *  toujours, même sur un paragraphe qu'on n'a pas touché. */
-const PROPS_NEUTRES: Record<string, unknown> = {
-  textColor: "default",
-  backgroundColor: "default",
-  textAlignment: "left",
-};
-
-/**
- * Le texte du document s'il se réduit à un paragraphe SANS AUCUNE MISE EN FORME
- * — sinon `null` (le document mérite alors un vrai rendu).
- *
- * `""` pour un document vide : c'est un texte nu, simplement absent.
- */
-export function texteNu(contenu: ContenuRiche | null): string | null {
-  if (!Array.isArray(contenu)) return null;
-  if (contenu.length === 0) return "";
-  if (contenu.length > 1) return null;
-
-  const bloc = contenu[0] as {
-    type?: string;
-    props?: Record<string, unknown>;
-    content?: unknown;
-    children?: unknown[];
-  };
-  if (bloc?.type !== "paragraph") return null;
-  if (Array.isArray(bloc.children) && bloc.children.length > 0) return null;
-  for (const [cle, val] of Object.entries(bloc.props ?? {})) {
-    if (PROPS_NEUTRES[cle] !== val) return null;
-  }
-
-  if (bloc.content === undefined) return "";
-  if (!Array.isArray(bloc.content)) return null;
-
-  let texte = "";
-  for (const item of bloc.content) {
-    const i = item as { type?: string; text?: string; styles?: Record<string, unknown> };
-    // Un lien, une mention, une formule : ce n'est plus du texte nu.
-    if (i?.type !== "text" || typeof i.text !== "string") return null;
-    if (i.styles && Object.keys(i.styles).length > 0) return null;
-    texte += i.text;
-  }
-  return texte;
-}
-
-/** Le résumé en texte brut à recopier dans `designation` à chaque sauvegarde. */
 export function resumeTexteLigne(contenu: ContenuRiche, repli = TEXTE_LIGNE_REPLI): string {
   return extraireTexte(contenu, 160) || repli;
 }
 
 /* =============================================================================
  * DROITS
- * L'outil expose le déboursé (déjà réservé) ET les coefficients de marge de la
- * maison (qui le sont davantage). On réutilise les helpers du Magasin plutôt
- * que d'inventer un troisième vocabulaire de droits.
+ *
+ * ⚠️ L'OUTIL EST OUVERT À TOUTE L'ÉQUIPE depuis le 2026-08-12 (décision
+ * d'Augustin, prise en connaissance de la contrepartie) : consulter et chiffrer
+ * un devis ne demande qu'un compte. Il n'y a donc plus de `peutVoirDevis` — la
+ * garde d'écran, celle des actions et celles des routes d'API se contentent
+ * d'exiger une session.
+ *
+ * Ce que cela expose, et qui a été signalé avant d'être décidé : le DÉBOURSÉ du
+ * magasin (prix d'achat fournisseurs) et les COEFFICIENTS DE MARGE de la maison
+ * sont désormais lisibles par toute personne ayant un compte. La restriction
+ * `peutVoirPrix` du Magasin, elle, n'a PAS bougé : c'est une incohérence assumée
+ * entre les deux outils, pas un oubli.
+ *
+ * Reste réservé : MODIFIER la politique commerciale (ci-dessous). Voir et
+ * changer ne sont pas le même geste — n'importe qui peut lire le coefficient de
+ * la maison, mais le fixer engage la marge de tous les devis à venir.
  * ========================================================================== */
-
-export function peutVoirDevis(role: string | undefined | null): boolean {
-  return role === "ADMIN" || role === "ACHATS";
-}
 
 /** Modifier le référentiel de prestations et les coefficients de vente : c'est
  *  la politique commerciale de la maison, pas un réglage d'écran. */
@@ -489,6 +454,14 @@ export interface DevisEntete {
   validiteJours: number;
   /** Pavé destinataire du document client, une ligne par ligne. */
   destinataire: string;
+  /** La personne chez le client, FIGÉE à la sélection (docs/DEVIS.md §24).
+   *  `contactId` ne sert qu'à proposer un rafraîchissement. */
+  contactId: string | null;
+  contactNom: string;
+  contactFonction: string;
+  /** ⚠️ Neutralisé par `getDevisPublic` — rien ne l'imprime. */
+  contactEmail: string;
+  contactTel: string;
   /** Publication (docs/DEVIS.md §21) — le lien public et ce qu'il montre. */
   jetonPartage: string | null;
   partageExpireLe: Date | null;
@@ -496,6 +469,7 @@ export interface DevisEntete {
   montrerPrixUnitaires: boolean;
   montrerSousTotauxLots: boolean;
   montrerOptions: boolean;
+  montrerDocumentations: boolean;
   /** Combien de fois le lien a été ouvert, et quand pour la dernière fois. */
   nbConsultations: number;
   derniereConsultation: Date | null;
@@ -951,6 +925,12 @@ export interface DevisResume {
  * le client est un incident commercial.
  * ========================================================================== */
 
+/** Racine des écrans INTERNES de l'outil. Une seule source de vérité : c'est
+ *  elle qui a permis au passage de `/perso/gus/devis` à `/outils/devis`
+ *  (promotion en outil métier, 2026-08-12) de ne toucher qu'une ligne, au lieu
+ *  de laisser des chemins écrits en dur dans trois composants. */
+export const BASE_DEVIS = "/outils/devis";
+
 /** Racine de l'URL publique d'un devis. Une seule source de vérité : le panneau
  *  de partage, la page publique et le générateur de PDF en dépendent. */
 export const BASE_URL_DEVIS_PUBLIC = "/d/";
@@ -1053,6 +1033,99 @@ export function lignesDestinataire(destinataire: string, clientNom: string): str
   return clientNom.trim() ? [clientNom.trim()] : [];
 }
 
+/* --- Le pavé PROPOSÉ par le référentiel (docs/DEVIS.md §24) ------------------ */
+
+/** L'identité postale d'un client, telle que le référentiel la porte. */
+export interface IdentiteClient {
+  nom: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+}
+
+/** Une personne chez le client, pour ce qui s'IMPRIME d'elle. */
+export interface IdentiteContact {
+  civilite: string;
+  nom: string;
+  fonction: string;
+}
+
+/**
+ * Le pavé destinataire qu'on PROPOSE à partir du référentiel.
+ *
+ * Fonction pure, et c'est délibéré : c'est le SEUL endroit qui décide de l'ordre
+ * des lignes, et le seul endroit vérifiable sans base ni navigateur
+ * (`scripts/devis-smoke.mts`). Les parties absentes sautent — elles ne laissent
+ * pas de ligne vide dans un pavé qui va s'imprimer.
+ *
+ * ⚠️ L'ORDRE N'EST PAS UNE PRÉFÉRENCE : il est relevé sur les DEUX devis réels
+ * de `public/devis_template/`, qui sont la spec de ce document. Le service vient
+ * juste sous le nom de la société, et la personne vient EN DERNIER, après
+ * l'adresse — pas l'inverse :
+ *
+ *     SOCIÉTÉ NOUVELLE HENRI CONRAUX     ← client.nom
+ *     Comptabilité Fournisseurs          ← contact.fonction (le SERVICE)
+ *     TSA 60013                          ← client.adresse
+ *     35093 RENNES CEDEX 9               ← CP + ville
+ *     À l'attention de M. Fabien AVRIL   ← contact.civilite + nom, EN DERNIER
+ */
+export function paveDestinatairePropose(
+  client: IdentiteClient | null,
+  contact: IdentiteContact | null,
+): string {
+  const lignes: string[] = [];
+
+  const nomClient = (client?.nom ?? "").trim();
+  if (nomClient) lignes.push(nomClient);
+
+  // Le service se lit comme une précision du nom de la société : il le suit.
+  const fonction = (contact?.fonction ?? "").trim();
+  if (fonction) lignes.push(fonction);
+
+  // L'adresse est multi-ligne : une ligne saisie = une ligne imprimée.
+  for (const l of (client?.adresse ?? "").split("\n")) {
+    const t = l.trim();
+    if (t) lignes.push(t);
+  }
+
+  const cpVille = [(client?.codePostal ?? "").trim(), (client?.ville ?? "").trim()]
+    .filter(Boolean)
+    .join(" ");
+  if (cpVille) lignes.push(cpVille);
+
+  // La personne ferme le pavé — c'est la convention des devis de la maison.
+  const nomContact = (contact?.nom ?? "").trim();
+  if (nomContact) {
+    const civilite = (contact?.civilite ?? "").trim();
+    lignes.push(`À l'attention de ${civilite ? `${civilite} ` : ""}${nomContact}`);
+  }
+
+  return lignes.join("\n");
+}
+
+/**
+ * Le pavé peut-il être rempli SANS RIEN DÉTRUIRE ?
+ *
+ * C'est la règle n°1 de ce mécanisme — *on ne remplit que le vide*. Un pavé
+ * retapé à la main (un service de facturation, une TSA, « À l'attention de… »
+ * propre à cette affaire) ne se fait jamais écraser par un changement de fiche
+ * client : il faut alors un clic explicite (`reprendreIdentiteClient`).
+ *
+ * Le cas « identique au proposé » compte comme vide : le réécrire ne change
+ * rien, et c'est ce qui permet à un changement de client de suivre tant que
+ * personne n'a rien écrit à la main.
+ */
+export function paveReprenable(actuel: string, propose: string): boolean {
+  const norme = (s: string) =>
+    s
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .join("\n");
+  const a = norme(actuel);
+  return a === "" || a === norme(propose);
+}
+
 /* --- L'acompte -------------------------------------------------------------- */
 
 /** L'acompte demandé, en centimes du TTC. 0 (donc absent du document) si aucun
@@ -1091,17 +1164,20 @@ export const DUREE_PARTAGE_DEVIS_DEFAUT = "validite";
 
 /* --- Ce que le client voit du chiffrage ------------------------------------- */
 
-/** Les trois interrupteurs de publication (portés par le devis). */
+/** Les interrupteurs de publication (portés par le devis). */
 export interface OptionsPublication {
   montrerPrixUnitaires: boolean;
   montrerSousTotauxLots: boolean;
   montrerOptions: boolean;
+  /** Les fiches techniques des produits chiffrés, en fin de document. */
+  montrerDocumentations: boolean;
 }
 
 export const PUBLICATION_DEFAUT: OptionsPublication = {
   montrerPrixUnitaires: true,
   montrerSousTotauxLots: true,
   montrerOptions: true,
+  montrerDocumentations: true,
 };
 
 export interface LotDocument {
@@ -1317,6 +1393,35 @@ function ligneSynthese(lot: LotDevisVue, sousTotalCents: number, ordre: number):
     debourseActuelCents: null,
     majLe: new Date(0).toISOString(),
   };
+}
+
+/**
+ * LES LIGNES QUE LE CLIENT VOIT RÉELLEMENT — identifiants seulement.
+ *
+ * Une ligne peut disparaître du document par deux chemins bien différents :
+ * son bloc est CONDENSÉ (elle est remplacée par une synthèse), ou c'est une
+ * OPTION et on a choisi de taire les options. Les deux comptent.
+ *
+ * Sert à décider ce qui a le droit de sortir AVEC le document sans y figurer
+ * lui-même — aujourd'hui les fiches techniques annexées. Sans ce filtre, la
+ * liste des annexes nommerait les six produits d'un bloc forfaitaire, c'est-à-
+ * dire exactement ce que la condensation vient de cacher (docs/DEVIS-DETAIL.md).
+ *
+ * Les identifiants des lignes de synthèse (`synth-…`) traversent : ils ne
+ * correspondent à aucune ligne réelle, donc ne rattachent rien.
+ */
+export function lignesVisiblesClient(
+  entete: Pick<DevisEntete, "tauxTvaCentieme" | "remiseGlobalePourMille" | "remiseGlobaleCents">,
+  lots: LotDevisVue[],
+  lignes: LigneDevisVue[],
+  opts: OptionsPublication,
+): Set<string> {
+  const visibles = new Set<string>();
+  for (const l of condenserLots(entete, lots, lignes)) {
+    if (l.option && !opts.montrerOptions) continue;
+    visibles.add(l.id);
+  }
+  return visibles;
 }
 
 /** Le devis n'a-t-il rien à montrer ? (Un document vide ne se publie pas.) */

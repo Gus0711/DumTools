@@ -36,6 +36,8 @@ import {
   mentionsLegales,
   ordreEntre,
   parseCoef,
+  paveDestinatairePropose,
+  paveReprenable,
   reecrireMediasPublicsDevis,
   parseEuros,
   parseQuantite,
@@ -784,6 +786,86 @@ console.log("\n▸ Le pavé destinataire");
     "SOCIÉTÉ NOUVELLE HENRI CONRAUX",
   );
   egal("ni pavé ni client → rien plutôt qu'une ligne blanche", lignesDestinataire("", "").length, 0);
+}
+
+console.log("\n▸ Le pavé PROPOSÉ par la fiche client (§24)");
+{
+  const client = {
+    nom: "COMMUNE DE CHARMES",
+    adresse: "12 rue de la Gare\nBP 40",
+    codePostal: "02800",
+    ville: "CHARMES",
+  };
+  const contact = { civilite: "M.", nom: "Jean Dupont", fonction: "Conducteur de travaux" };
+
+  /* L'ORDRE est celui des DEUX devis réels de public/devis_template/, qui sont
+     la spec de ce document : le service sous le nom de la société, la personne
+     EN DERNIER après l'adresse. Le relever à l'envers passerait tous les autres
+     contrôles — d'où celui-ci, en toutes lettres. */
+  egal(
+    "l'ordre du gabarit : société, service, adresse, CP ville, personne",
+    paveDestinatairePropose(client, contact),
+    "COMMUNE DE CHARMES\nConducteur de travaux\n12 rue de la Gare\nBP 40\n02800 CHARMES\nÀ l'attention de M. Jean Dupont",
+  );
+  egal(
+    "sans contact, le pavé reste l'adresse seule",
+    paveDestinatairePropose(client, null),
+    "COMMUNE DE CHARMES\n12 rue de la Gare\nBP 40\n02800 CHARMES",
+  );
+  egal(
+    "sans civilité, pas de double espace après « de »",
+    paveDestinatairePropose(client, { civilite: "", nom: "Dupont", fonction: "" }),
+    "COMMUNE DE CHARMES\n12 rue de la Gare\nBP 40\n02800 CHARMES\nÀ l'attention de Dupont",
+  );
+  egal(
+    "une fiche sans adresse ne laisse pas de ligne blanche",
+    paveDestinatairePropose(
+      { nom: "SOCIÉTÉ X", adresse: "", codePostal: "", ville: "" },
+      null,
+    ),
+    "SOCIÉTÉ X",
+  );
+  egal(
+    "un code postal sans ville reste seul sur sa ligne",
+    paveDestinatairePropose(
+      { nom: "X", adresse: "", codePostal: "02800", ville: "" },
+      null,
+    ),
+    "X\n02800",
+  );
+  egal(
+    "aucun client, aucun contact → pavé vide (le devis retombe sur clientNom)",
+    paveDestinatairePropose(null, null),
+    "",
+  );
+  egal(
+    "un contact sans client tient quand même debout",
+    paveDestinatairePropose(null, contact),
+    "Conducteur de travaux\nÀ l'attention de M. Jean Dupont",
+  );
+
+  /* LA RÈGLE QUI PORTE LE MÉCANISME : on ne remplit que le vide. Ces quatre
+     contrôles sont la garantie qu'un pavé retapé à la main ne se fera jamais
+     écraser par un changement de fiche client. */
+  const propose = paveDestinatairePropose(client, contact);
+  verifier("un pavé vide est reprenable", paveReprenable("", propose));
+  verifier("des blancs seuls comptent pour vide", paveReprenable("  \n \n", propose));
+  verifier("un pavé identique au proposé est reprenable", paveReprenable(propose, propose));
+  verifier(
+    "… à l'espacement près (le champ de saisie ne décide pas de ça)",
+    paveReprenable(`  ${propose.split("\n").join("  \n")}  `, propose),
+  );
+  verifier(
+    "UN PAVÉ RETAPÉ À LA MAIN NE SE FAIT PAS ÉCRASER",
+    !paveReprenable(
+      "COMMUNE DE CHARMES\nService facturation — TSA 20045\n02800 CHARMES",
+      propose,
+    ),
+  );
+  verifier(
+    "une seule ligne ajoutée suffit à le protéger",
+    !paveReprenable(`${propose}\nÀ remettre en main propre`, propose),
+  );
 }
 
 console.log("\n▸ Les médias d'un texte libre passent par le jeton");

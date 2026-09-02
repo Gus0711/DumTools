@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CornerDownLeft, FileText, Loader2, Search } from "lucide-react";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { rechercherWiki } from "./actions";
 import { segmentsSurlignes } from "./model";
 import type { WikiResultatRecherche } from "./queries";
@@ -34,7 +34,10 @@ export function RechercheWiki() {
   // même recherche au lieu de rendre la boîte vide (voir lib/filtres-url).
   const params = useSearchParams();
   const [q, setQ] = useState(() => params.get("q") ?? "");
-  useSyncUrl({ q });
+  // Et quand on revient par le rail plutôt que par la flèche, on retrouve
+  // quand même sa dernière recherche (voir lib/filtres-url).
+  useReprendreFiltres("wiki.recherche", ["q"], (v) => setQ(v("q") ?? ""));
+  useSyncUrl({ q }, "wiki.recherche");
   // On mémorise la requête associée à la réponse : les résultats ne s'affichent
   // que s'ils correspondent à la saisie courante (pas de flash de résultats
   // périmés, et aucun setState synchrone dans l'effet).

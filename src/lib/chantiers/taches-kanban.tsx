@@ -2,6 +2,7 @@
 
 import { Fragment, useRef, useState } from "react";
 import {
+  CalendarClock,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/cn";
 import type { EtatTache } from "@/generated/prisma/enums";
 import {
   COLONNES_TACHES,
+  PRIORITES,
   initialesNom,
   tonAvatar,
   type AssignableUser,
@@ -28,6 +30,36 @@ import {
   renommerTache,
   supprimerTache,
 } from "./taches-actions";
+
+/** Écart en jours de CALENDRIER entre une échéance `AAAA-MM-JJ` et aujourd'hui.
+ *  Jamais en tranches de 24 h : « hier » ne veut pas dire « il y a moins de 24
+ *  heures » (même piège que mes-taches-ecran.tsx). */
+function ecartJours(jour: string): number {
+  const [a, m, j] = jour.split("-").map(Number);
+  const n = new Date();
+  return Math.round(
+    (new Date(a!, m! - 1, j!).getTime() -
+      new Date(n.getFullYear(), n.getMonth(), n.getDate()).getTime()) /
+      86400000,
+  );
+}
+
+function tonEcheance(jour: string): string {
+  const d = ecartJours(jour);
+  if (d < 0) return "text-danger font-semibold";
+  if (d === 0) return "text-danger";
+  if (d <= 7) return "text-accent-strong";
+  return "text-subtle";
+}
+
+function libelleCourtEcheance(jour: string): string {
+  const d = ecartJours(jour);
+  if (d < 0) return d === -1 ? "en retard d'un jour" : `en retard de ${-d} jours`;
+  if (d === 0) return "aujourd'hui";
+  if (d === 1) return "demain";
+  if (d <= 7) return `dans ${d} jours`;
+  return new Date(jour).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+}
 
 /**
  * Kanban des tâches d'une affaire : 3 colonnes À faire / En cours / Terminé.
@@ -77,13 +109,38 @@ export function TachesKanban({
     const col = colonne(etat);
     const ordre = col.length ? col[col.length - 1].ordre + 1 : 1;
     setErreur("");
+    // La tâche s'assigne à son auteur (creerTache) : on le peint TOUT DE SUITE,
+    // sinon l'avatar apparaîtrait une seconde après coup, comme si quelqu'un
+    // d'autre venait de s'en saisir. Le serveur reste la source : sa réponse
+    // porte l'assignation réelle et corrige le nom si on ne l'avait pas.
+    const moiNom = utilisateurs.find((u) => u.id === moiId)?.nom ?? null;
     setTaches((cur) => [
       ...cur,
-      { id: tempId, titre: t, etat, ordre, assigneId: null, assigneNom: null },
+      {
+        id: tempId,
+        titre: t,
+        etat,
+        ordre,
+        assigneId: moiId,
+        assigneNom: moiNom,
+        priorite: "NORMALE" as const,
+        echeance: null,
+      },
     ]);
     creerTache({ chantierId, titre: t, etat, ordre })
-      .then(({ id }) =>
-        setTaches((cur) => cur.map((x) => (x.id === tempId ? { ...x, id } : x))),
+      .then((serveur) =>
+        setTaches((cur) =>
+          cur.map((x) =>
+            x.id === tempId
+              ? {
+                  ...x,
+                  id: serveur.id,
+                  assigneId: serveur.assigneId,
+                  assigneNom: serveur.assigneNom,
+                }
+              : x,
+          ),
+        ),
       )
       .catch((e) => {
         setTaches((cur) => cur.filter((x) => x.id !== tempId));
@@ -318,6 +375,7 @@ function Carte({
   // Tant que la création n'est pas confirmée (id temporaire), pas de mutation.
   const enAttente = tache.id.startsWith("tmp-");
   const terminee = tache.etat === "TERMINEE";
+  const prio = PRIORITES.find((p) => p.value === tache.priorite);
   const precedente = COLONNES_TACHES[colIndex - 1];
   const suivante = COLONNES_TACHES[colIndex + 1];
 
@@ -372,6 +430,29 @@ function Carte({
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
+        </div>
+      )}
+
+      {/* Ce qui sort de l'ordinaire SEULEMENT : une priorité « Normale » et une
+          absence d'échéance n'ont rien à dire, et les afficher poserait deux
+          mentions grises sur chaque carte. Les deux valeurs se règlent sur
+          l'écran « Mes tâches » ; les taire ici ferait mentir ce tableau-ci. */}
+      {(tache.priorite !== "NORMALE" || tache.echeance) && !terminee && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs">
+          {tache.priorite !== "NORMALE" && (
+            <span className={cn("inline-flex items-center gap-1 font-medium", prio?.classe)}>
+              <span className="font-mono" aria-hidden>
+                {prio?.glyphe}
+              </span>
+              {prio?.label}
+            </span>
+          )}
+          {tache.echeance && (
+            <span className={cn("inline-flex items-center gap-1", tonEcheance(tache.echeance))}>
+              <CalendarClock className="h-3 w-3 shrink-0" />
+              {libelleCourtEcheance(tache.echeance)}
+            </span>
+          )}
         </div>
       )}
 

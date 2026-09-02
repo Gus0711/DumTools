@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { iciAvecFiltres, useSyncUrl } from "@/lib/filtres-url";
+import { iciAvecFiltres, useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { avecRetour } from "@/lib/retour";
 import { Briefcase, RotateCcw, Search } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -12,6 +12,8 @@ import type { EtatAffaire } from "@/generated/prisma/enums";
 import type { AffaireResume } from "./queries";
 import { ETATS_AFFAIRE, ETATS_VUE_DEFAUT } from "./etats";
 import { EtatBadge, ETAT_TONE, SynoptiqueMini } from "./etat-badge";
+import { PastilleArret } from "./bascule-arret";
+import type { EtatArret } from "./arret";
 
 function fmtDate(d: Date) {
   return new Date(d).toLocaleDateString("fr-FR");
@@ -34,6 +36,15 @@ function etatsDepuisUrl(brut: string | null): Set<EtatAffaire> {
   // On ignore ce qu'on ne reconnaît pas : une URL bricolée ne doit pas casser
   // l'écran, juste filtrer moins.
   return new Set(brut.split(",").filter((v): v is EtatAffaire => connus.has(v)));
+}
+
+/** L'arrêt des automates d'une affaire, résumé en un seul état : retouché dès
+ *  qu'un seul l'est (c'est ce qui appelle une action), arrêté seulement si tous
+ *  le sont. Un « 2/3 vert » laisserait croire que l'affaire est prête. */
+function arretGlobalProjets(a: AffaireResume["arret"]): EtatArret {
+  if (a.projetsRetouches > 0) return "retouche";
+  if (a.projetsTotal > 0 && a.projetsArretes === a.projetsTotal) return "arrete";
+  return "ouvert";
 }
 
 export function AffairesListe({
@@ -59,6 +70,17 @@ export function AffairesListe({
     etatsDepuisUrl(params.get("etats")),
   );
   const [client, setClient] = useState(() => params.get("client") ?? "");
+
+  // ... et quand l'adresse ne dit rien, on reprend le réglage laissé sur ce
+  // poste. Revenir par le rail, par l'accueil ou par ⌘K amène ici sans aucun
+  // paramètre : sans ce rattrapage, tout retombait sur « Commande + En cours »
+  // alors qu'on travaillait sur autre chose depuis le matin.
+  useReprendreFiltres("affaires", ["q", "client", "suivi", "etats"], (v) => {
+    setQuery(v("q") ?? "");
+    setClient(v("client") ?? "");
+    setSuivi(v("suivi") ?? "");
+    setEtats(etatsDepuisUrl(v("etats")));
+  });
 
   // Clients réellement présents dans les affaires (pour l'autocomplétion).
   const clientOptions = useMemo<ComboOption[]>(
@@ -122,12 +144,15 @@ export function AffairesListe({
   // Les états ne s'écrivent que s'ils s'écartent du défaut (voir filtres-url).
   // La chaîne vide est un choix légitime (« aucun état retenu ») : on la note
   // avec un marqueur, sinon elle serait confondue avec « pas de filtre ».
-  const qs = useSyncUrl({
-    q: query,
-    client,
-    suivi,
-    etats: etatsParDefaut ? "" : [...etats].join(",") || "aucun",
-  });
+  const qs = useSyncUrl(
+    {
+      q: query,
+      client,
+      suivi,
+      etats: etatsParDefaut ? "" : [...etats].join(",") || "aucun",
+    },
+    "affaires",
+  );
   // Chaque affaire emporte l'adresse de la liste TELLE QU'ELLE EST : le lien
   // « ← Affaires » de la fiche y ramènera, filtres compris. Sans ça, seule la
   // flèche du navigateur retrouvait la sélection.
@@ -289,6 +314,8 @@ export function AffairesListe({
                 <th>N° Why</th>
                 <th>Suivi par</th>
                 <th>État</th>
+                {/* « C'est fait ? » d'un coup d'œil, sans ouvrir la fiche. */}
+                <th>Arrêt</th>
                 <th className="cell-num">Réal.</th>
                 <th>Modifié</th>
               </tr>
@@ -331,6 +358,36 @@ export function AffairesListe({
                       <EtatBadge etat={a.etat} />
                       <SynoptiqueMini etat={a.etat} className="hidden lg:inline-flex" />
                     </span>
+                  </td>
+                  <td data-label="Arrêt">
+                    {a.arret.projetsTotal === 0 && a.arret.bom === "ouvert" ? (
+                      <span className="text-subtle">—</span>
+                    ) : (
+                      <span className="flex flex-wrap items-center gap-1">
+                        {a.arret.projetsTotal > 0 && (
+                          <PastilleArret
+                            etat={arretGlobalProjets(a.arret)}
+                            libelle={`GTB ${a.arret.projetsArretes}/${a.arret.projetsTotal}`}
+                            titre={
+                              a.arret.projetsRetouches > 0
+                                ? `Projet GTB : ${a.arret.projetsArretes} automate(s) arrêté(s) sur ${a.arret.projetsTotal}, dont ${a.arret.projetsRetouches} retouché(s) depuis`
+                                : `Projet GTB : ${a.arret.projetsArretes} automate(s) arrêté(s) sur ${a.arret.projetsTotal}`
+                            }
+                          />
+                        )}
+                        {a.arret.bom !== "ouvert" && (
+                          <PastilleArret
+                            etat={a.arret.bom}
+                            libelle="Matériel"
+                            titre={
+                              a.arret.bom === "arrete"
+                                ? "Besoin en matériel : arrêté"
+                                : "Besoin en matériel : arrêté, puis modifié depuis"
+                            }
+                          />
+                        )}
+                      </span>
+                    )}
                   </td>
                   <td data-label="Réalisations" className="cell-num">
                     {a.nbRealisations}

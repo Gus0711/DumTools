@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo, useState, useTransition } from "rea
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Check, FileText, Loader2, Minus, RotateCcw, Search, Tag, X } from "lucide-react";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { rechercherWiki } from "./actions";
 import { segmentsSurlignes, type FiltresWiki } from "./model";
 import type {
@@ -222,13 +222,30 @@ export function RechercheAvanceeWiki({ catalogue }: { catalogue: OptionsRecherch
   );
   const [rubriqueSlug, setRubriqueSlug] = useState<string | null>(() => params.get("rubrique"));
   const [auteurId, setAuteurId] = useState<string | null>(() => params.get("auteur"));
-  useSyncUrl({
-    q,
-    tags: tagsVersUrl(etats),
-    mode: modeTags === "ou" ? "ou" : "",
-    rubrique: rubriqueSlug,
-    auteur: auteurId,
-  });
+  // Adresse muette : on reprend le croisement de facettes laissé sur ce poste.
+  // C'est ici que ça compte le plus — reconstruire six chips à la main parce
+  // qu'on est revenu par le rail, c'est ce qui fait abandonner l'écran.
+  useReprendreFiltres(
+    "wiki.avancee",
+    ["q", "tags", "mode", "rubrique", "auteur"],
+    (v) => {
+      setQ(v("q") ?? "");
+      setEtats(tagsDepuisUrl(v("tags")));
+      setModeTags(v("mode") === "ou" ? "ou" : "et");
+      setRubriqueSlug(v("rubrique"));
+      setAuteurId(v("auteur"));
+    },
+  );
+  useSyncUrl(
+    {
+      q,
+      tags: tagsVersUrl(etats),
+      mode: modeTags === "ou" ? "ou" : "",
+      rubrique: rubriqueSlug,
+      auteur: auteurId,
+    },
+    "wiki.avancee",
+  );
   const [rep, setRep] = useState<{ cle: string; res: WikiResultatRecherche[] } | null>(null);
   const [pending, start] = useTransition();
 

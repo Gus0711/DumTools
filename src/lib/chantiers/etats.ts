@@ -50,11 +50,16 @@ export const CYCLE_AFFAIRE = ETATS_AFFAIRE.filter((e) => e.value !== "CORBEILLE"
  *  du tableau de bord) et aux extraits de parc. */
 export const ETATS_ACTIFS: EtatAffaire[] = ["DEVIS", "COMMANDE", "EN_COURS"];
 
-/** Les puces cochées à l'OUVERTURE de la liste des affaires. Plus étroit que
- *  `ETATS_ACTIFS` : à l'ouverture on veut ce sur quoi on travaille, pas les
- *  chiffrages en attente de réponse. Les autres états restent à un clic, et
- *  leur puce annonce déjà son compte. */
-export const ETATS_VUE_DEFAUT: EtatAffaire[] = ["EN_COURS"];
+/** Les puces cochées à l'OUVERTURE de la liste des affaires, sur un poste qui
+ *  n'a encore rien réglé. Plus étroit que `ETATS_ACTIFS` : on veut ce qui est
+ *  ENGAGÉ — commandé ou en travaux — pas les chiffrages qui attendent une
+ *  réponse du client. Les autres états restent à un clic, et leur puce annonce
+ *  déjà son compte.
+ *
+ *  Ce n'est qu'un point de départ : dès qu'on touche aux puces, le réglage est
+ *  retenu pour ce poste (`useReprendreFiltres`, lib/filtres-url) et c'est lui
+ *  qu'on retrouve au retour. « Réinitialiser » efface ce souvenir et ramène ici. */
+export const ETATS_VUE_DEFAUT: EtatAffaire[] = ["COMMANDE", "EN_COURS"];
 
 export function etatLabel(etat: EtatAffaire): string {
   return ETATS_AFFAIRE.find((e) => e.value === etat)?.label ?? etat;

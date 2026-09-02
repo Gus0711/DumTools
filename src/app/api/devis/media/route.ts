@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { routeTeleversementMedia } from "@/lib/medias-document/routes";
-import { peutVoirDevis, TAILLE_MAX_MEDIA_DEVIS } from "@/tools/devis/model";
+import { TAILLE_MAX_MEDIA_DEVIS } from "@/tools/devis/model";
 import { DEPOT_MEDIAS_DEVIS } from "@/tools/devis/stockage";
 
 // Multipart + écriture disque → runtime Node obligatoire.
@@ -44,8 +44,8 @@ export async function POST(req: Request): Promise<Response> {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
-  if (!peutVoirDevis(session.user.role)) {
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-  }
+  /* ⚠️ Plus de garde de rôle : l'outil Devis est ouvert à toute l'équipe depuis
+     le 2026-08-12 (note « DROITS » de src/tools/devis/model.ts). Une session
+     suffit — mais elle reste EXIGÉE : cette route sert du chiffrage interne. */
   return televerser(req);
 }

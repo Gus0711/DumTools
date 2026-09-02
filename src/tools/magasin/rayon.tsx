@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Archive, ArrowLeftRight, Plus, Search, TriangleAlert } from "lucide-react";
 import { Badge, Button, Chiffre, Input, RangeeChiffres } from "@/ui";
 import { cn } from "@/lib/cn";
-import { boolUrl, iciAvecFiltres, useSyncUrl } from "@/lib/filtres-url";
+import { boolUrl, iciAvecFiltres, useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { avecRetour } from "@/lib/retour";
 import { EditeurProduit } from "./editeur-produit";
 import { SaisieMouvement, type AffaireChoix } from "./saisie-mouvement";
@@ -56,16 +56,27 @@ export function Rayon({
   // Les archivés sont chargés mais masqués : on les retrouve d'un clic, sans
   // aller-retour serveur, et sans encombrer le rayon au quotidien.
   const [avecArchives, setAvecArchives] = useState(() => boolUrl(params.get("archives")));
+  // Adresse muette (retour par le rail ou l'accueil) : on reprend catégorie,
+  // recherche et cases telles qu'on les avait laissées sur ce poste.
+  useReprendreFiltres("magasin.rayon", ["q", "cat", "alertes", "archives"], (v) => {
+    setQ(v("q") ?? "");
+    setCategorieId(v("cat") ?? "TOUTES");
+    setSeulementAlertes(boolUrl(v("alertes")));
+    setAvecArchives(boolUrl(v("archives")));
+  });
   // Le produit emporte l'adresse du rayon : son « ← Le rayon » y ramène avec la
   // recherche et les filtres (voir lib/retour).
   const retourIci = iciAvecFiltres(
     "/outils/magasin",
-    useSyncUrl({
-      q,
-      cat: categorieId === "TOUTES" ? "" : categorieId,
-      alertes: seulementAlertes,
-      archives: avecArchives,
-    }),
+    useSyncUrl(
+      {
+        q,
+        cat: categorieId === "TOUTES" ? "" : categorieId,
+        alertes: seulementAlertes,
+        archives: avecArchives,
+      },
+      "magasin.rayon",
+    ),
   );
   const [mouvement, setMouvement] = useState<{ produitId?: string } | null>(null);
   const [creation, setCreation] = useState(false);

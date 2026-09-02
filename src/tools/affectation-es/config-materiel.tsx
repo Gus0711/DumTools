@@ -6,6 +6,7 @@ import { Check, FileText, Loader2, Pencil, Plus, Trash2, X } from "lucide-react"
 import { Button, Cartouche } from "@/ui";
 import { cn } from "@/lib/cn";
 import type { AutomateRow, MaterielAdmin, ModuleRow } from "./catalogue-queries";
+import type { LienDoc } from "./catalogue";
 import {
   enregistrerAutomate,
   enregistrerModule,
@@ -154,7 +155,7 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
                     <td className="px-4 py-2 font-medium text-fg">
                       <span className="inline-flex items-center gap-2">
                         {a.reference}
-                        <DocLink url={a.docUrl} />
+                        <DocLink url={a.docUrl} docs={a.docs} />
                       </span>
                     </td>
                     <td className="px-4 py-2 text-center tabular-nums text-muted">
@@ -234,7 +235,7 @@ export function ConfigMateriel({ initial }: { initial: MaterielAdmin }) {
                     <td className="px-4 py-2 font-medium text-fg">
                       <span className="inline-flex items-center gap-2">
                         {m.type}
-                        <DocLink url={m.docUrl} />
+                        <DocLink url={m.docUrl} docs={m.docs} />
                       </span>
                     </td>
                     <td className="px-4 py-2 text-muted">{m.categorie}</td>
@@ -313,14 +314,39 @@ function LigneActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () =
   );
 }
 
-function DocLink({ url }: { url: string }) {
+/**
+ * Les fiches d'un modèle. Elles viennent du PRODUIT du magasin (`docs`) ; le
+ * `docUrl` historique ne sert que de repli, tant que le modèle n'est relié à
+ * aucun produit. Une icône par fiche : « ECY IO Modules » et une notice de mise
+ * en service sont deux documents, et se cliquent séparément.
+ */
+function DocLink({ url, docs }: { url: string; docs?: LienDoc[] }) {
+  if (docs && docs.length > 0) {
+    return (
+      <>
+        {docs.map((d) => (
+          <a
+            key={d.id}
+            href={d.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={d.titre}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex text-muted transition-colors hover:text-brand"
+          >
+            <FileText className="h-3.5 w-3.5" />
+          </a>
+        ))}
+      </>
+    );
+  }
   if (!url) return null;
   return (
     <a
       href={encodeURI(url)}
       target="_blank"
       rel="noopener noreferrer"
-      title="Fiche technique"
+      title="Fiche technique (lien hérité — à reprendre sur le produit)"
       onClick={(e) => e.stopPropagation()}
       className="inline-flex text-muted transition-colors hover:text-brand"
     >

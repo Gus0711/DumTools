@@ -57,7 +57,7 @@ export async function calculerJalons(p: {
   // Contrat volontairement étroit : seuls ces champs entrent dans le calcul.
   // L'accueil peut donc charger le parc entier sans construire des résumés
   // complets dont il n'a que faire.
-  projets: Pick<ProjetAffaireResume, "controller" | "tests">[];
+  projets: Pick<ProjetAffaireResume, "controller" | "tests" | "etatArret">[];
   documents: Pick<DocResume, "nom" | "categorie">[];
   visites?: VisitePourJalons[];
 }): Promise<Jalon[]> {
@@ -77,8 +77,14 @@ export async function calculerJalons(p: {
   // --- 1. Relevé : une visite de relevé synchronisée.
   const nbReleves = parType("RELEVE");
 
-  // --- 2. Étude : un automate choisi sur au moins un Projet GTB.
+  // --- 2. Étude : les automates ARRÊTÉS, pas seulement choisis.
+  //     Le choix du contrôleur suffisait autrefois à passer l'étape au vert —
+  //     un automate à 12 points sur 40 ressemblait à une étude finie. Le seul
+  //     signal qui tranche est la déclaration d'arrêt (lib/chantiers/arret.ts),
+  //     et elle se périme toute seule si quelqu'un repasse derrière.
   const avecAutomate = p.projets.filter((x) => x.controller.trim()).length;
+  const arretes = p.projets.filter((x) => x.etatArret === "arrete").length;
+  const retouches = p.projets.filter((x) => x.etatArret === "retouche").length;
 
   // --- 3. Armoire : le besoin dicte l'attendu (schéma dans le dossier Armoire).
   //     L'export WinRelais (ROADMAP P3) prendra le relais quand il existera.
@@ -112,13 +118,22 @@ export async function calculerJalons(p: {
     {
       cle: "etude",
       libelle: "Étude",
-      etat: avecAutomate > 0 ? "fait" : p.projets.length > 0 ? "encours" : "attente",
+      etat:
+        p.projets.length === 0
+          ? "attente"
+          : arretes === p.projets.length
+            ? "fait"
+            : "encours",
       detail:
-        avecAutomate > 0
-          ? `${avecAutomate}/${p.projets.length} automate${p.projets.length > 1 ? "s" : ""} choisi${avecAutomate > 1 ? "s" : ""}`
-          : p.projets.length > 0
-            ? "automate à choisir"
-            : "aucun automate",
+        p.projets.length === 0
+          ? "aucun automate"
+          : retouches > 0
+            ? `${arretes}/${p.projets.length} arrêté${arretes > 1 ? "s" : ""} · ${retouches} retouché${retouches > 1 ? "s" : ""}`
+            : arretes > 0
+              ? `${arretes}/${p.projets.length} arrêté${arretes > 1 ? "s" : ""}`
+              : avecAutomate > 0
+                ? `${avecAutomate}/${p.projets.length} automate${p.projets.length > 1 ? "s" : ""} choisi${avecAutomate > 1 ? "s" : ""}`
+                : "automate à choisir",
     },
     {
       cle: "armoire",

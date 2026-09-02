@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { CircuitBoard, Search, Unlink } from "lucide-react";
 import { Input } from "@/ui";
 import { cn } from "@/lib/cn";
-import { boolUrl, useSyncUrl } from "@/lib/filtres-url";
+import { boolUrl, useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { SupprimerProjet } from "./supprimer-projet";
 import type { ProjetResume } from "./queries";
 
@@ -27,7 +27,16 @@ export function ProjetsFiltrables({
   const [orphelinsSeuls, setOrphelinsSeuls] = useState(
     () => boolUrl(params.get("orphelins")) || orphelinsParDefaut,
   );
-  useSyncUrl({ q: recherche, client, orphelins: orphelinsSeuls });
+  // ⚠️ `sans-affaire` compte comme un filtre de l'adresse : c'est l'entrée du
+  // tableau de bord (« N projets ne sont rattachés à aucune affaire »). Sans
+  // lui dans la liste, un `q` mémorisé se reposerait par-dessus et le lien
+  // montrerait une liste vide sans qu'on comprenne pourquoi.
+  useReprendreFiltres("gtb.projets", ["q", "client", "orphelins", "sans-affaire"], (v) => {
+    setRecherche(v("q") ?? "");
+    setClient(v("client") ?? "");
+    setOrphelinsSeuls(boolUrl(v("orphelins")) || orphelinsParDefaut);
+  });
+  useSyncUrl({ q: recherche, client, orphelins: orphelinsSeuls }, "gtb.projets");
   const nbOrphelins = projets.filter((p) => p.orphelin).length;
 
   const clients = useMemo(

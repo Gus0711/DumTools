@@ -1,0 +1,58 @@
+/* Le corps d'une tâche vit DANS une rangée de tableau, pas sur une feuille.
+ * Ce fichier ne fait que resserrer le gabarit des notes (notes.css, chargé
+ * juste avant) : mêmes variables, autres valeurs. Aucun #hex, aucun réglage de
+ * couleur — la charte reste celle du document riche. */
+
+.corps-tache {
+  /* La gouttière des notes réserve 54 px aux poignées de bloc. En lecture il
+     n'y a aucune poignée à loger ; en édition on leur rend le strict minimum. */
+  --note-gouttiere: 0px;
+  --note-marge-droite: 0px;
+  font-size: 0.875rem;
+}
+
+.corps-tache-edition {
+  --note-gouttiere: 26px;
+  --note-marge-droite: 6px;
+}
+
+/* ⚠️ Les notes réservent 14vh de blanc en fin de document pour « écrire au
+   milieu de l'écran ». Dans une rangée dépliée, ce blanc devient un trou de
+   trois cents pixels sous deux lignes de texte — et la tâche suivante part
+   hors de vue. On le rend, et on borne la hauteur : au-delà, le corps défile
+   sur lui-même plutôt que de repousser toute la liste. */
+/* ⚠️ La règle des notes est `\.note-doc:not(.note-doc-lecture) .bn-editor` :
+   il faut la MÊME spécificité pour la défaire, sinon les 14vh restent et deux
+   lignes de texte laissent trois cents pixels de blanc sous elles. */
+.corps-tache .bn-editor,
+.note-doc.corps-tache:not(.note-doc-lecture) .bn-editor {
+  padding-block: 0.15rem;
+  line-height: 1.55;
+}
+.corps-tache-edition .bn-container {
+  max-height: 26rem;
+  overflow-y: auto;
+}
+
+/* Le premier bloc s'aligne sur le haut de la rangée. */
+.corps-tache .bn-block-outer:first-child > .bn-block > .bn-block-content {
+  padding-top: 0;
+}
+
+/* Un titre dans une note de tâche reste un titre de note : il ne doit pas
+   écraser les libellés des tâches qui l'entourent. */
+.corps-tache [data-level="1"] {
+  --level: 1.3em;
+}
+.corps-tache [data-level="2"] {
+  --level: 1.12em;
+}
+.corps-tache [data-level="3"] {
+  --level: 1em;
+}
+
+/* Une photo d'armoire illustre, elle ne s'affiche pas en pleine page. */
+.corps-tache .bn-visual-media {
+  max-height: 20rem;
+  object-fit: contain;
+}

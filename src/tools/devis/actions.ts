@@ -15,9 +15,15 @@ import { bomAffaire } from "@/tools/magasin/bom";
 import { estCategorie } from "@/tools/documents/model";
 import { ecrireSpool } from "@/tools/documents/spool";
 import { trouverDoublon } from "@/tools/documents/queries";
-import { grilleCoefs } from "./queries";
+import {
+  CONTACT_VIDE,
+  grilleCoefs,
+  propositionDestinataire,
+  type ChoixContact,
+} from "./queries";
 import { DEPOT_MEDIAS_DEVIS } from "./stockage";
 import {
+  BASE_DEVIS,
   PREFIXE_MEDIA_DEVIS,
   RANG_DEVIS_MAX,
   TEXTE_LIGNE_REPLI,
@@ -31,8 +37,8 @@ import {
   estRenduLot,
   formatNumeroDevis,
   ordreEntre,
+  paveReprenable,
   peutGererReferentielDevis,
-  peutVoirDevis,
   pvDepuisDebourse,
   resumeTexteLigne,
   type ContenuRiche,
@@ -55,7 +61,7 @@ import {
  *     (rafraichirLignes) — jamais au fil de l'eau.
  * ========================================================================== */
 
-const RACINE = "/perso/gus/devis";
+const RACINE = BASE_DEVIS;
 
 function rafraichirEcrans(devisId?: string) {
   revalidatePath(RACINE);
@@ -67,13 +73,13 @@ interface Acteur {
   role: string | undefined;
 }
 
+/** ⚠️ Plus de filtre de rôle ici depuis le 2026-08-12 : l'outil est ouvert à
+ *  toute l'équipe (voir la note « DROITS » de model.ts). Écrire un devis ne
+ *  demande qu'une session — MODIFIER le référentiel, si (`acteurReferentiel`). */
 async function acteur(): Promise<Acteur> {
   const session = await auth();
   const id = session?.user?.id;
   if (!id) throw new Error("Non authentifié");
-  if (!peutVoirDevis(session.user.role)) {
-    throw new Error("Réservé aux profils Achats et Administrateur");
-  }
   return { id, role: session.user.role };
 }
 
@@ -175,6 +181,11 @@ export async function creerDevis(saisie: {
   const annee = new Date().getFullYear();
   const numero = formatNumeroDevis(annee, await prochainRang(annee));
 
+  // Le destinataire est PRÉ-REMPLI depuis la fiche client, avec son contact
+  // principal s'il en a un. C'est le cas le plus tranquille du mécanisme : un
+  // devis qui vient de naître n'a rien à écraser (docs/DEVIS.md §24).
+  const propose = await propositionDestinataire(clientIdRetenu, { mode: "principal" });
+
   const d = await prisma.devis.create({
     data: {
       numero,
@@ -184,6 +195,8 @@ export async function creerDevis(saisie: {
       clientId: clientIdRetenu,
       numeroWhy: whyRetenu,
       chantierId,
+      destinataire: propose.pave,
+      ...propose.contact,
       // Le coefficient global est COPIÉ, pas référencé : réviser la politique de
       // la maison ne doit pas modifier un devis déjà chiffré.
       coefDefautMillieme: grille.globalMillieme,
@@ -216,12 +229,21 @@ export async function majEnteteDevis(
     montrerPrixUnitaires?: boolean;
     montrerSousTotauxLots?: boolean;
     montrerOptions?: boolean;
+    montrerDocumentations?: boolean;
   },
 ): Promise<void> {
   const a = await acteur();
   const actuel = await prisma.devis.findUnique({
     where: { id },
-    select: { etat: true, emisLe: true },
+    select: {
+      etat: true,
+      emisLe: true,
+      // Pour décider si le destinataire peut suivre un changement de client
+      // sans rien détruire (docs/DEVIS.md §24).
+      clientId: true,
+      destinataire: true,
+      contactId: true,
+    },
   });
   if (!actuel) throw new Error("Devis introuvable");
 
@@ -244,6 +266,9 @@ export async function majEnteteDevis(
     data.montrerSousTotauxLots = !!patch.montrerSousTotauxLots;
   }
   if (patch.montrerOptions !== undefined) data.montrerOptions = !!patch.montrerOptions;
+  if (patch.montrerDocumentations !== undefined) {
+    data.montrerDocumentations = !!patch.montrerDocumentations;
+  }
   if (patch.validiteJours !== undefined) {
     data.validiteJours = borne(entier(patch.validiteJours, 30), 0, 3650);
   }
@@ -293,6 +318,33 @@ export async function majEnteteDevis(
     }
   }
 
+  /* Le destinataire SUIT le client — tant qu'il n'a pas été écrit à la main.
+     Changer de client sur un devis, c'est presque toujours corriger une erreur
+     de saisie : garder le pavé et le contact du client précédent adresserait le
+     devis à la mauvaise société, en silence. Mais un pavé retapé (un service de
+     facturation, une TSA) ne se fait pas écraser pour autant : `paveReprenable`
+     le compare à ce que l'ANCIEN client proposait. (docs/DEVIS.md §24) */
+  const nouveauClientId = data.clientId as string | null | undefined;
+  const changeDeClient =
+    nouveauClientId !== undefined && (nouveauClientId ?? null) !== actuel.clientId;
+  if (changeDeClient) {
+    // Le contact figé appartenait à l'ancien client : il ne peut plus rester.
+    Object.assign(data, CONTACT_VIDE);
+    if (patch.destinataire === undefined) {
+      const choixAvant: ChoixContact = actuel.contactId
+        ? { mode: "precis", id: actuel.contactId }
+        : { mode: "aucun" };
+      const avant = await propositionDestinataire(actuel.clientId, choixAvant);
+      if (paveReprenable(actuel.destinataire, avant.pave)) {
+        const apres = await propositionDestinataire(nouveauClientId ?? null, {
+          mode: "principal",
+        });
+        data.destinataire = apres.pave;
+        Object.assign(data, apres.contact);
+      }
+    }
+  }
+
   if (patch.etat !== undefined) {
     if (!estEtatDevis(patch.etat)) throw new Error("État inconnu");
     data.etat = patch.etat;
@@ -317,6 +369,85 @@ export async function majEnteteDevis(
   }
 
   rafraichirEcrans(id);
+}
+
+/**
+ * Choisir la personne à qui ce devis est adressé — et la FIGER.
+ *
+ * Ce qu'on copie ne bougera plus : si M. Dupont quitte la société l'an prochain,
+ * ce devis dira toujours qu'il lui a été adressé. `contactId` reste, mais pour
+ * proposer un rafraîchissement, pas pour afficher (docs/DEVIS.md §24).
+ *
+ * Le pavé destinataire ne suit QUE s'il est reprenable : vide, ou encore
+ * identique à ce que le référentiel proposait. Sinon on ne touche à rien et
+ * l'écran offre le bouton « Reprendre du client ».
+ */
+export async function definirContactDevis(
+  id: string,
+  contactId: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const a = await acteur();
+  const d = await prisma.devis.findUnique({
+    where: { id },
+    select: { clientId: true, destinataire: true, contactId: true },
+  });
+  if (!d) return { ok: false, error: "Devis introuvable" };
+
+  const choix: ChoixContact = contactId ? { mode: "precis", id: contactId } : { mode: "aucun" };
+  const propose = await propositionDestinataire(d.clientId, choix);
+  if (!propose.ok) {
+    // La garde : ce contact n'est pas chez ce client.
+    return { ok: false, error: "Ce contact n'appartient pas au client de ce devis" };
+  }
+
+  const data: Record<string, unknown> = { ...propose.contact, updatedById: a.id };
+
+  const choixAvant: ChoixContact = d.contactId
+    ? { mode: "precis", id: d.contactId }
+    : { mode: "aucun" };
+  const avant = await propositionDestinataire(d.clientId, choixAvant);
+  if (paveReprenable(d.destinataire, avant.pave)) data.destinataire = propose.pave;
+
+  await prisma.devis.update({ where: { id }, data });
+  rafraichirEcrans(id);
+  return { ok: true };
+}
+
+/**
+ * Le bouton explicite : réécrire le pavé depuis la fiche client, MAINTENANT.
+ *
+ * C'est la seule écriture qui écrase un pavé retapé à la main — parce que c'est
+ * exactement ce qu'on lui demande. Le reste du mécanisme ne remplit que le vide.
+ */
+export async function reprendreIdentiteClient(
+  id: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const a = await acteur();
+  const d = await prisma.devis.findUnique({
+    where: { id },
+    select: { clientId: true, contactId: true },
+  });
+  if (!d) return { ok: false, error: "Devis introuvable" };
+  if (!d.clientId) return { ok: false, error: "Ce devis n'est rattaché à aucun client" };
+
+  // On garde la personne déjà choisie si elle tient toujours, sinon le principal
+  // du client : reprendre l'adresse ne doit pas changer le destinataire.
+  const choix: ChoixContact = d.contactId
+    ? { mode: "precis", id: d.contactId }
+    : { mode: "principal" };
+  let propose = await propositionDestinataire(d.clientId, choix);
+  if (!propose.ok) propose = await propositionDestinataire(d.clientId, { mode: "principal" });
+
+  if (!propose.pave) {
+    return { ok: false, error: "La fiche de ce client ne porte ni adresse ni contact" };
+  }
+
+  await prisma.devis.update({
+    where: { id },
+    data: { destinataire: propose.pave, ...propose.contact, updatedById: a.id },
+  });
+  rafraichirEcrans(id);
+  return { ok: true };
 }
 
 /**
@@ -418,10 +549,21 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
         // NI le jeton NI la date de publication — la v2 n'est pas encore
         // partie, et le lien de la v1 continue de montrer ce qui a réellement
         // été envoyé.
+        //
+        // ⚠️ Le contact figé DOIT suivre, et il se recopie TEL QUEL — on ne le
+        // relit pas dans le référentiel. Une v2 négociée trois semaines plus
+        // tard part à la même personne ; la relire ferait basculer le devis sur
+        // le nouveau principal du client sans que personne ne l'ait demandé.
         destinataire: source.destinataire,
+        contactId: source.contactId,
+        contactNom: source.contactNom,
+        contactFonction: source.contactFonction,
+        contactEmail: source.contactEmail,
+        contactTel: source.contactTel,
         montrerPrixUnitaires: source.montrerPrixUnitaires,
         montrerSousTotauxLots: source.montrerSousTotauxLots,
         montrerOptions: source.montrerOptions,
+        montrerDocumentations: source.montrerDocumentations,
         createdById: a.id,
         updatedById: a.id,
       },
@@ -543,11 +685,19 @@ export async function nouvelleRevision(id: string): Promise<{ id: string }> {
         remiseGlobaleCents: source.remiseGlobaleCents,
         validiteJours: source.validiteJours,
         // Présentation reprise, publication non : la copie est un devis à part,
-        // qui n'a jamais été envoyé à personne.
+        // qui n'a jamais été envoyé à personne. Le destinataire suit quand même,
+        // contact compris : on duplique presque toujours pour le même
+        // interlocuteur, et il se corrige d'un menu déroulant.
         destinataire: source.destinataire,
+        contactId: source.contactId,
+        contactNom: source.contactNom,
+        contactFonction: source.contactFonction,
+        contactEmail: source.contactEmail,
+        contactTel: source.contactTel,
         montrerPrixUnitaires: source.montrerPrixUnitaires,
         montrerSousTotauxLots: source.montrerSousTotauxLots,
         montrerOptions: source.montrerOptions,
+        montrerDocumentations: source.montrerDocumentations,
         createdById: a.id,
         updatedById: a.id,
       },

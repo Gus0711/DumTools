@@ -194,6 +194,17 @@
   align-items: start;
 }
 .affectation-doc .module-plan.with-photo { grid-template-columns: 98mm minmax(0, 1fr); }
+/* Page de SUITE (voir `paginerModule` dans apercu.tsx) : le schéma à bornes est
+   déjà imprimé sur la première page, la zone des tableaux prend donc toute la
+   largeur — et toute la hauteur du plan, qui est celle de la page. */
+.affectation-doc .module-plan.sans-schema { grid-template-columns: minmax(0, 1fr); }
+.affectation-doc .module-plan.sans-schema .module-table-area { height: 100%; }
+/* Sur une page de suite le tableau occupe toute la LARGEUR : poussée en bas de
+   zone par son `margin-top: auto`, la légende viendrait se coucher sur le logo
+   du pied (`.logo-dumortier`, en position absolue à gauche) — sur la première
+   page elle en est protégée par la colonne du schéma. Elle se range donc juste
+   sous le tableau qu'elle explique. */
+.affectation-doc .module-plan.sans-schema .legend { margin-top: 0; }
 .affectation-doc .module-figure {
   height: 149mm;
   display: grid;
@@ -287,6 +298,9 @@
   width: 100%;
   box-sizing: border-box;
 }
+/* Tableau repris d'une page à l'autre : « (suite) » en filigrane du cartouche. */
+.affectation-doc .io-table caption .caption-suite { font-weight: 400; opacity: 0.85; }
+.affectation-doc .module-title .titre-suite { font-weight: 400; opacity: 0.7; }
 .affectation-doc .io-table.io-table-input caption { background: #5d94bb; }
 .affectation-doc .io-table.io-table-output caption { background: #d0893d; }
 .affectation-doc .io-table th,
@@ -527,6 +541,9 @@
 .affectation-doc.portrait .module-figure.module-16di .print-module-photo { height: 32mm; }
 .affectation-doc.portrait .module-figure.module-16di .print-module-photo img { max-height: 30mm; }
 .affectation-doc.portrait .module-table-area { height: 147mm; }
+/* En portrait le schéma est EMPILÉ au-dessus des tableaux : la page de suite
+   récupère toute sa hauteur (234 mm), d'où `zoneSuite` dans GABARIT_MODULE. */
+.affectation-doc.portrait .module-plan.sans-schema .module-table-area { height: 234mm; }
 /* Tableaux E/S un cran plus compacts en portrait pour absorber toutes les lignes
    (un module 8UI/6UO = 14 lignes) sans rogner. */
 .affectation-doc.portrait .module-table-area .io-table { font-size: 6.9pt; }

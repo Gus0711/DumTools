@@ -1,14 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { marquerBomTouchee } from "@/lib/chantiers/arret-serveur";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
+import { supprimerMedia } from "@/lib/medias-document/stockage";
 import { produitParCode, type ProduitBref } from "./queries";
 import {
   SENS_MOUVEMENT,
   TYPES_SAISISSABLES,
   cleReferentiel,
+  estCategorieDoc,
   estTypeDepot,
   estTypeMouvement,
   peutCorrigerStock,
@@ -982,6 +985,7 @@ export async function enregistrerLigneMateriel(p: {
       ...(note === undefined ? {} : { note }),
     },
   });
+  await marquerBomTouchee(p.chantierId);
   revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
   revalidatePath(`/affaires/${p.chantierId}`);
   return { produitId };
@@ -990,6 +994,7 @@ export async function enregistrerLigneMateriel(p: {
 export async function supprimerLigneMateriel(id: string): Promise<void> {
   await acteur();
   const l = await prisma.ligneMaterielAffaire.delete({ where: { id } });
+  await marquerBomTouchee(l.chantierId);
   revalidatePath(`${RAYON}/affaires/${l.chantierId}`);
   revalidatePath(`/affaires/${l.chantierId}`);
 }
@@ -1018,6 +1023,7 @@ export async function basculerHorsFourniture(p: {
       where: { chantierId: p.chantierId, produitId: p.produitId },
     });
   }
+  await marquerBomTouchee(p.chantierId);
   revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
   revalidatePath(`/affaires/${p.chantierId}`);
 }
@@ -1077,6 +1083,7 @@ export async function choisirVariante(p: {
       update: { nomenclatureId: p.nomenclatureId },
     });
   }
+  await marquerBomTouchee(p.chantierId);
   revalidatePath(`${RAYON}/affaires/${p.chantierId}`);
   revalidatePath(`/affaires/${p.chantierId}`);
 }
@@ -1496,4 +1503,129 @@ export async function supprimerAssociation(id: string): Promise<void> {
     select: { produitId: true },
   });
   revalidatePath(`${RAYON_ASSOC}/produits/${ligne.produitId}`);
+}
+
+/* --- Documentation --------------------------------------------------------- *
+ * Le TÉLÉVERSEMENT ne passe pas par ici : un binaire ne traverse pas une server
+ * action, il arrive en multipart sur /api/magasin/documentation. Ces actions
+ * couvrent tout le reste — le lien externe, le titre, le rattachement.
+ * -------------------------------------------------------------------------- */
+
+const RAYON_DOC = "/outils/magasin";
+
+/** Rattache une documentation à un produit. Idempotent : re-rattacher ne
+ *  duplique pas (la jonction est clé primaire composée). */
+export async function rattacherDocumentation(
+  produitId: string,
+  documentationId: string,
+): Promise<void> {
+  await acteurReferentiel();
+  if (!produitId || !documentationId) throw new Error("Rattachement incomplet");
+
+  const dernier = await prisma.produitDocumentation.findFirst({
+    where: { produitId },
+    orderBy: { ordre: "desc" },
+    select: { ordre: true },
+  });
+
+  await prisma.produitDocumentation.upsert({
+    where: { produitId_documentationId: { produitId, documentationId } },
+    update: {},
+    create: { produitId, documentationId, ordre: (dernier?.ordre ?? -1) + 1 },
+  });
+  revalidatePath(`${RAYON_DOC}/produits/${produitId}`);
+  revalidatePath(`${RAYON_DOC}/documentation`);
+}
+
+/** Détache SANS supprimer : la fiche sert peut-être six autres produits. */
+export async function detacherDocumentation(
+  produitId: string,
+  documentationId: string,
+): Promise<void> {
+  await acteurReferentiel();
+  await prisma.produitDocumentation
+    .delete({ where: { produitId_documentationId: { produitId, documentationId } } })
+    .catch(() => {});
+  revalidatePath(`${RAYON_DOC}/produits/${produitId}`);
+  revalidatePath(`${RAYON_DOC}/documentation`);
+}
+
+export interface SaisieDocumentation {
+  id?: string;
+  titre: string;
+  categorie?: string;
+  /** Lien externe. Ignoré si le document porte déjà un fichier téléversé. */
+  url?: string | null;
+  note?: string;
+  /** Rattachement immédiat, quand on crée la fiche depuis un produit. */
+  produitId?: string | null;
+}
+
+/**
+ * Crée une documentation EN LIEN (chez le constructeur) ou renomme une fiche
+ * existante. Une documentation doit avoir une source : sans fichier téléversé,
+ * l'URL est obligatoire — sinon on enregistre un titre qui ne mène nulle part.
+ */
+export async function enregistrerDocumentation(
+  p: SaisieDocumentation,
+): Promise<{ id: string }> {
+  const a = await acteurReferentiel();
+
+  const titre = texte(p.titre);
+  if (!titre) throw new Error("Titre requis");
+  const categorie = estCategorieDoc(p.categorie) ? p.categorie : "fiche";
+  const url = texteOuNull(p.url);
+
+  if (p.id) {
+    const existante = await prisma.documentation.findUnique({
+      where: { id: p.id },
+      select: { fichier: true },
+    });
+    if (!existante) throw new Error("Documentation introuvable");
+    // On ne remplace pas un binaire par une URL au détour d'un renommage : tant
+    // qu'un fichier est là, c'est lui la source.
+    const data = existante.fichier
+      ? { titre, categorie, note: texte(p.note), updatedById: a.id }
+      : { titre, categorie, url, note: texte(p.note), updatedById: a.id };
+    if (!existante.fichier && !url) throw new Error("Lien requis (aucun fichier téléversé)");
+    await prisma.documentation.update({ where: { id: p.id }, data });
+    revalidatePath(`${RAYON_DOC}/documentation`);
+    return { id: p.id };
+  }
+
+  if (!url) throw new Error("Lien requis — ou téléversez un fichier");
+
+  const doc = await prisma.documentation.create({
+    data: {
+      titre,
+      categorie,
+      url,
+      note: texte(p.note),
+      createdById: a.id,
+      updatedById: a.id,
+    },
+    select: { id: true },
+  });
+
+  const produitId = texteOuNull(p.produitId);
+  if (produitId) await rattacherDocumentation(produitId, doc.id);
+
+  revalidatePath(`${RAYON_DOC}/documentation`);
+  return { id: doc.id };
+}
+
+/**
+ * Supprime la documentation PARTOUT — la fiche, ses rattachements (cascade) et
+ * son binaire. Le compte des produits concernés est renvoyé par la lecture qui
+ * précède l'appel : c'est l'écran qui prévient, pas l'action qui refuse.
+ */
+export async function supprimerDocumentation(id: string): Promise<void> {
+  await acteurReferentiel();
+  const doc = await prisma.documentation.delete({
+    where: { id },
+    select: { fichier: true, produits: { select: { produitId: true } } },
+  });
+  if (doc.fichier) await supprimerMedia(doc.fichier);
+  for (const l of doc.produits) revalidatePath(`${RAYON_DOC}/produits/${l.produitId}`);
+  revalidatePath(`${RAYON_DOC}/documentation`);
 }

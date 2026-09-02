@@ -918,3 +918,82 @@
 .devis-doc.pour-pdf .pied {
   display: none;
 }
+
+/* --- Annexes : la documentation technique, EN LIENS ------------------------- *
+   Volontairement sobre et en fin de document : ce sont des références, pas une
+   partie de l'offre. Le filet laiton la rattache visuellement au bloc
+   « Options » — deux encarts de même nature, ce qui accompagne le chiffrage
+   sans en faire partie. */
+.devis-doc .annexes {
+  border-top: 1px solid var(--ligne);
+  padding-top: 3mm;
+  margin: 6mm 0 0;
+  break-inside: avoid;
+}
+.devis-doc .annexes h2 {
+  font-family: "Archivo", var(--font-display-app, ""), "Segoe UI", Arial, sans-serif;
+  font-size: 10pt;
+  color: var(--navy);
+  margin: 0 0 1mm;
+}
+.devis-doc .annexes .aide {
+  font-size: 8.4pt;
+  color: var(--muted);
+  margin: 0 0 2mm;
+}
+.devis-doc .annexes ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1mm 6mm;
+}
+.devis-doc .annexes li {
+  font-size: 8.8pt;
+  line-height: 1.45;
+  /* Une fiche par ligne, jamais coupée en deux entre deux pages. */
+  break-inside: avoid;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 1.5mm;
+}
+.devis-doc .annexes a {
+  color: var(--navy);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+/* ⚠️ `nowrap` : sans lui, « Fiche technique · site constructeur » se coupe en
+   plein milieu dès que la colonne est étroite (« Fiche technique · » sur une
+   ligne, « constructeur » sur la suivante). La mention passe SOUS le titre si
+   elle ne tient pas — jamais en deux morceaux. Défaut vu en REGARDANT le PDF,
+   invisible aux contrôles. */
+.devis-doc .annexes .meta {
+  color: var(--muted);
+  font-size: 8pt;
+  white-space: nowrap;
+}
+/* La mention « depuis la version en ligne » ne s'affiche QUE sur le papier :
+   à l'écran et dans le PDF, les liens fonctionnent, la dire serait un aveu
+   inutile. */
+.devis-doc .annexes .sur-papier {
+  display: none;
+}
+@media print {
+  .devis-doc .annexes .sur-papier {
+    display: inline;
+  }
+  /* … sauf dans le PDF serveur : Chromium y pose de vraies annotations de lien,
+     ils sont donc cliquables. Le PDF passe pourtant par `@media print` — sans
+     cette exception, le seul document où les liens marchent serait celui qui
+     annonce qu'ils ne marchent pas. */
+  .devis-doc.pour-pdf .annexes .sur-papier {
+    display: none;
+  }
+}
+@media (max-width: 700px) {
+  .devis-doc .annexes ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

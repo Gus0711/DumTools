@@ -9,7 +9,8 @@ export type TypeResultat =
   | "note"
   | "visite"
   | "wiki"
-  | "produit";
+  | "produit"
+  | "devis";
 
 export interface ResultatRecherche {
   type: TypeResultat;
@@ -30,6 +31,7 @@ export const LIBELLE_TYPE: Record<TypeResultat, string> = {
   visite: "Visites",
   wiki: "Wiki",
   produit: "Magasin",
+  devis: "Devis",
 };
 
 /** Longueur minimale de la requête — en dessous, tout ressortirait. */

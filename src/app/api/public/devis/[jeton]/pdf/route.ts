@@ -17,7 +17,7 @@ export const maxDuration = 60;
  * obtenir exactement la même page.
  *
  * Conséquence assumée : pas de PDF avant publication. L'aperçu interne
- * (`/perso/gus/devis/[id]/apercu`) rend le MÊME document et s'imprime au
+ * (`/outils/devis/[id]/apercu`) rend le MÊME document et s'imprime au
  * navigateur — ce qui couvre le besoin d'avant-envoi.
  */
 

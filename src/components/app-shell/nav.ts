@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   Briefcase,
   Building2,
   Home,
@@ -42,7 +41,10 @@ export function entreesNav({
         icon: Briefcase,
         // On reste sur « Affaires » dans les outils d'affaire : c'est par là
         // qu'on y est entré.
-        aussi: TOOLS_AFFAIRE.map((t) => t.href),
+        // …et sur « Mes tâches », qui est une vue transverse des affaires : le
+        // rail ne doit pas s'éteindre parce qu'on regarde son propre reste à
+        // faire. C'est d'ailleurs cette entrée qui en porte la pastille.
+        aussi: [...TOOLS_AFFAIRE.map((t) => t.href), "/mes-taches"],
         pastille: nbTaches,
         // Le pivot de la plateforme porte le laiton, pas un signal E/S.
         teinte: "accent" as const,
@@ -58,7 +60,10 @@ export function entreesNav({
       { href: "/clients", nom: "Clients", icon: Building2 },
       { href: "/configuration/points", nom: "Points & modèles", icon: Tags },
       { href: "/configuration/materiel", nom: "Base matériel", icon: SlidersHorizontal },
-      { href: "/documentation", nom: "Documentation", icon: BookOpen },
+      // ⚠️ Plus d'entrée « Documentation » ici : les fiches techniques
+      // appartiennent aux PRODUITS du magasin (/outils/magasin/documentation),
+      // d'où la base matériel les lit et d'où les devis les annexent. L'écran
+      // qui listait un dossier de PDF a été supprimé le 2026-08-12.
       // Gestion des comptes : réservée aux administrateurs.
       ...(isAdmin
         ? [{ href: "/configuration/utilisateurs", nom: "Utilisateurs", icon: Users }]
@@ -85,7 +90,7 @@ export function teinteDeRoute(pathname: string): Teinte {
   const trouve = ROUTES_TEINTEES.filter(
     (r) => pathname === r.prefixe || pathname.startsWith(`${r.prefixe}/`),
   ).sort((a, b) => b.prefixe.length - a.prefixe.length)[0];
-  // Hors outil (accueil, configuration, documentation) : le laiton de la
+  // Hors outil (accueil, configuration) : le laiton de la
   // maison. Pas le marine — sur le bâti sombre il faudrait le remonter si haut
   // en clarté qu'il finirait blanc, et un filet blanc en travers de la barre
   // se lit comme une erreur d'affichage.

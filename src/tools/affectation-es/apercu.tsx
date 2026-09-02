@@ -202,19 +202,27 @@ function IoTable({
   direction,
   caption,
   firstHead,
+  channels,
+  suite,
 }: {
   project: Project;
   m: Module;
   direction: "input" | "output";
   caption: string;
   firstHead: string;
+  /** Les canaux à imprimer ici. Absent = tous (page automate intégré). */
+  channels?: number[];
+  /** Reprise d'un tableau commencé à la page précédente. */
+  suite?: boolean;
 }) {
-  const count = channelCount(direction, m);
-  if (!count) return null;
-  const rows = Array.from({ length: count }, (_, i) => i + 1);
+  const rows = channels ?? canaux(channelCount(direction, m));
+  if (!rows.length) return null;
   return (
     <table className={`io-table ${direction === "input" ? "io-table-input" : "io-table-output"}`}>
-      <caption>{caption}</caption>
+      <caption>
+        {caption}
+        {suite && <span className="caption-suite"> (suite)</span>}
+      </caption>
       <thead>
         <tr>
           <th>{firstHead}</th>
@@ -265,12 +273,129 @@ const LEGEND =
   "Les colonnes « Ancien fil 1 » et « Ancien fil 2 » sont à renseigner sur site par le technicien. " +
   "Les bornes indiquées « Libre » restent disponibles pour une évolution future.";
 
+// --- Pagination d'une page module -------------------------------------------
+//
+// `.module-table-area` est une boîte à HAUTEUR FIXE en `overflow: hidden` : ce
+// qui dépasse disparaît, sans un mot. Un module 8UI/6UO d'un projet importé du
+// GFX y perdait ses deux dernières sorties et sa légende — 179 mm de tableaux
+// dans 153 mm de boîte — et le PDF, capture du même DOM, sortait tronqué sur le
+// chantier. Aucun test ne pouvait le voir : le document restait valide.
+//
+// On pagine donc ici, comme le récapitulatif (recap-affectation.tsx) : en pages
+// de hauteur connue, plutôt qu'en s'en remettant à un flux CSS qui se fait
+// rogner. Les pages de suite laissent tomber le schéma à bornes — il est déjà
+// imprimé sur la première — et le tableau prend toute la largeur.
+
+/** Gabarit de la zone des tableaux, en MILLIMÈTRES — toutes ces valeurs sont
+ *  MESURÉES au navigateur sur le rendu réel (`scripts/apercu-gabarit.mts`),
+ *  jamais estimées :
+ *   - `zone` / `zoneSuite` : hauteur de `.module-table-area`, la page de suite
+ *     récupérant la place du schéma (en portrait il est empilé au-dessus) ;
+ *   - `ligne` : une ligne dont le point porte un TEXTE LIBRE — il se rend en 2ᵉ
+ *     ligne sous la désignation, ce qui fait toute la différence : l'import GFX
+ *     en pose un sur chaque point, et le tableau double de hauteur ;
+ *   - `ligneSimple` : une ligne sans texte libre (ou une borne « Libre ») ;
+ *   - `entete` : le cartouche + la ligne de titres d'un tableau ;
+ *   - `legende` : le pavé de bas de zone, réservé sur CHAQUE page (on ne sait
+ *     pas encore laquelle sera la dernière) ;
+ *   - `gap` : l'écart flex entre deux blocs de la zone.
+ *  `MARGE_MODULE` garde un fond de page libre : la zone reste en
+ *  `overflow: hidden`, mieux vaut un blanc en bas qu'une ligne rognée. */
+const GABARIT_MODULE: Record<
+  OrientationApercu,
+  { zone: number; zoneSuite: number; entete: number; ligne: number; ligneSimple: number; legende: number; gap: number }
+> = {
+  landscape: { zone: 152.9, zoneSuite: 152.9, entete: 15.4, ligne: 9.8, ligneSimple: 7.2, legende: 6.9, gap: 4 },
+  portrait: { zone: 147.1, zoneSuite: 234.0, entete: 14.1, ligne: 8.5, ligneSimple: 5.9, legende: 3.5, gap: 4 },
+};
+const MARGE_MODULE = 3;
+
+const canaux = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+
+interface BlocModule {
+  direction: "input" | "output";
+  caption: string;
+  firstHead: string;
+  /** Reprise d'un tableau commencé à la page précédente. */
+  suite: boolean;
+  channels: number[];
+}
+
+/**
+ * Répartit les entrées puis les sorties d'un module en pages de hauteur connue.
+ * Un tableau qui déborde continue en page suivante, son cartouche repris avec
+ * « (suite) » ; si une section se termine en milieu de page, la suivante
+ * enchaîne dessous — même densité que le récapitulatif.
+ *
+ * Renvoie toujours au moins une page, fût-elle vide : un module sans borne garde
+ * sa page et son schéma.
+ */
+function paginerModule(project: Project, m: Module, orientation: OrientationApercu): BlocModule[][] {
+  const g = GABARIT_MODULE[orientation];
+  const points = project.points ?? [];
+  const hauteur = (direction: "input" | "output", ch: number) =>
+    getAssigned(points, direction, m.number, ch)?.source ? g.ligne : g.ligneSimple;
+
+  const sections: { direction: "input" | "output"; caption: string; firstHead: string; channels: number[] }[] = [
+    { direction: "input" as const, caption: `Entrées ${m.inputKind}`, firstHead: "N°", channels: canaux(channelCount("input", m)) },
+    { direction: "output" as const, caption: `Sorties ${m.outputKind || "UO"}`, firstHead: "N°", channels: canaux(channelCount("output", m)) },
+  ].filter((sec) => sec.channels.length > 0);
+
+  const pages: BlocModule[][] = [];
+  let courante: BlocModule[] = [];
+  let occupe = 0;
+  const capacite = () =>
+    (pages.length === 0 ? g.zone : g.zoneSuite) - MARGE_MODULE - g.legende - g.gap;
+  const fermer = () => {
+    if (!courante.length) return;
+    pages.push(courante);
+    courante = [];
+    occupe = 0;
+  };
+
+  for (const sec of sections) {
+    let i = 0;
+    while (i < sec.channels.length) {
+      // Un 2e tableau sur la même page paie en plus l'écart flex.
+      const surcout = g.entete + (courante.length > 0 ? g.gap : 0);
+      let reste = capacite() - occupe - surcout;
+      const prises: number[] = [];
+      while (i + prises.length < sec.channels.length) {
+        const h = hauteur(sec.direction, sec.channels[i + prises.length]);
+        if (h > reste && (prises.length > 0 || courante.length > 0)) break;
+        // Page vide et rien ne rentre : on prend quand même une ligne, sinon la
+        // boucle ne progresse jamais.
+        reste -= h;
+        prises.push(sec.channels[i + prises.length]);
+      }
+      if (!prises.length) {
+        fermer();
+        continue;
+      }
+      courante.push({ ...sec, suite: i > 0, channels: prises });
+      occupe += surcout + prises.reduce((t, ch) => t + hauteur(sec.direction, ch), 0);
+      i += prises.length;
+      if (i < sec.channels.length) fermer();
+    }
+  }
+  fermer();
+  return pages.length ? pages : [[]];
+}
+
 // --- Pages -----------------------------------------------------------------
 
+/**
+ * UNE page d'un module — la première porte le schéma à bornes, les suivantes
+ * reprennent la suite des tableaux sur toute la largeur (voir `paginerModule`).
+ * La légende ne s'imprime qu'en bas de la dernière.
+ */
 function ModulePage({
   project,
   modules,
   m,
+  blocs,
+  premiere,
+  derniere,
   page,
   total,
   catalogue,
@@ -278,6 +403,9 @@ function ModulePage({
   project: Project;
   modules: Module[];
   m: Module;
+  blocs: BlocModule[];
+  premiere: boolean;
+  derniere: boolean;
   page: number;
   total: number;
   catalogue: Catalogue;
@@ -289,25 +417,34 @@ function ModulePage({
   return (
     <section className="print-page">
       <DocHeader project={project} />
-      <div className="module-title">{moduleDisplayTitle(m, modules)}</div>
-      <div className="module-plan with-photo">
-        <div className={figureClass}>
-          {top ? <div className="module-zone top">{top}</div> : <div />}
-          <div className="print-module-photo">
-            <img src={moduleImage(catalogue, m)} alt={`Module ${m.type}`} />
+      <div className="module-title">
+        {moduleDisplayTitle(m, modules)}
+        {!premiere && <span className="titre-suite"> (suite)</span>}
+      </div>
+      <div className={`module-plan ${premiere ? "with-photo" : "sans-schema"}`}>
+        {premiere && (
+          <div className={figureClass}>
+            {top ? <div className="module-zone top">{top}</div> : <div />}
+            <div className="print-module-photo">
+              <img src={moduleImage(catalogue, m)} alt={`Module ${m.type}`} />
+            </div>
+            {bottom ? <div className={`module-zone ${bottomClass}`}>{bottom}</div> : <div />}
           </div>
-          {bottom ? <div className={`module-zone ${bottomClass}`}>{bottom}</div> : <div />}
-        </div>
+        )}
         <div className="module-table-area">
-          <IoTable project={project} m={m} direction="input" caption={`Entrées ${m.inputKind}`} firstHead="N°" />
-          <IoTable
-            project={project}
-            m={m}
-            direction="output"
-            caption={`Sorties ${m.outputKind || "UO"}`}
-            firstHead="N°"
-          />
-          <div className="legend">{LEGEND}</div>
+          {blocs.map((b, i) => (
+            <IoTable
+              key={`${b.direction}-${i}`}
+              project={project}
+              m={m}
+              direction={b.direction}
+              caption={b.caption}
+              firstHead={b.firstHead}
+              channels={b.channels}
+              suite={b.suite}
+            />
+          ))}
+          {derniere && <div className="legend">{LEGEND}</div>}
         </div>
       </div>
       <div className="side-page">{page}</div>
@@ -567,11 +704,19 @@ export function Apercu({
     [project, modules, orientation],
   );
 
+  // Les tableaux d'un module ne tiennent pas toujours sur une page : on les
+  // découpe AVANT de numéroter, sinon le « page n / N » du pied mentirait.
+  const decoupes = useMemo(
+    () => new Map(extensionModules.map((m) => [m.number, paginerModule(project, m, orientation)])),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [project, modules, orientation],
+  );
+
   const total =
     (showControllerPage ? 1 : 0) +
     recap.pages.length +
     integratedModules.length * 2 +
-    extensionModules.length +
+    extensionModules.reduce((n, m) => n + (decoupes.get(m.number)?.length ?? 1), 0) +
     commModules.length;
 
   const pages: ReactNode[] = [];
@@ -603,8 +748,24 @@ export function Apercu({
       pages.push(<IntegratedDiagramPage key={`id-${m.number}`} project={project} modules={modules} m={m} page={page} total={total} catalogue={catalogue} />);
       page += 1;
     } else {
-      pages.push(<ModulePage key={`m-${m.number}`} project={project} modules={modules} m={m} page={page} total={total} catalogue={catalogue} />);
-      page += 1;
+      const decoupe = decoupes.get(m.number) ?? [[]];
+      for (const [i, blocs] of decoupe.entries()) {
+        pages.push(
+          <ModulePage
+            key={`m-${m.number}-${i}`}
+            project={project}
+            modules={modules}
+            m={m}
+            blocs={blocs}
+            premiere={i === 0}
+            derniere={i === decoupe.length - 1}
+            page={page}
+            total={total}
+            catalogue={catalogue}
+          />,
+        );
+        page += 1;
+      }
     }
   }
   for (const m of commModules) {

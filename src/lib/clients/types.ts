@@ -22,3 +22,42 @@ export interface ClientRealisation extends ClientArtefact {
   toolId: string;
   toolNom: string;
 }
+
+/**
+ * Une personne chez le client (docs/DEVIS.md §24).
+ *
+ * Ici et pas dans `queries.ts` : la pastille « Client » de l'éditeur de devis
+ * est un composant CLIENT, et `queries.ts` est `server-only` — même règle que
+ * les types de la palette de recherche.
+ *
+ * ⚠️ Ce que porte un DEVIS n'est pas ce type : c'est une COPIE figée
+ * (`contactNom`/`contactFonction`/…). Ce référentiel-ci vit.
+ */
+export interface ContactClientVue {
+  id: string;
+  civilite: string;
+  nom: string;
+  fonction: string;
+  email: string;
+  telephone: string;
+  mobile: string;
+  note: string;
+  /** Celui qu'on propose d'office sur un nouveau devis de ce client. */
+  principal: boolean;
+  /** A quitté la maison : retiré des propositions, jamais des devis. */
+  actif: boolean;
+}
+
+/** La fiche d'un client : son identité postale et ses personnes. Client-safe
+ *  pour la même raison que ci-dessus (les deux blocs de la fiche sont des
+ *  composants client). */
+export interface ClientDetail {
+  id: string;
+  nom: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  telephone: string;
+  email: string;
+  contacts: ContactClientVue[];
+}

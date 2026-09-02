@@ -35,10 +35,11 @@ import {
   type DefColonne,
   type EtatTri,
 } from "@/ui";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { cn } from "@/lib/cn";
 import { creerDevis } from "./actions";
 import {
+  BASE_DEVIS,
   ETATS_DEVIS,
   ETAT_DEVIS_AIDE,
   ETAT_DEVIS_LABEL,
@@ -179,6 +180,13 @@ export function IndexDevis({
   const [q, setQ] = useState(() => params.get("q") ?? "");
   const [client, setClient] = useState(() => params.get("client") ?? "");
   const [etats, setEtats] = useState<Set<EtatDevis>>(() => etatsDepuisUrl(params.get("etats")));
+  // Adresse muette (retour par le rail, l'accueil, ⌘K) : on reprend le réglage
+  // laissé sur ce poste plutôt que de tout rouvrir en grand.
+  useReprendreFiltres("devis", ["q", "client", "etats"], (v) => {
+    setQ(v("q") ?? "");
+    setClient(v("client") ?? "");
+    setEtats(etatsDepuisUrl(v("etats")));
+  });
   const [creation, setCreation] = useState(false);
   const [tri, setTri] = useState<EtatTri>({ cle: "maj", sens: "desc" });
 
@@ -217,11 +225,14 @@ export function IndexDevis({
   const etatsParDefaut = etats.size === ETATS_DEVIS.length;
   const filtreActif = q.trim() !== "" || client !== "" || !etatsParDefaut;
 
-  useSyncUrl({
-    q,
-    client,
-    etats: etatsParDefaut ? "" : [...etats].join(",") || "aucun",
-  });
+  useSyncUrl(
+    {
+      q,
+      client,
+      etats: etatsParDefaut ? "" : [...etats].join(",") || "aucun",
+    },
+    "devis",
+  );
 
   function reinitialiser() {
     setQ("");
@@ -244,7 +255,7 @@ export function IndexDevis({
   const nouveau = (
     <>
       <Link
-        href="/perso/gus/devis/referentiels"
+        href={`${BASE_DEVIS}/referentiels`}
         className="press inline-flex h-8 items-center gap-2 rounded-md border border-border bg-surface px-3 text-sm font-medium text-fg transition-[background-color,border-color] duration-150 hover:border-brand/45 hover:bg-surface-2"
       >
         <Settings2 className="h-4 w-4" /> Référentiels
@@ -278,7 +289,7 @@ export function IndexDevis({
           clients={clients}
           affaires={affaires}
           onFerme={() => setCreation(false)}
-          onCree={(id) => router.push(`/perso/gus/devis/${id}`)}
+          onCree={(id) => router.push(`${BASE_DEVIS}/${id}`)}
         />
       )}
 
@@ -439,7 +450,7 @@ function cellule(d: DevisResume, cle: string): React.ReactNode {
       return (
         <>
           <Link
-            href={`/perso/gus/devis/${d.id}`}
+            href={`${BASE_DEVIS}/${d.id}`}
             className="group inline-flex items-center gap-2 transition-colors hover:text-brand"
           >
             <FileSpreadsheet className="h-4 w-4 shrink-0 text-subtle transition-colors group-hover:text-brand" />

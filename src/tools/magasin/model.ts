@@ -459,6 +459,130 @@ export interface VarianteBom {
 }
 
 /* =============================================================================
+ * LE BESOIN CONSOLIDÉ — PLUSIEURS AFFAIRES, UNE SEULE COMMANDE
+ *
+ * La BOM répond « que faut-il pour CETTE affaire ? ». On passe pourtant les
+ * commandes par lot : dix-sept salles de l'USEDA commandées le même mois, c'est
+ * UN bon de commande par fournisseur, pas dix-sept. Ouvrir dix-sept écrans et
+ * additionner à la main, c'est l'erreur assurée sur la seule ligne qui compte.
+ *
+ * CE QUI SE SOMME ET CE QUI NE SE SOMME PAS — c'est tout le sujet :
+ *
+ *   · le BESOIN se somme          (deux affaires veulent deux automates) ;
+ *   · le RÉSERVÉ et le SORTI se somment    (ils sont propres à une affaire) ;
+ *   · le MANQUANT se somme, borné à zéro affaire par affaire — une affaire
+ *     sur-couverte ne doit pas éponger le découvert de sa voisine ;
+ *   · ⚠️ le STOCK NE SE SOMME PAS. Il est le même pour tout le monde : une
+ *     sonde en rayon est une sonde, pas dix-sept. L'additionner ferait croire
+ *     qu'on a le matériel et la commande partirait courte.
+ *
+ * D'où la forme de `LigneConsolidee` : UNE ligne par produit, portant le stock
+ * une seule fois, et la LISTE de ce que chaque affaire y appelle. L'écran
+ * recompose le total pour la sélection courante sans repasser par le serveur —
+ * cocher une affaire doit se voir tout de suite.
+ * ========================================================================== */
+
+/** Ce qu'UNE affaire appelle sur UN produit. */
+export interface ContribAffaire {
+  chantierId: string;
+  besoin: number;
+  /** besoin − (réservé + sorti) POUR CETTE AFFAIRE, borné à 0. */
+  manquant: number;
+  /** Coché « hors de notre fourniture » sur cette affaire-là : la décision est
+   *  propre à l'affaire, donc le même produit peut être fourni ici et pas là. */
+  horsFourniture: boolean;
+}
+
+/** Une ligne du besoin consolidé : un produit, toutes affaires confondues. */
+export interface LigneConsolidee {
+  produitId: string;
+  refInterne: string;
+  /** La référence CHEZ LE FOURNISSEUR — celle qui va sur le bon de commande. */
+  refFournisseur: string | null;
+  designation: string;
+  unite: string;
+  categorieNom: string | null;
+  fournisseurId: string | null;
+  fournisseurNom: string | null;
+  /** Stock global (dépôts qui en tiennent un). Porté UNE FOIS — voir ci-dessus. */
+  stock: number;
+  /** Réservations actives TOUTES affaires confondues, y compris hors sélection :
+   *  du stock physiquement là mais déjà promis. */
+  reserveTotale: number;
+  /** Prix retenu pour chiffrer (payé si connu, tarif annoncé sinon). */
+  prixCents: number | null;
+  contribs: ContribAffaire[];
+}
+
+/** Un trou de la dérivation, vu depuis plusieurs affaires à la fois. */
+export interface TrouConsolide {
+  nom: string;
+  genre: GenreTrou;
+  cle: string;
+  typeIo: string | null;
+  parAffaire: { chantierId: string; occurrences: number }[];
+}
+
+/** Une affaire candidate au besoin consolidé. */
+export interface AffaireBesoin {
+  id: string;
+  nom: string;
+  numeroWhy: string | null;
+  etat: string;
+  clientId: string;
+  clientNom: string;
+}
+
+/**
+ * Le total d'un produit pour UNE sélection d'affaires. Calculé côté écran, mais
+ * la règle vit ici : elle doit être la même pour le tableau, les compteurs et
+ * l'export CSV — trois endroits où une divergence ne se verrait pas.
+ */
+export interface TotalConsolide {
+  besoin: number;
+  manquant: number;
+  /** stock − réservations actives (toutes affaires) : ce sur quoi on peut
+   *  réellement compter, comme la colonne « disponible » du rayon. */
+  dispo: number;
+  /** Ce qu'il reste à acheter : le manquant que le stock disponible ne couvre
+   *  pas. C'est LE chiffre du bon de commande. */
+  aCommander: number;
+  /** Contributions écartées parce que cochées « hors fourniture ». */
+  nbHorsFourniture: number;
+  /** Affaires de la sélection qui appellent réellement ce produit. */
+  nbAffaires: number;
+}
+
+export function totaliser(ligne: LigneConsolidee, retenues: Set<string>): TotalConsolide {
+  let besoin = 0;
+  let manquant = 0;
+  let nbHorsFourniture = 0;
+  let nbAffaires = 0;
+  for (const c of ligne.contribs) {
+    if (!retenues.has(c.chantierId)) continue;
+    nbAffaires += 1;
+    // Hors fourniture : on la raccorde sans la vendre. Elle ne pèse ni sur le
+    // besoin, ni sur ce qu'on commande — mais on la COMPTE, pour pouvoir dire
+    // qu'elle a été écartée volontairement plutôt que perdue en route.
+    if (c.horsFourniture) {
+      nbHorsFourniture += 1;
+      continue;
+    }
+    besoin += c.besoin;
+    manquant += c.manquant;
+  }
+  const dispo = Math.max(0, ligne.stock - ligne.reserveTotale);
+  return {
+    besoin,
+    manquant,
+    dispo,
+    aCommander: Math.max(0, manquant - dispo),
+    nbHorsFourniture,
+    nbAffaires,
+  };
+}
+
+/* =============================================================================
  * ASSOCIATIONS DE PRODUITS — « ce produit en appelle d'autres »
  *
  * Un fait sur le PRODUIT, vrai partout : c'est pourquoi la table vit ici et non
@@ -577,3 +701,116 @@ export function rangerAssociations(assocs: AssociationVue[]): {
 
   return { accessoires: accessoires.sort(tri), groupes };
 }
+
+/* =============================================================================
+ * LA DOCUMENTATION D'UN PRODUIT
+ *
+ * Une fiche technique appartient au PRODUIT, pas à un dossier de PDF rangé à
+ * côté : c'est ce qui permet de la retrouver depuis la base matériel, depuis la
+ * fiche article, et de l'annexer à un devis sans la chercher.
+ *
+ * Elle sert N produits (le constructeur publie « ECY IO Modules » pour les six
+ * modules d'extension) — d'où la table de jonction, et non un champ.
+ * ========================================================================== */
+
+export type CategorieDoc = "fiche" | "notice" | "certificat" | "schema" | "autre";
+
+export const CATEGORIES_DOC: { id: CategorieDoc; libelle: string }[] = [
+  { id: "fiche", libelle: "Fiche technique" },
+  { id: "notice", libelle: "Notice / manuel" },
+  { id: "certificat", libelle: "Certificat / déclaration" },
+  { id: "schema", libelle: "Schéma / plan" },
+  { id: "autre", libelle: "Autre document" },
+];
+
+export function estCategorieDoc(v: unknown): v is CategorieDoc {
+  return CATEGORIES_DOC.some((c) => c.id === v);
+}
+
+export function libelleCategorieDoc(v: string): string {
+  return CATEGORIES_DOC.find((c) => c.id === v)?.libelle ?? "Document";
+}
+
+/** 30 Mo : une notice constructeur illustrée dépasse volontiers les dix. */
+export const TAILLE_MAX_DOCUMENTATION = 30 * 1024 * 1024;
+
+/** Une documentation telle qu'elle s'affiche — jamais son chemin disque. */
+export interface DocumentationVue {
+  id: string;
+  titre: string;
+  categorie: CategorieDoc;
+  /** Lien externe (constructeur) ; null si le binaire est chez nous. */
+  url: string | null;
+  /** Nom du fichier téléversé ; vide pour un lien externe. */
+  nom: string;
+  mimeType: string;
+  taille: number;
+  note: string;
+  /** Combien de produits s'en servent — c'est ce qui rend la mutualisation
+   *  visible, et ce qui prévient avant une suppression. */
+  nbProduits: number;
+  majLe: Date;
+}
+
+/** Une fiche AVEC les produits qu'elle sert — la vue de la bibliothèque. Le
+ *  type vit ici, dans le module client-safe : l'écran qui l'affiche est un
+ *  composant client, il ne doit jamais importer `documentation.ts`
+ *  (`server-only`). */
+export interface DocumentationAvecProduits extends DocumentationVue {
+  produits: { id: string; refInterne: string; designation: string }[];
+}
+
+/**
+ * OÙ POINTE LE LIEN — le seul endroit qui le décide.
+ *
+ * Un document téléversé n'est jamais servi en statique : il passe par une route
+ * qui contrôle l'accès. Un document externe pointe chez le constructeur, qui
+ * restera à jour tout seul. Le `prefixe` permet à la page publique d'un devis de
+ * servir le même document par sa route scopée au jeton, sans que le composant
+ * ait à connaître les deux mondes.
+ */
+export function lienDocumentation(
+  doc: Pick<DocumentationVue, "id" | "url">,
+  prefixe = "/api/magasin/documentation",
+): string {
+  return doc.url ?? `${prefixe}/${doc.id}`;
+}
+
+/** « 2,4 Mo » — la taille se lit avant de cliquer sur un lien de 30 Mo. */
+export function formatTaille(octets: number): string {
+  if (octets <= 0) return "";
+  if (octets < 1024) return `${octets} o`;
+  if (octets < 1024 * 1024) return `${Math.round(octets / 1024)} ko`;
+  return `${(octets / (1024 * 1024)).toFixed(1).replace(".", ",")} Mo`;
+}
+
+/**
+ * LE TYPE SOUS LEQUEL ON SERT UN DOCUMENT — jamais celui qu'on a reçu.
+ *
+ * Une documentation part sur la page publique d'un devis, donc sur NOTRE
+ * origine. Un fichier HTML servi `inline` y serait du script exécuté chez le
+ * client, avec nos cookies dans le voisinage. Ce qui n'est pas un PDF ou une
+ * image est donc servi en `application/octet-stream` : le navigateur le
+ * télécharge au lieu de l'afficher, et rien ne s'exécute.
+ */
+const MIMES_INLINE = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+]);
+
+export function mimeSur(mime: string): string {
+  return MIMES_INLINE.has(mime) ? mime : "application/octet-stream";
+}
+
+/** Ce qu'on accepte de recevoir. Le reste se met en lien plutôt qu'en dépôt. */
+export const MIMES_DOCUMENTATION = new Set([
+  ...MIMES_INLINE,
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/zip",
+]);

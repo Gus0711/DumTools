@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Globe, Hash, NotebookPen, Search } from "lucide-react";
 import { Input } from "@/ui";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { fmtDateHeure, fmtRelatif } from "@/lib/dates";
 import type { NoteResume } from "./queries";
 
@@ -18,7 +18,10 @@ export function NotesIndex({ notes }: { notes: NoteResume[] }) {
   // plat (voir lib/filtres-url).
   const params = useSearchParams();
   const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
-  useSyncUrl({ q: recherche });
+  // Adresse muette (retour par le rail ou l'accueil) : on reprend la dernière
+  // recherche réglée sur ce poste.
+  useReprendreFiltres("notes", ["q"], (v) => setRecherche(v("q") ?? ""));
+  useSyncUrl({ q: recherche }, "notes");
 
   const filtrees = useMemo(() => {
     const q = recherche.trim().toLowerCase();

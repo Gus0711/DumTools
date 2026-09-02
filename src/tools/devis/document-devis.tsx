@@ -12,7 +12,7 @@
  *     champs passés en props : ce que `getDevisPublic` ne renvoie pas ne peut
  *     pas fuir (le déboursé, le coefficient, la marge, la référence interne).
  *
- * Le MÊME composant sert l'aperçu interne (`/perso/gus/devis/[id]/apercu`) et la
+ * Le MÊME composant sert l'aperçu interne (`/outils/devis/[id]/apercu`) et la
  * page publique (`/d/[jeton]`) : un aperçu qui ne serait pas le document lui-même
  * ne servirait à rien.
  *
@@ -20,6 +20,12 @@
  * densité de l'interface ni le thème sombre).
  */
 import { DocumentRiche } from "@/lib/editeur-riche/rendu-serveur";
+import {
+  formatTaille,
+  libelleCategorieDoc,
+  lienDocumentation,
+  type DocumentationVue,
+} from "@/tools/magasin/model";
 import "./document-devis.css";
 import {
   acompteCents,
@@ -56,6 +62,22 @@ function memeInstant(a: Date, b: Date): boolean {
 export interface DocumentDevisProps {
   devis: DevisComplet;
   societe: SocieteVue;
+  /**
+   * LES ANNEXES — les fiches techniques des produits chiffrés, EN LIENS.
+   *
+   * Jamais des pièces jointes : un devis de cent lignes partirait avec vingt
+   * mégaoctets de PDF constructeur, et une fiche jointe est périmée le jour où
+   * le constructeur la corrige. Le lien, lui, montre la fiche à jour.
+   *
+   * La liste est DÉDUITE côté serveur des lignes que le client voit
+   * (`documentationsDevis`) : le composant ne sait pas d'où elle sort, et un
+   * bloc forfaitaire n'en produit aucune.
+   */
+  documentations?: DocumentationVue[];
+  /** Où pointent les liens : la route publique scopée au jeton sur `/d/…`, la
+   *  route interne authentifiée dans l'aperçu. Le document ne connaît ni l'une
+   *  ni l'autre — il reçoit le préfixe. */
+  prefixeDoc?: string;
   /** Rendu destiné au PDF serveur : Chromium pose lui-même le pied légal et la
    *  pagination sur chaque page, celui du document ferait doublon. */
   pourPdf?: boolean;
@@ -70,7 +92,14 @@ export interface DocumentDevisProps {
   detailInterne?: boolean;
 }
 
-export function DocumentDevis({ devis, societe, pourPdf, detailInterne }: DocumentDevisProps) {
+export function DocumentDevis({
+  devis,
+  societe,
+  pourPdf,
+  detailInterne,
+  documentations = [],
+  prefixeDoc,
+}: DocumentDevisProps) {
   const { entete, lots } = devis;
   // La condensation est IDEMPOTENTE : la page publique reçoit déjà des lignes
   // condensées par `getDevisPublic` (la garde est dans la requête), l'aperçu
@@ -306,6 +335,37 @@ export function DocumentDevis({ devis, societe, pourPdf, detailInterne }: Docume
             )}
           </div>
         </div>
+
+        {/* --- Les annexes : des LIENS, jamais des pièces jointes ----------- */}
+        {documentations.length > 0 && (
+          <section className="annexes">
+            <h2>Documentation technique</h2>
+            <p className="aide">
+              Fiches et notices des matériels proposés, consultables en ligne. Elles ne font pas
+              partie de l&apos;offre chiffrée.
+              {/* Sur PAPIER, un lien ne mène nulle part — et le patron
+                  d'impression supprime justement l'URL après les liens. On le
+                  dit, plutôt que de laisser une liste de titres muets. */}
+              <span className="sur-papier">
+                {" "}
+                Les liens sont accessibles depuis la version en ligne de ce devis.
+              </span>
+            </p>
+            <ul>
+              {documentations.map((d) => (
+                <li key={d.id}>
+                  <a href={lienDocumentation(d, prefixeDoc)} target="_blank" rel="noreferrer">
+                    {d.titre}
+                  </a>
+                  <span className="meta">
+                    {libelleCategorieDoc(d.categorie)}
+                    {d.url ? " · site constructeur" : formatTaille(d.taille) ? ` · ${formatTaille(d.taille)}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* --- Mentions légales -------------------------------------------- */}
         <footer className="pied">

@@ -7,6 +7,8 @@ import { prisma } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { EtatAffaire, BesoinArmoire } from "@/generated/prisma/enums";
 import { resoudreClientId } from "@/lib/clients/queries";
+import { etatArret } from "./arret";
+import { arretBom } from "./arret-serveur";
 
 /** Id de l'utilisateur courant — sert aussi à tracer l'auteur de la dernière
  *  modification (`updatedById`, fil d'activité de l'accueil). */
@@ -295,4 +297,57 @@ export async function changerSuiviPar(
     data: { suiviParId, updatedById: userId },
   });
   revalidate(id);
+}
+
+/* =============================================================================
+ * « C'EST BON, JE N'Y TOUCHE PLUS »
+ * Les deux bascules d'arrêt (voir arret.ts pour le pourquoi). Trois règles y
+ * tiennent tout :
+ *
+ *  1. C'est un CYCLE À TROIS TEMPS, pas une case à deux états. Depuis
+ *     « retouché », le clic ré-arrête — il ne rouvre pas. Rouvrir quelque chose
+ *     qu'on vient de voir passer au jaune serait l'inverse du geste voulu :
+ *     on veut dire « j'ai regardé la retouche, c'est bon ».
+ *  2. L'écriture est un UPDATE BRUT : déclarer qu'on s'arrête n'est pas
+ *     modifier le contenu. Toucher à `updatedAt` ferait basculer l'arrêt en
+ *     « retouché » dans la milliseconde, et `updatedById` ferait remonter
+ *     l'affaire dans le fil d'activité pour un clic qui n'a rien produit.
+ *  3. L'heure vient de la BASE (`now()`), pas de Node : c'est la même horloge
+ *     que celle des `updatedAt` auxquels on la compare.
+ * ========================================================================== */
+
+/** Arrête / rouvre UN automate (Projet GTB). */
+export async function basculerArretProjet(projetId: string): Promise<void> {
+  const userId = await requireUserId();
+  const projet = await prisma.affectationProjet.findUnique({
+    where: { id: projetId },
+    select: { arreteLe: true, updatedAt: true, chantierId: true },
+  });
+  if (!projet) return;
+
+  if (etatArret(projet.arreteLe, projet.updatedAt) === "arrete") {
+    await prisma.$executeRaw`UPDATE "AffectationProjet" SET "arreteLe" = NULL, "arreteParId" = NULL WHERE "id" = ${projetId}`;
+  } else {
+    await prisma.$executeRaw`UPDATE "AffectationProjet" SET "arreteLe" = now(), "arreteParId" = ${userId} WHERE "id" = ${projetId}`;
+  }
+
+  revalidatePath("/affaires");
+  if (projet.chantierId) revalidatePath(`/affaires/${projet.chantierId}`);
+  revalidatePath("/outils/affectation-es");
+}
+
+/** Arrête / rouvre le BESOIN EN MATÉRIEL d'une affaire. */
+export async function basculerArretBom(chantierId: string): Promise<void> {
+  const userId = await requireUserId();
+  const { etat } = await arretBom(chantierId);
+
+  if (etat === "arrete") {
+    await prisma.$executeRaw`UPDATE "Chantier" SET "bomArreteeLe" = NULL, "bomArreteeParId" = NULL WHERE "id" = ${chantierId}`;
+  } else {
+    await prisma.$executeRaw`UPDATE "Chantier" SET "bomArreteeLe" = now(), "bomArreteeParId" = ${userId} WHERE "id" = ${chantierId}`;
+  }
+
+  revalidatePath("/affaires");
+  revalidatePath(`/affaires/${chantierId}`);
+  revalidatePath(`/outils/magasin/affaires/${chantierId}`);
 }

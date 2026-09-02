@@ -6,6 +6,11 @@ import { listerAffaires } from "@/lib/chantiers/queries";
 import { lienRetour } from "@/lib/retour";
 import { FicheProduitVue } from "@/tools/magasin/fiche-produit";
 import { AssociationsProduit } from "@/tools/magasin/associations-produit";
+import { DocumentationProduit } from "@/tools/magasin/documentation-produit";
+import {
+  documentationsDuProduit,
+  listerDocumentations,
+} from "@/tools/magasin/documentation";
 import {
   formatEuros,
   peutCorrigerStock,
@@ -48,17 +53,29 @@ export default async function Page({
   const fiche = await ficheProduit(id);
   if (!fiche) notFound();
 
-  const [depots, affaires, fournisseurs, rayon, fabricants, categories, associations, groupesConnus] =
-    await Promise.all([
-      listerDepots(),
-      listerAffaires(),
-      listerFournisseurs(),
-      listerRayon(),
-      listerFabricants(),
-      listerCategories(),
-      listerAssociations(id),
-      groupesDassociation(),
-    ]);
+  const [
+    depots,
+    affaires,
+    fournisseurs,
+    rayon,
+    fabricants,
+    categories,
+    associations,
+    groupesConnus,
+    documentations,
+    bibliotheque,
+  ] = await Promise.all([
+    listerDepots(),
+    listerAffaires(),
+    listerFournisseurs(),
+    listerRayon(),
+    listerFabricants(),
+    listerCategories(),
+    listerAssociations(id),
+    groupesDassociation(),
+    documentationsDuProduit(id),
+    listerDocumentations(),
+  ]);
 
   const prix = peutVoirPrix(role);
 
@@ -133,6 +150,15 @@ export default async function Page({
         peutPrix={prix}
         peutGerer={peutGererReferentiel(role)}
         peutCorriger={peutCorrigerStock(role)}
+      />
+
+      {/* La documentation appartient au PRODUIT — d'où la base matériel la lit,
+          et d'où les devis qui le chiffrent tirent leurs annexes. */}
+      <DocumentationProduit
+        produitId={fiche.id}
+        documentations={documentations}
+        bibliotheque={bibliotheque}
+        peutGerer={peutGererReferentiel(role)}
       />
 
       {/* « Ce produit en appelle d'autres » — réglé ICI parce que c'est un fait

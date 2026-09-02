@@ -13,6 +13,8 @@ import {
   normalizeControllerReference,
   normalizePdfText,
 } from "./model";
+import { nommeurImport } from "./derivation";
+import type { EntreeVocabulaire } from "@/tools/liste-points/vocabulaire";
 
 const uid = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
@@ -943,7 +945,9 @@ async function parseElectricalPdf(file){
 }
 
 // ===================== INTERFACE PUBLIQUE =====================
-export async function importPdf(file) {
+/** `vocabulaire` : le catalogue de points — mêmes règles qu'à l'import GFX
+ *  (les libellés relevés sur le schéma portent le local, voir `nommeurImport`). */
+export async function importPdf(file, vocabulaire: EntreeVocabulaire[] = []) {
   const result = await parseElectricalPdf(file);
   if (!result.modules.length && !result.controller)
     throw new Error("Aucun automate ECY (300/303/400/450/600/650/PTU-207/S1000E) ni module E/S compatible n'a été détecté dans le texte vectoriel du PDF.");
@@ -954,6 +958,7 @@ export async function importPdf(file) {
     return detectModuleDefinition(nextIoNumber++, m.type, "");
   });
   const points = [];
+  const noms = nommeurImport(vocabulaire);
   result.modules.forEach((m, i) => {
     const mod = modules[i];
     if (isCommunicationType(mod)) return;
@@ -963,13 +968,13 @@ export async function importPdf(file) {
       const channel = p.channel;
       const code = p.code || modulePointCode("input", mod, channel);
       const signal = (mod.type === "16DI" || /^DI/i.test(code)) ? "D" : inferPdfSignal(p.label, "input");
-      points.push({ direction: "input", designation: p.label, repere: code, signal, source: "Import PDF - " + sourceKind + " / " + code + " (p." + pageLabel + ")", relay: "", active: true, module: mod.number, channel, uid: uid() });
+      points.push({ direction: "input", repere: code, signal, ...noms.nommer(p.label, "input", signal, "Import PDF - " + sourceKind + " / " + code + " (p." + pageLabel + ")"), relay: "", active: true, module: mod.number, channel, uid: uid() });
     });
     (m.outputs || []).forEach((p) => {
       const channel = p.channel;
       const code = p.code || modulePointCode("output", mod, channel);
       const signal = (mod.type === "8DOR" || /^(?:DO|DUO)/i.test(code)) ? "D" : inferPdfSignal(p.label, "output");
-      points.push({ direction: "output", designation: p.label, repere: code, signal, source: "Import PDF - " + sourceKind + " / " + code + " (p." + pageLabel + ")", relay: signal === "D" ? (mod.type.includes("DOR") || isIntegratedControllerType(mod) ? "Relais intégré" : "RE-12DC") : "", active: true, module: mod.number, channel, uid: uid() });
+      points.push({ direction: "output", repere: code, signal, ...noms.nommer(p.label, "output", signal, "Import PDF - " + sourceKind + " / " + code + " (p." + pageLabel + ")"), relay: signal === "D" ? (mod.type.includes("DOR") || isIntegratedControllerType(mod) ? "Relais intégré" : "RE-12DC") : "", active: true, module: mod.number, channel, uid: uid() });
     });
   });
   const clean = file.name.replace(/\.pdf$/i, "").replace(/[_-]+/g, " ");
@@ -997,6 +1002,7 @@ export async function importPdf(file) {
       outputs,
       modules: modules.length - communications,
       powerSupply: result.integratedPower ? result.powerSupplyLabel : (result.powerSupplyReference ? result.powerSupplyReference + " — " + result.powerSupplyLabel : "Non détectée dans le schéma"),
+      normalises: noms.normalises,
     },
   };
 }

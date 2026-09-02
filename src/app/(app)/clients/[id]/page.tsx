@@ -5,6 +5,8 @@ import {FileStack, Hash} from "lucide-react";
 import { getClient } from "@/lib/clients/queries";
 import { listerRealisationsClient } from "@/lib/clients/providers";
 import { ClientFicheHeader } from "@/lib/clients/client-fiche-header";
+import { ClientIdentite } from "@/lib/clients/client-identite";
+import { ClientContacts } from "@/lib/clients/client-contacts";
 import { lienRetour } from "@/lib/retour";
 import { EnteteSection } from "@/ui";
 
@@ -43,6 +45,14 @@ export default async function Page({
         nom={client.nom}
         retour={lienRetour(retour, { href: "/clients", label: "Clients" })}
       />
+
+      {/* Qui est ce client, et à qui on lui écrit. Avant les réalisations :
+          c'est ce qu'on vient chercher pour préparer un devis, et ce qui
+          pré-remplit son destinataire (docs/DEVIS.md §24). */}
+      <div className="mb-6 space-y-4">
+        <ClientIdentite client={client} />
+        <ClientContacts clientId={client.id} contacts={client.contacts} />
+      </div>
 
       <section>
         <EnteteSection icone={FileStack} titre="Réalisations" compteur={realisations.length} />

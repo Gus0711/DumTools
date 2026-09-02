@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import { etatArret, type EtatArret } from "@/lib/chantiers/arret";
 import type { Project } from "./model";
 import type { IoType } from "@/tools/liste-points/model";
 import { pointsToRows } from "./derivation";
@@ -114,6 +115,13 @@ export interface ProjetAffaireResume {
   es: Record<IoType, number>;
   tests: AvancementTests;
   updatedAt: Date;
+  /** « J'ai fini d'y toucher » — voir lib/chantiers/arret.ts. `retouche` veut
+   *  dire qu'on l'a arrêté PUIS modifié : c'est constaté, jamais choisi. */
+  etatArret: EtatArret;
+  arreteLe: Date | null;
+  /** Qui l'a arrêté. Null quand l'appelant n'a pas besoin du nom (l'accueil
+   *  affiche un voyant, pas une phrase) — la jointure ne se paie qu'une fois. */
+  arreteParNom: string | null;
   href: string;
 }
 
@@ -133,6 +141,8 @@ function resumeProjet(p: {
   nom: string;
   data: unknown;
   updatedAt: Date;
+  arreteLe?: Date | null;
+  arretePar?: { nom: string } | null;
 }): ProjetAffaireResume {
   const data = (p.data as Project) ?? null;
   const pts = Array.isArray(data?.points) ? data.points.filter((x) => x.active) : [];
@@ -151,6 +161,12 @@ function resumeProjet(p: {
     es: sommeES(data),
     tests,
     updatedAt: p.updatedAt,
+    // La fraîcheur du contenu, c'est `updatedAt` : poser l'arrêt n'y touche
+    // pas (UPDATE brut, voir lib/chantiers/actions.ts), donc toute écriture
+    // POSTÉRIEURE fait basculer le marqueur en « retouché » sans rien à tenir.
+    etatArret: etatArret(p.arreteLe ?? null, p.updatedAt),
+    arreteLe: p.arreteLe ?? null,
+    arreteParNom: p.arretePar?.nom ?? null,
     href: `/outils/affectation-es/${p.id}`,
   };
 }
@@ -160,6 +176,7 @@ export async function listerProjetsAffaire(chantierId: string): Promise<ProjetAf
   const projets = await prisma.affectationProjet.findMany({
     where: { chantierId },
     orderBy: { updatedAt: "desc" },
+    include: { arretePar: { select: { nom: true } } },
   });
   return projets.map(resumeProjet);
 }

@@ -352,7 +352,7 @@ schéma.
   `nouvelleRevision` / `dupliquerDevis`.
 - `src/tools/devis/fil-devis.tsx` — le volet du fil (client).
 - `src/tools/devis/editeur-devis.tsx` / `.css` — le 4ᵉ onglet et sa pastille.
-- `src/app/(app)/perso/[qui]/devis/[id]/page.tsx` — chargement du fil.
+- `src/app/(app)/outils/devis/[id]/page.tsx` — chargement du fil.
 - `src/tools/devis/index-devis.tsx` — la pastille de non-lus.
 
 ### 9.2 Vérification

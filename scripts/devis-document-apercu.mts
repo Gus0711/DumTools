@@ -67,6 +67,21 @@ async function nettoyer() {
     select: { id: true },
   });
   for (const d of devis) await prisma.devis.delete({ where: { id: d.id } });
+  await prisma.documentation.deleteMany({ where: { titre: { startsWith: MARQUE } } });
+  await prisma.produit.deleteMany({ where: { refInterne: { startsWith: MARQUE } } });
+}
+
+/** Un produit + sa fiche technique, en LIEN externe (rien à déposer sur le
+ *  disque : ce qu'on veut regarder ici, c'est la mise en page des annexes). */
+async function ficheDemo(titre: string, ref: string, designation: string, url: string) {
+  const p = await prisma.produit.create({
+    data: { refInterne: `${MARQUE}-${ref}`, designation },
+    select: { id: true },
+  });
+  await prisma.documentation.create({
+    data: { titre, categorie: "fiche", url, produits: { create: { produitId: p.id } } },
+  });
+  return p.id;
 }
 
 await mkdir(SORTIE, { recursive: true });
@@ -74,6 +89,22 @@ await mkdir(SORTIE, { recursive: true });
 try {
   await nettoyer();
   const jeton = randomUUID();
+
+  // Deux fiches annexées, dont une portée par un produit du BLOC FORFAITAIRE :
+  // elle ne doit PAS apparaître sur le document client, et doit apparaître sur
+  // le bordereau interne. À regarder, pas seulement à tester.
+  const produitEcy = await ficheDemo(
+    `${MARQUE} Fiche technique ECY-303`,
+    "ECY303",
+    "Automate ECY-303",
+    "https://www.distech-controls.com/fiche-ecy-303",
+  );
+  const produitS1000 = await ficheDemo(
+    `${MARQUE} Fiche technique ECY-S1000`,
+    "S1000",
+    "Automate ECY-S1000",
+    "https://www.distech-controls.com/fiche-ecy-s1000",
+  );
   const auteur = await prisma.user.findFirst({ select: { id: true, nom: true } });
 
   const devis = await prisma.devis.create({
@@ -130,6 +161,7 @@ try {
         lotId: forfait.id,
         ordre: 9000,
         genre: "PRODUIT",
+        produitId: produitS1000,
         designation: "AUTOMATE DISTECH ECY-S1000-C50",
         refInterne: "DIS-S1000-C50",
         unite: "U",
@@ -166,6 +198,7 @@ try {
         lotId: fourniture.id,
         ordre: 1000,
         genre: "PRODUIT",
+        produitId: produitEcy,
         designation: "AUTOMATE DISTECH ECY-303 AVEC ALIMENTATION",
         unite: "U",
         quantiteMillieme: 2000,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FileText, Search } from "lucide-react";
 import { Input } from "@/ui";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { SupprimerListe } from "./supprimer-liste";
 import type { ListeResume } from "./queries";
 
@@ -18,7 +18,12 @@ export function ListeFiltrable({ docs }: { docs: ListeResume[] }) {
   const params = useSearchParams();
   const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
   const [client, setClient] = useState(() => params.get("client") ?? "");
-  useSyncUrl({ q: recherche, client });
+  // Adresse muette : on reprend le réglage laissé sur ce poste.
+  useReprendreFiltres("gtb.listes", ["q", "client"], (v) => {
+    setRecherche(v("q") ?? "");
+    setClient(v("client") ?? "");
+  });
+  useSyncUrl({ q: recherche, client }, "gtb.listes");
 
   const clients = useMemo(
     () =>

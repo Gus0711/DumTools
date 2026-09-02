@@ -4,6 +4,7 @@ import { listerPourClient as affectationPourClient } from "@/tools/affectation-e
 import { listerPourClient as documentsPourClient } from "@/tools/documents/queries";
 import { listerPourClient as visitesPourClient } from "@/tools/visites/queries";
 import { listerPourClient as notesPourClient } from "@/tools/notes/queries";
+import { listerPourClient as devisPourClient } from "@/tools/devis/queries";
 import type { ClientArtefact, ClientRealisation } from "./types";
 
 /* =============================================================================
@@ -28,6 +29,9 @@ const PROVIDERS: Record<string, ClientProvider> = {
   visites: visitesPourClient,
   notes: notesPourClient,
   documents: documentsPourClient,
+  // Ajouté le 2026-08-12, avec la promotion du Devis en outil métier ouvert à
+  // tous : il n'en était absent que parce qu'il était perso ET cloisonné.
+  devis: devisPourClient,
 };
 
 /** Réalisations d'un client, tous outils confondus, triées du + récent au + ancien. */

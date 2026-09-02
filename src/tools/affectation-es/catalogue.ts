@@ -4,6 +4,20 @@
 import { CONTROLLER_CATALOG, MODULE_TYPE_DEFS } from "./catalog";
 import { CONTROLLER_IMAGES, MODULE_IMAGES } from "./images";
 
+/**
+ * Une documentation atteignable depuis la base matériel.
+ *
+ * Elle ne vit PAS ici : elle appartient au PRODUIT du magasin, et remonte par
+ * `AutomateModele.produitId` / `ModuleModele.produitId`. La base matériel reste
+ * purement technique — elle affiche la fiche, elle ne la détient pas.
+ */
+export interface LienDoc {
+  id: string;
+  titre: string;
+  /** L'adresse finale, déjà résolue (route interne ou site constructeur). */
+  href: string;
+}
+
 export interface AutomateDef {
   reference: string;
   image: string;
@@ -21,8 +35,13 @@ export interface AutomateDef {
   maxModules: number;
   /** Capacité max en points d'E/S (0 = non spécifiée). */
   maxPoints: number;
-  /** Lien fiche technique (PDF public). */
+  /** ⚠️ HÉRITÉ : lien direct vers un PDF de `public/`. Ne sert plus que de
+   *  REPLI quand le modèle n'est relié à aucun produit du magasin — la
+   *  documentation vit désormais sur le produit (voir `docs`). */
   docUrl: string;
+  /** Les fiches du produit relié. Absent = modèle sans produit, ou lecture qui
+   *  ne les a pas jointes. */
+  docs?: LienDoc[];
 }
 
 export type ModuleCategorie = "extension" | "communication" | "accessoire";
@@ -35,7 +54,9 @@ export interface ModuleDef {
   entreeCount: number;
   sortieKind: string;
   sortieCount: number;
+  /** ⚠️ HÉRITÉ — voir AutomateDef.docUrl. */
   docUrl: string;
+  docs?: LienDoc[];
 }
 
 export interface Catalogue {

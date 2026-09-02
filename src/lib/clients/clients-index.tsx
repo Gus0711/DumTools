@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Building2, Search } from "lucide-react";
 import { Input } from "@/ui";
-import { iciAvecFiltres, useSyncUrl } from "@/lib/filtres-url";
+import { iciAvecFiltres, useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import { avecRetour } from "@/lib/retour";
 import type { ClientResume } from "./queries";
 
@@ -18,9 +18,12 @@ export function ClientsIndex({ clients }: { clients: ClientResume[] }) {
   // pas remettre la liste à zéro (voir lib/filtres-url).
   const params = useSearchParams();
   const [recherche, setRecherche] = useState(() => params.get("q") ?? "");
+  // Adresse muette (retour par le rail, l'accueil, ⌘K) : on reprend la dernière
+  // recherche réglée sur ce poste.
+  useReprendreFiltres("clients", ["q"], (v) => setRecherche(v("q") ?? ""));
   // Chaque client emporte l'adresse de la liste : le « ← Clients » de sa fiche
   // y ramène avec la recherche, pas seulement la flèche du navigateur.
-  const retourIci = iciAvecFiltres("/clients", useSyncUrl({ q: recherche }));
+  const retourIci = iciAvecFiltres("/clients", useSyncUrl({ q: recherche }, "clients"));
 
   const filtres = useMemo(() => {
     const q = recherche.trim().toLowerCase();

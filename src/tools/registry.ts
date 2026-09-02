@@ -54,8 +54,14 @@ export interface Tool {
   status: ToolStatus;
   /** Signal E/S dont l'outil hérite sa couleur (voir SignalOutil ci-dessus). */
   signal?: SignalOutil;
-  /** Rôles autorisés ; undefined = accessible à tous les utilisateurs. */
-  roles?: string[];
+  /* ⚠️ Il y avait ici un `roles?: string[]`. Il a été RETIRÉ le 2026-08-12 :
+     personne ne le lisait — ni la grille d'accueil, ni le rail, ni la barre du
+     téléphone. Un champ de droits que rien ne consomme est pire que pas de
+     champ du tout : il donne à croire qu'un outil est protégé alors que sa
+     carte s'affiche pour tous, et que seule la garde de sa route refuse.
+     Restreindre un outil se fait dans sa garde ; si le besoin d'en masquer
+     l'entrée revient, il faudra le brancher POUR DE BON dans `entreesNav()` et
+     dans la grille, pas seulement le déclarer. */
   /**
    * Espace perso propriétaire (slug, ex. "gus"). undefined = outil métier
    * « cœur » (accueil + nav). Défini = rangé dans l'espace perso `/perso/{slug}`
@@ -171,15 +177,14 @@ export const TOOLS: Tool[] = [
     description:
       "Le chiffrage : le prix de vente se déduit du déboursé du magasin par un coefficient (réglable par catégorie, par article, ou forcé sur la ligne). Lots, options, remises, TVA — et le matériel d'une affaire repris d'un clic.",
     icon: FileSpreadsheet,
-    href: "/perso/gus/devis",
-    status: "en-cours",
-    // Violet « ce qu'on émet » — libre dans l'espace perso, où le signal de
-    // Notes n'entre jamais en concurrence (les outils perso sont hors du rail).
+    href: "/outils/devis",
+    status: "disponible",
+    // Violet « ce qu'on émet ». Le signal est libre dans le rail : Notes, qui le
+    // porte aussi, est un outil d'AFFAIRE et n'y figure pas (même raison que le
+    // vert repris par le Magasin).
     signal: "ao",
-    proprietaire: "gus",
-    // Prix d'achat ET coefficients de marge : le même périmètre que les prix du
-    // Magasin. La garde des écrans et celle des actions lisent peutVoirDevis().
-    roles: ["ADMIN", "ACHATS"],
+    // Ni `proprietaire` ni `roles` : promu outil métier et OUVERT À TOUS le
+    // 2026-08-12. Voir la note « DROITS » de model.ts pour ce que cela expose.
   },
   {
     id: "notes-de-frais",

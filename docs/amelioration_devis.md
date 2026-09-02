@@ -9,6 +9,13 @@
 >
 > **Déjà traité et sorti de cette liste** : la duplication d'un devis vers un
 > nouveau numéro, et le prix cible (voir [`DEVIS.md`](DEVIS.md) §17).
+>
+> **Ajouté le 2026-08-12** : l'identité du client (adresse + contacts) est
+> livrée — [`DEVIS.md` §24](DEVIS.md). Elle a fait tomber au passage un défaut
+> qui n'était dans aucune liste : `renommerClient` ne resynchronisait ni
+> `Devis.clientNom` ni `Visite.clientNom`, donc un devis publié continuait
+> d'imprimer l'ancien nom du client **sur la page que le client a sous les
+> yeux**.
 
 ---
 

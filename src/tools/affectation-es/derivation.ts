@@ -2,6 +2,11 @@
 // physiques affectées aux bornes (Project.points), consommées par l'aperçu,
 // les tests et la reco. Règle métier : 1 ligne = 1 type d'E/S exclusif.
 import { emptyIo, IO_TYPES, type Io, type IoType, type PointRow } from "@/tools/liste-points/model";
+import {
+  FUSION,
+  normaliserPourImport,
+  type EntreeVocabulaire,
+} from "@/tools/liste-points/vocabulaire";
 import type { Point } from "./model";
 
 const IO_TO_DIR: Record<IoType, "input" | "output" | null> = {
@@ -78,12 +83,16 @@ export function syncPoints(rows: PointRow[], existants: Point[]): Point[] {
   return out;
 }
 
+/** Le type d'E/S d'un point physique, déduit de son sens et de son signal. */
+export function ioTypeDePoint(direction: "input" | "output", signal: string | undefined): IoType {
+  return direction === "input" ? (signal === "D" ? "DI" : "AI") : signal === "D" ? "DO" : "AO";
+}
+
 /** Reconstruit des lignes de liste depuis des points (import GFX/PDF). */
 export function pointsToRows(points: Point[]): PointRow[] {
   return points.map((p) => {
     const io = emptyIo();
-    const t: IoType =
-      p.direction === "input" ? (p.signal === "D" ? "DI" : "AI") : p.signal === "D" ? "DO" : "AO";
+    const t = ioTypeDePoint(p.direction, p.signal);
     io[t] = 1;
     return {
       id: p.uid,
@@ -94,4 +103,42 @@ export function pointsToRows(points: Point[]): PointRow[] {
       signal: p.signal,
     };
   });
+}
+
+// --- Nommage des points importés --------------------------------------------
+
+/**
+ * Ramène les désignations d'un programme client sur le vocabulaire de
+ * l'entreprise, au moment même de l'import.
+ *
+ * L'automate nomme ses points comme le programmeur les a tapés
+ * (« ODM_Dalles_Secretariat ») : le local est DANS le nom. Recopié tel quel, il
+ * faisait de chaque import une nouvelle source de pollution — la BOM apparie
+ * sur le nom EXACT, donc un nom localisé = du matériel absent de la liste (voir
+ * docs/ARCHITECTURE.md §5).
+ *
+ * Ce qui n'était qu'un repère de lieu rejoint le texte libre, DEVANT le repère
+ * de câblage que l'import y écrit déjà (« Import GFX - Module 2 / UI3 ») : le
+ * distinctif se lit en premier, la traçabilité reste derrière. Et quand le
+ * vocabulaire ne reconnaît rien, on ne touche à rien : l'écran de saisie
+ * avertit déjà sur les noms localisés, un humain tranchera.
+ */
+export function nommeurImport(vocabulaire: EntreeVocabulaire[]) {
+  let normalises = 0;
+  return {
+    /** Le couple (désignation, texte libre) d'un point qu'on vient de lire. */
+    nommer(brut: string, direction: "input" | "output", signal: string | undefined, cablage: string) {
+      const n = normaliserPourImport(brut, ioTypeDePoint(direction, signal), vocabulaire);
+      if (!n) return { designation: brut, source: cablage };
+      if (n.nom !== brut || n.complement) normalises++;
+      return {
+        designation: n.nom,
+        source: n.complement ? `${n.complement}${FUSION}${cablage}` : cablage,
+      };
+    },
+    /** Combien de libellés ont été ramenés au vocabulaire — dit à l'écran. */
+    get normalises() {
+      return normalises;
+    },
+  };
 }

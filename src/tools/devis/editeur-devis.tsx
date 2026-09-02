@@ -28,6 +28,7 @@ import {
   TriangleAlert,
   Type,
   Undo2,
+  Users,
   Wrench,
   X,
 } from "lucide-react";
@@ -55,6 +56,7 @@ import {
   ajouterLigneTexte,
   ajouterLot,
   ajouterProduitAvecAssocies,
+  definirContactDevis,
   deplacerLigne,
   deplacerLot,
   dupliquerDevis,
@@ -76,6 +78,7 @@ import { PropositionAssocies } from "./proposition-associes";
 import type { AssociationVue } from "@/tools/magasin/model";
 import { TexteRiche } from "./texte-riche";
 import {
+  BASE_DEVIS,
   ETAT_DEVIS_AIDE,
   ETAT_DEVIS_LABEL,
   ORIGINE_COEF_LABEL,
@@ -107,6 +110,7 @@ import {
   type TotauxDevis,
 } from "./model";
 import type { ArticleChoix } from "./queries";
+import type { ContactClientVue } from "@/lib/clients/types";
 import type { AffaireChoix } from "./index-devis";
 import "./editeur-devis.css";
 
@@ -259,7 +263,8 @@ export function EditeurDevis({
   prestations,
   affaires,
   clients,
-  qui,
+  contacts,
+  paveClient,
   fil,
   moiId,
   moiNom,
@@ -268,7 +273,11 @@ export function EditeurDevis({
   prestations: PrestationVue[];
   affaires: AffaireChoix[];
   clients: string[];
-  qui: string;
+  /** Les personnes en poste chez le client de ce devis (docs/DEVIS.md §24). */
+  contacts: ContactClientVue[];
+  /** Le pavé destinataire que la fiche client proposerait AUJOURD'HUI. Vide si
+   *  le devis n'a pas de client, ou si sa fiche ne porte rien. */
+  paveClient: string;
   /** Le fil de la chaîne de révisions (docs/DEVIS-FIL.md). */
   fil: FilDevis;
   moiId: string;
@@ -286,7 +295,7 @@ export function EditeurDevis({
   /** Les lots repliés. Ouverts par défaut : on ouvre un devis pour le lire. */
   const [replies, setReplies] = useState<Set<string>>(() => new Set());
   const { entete, lots, lignes } = devis;
-  const base = `/perso/${qui}/devis`;
+  const base = BASE_DEVIS;
 
   const colonnes = useColonnes("devis.lignes.v2", COLONNES_LIGNES);
 
@@ -413,6 +422,7 @@ export function EditeurDevis({
         base={base}
         affaires={affaires}
         clients={clients}
+        contacts={contacts}
         enCours={enCours}
         agir={agir}
         onPublier={() => setOnglet("publier")}
@@ -555,6 +565,7 @@ export function EditeurDevis({
           lots={devis.lots}
           totaux={totaux}
           charge={charge}
+          paveClient={paveClient}
           enCours={enCours}
           agir={agir}
           onRetirerRemise={retirerRemise}
@@ -589,6 +600,7 @@ function BarreDevis({
   base,
   affaires,
   clients,
+  contacts,
   enCours,
   agir,
   onPublier,
@@ -600,6 +612,7 @@ function BarreDevis({
   base: string;
   affaires: AffaireChoix[];
   clients: string[];
+  contacts: ContactClientVue[];
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
   onPublier: () => void;
@@ -668,27 +681,89 @@ function BarreDevis({
           <Pastille
             libelle="Client"
             valeur={entete.clientNom}
+            marque={entete.contactNom || undefined}
             vide="Sans client"
             large
             contenu={
-              <Combobox
-                value={clientNom}
-                onInput={setClientNom}
-                onPick={(o) => {
-                  setClientNom(o.value);
-                  if (o.value !== entete.clientNom) {
-                    agir(() => majEnteteDevis(entete.id, { clientNom: o.value }));
-                  }
-                }}
-                onBlur={(saisie) => {
-                  if (saisie.trim() && saisie !== entete.clientNom) {
-                    agir(() => majEnteteDevis(entete.id, { clientNom: saisie }));
-                  }
-                }}
-                options={clients.map((c) => ({ value: c }))}
-                placeholder="Nom du client"
-                inputClassName="h-[var(--control-h)]"
-              />
+              <>
+                <Label htmlFor="ed-client">Client</Label>
+                <div className="mt-1">
+                  <Combobox
+                    value={clientNom}
+                    onInput={setClientNom}
+                    onPick={(o) => {
+                      setClientNom(o.value);
+                      if (o.value !== entete.clientNom) {
+                        agir(() => majEnteteDevis(entete.id, { clientNom: o.value }));
+                      }
+                    }}
+                    onBlur={(saisie) => {
+                      if (saisie.trim() && saisie !== entete.clientNom) {
+                        agir(() => majEnteteDevis(entete.id, { clientNom: saisie }));
+                      }
+                    }}
+                    options={clients.map((c) => ({ value: c }))}
+                    placeholder="Nom du client"
+                    inputClassName="h-[var(--control-h)]"
+                  />
+                </div>
+
+                {/* À QUI ce devis est adressé. Ce qu'on choisit ici est COPIÉ
+                    sur le devis : la personne peut changer de poste, le devis
+                    dira toujours à qui il est parti (docs/DEVIS.md §24). */}
+                <div className="mt-2.5 border-t border-hairline pt-2">
+                  <Label htmlFor="ed-contact">Contact</Label>
+                  <select
+                    id="ed-contact"
+                    value={entete.contactId ?? ""}
+                    disabled={enCours || !entete.clientId}
+                    onChange={(e) =>
+                      agir(() => definirContactDevis(entete.id, e.target.value || null))
+                    }
+                    className="mt-1 h-[var(--control-h)] w-full rounded-md border border-border bg-surface px-2 text-sm text-fg focus:border-brand focus:outline-none disabled:opacity-60"
+                  >
+                    <option value="">— Aucun —</option>
+                    {/* La personne figée sur ce devis a quitté la maison : elle
+                        n'est plus proposée, mais elle reste l'option retenue —
+                        sinon le menu prétendrait que le devis n'est adressé à
+                        personne. (Effacée pour de bon, `contactId` serait null :
+                        la relation est en `SetNull`.) */}
+                    {entete.contactId && !contacts.some((c) => c.id === entete.contactId) && (
+                      <option value={entete.contactId}>
+                        {entete.contactNom} (a quitté la maison)
+                      </option>
+                    )}
+                    {contacts.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {[c.civilite, c.nom].filter(Boolean).join(" ")}
+                        {c.fonction ? ` — ${c.fonction}` : ""}
+                      </option>
+                    ))}
+                  </select>
+
+                  {entete.contactEmail && (
+                    <p className="ref mt-1.5 truncate text-xs text-muted" title={entete.contactEmail}>
+                      {entete.contactEmail}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs leading-snug text-subtle">
+                    {!entete.clientId
+                      ? "Renseignez d'abord le client : les contacts sont les siens."
+                      : contacts.length === 0
+                        ? "Aucune personne enregistrée chez ce client."
+                        : "Repris tel quel dans le destinataire du document."}
+                  </p>
+                  {entete.clientId && (
+                    <Link
+                      href={`/clients/${entete.clientId}`}
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline"
+                    >
+                      <Users className="h-3.5 w-3.5" />
+                      Gérer les contacts du client
+                    </Link>
+                  )}
+                </div>
+              </>
             }
           />
 
@@ -2470,6 +2545,7 @@ function Panneau({
   lots,
   totaux,
   charge,
+  paveClient,
   enCours,
   agir,
   onRetirerRemise,
@@ -2484,6 +2560,7 @@ function Panneau({
   lots: LotDevisVue[];
   totaux: TotauxDevis;
   charge: ChargeUnite[];
+  paveClient: string;
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
   onRetirerRemise: () => void;
@@ -2552,6 +2629,7 @@ function Panneau({
           <BlocPublication
             entete={entete}
             lots={lots}
+            paveClient={paveClient}
             enCours={enCours}
             agir={agir}
             // La récapitulation sert à VÉRIFIER ; on corrige là où on travaille.

@@ -18,6 +18,8 @@ import {
   type Module,
   type Point,
 } from "./model";
+import { nommeurImport } from "./derivation";
+import type { EntreeVocabulaire } from "@/tools/liste-points/vocabulaire";
 
 const uid = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
@@ -318,10 +320,23 @@ export interface GfxImportResult {
     extensions: number;
     architecture: string;
     equipment: string;
+    /** Libellés ramenés au vocabulaire de l'entreprise (0 si aucun catalogue). */
+    normalises: number;
   };
 }
 
-export async function importGfx(file: File): Promise<GfxImportResult> {
+/**
+ * Lit un programme Distech et en tire l'architecture + les points.
+ *
+ * `vocabulaire` = le catalogue de points de l'entreprise. Les désignations du
+ * programme client y sont ramenées à l'entrée (voir `nommeurImport`) : sans
+ * lui, l'import est la troisième source de pollution du vocabulaire
+ * (docs/ARCHITECTURE.md §5). Vide = on importe les libellés bruts.
+ */
+export async function importGfx(
+  file: File,
+  vocabulaire: EntreeVocabulaire[] = [],
+): Promise<GfxImportResult> {
   const zip = await JSZip.loadAsync(file);
   const entries = Object.values(zip.files).filter((e: any) => !e.dir);
   const mainCandidates = entries
@@ -381,6 +396,7 @@ export async function importGfx(file: File): Promise<GfxImportResult> {
   const integratedInputChannels = integratedModule ? buildIntegratedChannelAssignments(inputNodes, "input", integratedModule, moduleMap, controller) : new Map();
   const integratedOutputChannels = integratedModule ? buildIntegratedChannelAssignments(outputNodes, "output", integratedModule, moduleMap, controller) : new Map();
   const points: Point[] = [];
+  const noms = nommeurImport(vocabulaire);
 
   inputNodes.forEach((el) => {
     const name = directText(el, "NAME") || directText(el, "Name");
@@ -390,7 +406,8 @@ export async function importGfx(file: File): Promise<GfxImportResult> {
       const channel = integratedInputChannels.get(el) || null;
       if (channel) {
         const code = modulePointCode("input", integratedModule, channel);
-        points.push({ direction: "input", designation: name, repere: code, signal: inputSignalFromGfx(el), source: `Import GFX - Automate ${controller} / ${code}`, relay: "", active: true, module: integratedModule.number, channel, uid: uid() });
+        const signal = inputSignalFromGfx(el);
+        points.push({ direction: "input", repere: code, signal, ...noms.nommer(name, "input", signal, `Import GFX - Automate ${controller} / ${code}`), relay: "", active: true, module: integratedModule.number, channel, uid: uid() });
         return;
       }
     }
@@ -401,7 +418,8 @@ export async function importGfx(file: File): Promise<GfxImportResult> {
     if (!m) return;
     if (!inferredArchitecture && channel > m.inputCount) return;
     const code = `${m.inputKind || "UI"}${channel}`;
-    points.push({ direction: "input", designation: name, repere: code, signal: inputSignalFromGfx(el), source: `Import GFX - Module ${m.number} / ${code}`, relay: "", active: true, module: Number(m.number), channel, uid: uid() });
+    const signal = inputSignalFromGfx(el);
+    points.push({ direction: "input", repere: code, signal, ...noms.nommer(name, "input", signal, `Import GFX - Module ${m.number} / ${code}`), relay: "", active: true, module: Number(m.number), channel, uid: uid() });
   });
 
   outputNodes.forEach((el) => {
@@ -413,7 +431,7 @@ export async function importGfx(file: File): Promise<GfxImportResult> {
       if (channel) {
         const code = modulePointCode("output", integratedModule, channel);
         const signal = outputSignalFromGfx(el);
-        points.push({ direction: "output", designation: name, repere: code, signal, source: `Import GFX - Automate ${controller} / ${code}`, relay: signal === "D" ? "Relais intégré" : "", active: true, module: integratedModule.number, channel, uid: uid() });
+        points.push({ direction: "output", repere: code, signal, ...noms.nommer(name, "output", signal, `Import GFX - Automate ${controller} / ${code}`), relay: signal === "D" ? "Relais intégré" : "", active: true, module: integratedModule.number, channel, uid: uid() });
         return;
       }
     }
@@ -425,7 +443,7 @@ export async function importGfx(file: File): Promise<GfxImportResult> {
     if (!inferredArchitecture && channel > m.outputCount) return;
     const code = `${m.outputKind || "UO"}${channel}`;
     const signal = outputSignalFromGfx(el);
-    points.push({ direction: "output", designation: name, repere: code, signal, source: `Import GFX - Module ${m.number} / ${code}`, relay: signal === "D" ? (m.type.includes("DOR") ? "Relais intégré" : "RE-12DC") : "", active: true, module: Number(m.number), channel, uid: uid() });
+    points.push({ direction: "output", repere: code, signal, ...noms.nommer(name, "output", signal, `Import GFX - Module ${m.number} / ${code}`), relay: signal === "D" ? (m.type.includes("DOR") ? "Relais intégré" : "RE-12DC") : "", active: true, module: Number(m.number), channel, uid: uid() });
   });
 
   if (!points.length)
@@ -458,6 +476,7 @@ export async function importGfx(file: File): Promise<GfxImportResult> {
       equipment: integratedController
         ? `Automate ${controller} avec E/S intégrées. ${extensionCount ? `${extensionCount} extension(s) réelle(s) détectée(s).` : "Aucune extension E/S supplémentaire détectée."}`
         : `${extensionCount} module(s) E/S détecté(s).`,
+      normalises: noms.normalises,
     },
   };
 }

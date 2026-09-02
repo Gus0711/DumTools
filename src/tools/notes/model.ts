@@ -133,3 +133,64 @@ export function resumeNote(contenu: NoteContenu): string {
   const n = Array.isArray(contenu) ? contenu.length : 0;
   return n === 0 ? "Note vide" : `${n} bloc${n > 1 ? "s" : ""}`;
 }
+
+/* =============================================================================
+ * DU DOCUMENT AU TEXTE — les aides partagées par tous ses consommateurs
+ * (Notes, Wiki, texte libre d'une ligne de devis, corps d'une tâche).
+ * ========================================================================== */
+
+/** Un document d'un seul paragraphe portant `texte`. Sert à AMORCER un
+ *  document : la ligne qu'on vient de créer en tapant sa phrase, celle d'avant
+ *  une bascule en riche, la tâche qu'on ouvre sur son propre titre. */
+export function contenuTexteSimple(texte: string): NoteContenu {
+  const t = texte.trim();
+  if (!t) return [];
+  return [{ type: "paragraph", content: [{ type: "text", text: t, styles: {} }] }];
+}
+
+/** Props qu'un bloc porte SANS avoir été mis en forme — BlockNote les écrit
+ *  toujours, même sur un paragraphe qu'on n'a pas touché. */
+const PROPS_NEUTRES: Record<string, unknown> = {
+  textColor: "default",
+  backgroundColor: "default",
+  textAlignment: "left",
+};
+
+/**
+ * Le texte du document s'il se réduit à un paragraphe SANS AUCUNE MISE EN FORME
+ * — sinon `null` (le document mérite alors un vrai rendu).
+ *
+ * C'est ce qui permet au CAS COURANT de ne monter aucun éditeur ni aucun rendu
+ * BlockNote : une tâche porte une phrase, pas un document.
+ *
+ * `""` pour un document vide : c'est un texte nu, simplement absent.
+ */
+export function texteNu(contenu: NoteContenu | null): string | null {
+  if (!Array.isArray(contenu)) return null;
+  if (contenu.length === 0) return "";
+  if (contenu.length > 1) return null;
+
+  const bloc = contenu[0] as {
+    type?: string;
+    props?: Record<string, unknown>;
+    content?: unknown;
+    children?: unknown[];
+  };
+  if (bloc?.type !== "paragraph") return null;
+  if (Array.isArray(bloc.children) && bloc.children.length > 0) return null;
+  for (const [cle, val] of Object.entries(bloc.props ?? {})) {
+    if (PROPS_NEUTRES[cle] !== val) return null;
+  }
+
+  if (bloc.content === undefined) return "";
+  if (!Array.isArray(bloc.content)) return null;
+
+  let texte = "";
+  for (const item of bloc.content) {
+    const i = item as { type?: string; text?: string; styles?: Record<string, unknown> };
+    if (i?.type !== "text") return null;
+    if (i.styles && Object.keys(i.styles).length > 0) return null;
+    texte += i.text ?? "";
+  }
+  return texte;
+}

@@ -23,6 +23,7 @@ const LIBELLES: [prefixe: string, label: string][] = [
   ["/outils/magasin/nomenclature", "La nomenclature"],
   ["/outils/magasin/inventaires", "Les inventaires"],
   ["/outils/magasin/fournisseurs", "Les fournisseurs"],
+  ["/outils/magasin/documentation", "La documentation"],
   ["/outils/magasin", "Le rayon"],
   ["/outils/visites", "Toutes les visites"],
   ["/outils/affectation-es", "Les projets GTB"],

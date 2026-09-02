@@ -1,5 +1,8 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import type { ClientDetail, ContactClientVue } from "./types";
+
+export type { ClientDetail, ContactClientVue };
 
 export interface ClientResume {
   id: string;
@@ -28,17 +31,60 @@ export async function listerClients(): Promise<ClientResume[]> {
   }));
 }
 
-export interface ClientDetail {
-  id: string;
-  nom: string;
-}
-
 export async function getClient(id: string): Promise<ClientDetail | null> {
   const c = await prisma.client.findUnique({
     where: { id },
-    select: { id: true, nom: true },
+    select: {
+      id: true,
+      nom: true,
+      adresse: true,
+      codePostal: true,
+      ville: true,
+      telephone: true,
+      email: true,
+      contacts: {
+        // Le principal en tête — c'est celui qu'on propose, il se lit d'abord.
+        // Les partis en queue, sans quoi une liste de dix personnes dont huit
+        // sont sorties de la boîte ne se lit plus.
+        orderBy: [{ actif: "desc" }, { principal: "desc" }, { nom: "asc" }],
+        select: {
+          id: true,
+          civilite: true,
+          nom: true,
+          fonction: true,
+          email: true,
+          telephone: true,
+          mobile: true,
+          note: true,
+          principal: true,
+          actif: true,
+        },
+      },
+    },
   });
   return c;
+}
+
+/** Les contacts d'un client, pour les écrans qui n'ont pas besoin du reste
+ *  (la pastille « Client » de l'éditeur de devis). Les partis n'y sont pas :
+ *  on ne PROPOSE pas quelqu'un qui a quitté la maison. */
+export async function listerContactsActifs(clientId: string): Promise<ContactClientVue[]> {
+  return prisma.contactClient.findMany({
+    where: { clientId, actif: true },
+    orderBy: [{ principal: "desc" }, { nom: "asc" }],
+    select: {
+      id: true,
+      civilite: true,
+      nom: true,
+      fonction: true,
+      email: true,
+      telephone: true,
+      mobile: true,
+      note: true,
+      principal: true,
+      actif: true,
+    },
+  });
 }
 
 /**

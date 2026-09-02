@@ -5,6 +5,7 @@ import { listerPourChantier as documentsPourChantier } from "@/tools/documents/q
 import { listerPourChantier as visitesPourChantier } from "@/tools/visites/queries";
 import { listerPourChantier as notesPourChantier } from "@/tools/notes/queries";
 import { listerPourChantier as magasinPourChantier } from "@/tools/magasin/queries";
+import { listerPourChantier as devisPourChantier } from "@/tools/devis/queries";
 import type { ClientArtefact, ClientRealisation } from "@/lib/clients/types";
 
 /* =============================================================================
@@ -31,6 +32,10 @@ const PROVIDERS: Record<string, ChantierProvider> = {
   notes: notesPourChantier,
   documents: documentsPourChantier,
   magasin: magasinPourChantier,
+  // Ajouté le 2026-08-12 avec la promotion du Devis en outil métier ouvert à
+  // tous. Le financier reste dans WhySoft (docs/AFFAIRES.md) : ce qui remonte
+  // ici est le devis en tant que DOCUMENT, avec son état et son net HT.
+  devis: devisPourChantier,
 };
 
 /**

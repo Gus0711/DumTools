@@ -52,8 +52,11 @@ export default async function Page({
   // pas à un lien périmé qu'il a existé.
   if (!pub) notFound();
 
-  const { devis, societe } = pub;
+  const { devis, societe, documentations } = pub;
   const numero = libelleDevis(devis.entete.numero, devis.entete.revision);
+  // Les annexes passent par la route PUBLIQUE scopée au jeton — jamais par la
+  // route interne, qui exige une session.
+  const prefixeDoc = `/api/public/devis/${jeton}/doc`;
 
   // `?pdf=1` : c'est notre propre Chromium qui lit la page pour l'imprimer. Ni
   // barre du lecteur (elle compterait une consultation à chaque téléchargement),
@@ -62,7 +65,13 @@ export default async function Page({
     return (
       <div className="devis-page">
         <div className="devis-cadre">
-          <DocumentDevis devis={devis} societe={societe} pourPdf />
+          <DocumentDevis
+            devis={devis}
+            societe={societe}
+            documentations={documentations}
+            prefixeDoc={prefixeDoc}
+            pourPdf
+          />
         </div>
       </div>
     );
@@ -72,7 +81,12 @@ export default async function Page({
     <div className="devis-page">
       <BarreLecteur jeton={jeton} numero={numero} />
       <div className="devis-cadre">
-        <DocumentDevis devis={devis} societe={societe} />
+        <DocumentDevis
+          devis={devis}
+          societe={societe}
+          documentations={documentations}
+          prefixeDoc={prefixeDoc}
+        />
       </div>
     </div>
   );

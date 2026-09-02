@@ -1,5 +1,11 @@
 import "server-only";
 import { prisma } from "@/lib/db";
+import {
+  BASE_DEVIS,
+  ETAT_DEVIS_LABEL,
+  estEtatDevis,
+  libelleDevis,
+} from "@/tools/devis/model";
 import { rechercherPages } from "@/tools/wiki/queries";
 import { MIN_CARACTERES, type ResultatRecherche } from "./types";
 
@@ -33,7 +39,7 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
   if (requete.length < MIN_CARACTERES) return [];
   const contient = { contains: requete, mode: "insensitive" as const };
 
-  const [affaires, clients, projets, notes, visites, pagesWiki, produits] = await Promise.all([
+  const [affaires, clients, projets, notes, visites, pagesWiki, produits, devis] = await Promise.all([
     prisma.chantier.findMany({
       where: {
         OR: [{ nom: contient }, { numeroWhy: contient }, { client: { nom: contient } }],
@@ -105,6 +111,28 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
       orderBy: { refInterne: "asc" },
       take: PAR_SOURCE,
     }),
+    // Devis : le NUMÉRO d'abord — c'est sous « DT260052 » qu'on en parle au
+    // téléphone — puis l'objet, le client et le n° Why.
+    prisma.devis.findMany({
+      where: {
+        OR: [
+          { numero: contient },
+          { titre: contient },
+          { clientNom: contient },
+          { numeroWhy: contient },
+        ],
+      },
+      select: {
+        id: true,
+        numero: true,
+        revision: true,
+        titre: true,
+        etat: true,
+        clientNom: true,
+      },
+      orderBy: { updatedAt: "desc" },
+      take: PAR_SOURCE,
+    }),
   ]);
 
   return [
@@ -164,6 +192,13 @@ export async function rechercheGlobale(q: string): Promise<ResultatRecherche[]> 
       titre: `${p.refInterne} — ${p.designation}`,
       sousTitre: contexte(p.fabricant?.nom ?? null, p.emplacement, p.actif ? null : "archivé"),
       href: `/outils/magasin/produits/${p.id}`,
+    })),
+    ...devis.map((d) => ({
+      type: "devis" as const,
+      id: d.id,
+      titre: `${libelleDevis(d.numero, d.revision)}${d.titre.trim() ? ` — ${d.titre.trim()}` : ""}`,
+      sousTitre: contexte(d.clientNom || null, ETAT_DEVIS_LABEL[estEtatDevis(d.etat) ? d.etat : "BROUILLON"]),
+      href: `${BASE_DEVIS}/${d.id}`,
     })),
   ];
 }

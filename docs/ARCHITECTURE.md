@@ -192,6 +192,10 @@ Ce qui tient la règle :
   ça, dix commandes deviendraient « Commande (2) … (10) » dans le programme, et
   la seule échappatoire serait de remettre le local dans le nom. La modale
   « Générer GFX » signale les noms encore en doublon.
+- **L'import GFX/PDF applique la règle À L'ENTRÉE**
+  (`liste-points/vocabulaire.ts` → `nommeurImport`, `derivation.ts`) : il ne
+  recopie plus la désignation brute du programme client. Voir « L'import ne
+  pollue plus » ci-dessous.
 - L'aperçu imprime déjà la note sous le libellé (`apercu.tsx`) : sortir le local
   du nom ne perd rien sur le document client.
 - Remise à niveau d'une base déjà polluée :
@@ -199,21 +203,137 @@ Ce qui tient la règle :
   puis `--appliquer`. Les lignes gardent leur `id` → affectations aux bornes et
   suivi de mise en service intacts.
 
-⚠️ L'import GFX/PDF (`pointsToRows`) recopie la **désignation brute de
-l'automate** dans `nom` (`ODM_Dalles_Secretariat`) : c'est la troisième source de
-pollution, et elle est normale — ces noms viennent du programme client. Ils se
-normalisent comme les autres, au script.
+### L'import ne pollue plus (2026-08-31)
+
+L'import GFX/PDF recopiait la **désignation brute de l'automate** dans `nom`
+(`ODM_Dalles_Secretariat`) : troisième source de pollution, et la seule qui se
+rechargeait toute seule — chaque nouveau programme client relançait le mal que le
+script venait de réparer.
+
+Le moteur de vocabulaire du script (coupe au local, synonymes, regroupements) a
+donc quitté `scripts/normaliser-points.mts` pour
+**`src/tools/liste-points/vocabulaire.ts`**, où l'import s'en sert aussi.
+`normaliserPourImport(libelle, type, catalogue)` conclut par **quatre voies**, de
+la plus précise à la plus générale :
+
+| | |
+|---|---|
+| **catalogue** | le libellé EST un point connu, à la variante d'écriture près (`SONDE_RETOUR` → « Sonde retour ») — et c'est l'**orthographe du catalogue** qui gagne, la BOM apparie sur le nom exact |
+| **coupe** | on coupe au local, le générique restant est au catalogue (`Amb_Salle_Conseil` → « Sonde ambiance » + « Salle Conseil ») |
+| **préfixe** | le plus long générique connu qui **ouvre** le libellé le nomme (`Defaut Bruleur CHD` → « Defaut » + « Bruleur CHD ») |
+| **type** | faute de mieux, le **type d'E/S** nomme le point — une sortie est toujours un ordre : DO → « Commande », AO → « Pilotage » — et le libellé d'origine part **entier** au texte libre |
+
+Trois garde-fous portent le reste :
+
+- **On n'invente jamais de vocabulaire** : chacune des quatre voies doit
+  retomber sur une entrée qui existe DÉJÀ au catalogue, sinon on ne touche à
+  rien et le libellé brut passe tel quel (l'écran de saisie avertit déjà, un
+  humain tranchera). Sans catalogue, l'import est inchangé.
+- **Les ENTRÉES ne se laissent pas nommer par leur type** (`GENERIQUE_PAR_TYPE`
+  ne contient que DO et AO) : un défaut, un retour de marche et un comptage sont
+  trois DI différents, une sonde de départ, de retour et d'ambiance trois AI
+  différents. Deviner y perdrait la seule information que porte le libellé.
+- ⚠️ **Un type qui CONTREDIT le point disqualifie la cible.** « Commande V6V Z1 »
+  est une sortie **analogique**, mais « Commande » est une entrée de catalogue
+  **TOR** : l'y coller ferait entrer sa nomenclature — un relais — dans la BOM
+  de l'affaire, ce que tout ce mécanisme existe justement pour empêcher. La
+  cible est donc écartée et le point repart sur « Pilotage ». On ne s'autorise
+  cette exigence **que là où le type sait nommer le point tout seul** (AO/DO) :
+  sur une entrée, elle ferait perdre un appariement correct sans rien offrir en
+  échange. Sans effet sur l'historique — les 351 libellés donnent exactement les
+  mêmes 283 accords.
+- **Rien n'est perdu** : ce qui ne faisait que distinguer le point rejoint le
+  texte libre **devant** le repère de câblage que l'import y écrit déjà —
+  « Dalles — Secretariat — Import GFX - Module 2 / UO3 ». Le distinctif se lit
+  en premier, la traçabilité reste derrière, et le générateur GFX recompose
+  `nom + note` quand il faut départager des homonymes.
+
+Le résumé d'import le **dit** (« · 31 libellés ramenés au vocabulaire ») : la
+désignation du programme client a changé de forme, ça ne doit pas se découvrir.
+
+Rejoué sur les 351 libellés réels de la base d'août 2026
+(`scripts/normalisation-points-relecture1.csv`, la table relue à la main) :
+**283 retombent sur le nom exact qu'un humain avait choisi**, 34 sur un
+générique plus court, 18 restent bruts. Contrôles :
+`npx tsx scripts/vocabulaire-smoke.mts` (25, sans base).
 
 ---
 
-## 6. Documentation Distech
+### La page module se pagine (2026-08-31)
 
-- PDF dans `public/materiel/Documentations_Distech/` (servis publiquement — le
-  `proxy` exclut `materiel/` de l'auth).
-- Champ **`docUrl`** sur automates/modules → lien **📄 Fiche technique** dans
-  l'écran base matériel **et** sous le sélecteur d'automate de l'éditeur.
-- Page **`/documentation`** (`app/(app)/documentation/page.tsx`) : liste les
-  fiches avec **Ouvrir** + **Télécharger**. Lien sidebar « Documentation ».
+`.module-table-area` est une boîte à **hauteur fixe** (153 mm en paysage, 147 en
+portrait) en **`overflow: hidden`** : ce qui dépasse disparaît, sans un mot.
+
+Sur l'affaire *restaurant Wignehies*, le module **8UI6UO** y demandait
+**179 mm** — il perdait ses **deux dernières sorties** et sa légende, et comme
+`apercu-pdf.ts` capture ce même DOM avec html2canvas, **le PDF partait tronqué
+sur le chantier**. Aucun contrôle automatique ne pouvait le voir : le document
+restait un PDF valide, avec le bon nombre de pages.
+
+Deux causes se cumulaient :
+
+1. **Un point qui porte un TEXTE LIBRE occupe deux lignes** (la note se rend
+   sous la désignation). L'import GFX en pose un sur *chaque* point — le tableau
+   double donc de hauteur dès qu'un projet vient d'un programme client.
+2. **Le 8UI6UO est le pire cas** : 14 bornes en **deux** tableaux, donc deux
+   cartouches et deux lignes d'en-tête (~19 mm) de plus qu'un 16DI, qui porte
+   autant de bornes en un seul tableau.
+
+`paginerModule()` (`apercu.tsx`) fait donc ce que le récapitulatif faisait déjà :
+répartir en pages de hauteur **connue** plutôt que s'en remettre à un flux CSS
+qui se fait rogner. Un tableau qui déborde continue en page suivante, cartouche
+repris en « (suite) » ; une section qui finit en milieu de page laisse la
+suivante enchaîner dessous. Les **pages de suite abandonnent le schéma à
+bornes** — il est déjà imprimé sur la première — et le tableau prend toute la
+largeur (`.module-plan.sans-schema`).
+
+Ce qui porte le reste :
+
+- **`GABARIT_MODULE` est MESURÉ, jamais estimé** — au navigateur, sur le rendu
+  réel, par `scripts/apercu-affectation-regard.mts`. Deux pièges de mesure :
+  l'aperçu écran applique `zoom: 0.62`, donc `getBoundingClientRect()` rend des
+  millimètres faux (lire `offsetHeight`) ; et le corps passé à `page.evaluate`
+  doit l'être **en chaîne**, esbuild injectant un helper `__name` absent de la
+  page.
+- **Deux hauteurs de ligne**, `ligne` (avec texte libre) et `ligneSimple` : c'est
+  toute la différence entre un projet saisi à la main et un projet importé.
+- **La légende est réservée sur CHAQUE page** : on ne sait pas encore laquelle
+  sera la dernière, et `MARGE_MODULE` garde un fond de page libre — la zone reste
+  en `overflow: hidden`, mieux vaut un blanc en bas qu'une ligne rognée.
+- ⚠️ **Sur une page de suite, la légende ne se pousse plus en bas de zone** : le
+  tableau y occupe toute la largeur, et son `margin-top: auto` la faisait se
+  coucher sur le logo du pied (`.logo-dumortier`, en position absolue à gauche —
+  sur la première page, la colonne du schéma l'en protégeait).
+- Le découpage se fait **avant la numérotation** des pages, sinon le
+  « page n / N » du pied mentirait.
+
+Vérification : `npx tsx scripts/apercu-affectation-regard.mts <projet>` — il
+capture chaque page **dans les deux orientations** et annonce le débordement de
+chacune. Sur Wignehies : 8 pages en paysage, 6 en portrait, **0,0 mm de
+débordement partout**.
+
+---
+
+## 6. Documentation technique
+
+> **Déplacée dans le Magasin le 2026-08-12** — voir
+> [`MAGASIN.md` §15](MAGASIN.md). Une fiche technique appartient au **produit**,
+> pas à un dossier de PDF rangé à côté de l'application : c'est ce qui permet de
+> la retrouver depuis la base matériel **et** de l'annexer aux devis qui
+> chiffrent ce produit, sans jamais la saisir deux fois.
+
+- Modèle **`Documentation`** + jonction **`ProduitDocumentation`** (N↔N : « ECY
+  IO Modules » couvre les six modules d'extension). Source = un binaire
+  téléversé sur le disque de la VM (`DOC_MEDIA_DIR`) **ou** un lien constructeur.
+- Écrans : bloc « Documentation » sur la fiche produit, bibliothèque
+  **`/outils/magasin/documentation`** (lecture ouverte à tous, gestion Achats).
+- La **base matériel lit par `produitId`** (`catalogue-queries.ts` →
+  `AutomateDef.docs`). Le champ **`docUrl`** hérité (PDF de
+  `public/materiel/Documentations_Distech/`) reste comme **repli** tant qu'un
+  modèle n'est relié à aucun produit — c'est encore le cas de 23 modèles sur 27.
+- L'ancienne page `/documentation` et son entrée de nav ont été **supprimées** ;
+  les PDF de `public/` sont **conservés** (le repli s'en sert).
+- Reprise : `npx tsx scripts/documentation-reprise.mts` (puis `--appliquer`).
 
 ---
 
@@ -221,8 +341,9 @@ normalisent comme les autres, au script.
 
 Sidebar (`components/app-shell/sidebar.tsx`) :
 - **Outils** : Accueil · **Affaires** · Projet GTB.
-- **Configuration** : Clients · Catalogue & modèles · Base matériel · Documentation ·
-  **Utilisateurs** (ADMIN uniquement).
+- **Configuration** : Clients · Catalogue & modèles · Base matériel ·
+  **Utilisateurs** (ADMIN uniquement). *(« Documentation » a été retirée : les
+  fiches vivent dans le Magasin, cf. §6.)*
 
 Registre `src/tools/registry.ts` : une seule carte « Projet GTB ».
 Agrégation multi-outils : deux pivots, même patron `PROVIDERS` —
@@ -246,6 +367,7 @@ src/tools/affectation-es/
   apercu.tsx           LE document d'affectation imprimable (A4 paysage) :
                        couverture, automate, récap, une page par module
   recap-affectation.tsx  pages du tableau récapitulatif, montées dans apercu.tsx
+                       (même patron de pagination que paginerModule, §5)
   catalogue.ts         base matériel : types + défauts (catalogueParDefaut)
   catalogue-queries.ts lecture BDD (getCatalogue, getMaterielAdmin)
   catalogue-actions.ts CRUD base matériel

@@ -18,9 +18,11 @@
 > document riche (§14), associations de produits à l'ajout (§15), champs
 > modifiables (§16), et **ce qu'il reste à faire (§17)**.
 >
-> **Outil de développement**, rangé dans **ToolGus** (`/perso/gus/devis`) le
-> temps qu'il fasse ses preuves ; conçu dès le départ pour être promu outil
-> métier sans reprise de données (voir §7.3).
+> ⚠️ **Ce paragraphe a vieilli — voir §25.** L'outil était un outil de
+> développement rangé dans **ToolGus**, le temps qu'il fasse ses preuves. Il a
+> été **promu outil métier et ouvert à toute l'équipe le 2026-08-12**
+> (`/outils/devis`). La promotion n'a demandé **aucune reprise de données**,
+> comme le §7.3 l'avait prévu.
 
 ---
 
@@ -368,9 +370,9 @@ arrondit le total), options hors total, remise % vs €, TVA à 0 %
 
 | Route | Écran | Contenu |
 |---|---|---|
-| `/perso/gus/devis` | **Index** | liste (n°, révision, client, affaire, état, total HT, marge fourniture), recherche, filtres état/client, « Nouveau devis » |
-| `/perso/gus/devis/[id]` | **L'éditeur** | *le* écran de l'outil (voir ci-dessous) |
-| `/perso/gus/devis/referentiels` | **Prestations & coefficients** | table de prestations + les trois étages de coefficients (global, par catégorie, par produit) |
+| `/outils/devis` | **Index** | liste (n°, révision, client, affaire, état, total HT, marge fourniture), recherche, filtres état/client, « Nouveau devis » |
+| `/outils/devis/[id]` | **L'éditeur** | *le* écran de l'outil (voir ci-dessous) |
+| `/outils/devis/referentiels` | **Prestations & coefficients** | table de prestations + les trois étages de coefficients (global, par catégorie, par produit) |
 
 **L'éditeur**, dans la grammaire de la maison :
 
@@ -410,7 +412,7 @@ arrondit le total), options hors total, remise % vs €, TVA à 0 %
 
 - une entrée de registre `devis` avec `proprietaire: "gus"` (signal **`ao`**
   violet, « ce qu'on émet » — libre dans l'espace perso) ;
-- un `garde.ts` sous `src/app/(app)/perso/[qui]/devis/`, sur le modèle de celui
+- un `garde.ts` sous `src/app/(app)/outils/devis/`, sur le modèle de celui
   des Notes de frais, qui vérifie l'espace **et** `peutVoirPrix`. ⚠️ La garde va
   aussi **dans chaque server action**, pas seulement sur la page : un écran
   fermé n'est pas une autorisation refusée ;
@@ -496,14 +498,14 @@ export Excel, et — si l'outil a fait ses preuves — la promotion en outil mé
 
 | Route | Écran |
 |---|---|
-| `/perso/gus/devis` | **Index** : compteurs (devis, en chiffrage, **en jeu** = net des devis émis, **accepté**), recherche, filtre d'état, création (objet / affaire / client / n° Why), colonne marge fourniture et pastille « n lignes sans prix » |
-| `/perso/gus/devis/[id]` | **L'éditeur** : cartouche éditable, barre d'ajout unique, lots à sous-totaux, lignes éditables au clavier, options, remises, panneau de totaux collant, bandeau de fraîcheur, révision, suppression |
-| `/perso/gus/devis/referentiels` | **Prestations & coefficients** : coefficient global, coefficients par catégorie, table de prestations (archivage automatique si portées par un devis) |
-| `GET /api/devis/articles` | Recherche d'articles pour la barre d'ajout — **contrôle de droit en clair dans la route** (403 pour un membre) |
+| `/outils/devis` | **Index** : compteurs (devis, en chiffrage, **en jeu** = net des devis émis, **accepté**), recherche, filtre d'état, création (objet / affaire / client / n° Why), colonne marge fourniture et pastille « n lignes sans prix » |
+| `/outils/devis/[id]` | **L'éditeur** : cartouche éditable, barre d'ajout unique, lots à sous-totaux, lignes éditables au clavier, options, remises, panneau de totaux collant, bandeau de fraîcheur, révision, suppression |
+| `/outils/devis/referentiels` | **Prestations & coefficients** : coefficient global, coefficients par catégorie, table de prestations (archivage automatique si portées par un devis) |
+| `GET /api/devis/articles` | Recherche d'articles pour la barre d'ajout — session exigée (le contrôle de RÔLE a été retiré le 2026-08-12, §25) |
 
-Transverse : entrée de registre (signal **AO** violet, `proprietaire: "gus"`,
-`status: "en-cours"`), garde `peutVoirDevis` sur les écrans **et** dans chaque
-server action, moteur pur partagé client/serveur.
+Transverse : entrée de registre (signal **AO** violet), moteur pur partagé
+client/serveur. ⚠️ `proprietaire: "gus"`, `status: "en-cours"` et la garde
+`peutVoirDevis` ont disparu le 2026-08-12 (§25).
 
 ### Ce qui a été vérifié, et comment
 
@@ -1185,7 +1187,7 @@ Chromium sans interface. Deux raisons de ne pas composer le PDF autrement :
 Le PDF s'imprime **depuis le lien public**, pas depuis un écran interne : la page
 est joignable sans session, donc il n'y a ni cookie à fabriquer ni identité à
 confier au navigateur. Corollaire : **pas de PDF avant publication** — l'aperçu
-interne (`/perso/gus/devis/[id]/apercu`) rend le même document et s'imprime au
+interne (`/outils/devis/[id]/apercu`) rend le même document et s'imprime au
 navigateur, ce qui couvre l'avant-envoi.
 
 Trois pièges, tous rencontrés :
@@ -1352,7 +1354,7 @@ débordement horizontal sur téléphone. À relancer après toute retouche de
 ### 21.10 Ce qui reste
 
 - [ ] **L'ouvrir soi-même** : régler les valeurs de la maison
-      (`/perso/gus/devis/referentiels`, bloc « La maison »), renseigner sa
+      (`/outils/devis/referentiels`, bloc « La maison »), renseigner sa
       **fonction** dans les utilisateurs, publier un vrai devis et l'envoyer.
 - [ ] **Décider du sort de la lettre d'accompagnement.** Elle a été écartée ;
       si elle manque à l'usage, c'est un bloc de plus avant le cartouche, avec
@@ -1623,3 +1625,293 @@ confusion.
 Tests : `devis-smoke` **200/200** (169 d'origine inchangés), `devis-restitution-smoke`
 **63/63**, et **regarder** avec `devis-document-apercu.mts` — trois défauts réels
 (puces perdues, blocs collés, champ tronqué) n'étaient visibles qu'à l'œil.
+
+---
+
+## 24. L'identité du client — l'adresse, et la personne (2026-08-12)
+
+Jusqu'ici, le référentiel `Client` ne portait qu'un **nom**. Pas d'adresse, pas
+de personne, pas d'email — nulle part dans l'application (seuls `Fournisseur` et
+`ReglageSociete`, c'est-à-dire *les autres*, en avaient). Le pavé destinataire
+d'un devis était donc du texte libre **retapé à chaque fois**, et *à qui* un
+devis était parti vivait dans la boîte mail de celui qui l'avait envoyé.
+
+Le remède était écrit dans le schéma depuis le §21.8, il n'a pas bougé :
+
+> *« Le jour où `Client` portera une adresse, elle servira à **PRÉ-REMPLIR** ce
+> pavé, jamais à le remplacer (le devis fige, principe n°1). »*
+
+### 24.1 La règle qui décide de tout : on ne remplit que le vide
+
+Le référentiel **vit**, le devis **fige** — exactement la règle des lignes
+(`LigneDevis` copie sa désignation et son déboursé ; `produitId` ne sert plus
+qu'à *proposer* un rafraîchissement).
+
+| | Vit dans le référentiel | Figé sur le devis |
+|---|---|---|
+| Adresse | `Client.adresse / codePostal / ville` | dans le pavé `destinataire` |
+| Personne | `ContactClient` | `contactNom / contactFonction / contactEmail / contactTel` |
+| Lien | — | `contactId`, **pour proposer**, jamais pour afficher |
+
+Trois corollaires, tenus par le code :
+
+1. **Aucune réécriture silencieuse.** `paveReprenable(actuel, propose)` juge :
+   un pavé **vide** — ou encore identique à ce que le référentiel proposait — se
+   remplit tout seul ; un pavé **retapé à la main** (un service de facturation,
+   une TSA, une personne propre à cette affaire) ne se fait jamais écraser. Il
+   faut alors le bouton **« Reprendre du client »**, qui est la *seule* écriture
+   autorisée à écraser — parce que c'est ce qu'on lui demande.
+2. **La personne peut partir.** `ContactClient.actif = false` la retire des
+   propositions sans l'effacer ; et `Devis.contactId` est en **`SetNull`** :
+   supprimer la fiche ne doit pas effacer le destinataire des devis qui la
+   citent. Le nom, lui, est copié — il reste.
+3. **Le contact ne s'imprime pas deux fois.** Le **pavé reste le seul texte du
+   destinataire** sur le document (§24.4).
+
+### 24.1 bis L'ordre des lignes n'est pas une préférence
+
+Il est **relevé sur les deux devis réels** de `public/devis_template/`, qui sont
+la spec de ce document (§21) :
+
+```
+SOCIÉTÉ NOUVELLE HENRI CONRAUX     ← le client
+Comptabilité Fournisseurs          ← le SERVICE (contact.fonction)
+TSA 60013                          ← l'adresse
+35093 RENNES CEDEX 9               ← CP + ville
+À l'attention de M. Fabien AVRIL   ← LA PERSONNE, EN DERNIER
+```
+
+Le service se lit comme une précision du nom de la société et le suit ; la
+personne **ferme** le pavé. La première version faisait l'inverse (personne en
+deuxième ligne) : tous les contrôles passaient, et ça ne s'est vu qu'en
+**regardant** le document à côté du gabarit. D'où un contrôle qui écrit l'ordre
+attendu en toutes lettres, dans `devis-smoke`.
+
+### 24.2 Pourquoi une table de contacts, et pas un champ
+
+Une commune ou une entreprise générale a le chargé d'affaires, le conducteur de
+travaux **et** la comptabilité. Un champ unique (comme `Fournisseur.contact`)
+obligerait à écraser l'un pour joindre l'autre — et ne dirait jamais à qui un
+vieux devis a été adressé. D'où `ContactClient`, N par client, avec deux
+réglages qui portent l'usage :
+
+- **`principal`** — celui qu'on propose d'office sur un nouveau devis. Au plus un
+  par client, tenu par l'**action** (`definirContactPrincipal`, en transaction)
+  et non par un index partiel : une contrainte partielle demanderait du SQL brut
+  dans la migration, or c'est exactement ce que ce dépôt paie cher (la colonne
+  tsvector du wiki). Trois lignes de référentiel ne le justifient pas.
+  Le **premier** contact d'un client le devient d'office — sinon un client à une
+  seule personne ne proposerait jamais rien.
+- **`actif`** — cf. corollaire n°2.
+
+### 24.3 La garde est dans la REQUÊTE (encore)
+
+`propositionDestinataire()` vit dans **`queries.ts`**, pas dans `actions.ts` :
+c'est une **lecture**. Deux conséquences, et la seconde est la vraie raison :
+
+1. elle porte le `clientId` **dans son `where`**, y compris quand on demande une
+   personne précise — un id de contact venu d'ailleurs ne trouve simplement
+   rien. Sans ça, on pourrait adresser un devis à la personne d'une **autre
+   société** en postant un id. L'écran ne propose que les bonnes personnes, mais
+   *un écran n'est pas une autorisation* ;
+2. étant une lecture exportée, elle est **vérifiable sur vraie base**, garde
+   comprise (`scripts/clients-contacts-smoke.mts`). Laissée dans un module
+   `"use server"`, elle n'aurait été testable qu'au travers d'une session HTTP.
+
+### 24.4 Ce qui NE change pas — et pourquoi
+
+- **Le document imprimé.** `document-devis.tsx` n'imprime toujours que le pavé,
+  via `lignesDestinataire()`. Imprimer *en plus* le contact figé le ferait
+  apparaître **deux fois** sur tous les devis dont le pavé le mentionne déjà —
+  c'est-à-dire tous. Le contact sert au pré-remplissage, à l'écran interne, et
+  au mail à venir.
+- **`getDevisPublic` neutralise les cinq champs** (`""`/`null`), comme il le
+  fait déjà de `coefDefautMillieme`. Rien ne les imprime, donc rien ne les
+  justifie dans la réponse : *un champ absent de la réponse ne peut pas fuir par
+  distraction*. Le harnais le vérifie à **témoin négatif** — l'email et le
+  téléphone sont absents de la page ET du PDF, pendant que le **nom**, lui, doit
+  bien s'y trouver (par le pavé). Sans ce témoin, les trois contrôles passeraient
+  au vert sur une page blanche.
+- **`calculerDevis`** : pas touché. Ses 213 contrôles sont verts — c'est la
+  preuve que le chantier est resté à sa place.
+
+⚠️ **Le piège muet de ce chantier** : les cinq champs doivent être **recopiés**
+dans `nouvelleRevision` ET `dupliquerDevis`, à côté de `destinataire`. Les
+oublier ne lève aucune erreur — la v2 part simplement sans savoir à qui, et
+personne ne le voit avant l'envoi. Même famille que l'oubli de `rendu` /
+`libelleClient` (DEVIS-DETAIL.md). Et la recopie se fait **telle quelle**, sans
+relire le référentiel : une v2 négociée trois semaines plus tard part à la même
+personne, pas au nouveau principal du client.
+
+### 24.5 Les écrans
+
+- **`/clients/[id]`** — deux blocs au signal laiton, au patron de `SocieteBloc` :
+  **« Coordonnées »** (adresse multi-ligne, CP, ville, tél, email) avec
+  **l'aperçu du pavé** en regard — une adresse ne se vérifie pas sur un
+  formulaire, elle se vérifie sur le document — et **« Contacts »**
+  (`.data-table`, ajout/édition en ligne, badge *proposé*, retirer vs supprimer).
+- **L'éditeur** — la pastille « Client » porte le nom du client **et** celui de
+  la personne en marque ; elle ouvre sur le combobox client **plus** un menu des
+  contacts actifs. Une personne partie reste l'option retenue, marquée « a quitté
+  la maison » : sans elle, le menu prétendrait que le devis n'est adressé à
+  personne.
+- **Le panneau « Publier »** — sous le pavé, « Reprendre du client » (actif
+  seulement s'il y a un écart) ou « Renseigner la fiche client » quand la fiche
+  est vide. Un bouton grisé sans explication ne dit pas ce qu'il faut faire.
+
+### 24.6 Corrigé au passage — un défaut réel
+
+`renommerClient` resynchronisait `PointsList` et `AffectationProjet`, **mais ni
+`Visite` ni `Devis`**. Renommer un client laissait donc l'ancien nom sur le devis
+— y compris sur la page publique que le client a **sous les yeux**, puisque le
+lien sert le devis vivant (§21.2). Deux `updateMany` de plus. Grep de contrôle
+avant d'ajouter un outil : `clientNom` dans `prisma/schema.prisma`.
+
+### 24.7 Vérifié
+
+```bash
+npx tsx scripts/devis-smoke.mts                                    # 213 (200 + 13)
+npx tsx --conditions=react-server scripts/clients-contacts-smoke.mts  # 27, vraie base
+npx tsx scripts/devis-restitution-smoke.mts                        # + la non-fuite du contact
+npx tsx scripts/devis-document-apercu.mts                          # REGARDER le pavé
+```
+
+Le second couvre ce que le premier ne peut pas voir : la **garde** (la personne
+d'un autre client est refusée, un id inventé aussi), la **survie du figé**
+(effacer la fiche coupe le lien mais garde le nom, l'email et le pavé), et la
+recopie en révision — avec un **témoin** qui montre qu'une création sans recopie
+part bien sans destinataire, sans quoi le contrôle ne vérifierait rien.
+
+### 24.8 Ce que ça débloque
+
+L'**envoi du devis par mail depuis l'app** (plus tard dans l'année) a désormais
+une adresse à viser, figée avec le reste. Resteront à trancher le transport (le
+SMTP de la maison), le contenu (lien `/d/{jeton}` seul, ou PDF en pièce jointe),
+et la **trace** — qui a déjà sa place : `MessageDevis`, le **fil du devis**, où
+« envoyé à Jean Dupont le 12/08 » se lira à côté du reste de la négociation.
+
+---
+
+## 25. Les annexes techniques — des LIENS, jamais des pièces jointes (2026-08-12)
+
+Le devis peut désormais annexer **les fiches techniques des produits qu'il
+chiffre**. Elles viennent du Magasin ([`MAGASIN.md` §15](MAGASIN.md)), et trois
+décisions portent tout le reste.
+
+### 1. Des liens, un point c'est tout
+
+Un devis de cent lignes citant vingt fiches constructeur, ce sont vingt
+mégaoctets envoyés à un client — et vingt PDF périmés le jour où le constructeur
+les corrige. Le document imprime donc une **liste de liens** en fin de page. Dans
+le PDF, Chromium en fait de vraies annotations cliquables ; sur **papier** — et
+là seulement — une mention rappelle qu'ils s'ouvrent depuis la version en ligne
+(`.sur-papier`, masquée en `.pour-pdf` : sinon le seul document où les liens
+fonctionnent serait celui qui annonce qu'ils ne fonctionnent pas).
+
+### 2. Elles se DÉDUISENT — exception assumée au « le devis fige »
+
+Rien n'est stocké sur le devis : `documentationsDevis()` part des `produitId` des
+lignes. Ajouter une fiche au produit profite au devis dès le lendemain. C'est une
+exception explicite au principe n°1 (§2) — **ce qui fige, c'est le prix** ; une
+notice périmée n'a jamais aidé personne, et le lien public sert déjà le devis
+vivant (§21.2).
+
+### 3. La liste suit ce que le CLIENT VOIT
+
+C'est la règle qui a décidé du découpage. `lignesVisiblesClient()` (model.ts)
+rend les identifiants des lignes réellement affichées — après condensation des
+blocs forfaitaires, et après le filtre des options tues. **Un bloc forfaitaire
+n'annexe donc aucune fiche** : sans ce filtre, la liste des annexes nommerait un
+par un les six produits que la condensation vient justement de cacher
+([`DEVIS-DETAIL.md`](DEVIS-DETAIL.md)).
+
+La même liste sert de **garde à la route publique**
+`/api/public/devis/[jeton]/doc/[id]` (`getDocumentationDevisPublic`), et la garde
+est double : jeton actif **et** fiche appartenant aux annexes de CE devis. Sans
+la seconde, un jeton de devis deviendrait un passe-partout de toute la
+documentation de la maison — blocs forfaitaires compris.
+
+### Réglages et reprises
+
+- 4ᵉ interrupteur du pavé « Sur le document » : `montrerDocumentations`
+  (défaut **vrai**), **repris** par une révision et une copie comme les trois
+  autres.
+- L'aperçu interne montre les annexes de la vue courante : en `?detail=1` (le
+  bordereau), celles des blocs forfaitaires apparaissent — le document qu'on
+  relit est celui qu'on a sous les yeux.
+
+### Vérifications
+
+`scripts/devis-restitution-smoke.mts` (80 contrôles) — §7 quinquies :
+
+- la fiche d'un produit chiffré est listée ; **témoin négatif** : celle d'un
+  produit de bloc forfaitaire ne l'est pas ;
+- la route publique la sert (vrai binaire, bon type MIME), **refuse** celle du
+  bloc forfaitaire avec le même jeton, et refuse tout avec le jeton du voisin ;
+- interrupteur décoché → le bloc disparaît **et** la route ne sert plus rien.
+
+⚠️ Un défaut de mise en page n'a été vu qu'**en regardant** le PDF
+(`scripts/devis-document-apercu.mts`) : « Fiche technique · site constructeur »
+se coupait en plein milieu dès que la colonne était étroite. `white-space:
+nowrap` sur la mention — elle passe sous le titre, jamais en deux morceaux.
+
+---
+
+## 25. L'outil sort de ToolGus, et s'ouvre à tous (2026-08-12)
+
+Deux décisions d'Augustin, prises le même jour, dans cet ordre : **« mets l'outil
+devis en principal, comme affaire, visites de chantier »**, puis — après que la
+contrepartie lui a été présentée — **« mets-le à disposition de tous »**.
+
+### 25.1 Ce qui change, et ce que ça coûte
+
+| Avant | Après | Contrepartie |
+|---|---|---|
+| `/perso/gus/devis` (ToolGus) | **`/outils/devis`** — carte d'accueil, rail, barre du téléphone | Aucune : le §7.3 avait prévu la promotion, l'entité portait déjà `clientId`/`chantierId`/`numeroWhy`. **Zéro reprise de données.** |
+| Réservé `ACHATS`/`ADMIN` | **Ouvert à toute l'équipe** | ⚠️ **Le déboursé du magasin (prix d'achat fournisseurs) et les coefficients de marge de la maison sont désormais lisibles par toute personne ayant un compte.** Signalé avant décision, maintenu. |
+| Hors `PROVIDERS`, hors ⌘K | **Dans les deux `PROVIDERS`** (fiche client, fiche affaire) et **dans ⌘K** | Les devis d'un client apparaissent à côté de ses autres réalisations — c'est précisément l'effet voulu, et il n'était bloqué que par le cloisonnement. |
+| `status: "en-cours"` | `status: "disponible"` | Il n'a toujours pas servi sur une vraie affaire. Le badge ne le dira plus. |
+
+### 25.2 Une incohérence assumée avec le Magasin
+
+Le Magasin garde `peutVoirPrix` : ses écrans de prix restent réservés aux Achats,
+alors que **le même déboursé se lit sans restriction dans un devis**. Ce n'est pas
+un oubli — c'est le résultat direct de la décision ci-dessus, noté ici pour qu'on
+ne « corrige » pas l'un des deux par erreur en croyant réparer un bug. Le jour où
+la question se rouvre, c'est **une** politique qu'il faut trancher, pas deux.
+
+### 25.3 Trois pièges de la promotion, et comment ils ont été évités
+
+1. **La garde n'est pas un seul endroit.** `peutVoirDevis` vivait à **six**
+   endroits : la garde d'écran, `acteur()` dans les actions, et **quatre** routes
+   d'API (`articles`, `associations`, `media`, `media/[id]`). En retirer cinq sur
+   six n'aurait rien ouvert de visible — mais aurait laissé une route en 403 au
+   milieu d'un écran par ailleurs fonctionnel, c'est-à-dire un bug qu'on ne
+   reproduit qu'une fois sur trois.
+2. **`Tool.roles` ne gardait rien.** Le registre portait un
+   `roles: ["ADMIN","ACHATS"]` sur l'entrée du devis… que **personne ne lisait** :
+   ni la grille d'accueil, ni `entreesNav()`, ni la barre du téléphone. Un champ
+   de droits que rien ne consomme est pire que pas de champ du tout — il fait
+   croire qu'un outil est masqué alors que seule sa route refuse. Il a été
+   **retiré**, avec la note qui dit quoi faire si le besoin revient.
+3. **Les chemins étaient écrits en dur.** `/perso/gus/devis` apparaissait dans
+   `actions.ts` (`RACINE`), dans trois liens de l'index et dans le `base` de
+   l'éditeur (reconstruit depuis le paramètre `qui` de la route). D'où
+   **`BASE_DEVIS`** dans `model.ts`, à côté de `BASE_URL_DEVIS_PUBLIC` : le
+   déménagement suivant ne touchera qu'une ligne.
+
+### 25.4 Le cadran de l'accueil
+
+Une carte d'outil sans compteur annonce son *statut* (« Disponible ») là où ses
+voisines annoncent un *chiffre* — ça ne se voit qu'à l'œil, sur l'écran fini.
+D'où une entrée dans `chargerAccueil()` : **« N devis · n en chiffrage »**, et
+une **alerte** qui comble à moitié le défaut n°7 de `amelioration_devis.md` —
+*« n échus à relancer »*, calculé sur `emisLe + validiteJours`. La donnée était
+déjà là et ne servait à rien. L'index, lui, ne marque toujours pas les échus :
+c'est le reste du défaut.
+
+### 25.5 Le signal
+
+L'outil garde le **violet AO** (« ce qu'on émet ») : il est libre dans le rail,
+Notes — qui le porte aussi — étant un outil d'**affaire**, absent de la
+navigation. Même raison que le vert DO repris par le Magasin.

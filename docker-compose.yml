@@ -70,6 +70,13 @@ services:
       # Images et pièces jointes collées dans les textes libres d'un devis.
       # Aucune route publique : servies sous garde Achats comme le reste.
       DEVIS_MEDIA_DIR: /data/devis-media
+      # Médias collés dans le corps d'une tâche (photo d'armoire, capture).
+      TACHES_MEDIA_DIR: /data/taches-media
+      # Fiches techniques, notices et certificats des PRODUITS du magasin.
+      # ⚠️ Servies PUBLIQUEMENT en annexe d'un devis partagé (route scopée au
+      # jeton) : le volume doit survivre au redéploiement, sinon un client
+      # clique sur une fiche et reçoit un 410.
+      DOC_MEDIA_DIR: /data/documentation-media
     volumes:
       - spool_data:/data/spool
       - visites_media:/data/visites-media
@@ -79,6 +86,8 @@ services:
       - ndf_media:/data/ndf-media
       - scans_media:/data/scans-media
       - devis_media:/data/devis-media
+      - taches_media:/data/taches-media
+      - documentation_media:/data/documentation-media
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,3 +142,5 @@ volumes:
   ndf_media:
   scans_media:
   devis_media:
+  taches_media:
+  documentation_media:

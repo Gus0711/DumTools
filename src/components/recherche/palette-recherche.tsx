@@ -9,6 +9,7 @@ import {
   CircuitBoard,
   ClipboardCheck,
   CornerDownLeft,
+  FileSpreadsheet,
   Library,
   Loader2,
   NotebookPen,
@@ -35,6 +36,7 @@ const ICONE: Record<TypeResultat, LucideIcon> = {
   visite: ClipboardCheck,
   wiki: Library,
   produit: Boxes,
+  devis: FileSpreadsheet,
 };
 
 /** Ordre des groupes = ordre des clés de LIBELLE_TYPE. */

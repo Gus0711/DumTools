@@ -78,7 +78,7 @@ function pluriel(n: number, mot: string, suffixe = "s") {
 
 /** Tout l'écran d'accueil, en une passe. */
 export async function chargerAccueil(): Promise<DonneesAccueil> {
-  const [affaires, visites, pagesWiki, derniereWiki, rayon] = await Promise.all([
+  const [affaires, visites, pagesWiki, derniereWiki, rayon, devis] = await Promise.all([
     prisma.chantier.findMany({
       orderBy: { updatedAt: "desc" },
       select: {
@@ -95,7 +95,25 @@ export async function chargerAccueil(): Promise<DonneesAccueil> {
     prisma.wikiPage.count(),
     prisma.wikiPage.findFirst({ orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
     alerteRayon(),
+    // Devis : le compteur du cadran depuis sa promotion en outil métier
+    // (docs/DEVIS.md §25). L'ALERTE est ce qui décide d'une relance — un devis
+    // émis dont la validité est passée n'est plus une offre, et rien ailleurs
+    // ne le dit (c'est le défaut n°7 de amelioration_devis.md, à moitié comblé
+    // ici : le cadran le compte, l'index ne le marque toujours pas).
+    prisma.devis.findMany({
+      select: { etat: true, emisLe: true, validiteJours: true },
+    }),
   ]);
+
+  const enChiffrage = devis.filter((d) => d.etat === "BROUILLON").length;
+  const maintenant = Date.now();
+  const echus = devis.filter(
+    (d) =>
+      d.etat === "EMIS" &&
+      d.emisLe !== null &&
+      d.validiteJours > 0 &&
+      d.emisLe.getTime() + d.validiteJours * 86_400_000 < maintenant,
+  ).length;
 
   const actives = affaires.filter((a) => ETATS_ACTIFS.includes(a.etat));
   const idsActives = actives.map((a) => a.id);
@@ -195,6 +213,18 @@ export async function chargerAccueil(): Promise<DonneesAccueil> {
         unite: pluriel(pagesWiki, "page"),
         detail: derniereWiki ? "procédures & savoir-faire" : "aucune page",
         alerte: null,
+      },
+      devis: {
+        valeur: devis.length,
+        unite: pluriel(devis.length, "devis", ""),
+        detail:
+          devis.length === 0
+            ? "aucun devis"
+            : enChiffrage > 0
+              ? `${enChiffrage} en chiffrage`
+              : "tous émis",
+        alerte:
+          echus > 0 ? `${echus} ${pluriel(echus, "échu")} ${pluriel(echus, "à relancer", "")}` : null,
       },
     },
     parc,

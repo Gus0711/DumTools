@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { rechercherArticles } from "@/tools/devis/queries";
-import { peutVoirDevis } from "@/tools/devis/model";
 
 // Prisma + auth Node → runtime Node.
 export const runtime = "nodejs";
@@ -19,9 +18,9 @@ export async function GET(req: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
-  if (!peutVoirDevis(session.user.role)) {
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-  }
+  /* ⚠️ Plus de garde de rôle : l'outil Devis est ouvert à toute l'équipe depuis
+     le 2026-08-12 (note « DROITS » de src/tools/devis/model.ts). Une session
+     suffit — mais elle reste EXIGÉE : cette route sert du chiffrage interne. */
 
   const q = new URL(req.url).searchParams.get("q") ?? "";
   if (q.trim().length < 2) return NextResponse.json([]);

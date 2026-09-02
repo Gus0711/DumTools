@@ -19,6 +19,8 @@ import { FriseCycle } from "@/lib/chantiers/frise-cycle";
 import { AffaireFicheHeader } from "@/lib/chantiers/affaire-fiche-header";
 import { TachesKanban } from "@/lib/chantiers/taches-kanban";
 import { DOSSIER_SCHEMA_ARMOIRE } from "@/lib/chantiers/armoire";
+import { basculerArretProjet } from "@/lib/chantiers/actions";
+import { BasculeArret } from "@/lib/chantiers/bascule-arret";
 import { creerProjetPourAffaire } from "@/tools/affectation-es/actions";
 import { listerProjetsAffaire, type AvancementTests } from "@/tools/affectation-es/queries";
 import { listerDocuments, type DocResume } from "@/tools/documents/queries";
@@ -266,65 +268,93 @@ export default async function Page({
         moiId={session?.user?.id ?? null}
       />
 
-      {/* ---- Projet GTB + Matériel ----------------------------------------- *
-              Une seule planche : on lit les automates, puis ce qu'ils coûtent en
-              pièces. Le matériel EN DÉRIVE — les séparer d'un blanc laissait
-              croire à deux sujets. */}
-      <div className="planche">
-        <section className={cn("bloc", classeSignal("ai"))}>
-          <EnteteBloc
-            icone={Cpu}
-            titre="Projet GTB"
-            compteur={projets.length}
-            mention="les automates de l'affaire"
-            actions={ajouterAutomate}
+      {/* ---- Projet GTB, puis le Matériel qui en découle -------------------- *
+              Les deux vivaient dans UNE planche, bord à bord : le matériel EN
+              DÉRIVE, et les séparer d'un blanc laissait craindre qu'on y lise
+              deux sujets sans rapport. Mais collé sous la dernière ligne du
+              tableau des automates, et coiffé du même fond creusé que sa ligne
+              d'entêtes, le bandeau « Matériel » se lisait comme UNE LIGNE DE
+              PLUS — la dérivation était devenue invisible à force d'être
+              implicite.
+              On rend donc le blanc, et on DIT le lien plutôt que de le faire
+              porter par l'adjacence : le bloc Matériel se coiffe d'un filet à
+              son signal (le vert du Magasin) et sa mention nomme sa source
+              (« dérivé des 3 automates ci-dessus »). Un lien énoncé tient mieux
+              qu'un lien deviné. */}
+      <section className={cn("bloc", classeSignal("ai"))}>
+        <EnteteBloc
+          icone={Cpu}
+          titre="Projet GTB"
+          compteur={projets.length}
+          mention="les automates de l'affaire"
+          actions={ajouterAutomate}
+        />
+
+        {projets.length === 0 ? (
+          <EtatVide
+            dessin="automate"
+            titre="Aucun automate"
+            texte="Un Projet GTB porte un automate, ses modules et ses points. Créez le premier : il naîtra déjà rattaché à cette affaire."
+            action={ajouterAutomate}
           />
-
-          {projets.length === 0 ? (
-            <EtatVide
-              dessin="automate"
-              titre="Aucun automate"
-              texte="Un Projet GTB porte un automate, ses modules et ses points. Créez le premier : il naîtra déjà rattaché à cette affaire."
-              action={ajouterAutomate}
-            />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="data-table table-cards">
-                <thead>
-                  <tr>
-                    <th>Automate</th>
-                    <th>Contrôleur</th>
-                    <th className="cell-num">E/S</th>
-                    <th>Mise en service</th>
-                    <th>Modifié</th>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="data-table table-cards">
+              <thead>
+                <tr>
+                  <th>Automate</th>
+                  <th>Contrôleur</th>
+                  <th className="cell-num">E/S</th>
+                  <th>Mise en service</th>
+                  {/* « C'est fait ? » — la question qu'on se pose en
+                      rouvrant une affaire, et à laquelle aucun compteur ne
+                      répondait (voir lib/chantiers/arret.ts). */}
+                  <th>Arrêt</th>
+                  <th>Modifié</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projets.map((p) => (
+                  <tr key={p.id}>
+                    <td className="cell-title cell-card-title cell-wrap">
+                      <Link href={p.href} className="transition-colors hover:text-brand">
+                        {p.nom}
+                      </Link>
+                    </td>
+                    <td data-label="Contrôleur">{p.controller || "—"}</td>
+                    <td data-label="E/S" className="cell-num">
+                      {p.nbPoints}
+                    </td>
+                    <td data-label="Mise en service">
+                      <Avancement tests={p.tests} />
+                    </td>
+                    <td data-label="Arrêt">
+                      <BasculeArret
+                        etat={p.etatArret}
+                        arreteLe={p.arreteLe}
+                        arretePar={p.arreteParNom}
+                        referenceLe={p.updatedAt}
+                        quoi={`L'automate « ${p.nom} »`}
+                        basculer={async () => {
+                          "use server";
+                          await basculerArretProjet(p.id);
+                        }}
+                      />
+                    </td>
+                    <td data-label="Modifié">{fmtDate(p.updatedAt)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {projets.map((p) => (
-                    <tr key={p.id}>
-                      <td className="cell-title cell-card-title cell-wrap">
-                        <Link href={p.href} className="transition-colors hover:text-brand">
-                          {p.nom}
-                        </Link>
-                      </td>
-                      <td data-label="Contrôleur">{p.controller || "—"}</td>
-                      <td data-label="E/S" className="cell-num">
-                        {p.nbPoints}
-                      </td>
-                      <td data-label="Mise en service">
-                        <Avancement tests={p.tests} />
-                      </td>
-                      <td data-label="Modifié">{fmtDate(p.updatedAt)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-        <BlocMaterielAffaire chantierId={id} peutPrix={peutVoirPrix(session?.user?.role)} />
-      </div>
+      <BlocMaterielAffaire
+        chantierId={id}
+        nbAutomates={projets.length}
+        peutPrix={peutVoirPrix(session?.user?.role)}
+      />
 
       {/* ---- Notes (documents riches de l'affaire) ------------------------- */}
       <section className={cn("bloc", classeSignal("ao"))}>

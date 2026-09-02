@@ -3,6 +3,12 @@ import { prisma } from "@/lib/db";
 import { partageActif } from "@/lib/partage/model";
 import { prixParProduit, prixReference } from "@/tools/magasin/queries";
 import {
+  documentationsPourProduits,
+  fichierDocumentation,
+} from "@/tools/magasin/documentation";
+import type { DocumentationVue } from "@/tools/magasin/model";
+import type { ClientArtefact } from "@/lib/clients/types";
+import {
   GRILLE_VIDE,
   SOCIETE_DEFAUT,
   calculerDevis,
@@ -13,6 +19,12 @@ import {
   estOrigineCoef,
   estRenduLot,
   estEvenementEnregistre,
+  lignesVisiblesClient,
+  BASE_DEVIS,
+  ETAT_DEVIS_LABEL,
+  formatEuros,
+  libelleDevis,
+  paveDestinatairePropose,
   reecrireMediasPublicsDevis,
   type ContenuRiche,
   type DevisComplet,
@@ -248,12 +260,18 @@ export async function getDevis(id: string): Promise<DevisComplet | null> {
       remiseGlobaleCents: d.remiseGlobaleCents,
       validiteJours: d.validiteJours,
       destinataire: d.destinataire,
+      contactId: d.contactId,
+      contactNom: d.contactNom,
+      contactFonction: d.contactFonction,
+      contactEmail: d.contactEmail,
+      contactTel: d.contactTel,
       jetonPartage: d.jetonPartage,
       partageExpireLe: d.partageExpireLe,
       publieLe: d.publieLe,
       montrerPrixUnitaires: d.montrerPrixUnitaires,
       montrerSousTotauxLots: d.montrerSousTotauxLots,
       montrerOptions: d.montrerOptions,
+      montrerDocumentations: d.montrerDocumentations,
       nbConsultations: d._count.consultations,
       derniereConsultation: d.consultations[0]?.vuLe ?? null,
       emisLe: d.emisLe,
@@ -308,6 +326,7 @@ export async function getDevis(id: string): Promise<DevisComplet | null> {
 export interface FiltresDevis {
   etat?: string;
   chantierId?: string;
+  clientId?: string;
 }
 
 /**
@@ -320,6 +339,7 @@ export async function listerDevis(f: FiltresDevis = {}): Promise<DevisResume[]> 
     where: {
       ...(f.etat && estEtatDevis(f.etat) ? { etat: f.etat } : {}),
       ...(f.chantierId ? { chantierId: f.chantierId } : {}),
+      ...(f.clientId ? { clientId: f.clientId } : {}),
     },
     orderBy: { updatedAt: "desc" },
     include: {
@@ -482,6 +502,47 @@ export interface DevisPublic {
   /** Le jeton par lequel on est entré — les médias des textes riches y sont
    *  réécrits, et la balise de consultation le renvoie. */
   jeton: string;
+  /** Les fiches techniques annexées, EN LIENS. Vide si le devis les tait ou si
+   *  aucun produit chiffré n'en porte. */
+  documentations: DocumentationVue[];
+}
+
+/**
+ * LES ANNEXES D'UN DEVIS — les fiches techniques des produits qu'il chiffre.
+ *
+ * Trois règles portent cette fonction, et aucune n'est décorative :
+ *
+ *  1. **Elles se DÉDUISENT, on ne les stocke pas.** Rien à tenir à jour quand
+ *     on ajoute une fiche au produit : le devis en profite le lendemain. C'est
+ *     l'exception assumée au « le devis fige, le magasin vit » — ce qui fige,
+ *     c'est le PRIX ; une notice périmée n'a jamais aidé personne (DEVIS.md §2).
+ *  2. **Elles suivent ce que le client VOIT**, pas ce qu'on a chiffré : un bloc
+ *     forfaitaire n'annexe rien, sinon la liste des fiches déballerait les six
+ *     produits que la condensation vient de cacher.
+ *  3. **Ce sont des LIENS.** Aucun binaire ne part avec le devis — un devis de
+ *     cent lignes deviendrait un envoi de vingt mégaoctets, et le lien montre
+ *     toujours la fiche à jour.
+ */
+export async function documentationsDevis(
+  devis: DevisComplet,
+  opts: { detailInterne?: boolean } = {},
+): Promise<DocumentationVue[]> {
+  if (!devis.entete.montrerDocumentations) return [];
+
+  const visibles = lignesVisiblesClient(
+    devis.entete,
+    devis.lots,
+    devis.lignes,
+    devis.entete,
+  );
+  const produitIds = devis.lignes
+    // La vue interne (le bordereau) montre le détail des blocs forfaitaires :
+    // ses annexes suivent, sinon on relirait un document qui n'est pas celui
+    // qu'on a sous les yeux.
+    .filter((l) => l.produitId && (opts.detailInterne || visibles.has(l.id)))
+    .map((l) => l.produitId as string);
+
+  return documentationsPourProduits(produitIds);
 }
 
 /**
@@ -535,7 +596,11 @@ export async function getDevisPublic(jeton: string): Promise<DevisPublic | null>
       lotId: l.lotId,
       ordre: l.ordre,
       genre: estGenreLigne(l.genre) ? l.genre : "LIBRE",
-      produitId: null,
+      // ⚠️ Gardé ICI, et neutralisé plus bas dans la réponse : les annexes se
+      // déduisent des produits chiffrés, et cette déduction doit se faire côté
+      // serveur. Ce que la réponse renvoie, elle, ne porte aucun identifiant de
+      // produit — le client n'a pas à savoir ce qu'on a en catalogue.
+      produitId: l.produitId,
       prestationId: null,
       designation: l.designation,
       contenu: contenu ? reecrireMediasPublicsDevis(contenu, jeton) : null,
@@ -561,8 +626,33 @@ export async function getDevisPublic(jeton: string): Promise<DevisPublic | null>
     };
   });
 
+  const entete = {
+    tauxTvaCentieme: d.tauxTvaCentieme,
+    remiseGlobalePourMille: d.remiseGlobalePourMille,
+    remiseGlobaleCents: d.remiseGlobaleCents,
+  };
+
+  // Les annexes AVANT la neutralisation des `produitId` : elles se déduisent des
+  // produits chiffrés, et cette déduction reste au serveur.
+  const documentations = d.montrerDocumentations
+    ? await documentationsPourProduits(
+        [
+          ...lignesVisiblesClient(entete, lots, lignesReelles, {
+            montrerPrixUnitaires: d.montrerPrixUnitaires,
+            montrerSousTotauxLots: d.montrerSousTotauxLots,
+            montrerOptions: d.montrerOptions,
+            // Sans objet ici : on est déjà dans la branche qui les montre.
+            montrerDocumentations: true,
+          }),
+        ]
+          .map((id) => lignesReelles.find((l) => l.id === id)?.produitId)
+          .filter((x): x is string => !!x),
+      )
+    : [];
+
   return {
     jeton,
+    documentations,
     societe,
     devis: {
       entete: {
@@ -588,12 +678,23 @@ export async function getDevisPublic(jeton: string): Promise<DevisPublic | null>
         remiseGlobaleCents: d.remiseGlobaleCents,
         validiteJours: d.validiteJours,
         destinataire: d.destinataire,
+        // Le contact figé ne sort PAS. Le pavé destinataire ci-dessus est le
+        // seul texte du destinataire qui s'imprime (DEVIS.md §24) : l'email et
+        // le téléphone de la personne n'ont donc aucune raison de traverser —
+        // et un champ absent de la réponse ne peut pas fuir par distraction
+        // (même règle que le déboursé, §21.3).
+        contactId: null,
+        contactNom: "",
+        contactFonction: "",
+        contactEmail: "",
+        contactTel: "",
         jetonPartage: d.jetonPartage,
         partageExpireLe: d.partageExpireLe,
         publieLe: d.publieLe,
         montrerPrixUnitaires: d.montrerPrixUnitaires,
         montrerSousTotauxLots: d.montrerSousTotauxLots,
         montrerOptions: d.montrerOptions,
+        montrerDocumentations: d.montrerDocumentations,
         nbConsultations: 0,
         derniereConsultation: null,
         emisLe: d.emisLe,
@@ -609,17 +710,29 @@ export async function getDevisPublic(jeton: string): Promise<DevisPublic | null>
       // serveur — ni dans le HTML, ni dans la charge utile du composant. Ce
       // n'est pas au document d'y penser : un détail absent de la réponse ne
       // peut pas fuir par distraction.
-      lignes: condenserLots(
-        {
-          tauxTvaCentieme: d.tauxTvaCentieme,
-          remiseGlobalePourMille: d.remiseGlobalePourMille,
-          remiseGlobaleCents: d.remiseGlobaleCents,
-        },
-        lots,
-        lignesReelles,
-      ),
+      // … et le `produitId` s'arrête ici : il a servi à déduire les annexes
+      // quelques lignes plus haut, il n'a rien à faire dans la réponse.
+      lignes: condenserLots(entete, lots, lignesReelles).map((l) => ({
+        ...l,
+        produitId: null,
+      })),
     },
   };
+}
+
+/**
+ * Une documentation servie par la route PUBLIQUE d'un devis. La garde vit dans
+ * la requête, et elle est double : le jeton doit être actif, ET la fiche doit
+ * réellement faire partie des annexes de CE devis. Sans la seconde, un jeton de
+ * devis deviendrait un passe-partout de toute la documentation de la maison —
+ * y compris celle des blocs forfaitaires que ce devis ne montre pas.
+ */
+export async function getDocumentationDevisPublic(jeton: string, docId: string) {
+  if (!jeton || !docId) return null;
+  const pub = await getDevisPublic(jeton);
+  if (!pub) return null;
+  if (!pub.documentations.some((d) => d.id === docId)) return null;
+  return fichierDocumentation(docId);
 }
 
 /** Un média de devis, servi par la route publique scopée au jeton. La garde
@@ -913,4 +1026,149 @@ function rang(genre: GenreEntreeFil): number {
   ];
   const i = ordre.indexOf(genre);
   return i < 0 ? ordre.length : i;
+}
+
+/* =============================================================================
+ * LE DESTINATAIRE — ce que le référentiel client PROPOSE (docs/DEVIS.md §24)
+ *
+ * Le référentiel client vit, le devis fige. Ce bloc est le seul pont entre les
+ * deux, et il n'a le droit d'aller que dans un sens : LIRE la fiche client pour
+ * proposer. Rien ici ne remonte jamais modifier un client depuis un devis.
+ *
+ * Une LECTURE, donc, et pas une action — c'est aussi ce qui la rend vérifiable
+ * sur vraie base (`scripts/clients-contacts-smoke.mts`), garde comprise.
+ *
+ * La règle que les actions appliquent ensuite : ON NE REMPLIT QUE LE VIDE
+ * (`paveReprenable`). Un pavé retapé à la main — un service de facturation, une
+ * TSA, une personne propre à cette affaire — ne se fait pas écraser par un
+ * changement de fiche.
+ * ========================================================================== */
+
+/** Les cinq champs figés du destinataire, tels qu'ils se posent sur un devis. */
+export interface ContactFige {
+  contactId: string | null;
+  contactNom: string;
+  contactFonction: string;
+  contactEmail: string;
+  contactTel: string;
+}
+
+export const CONTACT_VIDE: ContactFige = {
+  contactId: null,
+  contactNom: "",
+  contactFonction: "",
+  contactEmail: "",
+  contactTel: "",
+};
+
+/** Quelle personne veut-on ? Explicite, parce que « pas de contact » et « celui
+ *  par défaut » ne doivent pas se distinguer par un `undefined`. */
+export type ChoixContact =
+  | { mode: "principal" }
+  | { mode: "aucun" }
+  | { mode: "precis"; id: string };
+
+/**
+ * Ce que le référentiel propose pour un client : le pavé destinataire, et les
+ * champs figés de la personne retenue.
+ *
+ * `ok: false` uniquement quand un contact PRÉCIS a été demandé et qu'il
+ * n'appartient pas à ce client — c'est la garde qui empêche d'adresser un devis
+ * à la personne d'une autre société. Elle vit ici, côté serveur : l'écran ne
+ * propose que les bonnes personnes, mais un écran n'est pas une autorisation.
+ */
+export async function propositionDestinataire(
+  clientId: string | null,
+  choix: ChoixContact,
+): Promise<{ ok: boolean; pave: string; contact: ContactFige }> {
+  if (!clientId) return { ok: choix.mode !== "precis", pave: "", contact: { ...CONTACT_VIDE } };
+
+  const c = await prisma.client.findUnique({
+    where: { id: clientId },
+    select: { nom: true, adresse: true, codePostal: true, ville: true },
+  });
+  if (!c) return { ok: choix.mode !== "precis", pave: "", contact: { ...CONTACT_VIDE } };
+
+  let contact: ContactFige = { ...CONTACT_VIDE };
+  let identite: { civilite: string; nom: string; fonction: string } | null = null;
+
+  if (choix.mode !== "aucun") {
+    const p = await prisma.contactClient.findFirst({
+      // ⚠️ `clientId` DANS le where, y compris en mode « precis » : C'EST LA
+      // GARDE. Un id de contact venu d'ailleurs ne trouve simplement rien.
+      where:
+        choix.mode === "precis"
+          ? { id: choix.id, clientId }
+          : { clientId, principal: true, actif: true },
+      select: {
+        id: true,
+        civilite: true,
+        nom: true,
+        fonction: true,
+        email: true,
+        telephone: true,
+        mobile: true,
+      },
+    });
+    if (choix.mode === "precis" && !p) {
+      return { ok: false, pave: "", contact: { ...CONTACT_VIDE } };
+    }
+    if (p) {
+      identite = { civilite: p.civilite, nom: p.nom, fonction: p.fonction };
+      contact = {
+        contactId: p.id,
+        contactNom: p.nom,
+        contactFonction: p.fonction,
+        contactEmail: p.email,
+        // Le mobile fait un meilleur numéro de rappel quand il existe : c'est
+        // celui qu'on compose pour relancer un devis.
+        contactTel: p.mobile || p.telephone,
+      };
+    }
+  }
+
+  return { ok: true, pave: paveDestinatairePropose(c, identite), contact };
+}
+
+/* =============================================================================
+ * PROVIDERS — fiche client et fiche affaire
+ *
+ * L'outil en était absent tant qu'il vivait dans ToolGus ET qu'il était réservé
+ * aux Achats : la fiche client est vue de toute l'équipe. Les deux raisons sont
+ * tombées le 2026-08-12 (promotion en outil métier, ouverture à tous), donc le
+ * devis prend sa place à côté des autres réalisations.
+ *
+ * ⚠️ Les deux providers passent par `listerDevis`, qui calcule déjà les totaux
+ * avec le moteur : dupliquer le mapping Prisma → `LigneDevisVue` ici aurait
+ * fait deux chemins de calcul pour un même prix, et le jour où l'un dérive,
+ * c'est la fiche client qui annonce un montant que le devis dément.
+ * ========================================================================== */
+
+function versArtefactsDevis(devis: DevisResume[]): ClientArtefact[] {
+  return devis.map((d) => ({
+    id: d.id,
+    titre: `${libelleDevis(d.numero, d.revision)}${d.titre.trim() ? ` — ${d.titre.trim()}` : ""}`,
+    href: `${BASE_DEVIS}/${d.id}`,
+    numeroWhy: d.numeroWhy,
+    updatedAt: d.updatedAt,
+    // Ce qu'on vient chercher sur une fiche : où en est-on, et pour combien.
+    // Un devis qu'on ne sait pas tout chiffrer le DIT (principe n°3).
+    resume: [
+      ETAT_DEVIS_LABEL[d.etat],
+      `${formatEuros(d.netHtCents)} HT`,
+      d.nbSansPrix > 0 ? `${d.nbSansPrix} sans prix` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  }));
+}
+
+/** Provider fiche client : les devis établis pour ce client. */
+export async function listerPourClient(clientId: string): Promise<ClientArtefact[]> {
+  return versArtefactsDevis(await listerDevis({ clientId }));
+}
+
+/** Provider fiche affaire : les devis rattachés à cette affaire. */
+export async function listerPourChantier(chantierId: string): Promise<ClientArtefact[]> {
+  return versArtefactsDevis(await listerDevis({ chantierId }));
 }

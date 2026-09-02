@@ -77,6 +77,16 @@ function reconcileInitial(p: Project, catalogue: Catalogue): Project {
   return p;
 }
 
+/**
+ * Ce que l'import a ramené au vocabulaire de l'entreprise. On le DIT : la
+ * désignation du programme client a changé de forme, et le local est parti au
+ * texte libre (voir `nommeurImport`).
+ */
+function mentionVocabulaire(n: number | undefined): string {
+  if (!n) return "";
+  return ` · ${n} libellé${n > 1 ? "s" : ""} ramené${n > 1 ? "s" : ""} au vocabulaire`;
+}
+
 export function Editeur({
   id,
   initial,
@@ -197,7 +207,7 @@ export function Editeur({
   async function handleGfx(file: File) {
     setImportState({ kind: "loading" });
     try {
-      const res = await importGfx(file);
+      const res = await importGfx(file, cataloguePoints);
       setNom(res.projectFields.name);
       setProject((p) => ({
         ...p,
@@ -209,7 +219,7 @@ export function Editeur({
       }));
       setImportState({
         kind: "done",
-        msg: `${res.meta.controller} · ${res.meta.inputs} entrées / ${res.meta.outputs} sorties · ${res.meta.extensions} extension(s)`,
+        msg: `${res.meta.controller} · ${res.meta.inputs} entrées / ${res.meta.outputs} sorties · ${res.meta.extensions} extension(s)${mentionVocabulaire(res.meta.normalises)}`,
       });
       setTab("liste");
     } catch (e) {
@@ -223,7 +233,7 @@ export function Editeur({
   async function handlePdf(file: File) {
     setImportState({ kind: "loading" });
     try {
-      const res = await importPdf(file);
+      const res = await importPdf(file, cataloguePoints);
       setNom(res.projectFields.name);
       setProject((p) => ({
         ...p,
@@ -235,7 +245,7 @@ export function Editeur({
       }));
       setImportState({
         kind: "done",
-        msg: `${res.meta.controller} · ${res.meta.pages} page(s) · ${res.meta.inputs} entrées / ${res.meta.outputs} sorties`,
+        msg: `${res.meta.controller} · ${res.meta.pages} page(s) · ${res.meta.inputs} entrées / ${res.meta.outputs} sorties${mentionVocabulaire(res.meta.normalises)}`,
       });
       setTab("liste");
     } catch (e) {
@@ -673,10 +683,30 @@ function AutomateModulesTab({
             />
           </Field>
           {(() => {
-            const doc = automateDef(catalogue, project.controller)?.docUrl;
-            return doc ? (
+            // La documentation vient du PRODUIT relié (magasin) ; le `docUrl`
+            // historique ne répond que si le modèle n'est relié à rien.
+            const def = automateDef(catalogue, project.controller);
+            const docs = def?.docs ?? [];
+            if (docs.length > 0) {
+              return (
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {docs.map((d) => (
+                    <a
+                      key={d.id}
+                      href={d.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline"
+                    >
+                      <FileText className="h-3.5 w-3.5" /> {d.titre}
+                    </a>
+                  ))}
+                </div>
+              );
+            }
+            return def?.docUrl ? (
               <a
-                href={encodeURI(doc)}
+                href={encodeURI(def.docUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-brand hover:underline"

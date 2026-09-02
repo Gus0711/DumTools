@@ -19,7 +19,7 @@
  *      répéter le sous-total de lot (§7 bis — deux défauts réels).
  *
  * ⚠️ CE QUI N'EST PAS COUVERT ICI : l'impression depuis l'APERÇU INTERNE
- * (`/perso/gus/devis/[id]/apercu`), qui demande une session. C'est pourtant là
+ * (`/outils/devis/[id]/apercu`), qui demande une session. C'est pourtant là
  * qu'un défaut de pagination s'est produit — le document y vit dans la coquille
  * de l'application, dont le cadre est `h-screen overflow-hidden`, et il s'y
  * faisait clipper à UNE page. À vérifier à la main après toute retouche de
@@ -32,6 +32,8 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { randomUUID } from "node:crypto";
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
 const BASE = process.env.SMOKE_BASE_URL || `http://127.0.0.1:${process.env.PORT || 3000}`;
 const MARQUE = "ZZ-SMOKE-RESTIT";
@@ -101,10 +103,58 @@ async function nettoyer() {
   });
   for (const d of devis) await prisma.devis.delete({ where: { id: d.id } });
   await prisma.client.deleteMany({ where: { nom: { startsWith: MARQUE } } });
+  // Les documentations et leurs produits (la jonction part en cascade).
+  const docs = await prisma.documentation.findMany({
+    where: { titre: { startsWith: MARQUE } },
+    select: { fichier: true },
+  });
+  for (const d of docs) if (d.fichier) await rm(d.fichier, { force: true }).catch(() => {});
+  await prisma.documentation.deleteMany({ where: { titre: { startsWith: MARQUE } } });
+  await prisma.produit.deleteMany({ where: { refInterne: { startsWith: MARQUE } } });
 }
 
 try {
   await nettoyer();
+
+  /* --- Le décor de la DOCUMENTATION -------------------------------------- *
+   * Deux produits, deux fiches. L'un est chiffré dans un lot ordinaire, l'autre
+   * DANS LE BLOC FORFAITAIRE : c'est le témoin négatif du chantier. Si la fiche
+   * du second sortait, la liste des annexes déballerait exactement ce que la
+   * condensation prend soin de cacher. */
+  const depotDocs = process.env.DOC_MEDIA_DIR ?? join(process.cwd(), ".documentation-media");
+  await mkdir(depotDocs, { recursive: true });
+
+  async function fiche(titre: string, produit: { ref: string; designation: string }) {
+    const p = await prisma.produit.create({
+      data: { refInterne: `${MARQUE}-${produit.ref}`, designation: produit.designation },
+      select: { id: true },
+    });
+    const chemin = join(depotDocs, randomUUID());
+    // Un vrai PDF minimal : la route sert un binaire, pas une chaîne vide.
+    await writeFile(chemin, Buffer.from("%PDF-1.4\n% fiche de test\n"));
+    const d = await prisma.documentation.create({
+      data: {
+        titre,
+        categorie: "fiche",
+        fichier: chemin,
+        nom: `${titre}.pdf`,
+        mimeType: "application/pdf",
+        taille: 24,
+        produits: { create: { produitId: p.id } },
+      },
+      select: { id: true },
+    });
+    return { produitId: p.id, docId: d.id };
+  }
+
+  const docVisible = await fiche(`${MARQUE} Fiche ECY-303`, {
+    ref: "ECY303",
+    designation: "Automate ECY-303",
+  });
+  const docForfait = await fiche(`${MARQUE} ZZSECRET Fiche S1000`, {
+    ref: "S1000",
+    designation: "Automate S1000",
+  });
 
   /* --- Le décor : un devis complet, publié -------------------------------- */
   console.log("\n1. Un devis publié");
@@ -119,7 +169,14 @@ try {
       titre: `${MARQUE} Complexe sportif`,
       etat: "EMIS",
       clientNom: `${MARQUE} Client`,
-      destinataire: `${MARQUE} CLIENT\nService technique\n02800 CHARMES`,
+      destinataire: `${MARQUE} CLIENT\nÀ l'attention de M. Jean Dupont\nService technique\n02800 CHARMES`,
+      // Le contact FIGÉ (docs/DEVIS.md §24). Son nom s'imprime — mais par le
+      // pavé ci-dessus, et par lui seul. Ses coordonnées, elles, sont des
+      // données internes : elles servent au mail à venir, pas au document.
+      contactNom: "Jean Dupont",
+      contactFonction: "Conducteur de travaux",
+      contactEmail: "ZZSECRET-MAIL@client.fr",
+      contactTel: "ZZSECRET-TEL 06 12 34 56 78",
       tauxTvaCentieme: 2000,
       validiteJours: 30,
       jetonPartage: jeton,
@@ -155,6 +212,7 @@ try {
         lotId: lotFourniture.id,
         ordre: 1000,
         genre: "PRODUIT",
+        produitId: docVisible.produitId,
         designation: "AUTOMATE DISTECH ECY-303",
         // Ce sont ces trois valeurs qui NE DOIVENT PAS sortir chez le client.
         refInterne: "ZZSECRET-REF",
@@ -204,6 +262,7 @@ try {
         lotId: lotForfait.id,
         ordre: 5000,
         genre: "PRODUIT",
+        produitId: docForfait.produitId,
         designation: "ZZSECRET AUTOMATE ECY-S1000-C50",
         refInterne: "ZZSECRET-S1000",
         debourseCents: 149400,
@@ -394,6 +453,15 @@ try {
     // vérifie sur lui aussi, pas seulement sur le HTML dont il est tiré.
     verifier("… ni le détail d'un bloc forfaitaire", !texte.includes("ZZSECRET"));
     verifier("… mais bien la phrase qui le remplace", texte.includes("DÉPOSE DE L'ANCIENNE"));
+    // Le contact figé (§24) : son nom est dans le pavé, ses coordonnées nulle
+    // part. Le `ZZSECRET` ci-dessus les couvre déjà — c'est dit ici pour que
+    // le prochain lecteur sache ce que ce contrôle protège.
+    verifier("… le nom du destinataire est bien là", texte.includes("Jean Dupont"));
+    // Les annexes voyagent avec le PDF — en LIENS. Chromium en fait de vraies
+    // annotations cliquables ; ce qu'on vérifie ici, c'est que le titre est
+    // imprimé (un lien sans intitulé ne se lit pas) et que la fiche du bloc
+    // forfaitaire n'y est pas (le `ZZSECRET` ci-dessus la couvre déjà).
+    verifier("… la fiche technique annexée est listée", texte.includes("Fiche ECY-303"));
   }
 
   /* --- 7 bis. UN DEVIS QUI FAIT PLUSIEURS PAGES --------------------------
@@ -515,6 +583,102 @@ try {
     });
     const page2 = await fetch(`${BASE}/d/${jeton}`).then((r) => r.text());
     verifier("la note interne d'une ligne ne sort pas non plus", !page2.includes("ZZNOTEINTERNE"));
+  }
+
+  console.log("\n7 quater. Les coordonnées du contact ne sortent pas (§24)");
+  {
+    /* Le contact d'un devis sert au pré-remplissage et — plus tard — au mail.
+       Rien ne l'imprime : le PAVÉ destinataire est le seul texte du
+       destinataire sur le document. Ses coordonnées n'ont donc aucune raison
+       de traverser, et `getDevisPublic` les neutralise. */
+    const page = await fetch(`${BASE}/d/${jeton}`).then((r) => r.text());
+
+    verifier("l'adresse mail du contact NE SORT PAS", !page.includes("ZZSECRET-MAIL"));
+    verifier("son téléphone non plus", !page.includes("ZZSECRET-TEL"));
+    verifier("… ni sa fonction, qui n'est pas dans le pavé", !page.includes("Conducteur de travaux"));
+
+    // Témoin négatif : sans lui, ces trois contrôles passeraient au vert sur
+    // une page blanche. Le nom EST attendu — il est écrit dans le pavé.
+    verifier(
+      "TÉMOIN : le nom, lui, s'imprime bien — par le pavé destinataire",
+      page.includes("À l&#x27;attention de M. Jean Dupont") ||
+        page.includes("À l'attention de M. Jean Dupont"),
+    );
+  }
+
+  /* --- 7 quinquies. LES ANNEXES DE DOCUMENTATION ------------------------- */
+  console.log("\n7 quinquies. Les fiches techniques annexées");
+  {
+    /* Le devis annexe les fiches des produits qu'il chiffre — EN LIENS, jamais
+       en pièces jointes. Deux gardes se croisent ici, et la seconde est celle
+       qui a motivé tout le découpage :
+
+         1. la liste suit les lignes que le CLIENT VOIT — un bloc forfaitaire
+            n'annexe rien, sinon les annexes nommeraient les produits que la
+            condensation vient de cacher ;
+         2. la route publique est scopée au jeton ET à la liste de CE devis —
+            sans quoi un jeton de devis servirait toute la documentation de la
+            maison. */
+    const page = await fetch(`${BASE}/d/${jeton}`).then((r) => r.text());
+
+    verifier("le bloc d'annexes est là", page.includes("Documentation technique"));
+    verifier(
+      "la fiche du produit chiffré est listée",
+      page.includes(`${MARQUE} Fiche ECY-303`),
+    );
+    // ⚠️ LE TÉMOIN NÉGATIF du chantier : la fiche du produit d'un bloc
+    // FORFAITAIRE ne doit apparaître nulle part. Elle est nommée ZZSECRET, donc
+    // le filet du 7 ter la rattraperait aussi — on le dit quand même ici, parce
+    // que c'est ICI que la règle se décide.
+    verifier(
+      "TÉMOIN NÉGATIF : la fiche d'un produit du bloc forfaitaire NE SORT PAS",
+      !page.includes("Fiche S1000"),
+    );
+    verifier(
+      "aucun binaire n'est joint — que des liens",
+      page.includes(`/api/public/devis/${jeton}/doc/`),
+    );
+
+    // La route publique sert la fiche annexée…
+    const repDoc = await fetch(`${BASE}/api/public/devis/${jeton}/doc/${docVisible.docId}`);
+    egal("la route publique sert la fiche annexée", repDoc.status, 200);
+    egal(
+      "… avec son type MIME",
+      repDoc.headers.get("content-type"),
+      "application/pdf",
+    );
+    const bin = Buffer.from(await repDoc.arrayBuffer());
+    verifier("… et un vrai binaire", bin.subarray(0, 5).toString() === "%PDF-");
+
+    // … et REFUSE celle du bloc forfaitaire, avec le même jeton.
+    const repSecret = await fetch(`${BASE}/api/public/devis/${jeton}/doc/${docForfait.docId}`);
+    egal(
+      "la fiche d'un bloc forfaitaire n'est pas servie, même avec le bon jeton",
+      repSecret.status,
+      404,
+    );
+
+    // Étanchéité entre devis : le jeton du voisin ne l'ouvre pas non plus.
+    const repAutre = await fetch(`${BASE}/api/public/devis/${jetonAutre}/doc/${docVisible.docId}`);
+    egal("le jeton d'un AUTRE devis ne sert pas cette fiche", repAutre.status, 404);
+
+    // L'interrupteur de publication.
+    await prisma.devis.update({
+      where: { id: devis.id },
+      data: { montrerDocumentations: false },
+    });
+    const sans = await fetch(`${BASE}/d/${jeton}`).then((r) => r.text());
+    verifier("décoché, le bloc d'annexes disparaît", !sans.includes("Documentation technique"));
+    const repCoupee = await fetch(`${BASE}/api/public/devis/${jeton}/doc/${docVisible.docId}`);
+    egal(
+      "… et la route ne sert plus rien (la garde suit le réglage)",
+      repCoupee.status,
+      404,
+    );
+    await prisma.devis.update({
+      where: { id: devis.id },
+      data: { montrerDocumentations: true },
+    });
   }
 
   /* --- 8. Le rendu PDF de la page ---------------------------------------- */

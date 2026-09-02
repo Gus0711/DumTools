@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClipboardList, FileUp, ScanLine, Tags, Truck } from "lucide-react";
+import { ClipboardList, FileText, FileUp, PackageSearch, ScanLine, Tags, Truck } from "lucide-react";
 import { auth } from "@/auth";
 import { Cartouche } from "@/ui";
 import { listerAffaires } from "@/lib/chantiers/queries";
@@ -52,6 +52,19 @@ export default async function Page() {
             <Link href="/outils/magasin/inventaires" className={lienSecondaire}>
               <ClipboardList className="h-4 w-4" />
               Inventaires
+            </Link>
+            {/* Ouvert à tous, comme la fiche matériel d'une affaire : préparer
+                une commande n'est pas un geste d'Achats, c'est le chargé
+                d'affaire qui sait ce qu'il lance. Les prix, eux, restent gardés. */}
+            <Link href="/outils/magasin/besoins" className={lienSecondaire}>
+              <PackageSearch className="h-4 w-4" />
+              Besoin consolidé
+            </Link>
+            {/* En lecture pour TOUT LE MONDE : c'est le technicien en armoire
+                qui cherche une notice, pas l'acheteur. */}
+            <Link href="/outils/magasin/documentation" className={lienSecondaire}>
+              <FileText className="h-4 w-4" />
+              Documentation
             </Link>
             {peutGererReferentiel(role) && (
               <>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import { TitreEcran } from "@/components/app-shell/contexte-ecran";
-import { getDevis, getSociete } from "@/tools/devis/queries";
+import { documentationsDevis, getDevis, getSociete } from "@/tools/devis/queries";
 import { DocumentDevis } from "@/tools/devis/document-devis";
 import { BoutonImprimer } from "@/tools/devis/bouton-imprimer";
 import { libelleDevis } from "@/tools/devis/model";
@@ -39,31 +39,35 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: Promise<{ qui: string; id: string }>;
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ detail?: string }>;
 }) {
-  const { qui, id } = await params;
+  const { id } = await params;
   const { detail } = await searchParams;
-  await garde(qui);
+  await garde();
 
   const [devis, societe] = await Promise.all([getDevis(id), getSociete()]);
   if (!devis) notFound();
 
   const numero = libelleDevis(devis.entete.numero, devis.entete.revision);
   const vueInterne = detail === "1";
+  // Les annexes suivent la vue : le bordereau interne montre le détail des blocs
+  // forfaitaires, donc aussi leurs fiches. Les liens pointent ici vers la route
+  // authentifiée — on est à l'intérieur.
+  const documentations = await documentationsDevis(devis, { detailInterne: vueInterne });
   const nbForfaits = devis.lots.filter((l) => l.rendu === "CONDENSE").length;
 
   return (
     <>
       <TitreEcran
-        estampille="ToolGus · Devis"
+        estampille="Devis"
         titre={`${vueInterne ? "Vue interne" : "Aperçu client"} — ${numero}`}
       />
 
       {/* La seule chose que cet écran ajoute au document : le chemin du retour,
           et dire si ce qu'on lit est déjà parti chez le client. */}
       <div className="devis-lecteur">
-        <Link href={`/perso/${qui}/devis/${id}`} className="titre">
+        <Link href={`/outils/devis/${id}`} className="titre">
           <ChevronLeft className="inline h-4 w-4" /> Retour au chiffrage
         </Link>
         <span>
@@ -76,7 +80,7 @@ export default async function Page({
             proposer ne ferait que poser une question sans objet. */}
         {nbForfaits > 0 && (
           <Link
-            href={`/perso/${qui}/devis/${id}/apercu${vueInterne ? "" : "?detail=1"}`}
+            href={`/outils/devis/${id}/apercu${vueInterne ? "" : "?detail=1"}`}
             className="bascule"
             prefetch={false}
           >
@@ -96,7 +100,12 @@ export default async function Page({
       </div>
 
       <div className="devis-cadre">
-        <DocumentDevis devis={devis} societe={societe} detailInterne={vueInterne} />
+        <DocumentDevis
+          devis={devis}
+          societe={societe}
+          documentations={documentations}
+          detailInterne={vueInterne}
+        />
       </div>
     </>
   );

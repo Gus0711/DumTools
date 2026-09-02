@@ -8,7 +8,7 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useSyncUrl } from "@/lib/filtres-url";
+import { useReprendreFiltres, useSyncUrl } from "@/lib/filtres-url";
 import {
   ClipboardList,
   Download,
@@ -113,7 +113,11 @@ export function IndexReponses({
   // Recherche dans l'URL : revenir d'une réponse ne remet pas la table à plat.
   const params = useSearchParams();
   const [q, setQ] = useState(() => params.get("q") ?? "");
-  useSyncUrl({ q });
+  // La mémoire est propre à CE formulaire : une recherche « chaudière » retenue
+  // sur l'un n'a aucun sens sur les réponses d'un autre.
+  const cleFiltres = `formulaires.reponses.${formulaireId}`;
+  useReprendreFiltres(cleFiltres, ["q"], (v) => setQ(v("q") ?? ""));
+  useSyncUrl({ q }, cleFiltres);
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState<string | null>(null);
 

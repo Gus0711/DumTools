@@ -2,7 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Circle, CircleCheck, CircleDot, ListTodo, TriangleAlert } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronDown,
+  Circle,
+  CircleCheck,
+  CircleDot,
+  ListTodo,
+  TriangleAlert,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { EtatTache } from "@/generated/prisma/enums";
 import type { MaTacheRow } from "./taches";
@@ -116,10 +124,21 @@ export function MesTaches({
             {aFaire > 0 && `${aFaire} à faire`}
           </span>
         )}
-        {erreur && (
+        {erreur ? (
           <span className="ml-auto flex items-center gap-1.5 text-sm text-danger">
             <TriangleAlert className="h-4 w-4 shrink-0" /> {erreur}
           </span>
+        ) : (
+          /* Le bloc reste BORNÉ (voir plus haut) : il répond à « maintenant ».
+             Le reste — les terminées, le filtre par client, le tri — vit sur
+             l'écran dédié, qu'il faut donc pouvoir atteindre d'ici. */
+          <Link
+            href="/mes-taches"
+            className="ml-auto inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand transition-colors hover:text-brand-strong"
+          >
+            Tout voir
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         )}
       </div>
 
@@ -165,16 +184,30 @@ export function MesTaches({
                 >
                   {t.titre}
                 </span>
-                <Link
-                  href={`/affaires/${t.affaireId}`}
-                  title={`${t.affaireNom} · ${t.clientNom}`}
-                  className={cn(
-                    "shrink-0 truncate text-xs text-subtle transition-colors hover:text-brand",
-                    !colonne && "sm:max-w-[14rem] sm:text-right",
-                  )}
-                >
-                  {t.affaireNom}
-                </Link>
+                {/* Une tâche INTERNE n'a pas d'affaire : elle affiche son
+                    domaine, sans lien — sinon on pointait « /affaires/null ». */}
+                {t.affaireId ? (
+                  <Link
+                    href={`/affaires/${t.affaireId}`}
+                    title={`${t.affaireNom} · ${t.clientNom}`}
+                    className={cn(
+                      "shrink-0 truncate text-xs text-subtle transition-colors hover:text-brand",
+                      !colonne && "sm:max-w-[14rem] sm:text-right",
+                    )}
+                  >
+                    {t.affaireNom}
+                  </Link>
+                ) : (
+                  <span
+                    title="Tâche interne, hors affaire"
+                    className={cn(
+                      "shrink-0 truncate text-xs text-subtle",
+                      !colonne && "sm:max-w-[14rem] sm:text-right",
+                    )}
+                  >
+                    {t.domaineNom ?? "interne"}
+                  </span>
+                )}
               </span>
             </li>
           );

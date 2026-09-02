@@ -10,7 +10,7 @@
  *
  * ⚠️ Les TAUX DE PRESTATION posés ici sont des ordres de grandeur destinés à
  * rendre les exemples lisibles — ce ne sont pas les tarifs de Dumortier. À
- * corriger sur /perso/gus/devis/referentiels avant tout usage réel.
+ * corriger sur /outils/devis/referentiels avant tout usage réel.
  *
  * Le script repasse par les MÊMES fonctions que l'application (cascade du
  * coefficient, arrondi, compteur atomique) : ce qu'il produit est exactement ce

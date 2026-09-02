@@ -718,3 +718,169 @@ Vérifications : `npx tsx scripts/associations-smoke.mts` (21 contrôles du
 rangement et du calcul de quantité) + parcours navigateur complet (20 contrôles :
 réglage, proposition, quantités pré-remplies, variante exclusive, coefficient
 rejoué pour chaque associé).
+
+---
+
+## 15. La documentation technique — elle appartient au PRODUIT (2026-08-12)
+
+### Le problème
+
+Les fiches Distech vivaient dans `public/materiel/Documentations_Distech/`, et
+un écran `/documentation` en listait le contenu par un `readdirSync`. Trois
+défauts, dont un seul suffisait :
+
+1. **Ajouter une fiche demandait un commit et une reconstruction d'image.** Un
+   collègue Achats ne pouvait pas le faire.
+2. **Le lien était un champ unique** (`AutomateModele.docUrl`,
+   `ModuleModele.docUrl`, `Produit.docUrl`) : la notice « ECY IO Modules »,
+   qui couvre les six modules d'extension, était recopiée six fois — et à
+   corriger six fois. Le `Produit.docUrl` n'était d'ailleurs affiché nulle part.
+3. **Rien ne reliait la fiche au chiffrage.** On ne pouvait pas joindre la
+   documentation à un devis sans aller la chercher à la main.
+
+### Le modèle
+
+`Documentation` + `ProduitDocumentation` (jonction **N↔N**). Une documentation a
+**exactement une source** :
+
+- `fichier` — un binaire sur le disque de la VM (`DOC_MEDIA_DIR`), **hors de
+  `public/`** : une route décide qui le lit, et on en dépose depuis l'interface ;
+- `url` — un lien chez le constructeur, quand on préfère ne rien héberger : c'est
+  lui qui restera à jour tout seul.
+
+`lienDocumentation(doc, prefixe)` est **le seul endroit** qui décide où pointe le
+lien — la route interne, ou la route publique scopée au jeton d'un devis. Le type
+servi est filtré par `mimeSur()` : ce qui n'est ni PDF ni image part en
+`application/octet-stream`, car une fiche voyage jusque sur la page publique d'un
+devis, donc sur **notre** origine (un HTML servi `inline` y serait du script).
+
+### Les écrans
+
+- **Fiche produit** (`documentation-produit.tsx`) : téléverser · mettre en lien ·
+  **rattacher une fiche existante**. Le troisième geste est celui qui compte :
+  c'est lui qui empêche le même PDF d'exister six fois. **Détacher n'est pas
+  supprimer** — la fiche sert peut-être cinq autres produits, et le compte
+  (`nbProduits`) est affiché avant qu'on décide.
+- **Bibliothèque** `/outils/magasin/documentation` : toutes les fiches, avec les
+  produits qu'elles servent. Une fiche **sans produit** est signalée plutôt que
+  cachée : elle ne remonte alors nulle part, et c'est ce qu'on veut voir.
+- **Lecture ouverte à tout collègue connecté**, gestion réservée à
+  `ACHATS`/`ADMIN`. Une fiche constructeur ne porte aucun prix, et c'est le
+  technicien en armoire qui en a besoin.
+
+### Le repli, qui n'est pas provisoire
+
+La base matériel lit la documentation **par `produitId`**
+(`catalogue-queries.ts` → `AutomateDef.docs`). Mais au moment de la bascule,
+**23 modèles sur 27 n'étaient reliés à aucun produit** : sans repli, la moitié de
+l'écran perdait ses liens. `docUrl` reste donc affiché **quand `docs` est vide**,
+et les PDF de `public/` sont conservés. Relier un modèle à son produit le fait
+basculer tout seul.
+
+### Reprise
+
+```bash
+npx tsx scripts/documentation-reprise.mts              # rapport, rien n'est écrit
+npx tsx scripts/documentation-reprise.mts --appliquer  # copie les binaires + rattache
+```
+
+Idempotent (rapprochement sur le nom de fichier) : à rejouer après avoir relié de
+nouveaux modèles à leur produit. Il liste en clair les modèles restés orphelins.
+
+---
+
+## 16. Le besoin consolidé — plusieurs affaires, une seule commande (2026-09-01)
+
+La BOM répond « que faut-il pour **cette** affaire ? ». On n'achète pourtant
+presque jamais affaire par affaire : dix-sept salles de l'USEDA commandées le
+même mois, c'est **un bon de commande par fournisseur**, pas dix-sept. Il
+fallait donc ouvrir dix-sept écrans et additionner à la main — l'erreur assurée,
+et sur la seule ligne qui compte, celle qu'on oublie.
+
+Écran **`/outils/magasin/besoins`**, ouvert à tous comme la fiche matériel d'une
+affaire : préparer une commande n'est pas un geste d'Achats, c'est le chargé
+d'affaire qui sait ce qu'il lance. Les **prix** restent gardés par `peutVoirPrix`.
+
+### 16.1 Ce qui se somme, et ce qui ne se somme pas
+
+C'est tout le sujet, et c'est le seul endroit où l'erreur serait **muette** — une
+commande courte part sans que rien ne l'annonce, et ça se découvre sur le
+chantier.
+
+| Grandeur | Se somme ? | Pourquoi |
+|---|---|---|
+| **Besoin** | oui | Deux affaires veulent deux automates. |
+| **Réservé**, **sorti** | oui | Ils sont propres à une affaire. |
+| **Manquant** | oui, **borné à 0 affaire par affaire** | Une affaire sur-couverte ne doit pas éponger le découvert de sa voisine. |
+| **Stock** | ⚠️ **NON** | Il est le même pour tout le monde. Une sonde en rayon est une sonde, pas dix-sept. L'additionner ferait croire qu'on a le matériel. |
+
+D'où la forme de `LigneConsolidee` (`model.ts`) : **une ligne par produit**,
+portant le stock **une seule fois**, et la **liste** de ce que chaque affaire y
+appelle (`ContribAffaire`). Le total pour une sélection donnée est calculé par
+`totaliser(ligne, retenues)` — une seule fonction, partagée par le tableau, les
+compteurs et l'export CSV : trois endroits où une divergence ne se verrait pas.
+
+Le chiffre du bon de commande est **`aCommander = max(0, manquant − dispo)`**,
+avec `dispo = max(0, stock − réservations actives **toutes affaires**)`. Les
+réservations d'une affaire hors sélection comptent : ce stock est là, mais promis.
+
+### 16.2 On ne recalcule rien — on appelle `bomAffaire()`
+
+`besoinConsolide()` appelle la **même** fonction que la fiche matériel, affaire
+par affaire, en parallèle. Délibéré et non négociable : une seconde dérivation,
+même « équivalente », finirait par diverger, et la divergence se verrait le jour
+où l'écran d'affaire dit 3 et la commande 2. Mesuré sur la vraie base :
+**40 affaires en ~900 ms**. Le jour où ça pèse, on factorisera la dérivation —
+pas avant, et **pas en la recopiant**.
+
+La fonction n'ajoute que ce qu'une BOM d'affaire n'a pas besoin de savoir : le
+**fournisseur** et sa référence (on commande chez quelqu'un, pas par catégorie),
+et les **réservations des autres affaires**.
+
+### 16.3 Le geste : un filtre dessine le paquet, une case fait l'exception
+
+Le paquet se décrit presque toujours d'une phrase — « l'USEDA, ce qui est
+commandé ». Deux étages : les **filtres** (client, état, recherche) dessinent le
+paquet ; les **cases** décochent l'affaire qu'on ne commande pas encore.
+⚠️ Décocher n'est **pas** un filtre : l'exclusion survit à un changement de
+filtre, sinon la seule affaire sciemment écartée reviendrait en douce.
+
+Tout est recalculé **dans le navigateur** : le serveur envoie les contributions
+une fois pour toutes. Cocher une case doit se voir tout de suite — un
+aller-retour par clic tuerait le geste. Filtres retenus par poste
+(`useSyncUrl` / `useReprendreFiltres`, clé `magasin-besoins`), états par défaut
+`ETATS_VUE_DEFAUT` = **Commande + En cours**, c'est-à-dire ce qui est engagé.
+
+Regroupement par **fournisseur** par défaut — ce n'est pas un détail
+d'affichage : on passe une commande chez quelqu'un. Ce qui n'a pas de
+fournisseur forme un groupe **en dernier**, marqué « à renseigner ».
+
+### 16.4 Ce que la commande ne contient pas, on le DIT
+
+Un trou de la dérivation (point sans nomenclature, automate ou module non relié
+à un produit) ne se voit **pas** dans le tableau : la ligne n'existe simplement
+pas. C'est le défaut le plus cher de l'écran — on commanderait court en croyant
+la liste complète. D'où le bandeau d'avertissement en tête, qui somme les trous
+**sur la sélection courante**. Même règle pour le coût : incomplet dès qu'une
+référence n'a pas de prix, et le nombre est affiché plutôt que le total seul.
+
+### 16.5 Ce que ça ne fait toujours pas
+
+Le **« déjà commandé »** reste la question ouverte du §11 : sans modèle de
+commande, `aCommander` ignore ce qui est en route. Tant qu'on commande tout en
+une fois, sans conséquence ; dès la deuxième commande sur le même paquet
+d'affaires, on risque de doubler. À trancher à l'usage, comme prévu.
+
+### 16.6 Vérification
+
+```bash
+npx tsx --conditions=react-server scripts/besoin-consolide-smoke.mts  # 18 contrôles, vraie base
+npx tsx scripts/besoins-regard.mts     # REGARDER : bureau + téléphone (next dev :3001)
+```
+
+Le contrôle qui porte tout : sur **une** affaire, le consolidé doit rendre
+exactement ce qu'affiche sa fiche matériel — produits, besoins et manquants.
+Et le stock d'un produit appelé par quatorze affaires doit valoir celui d'une
+seule. ⚠️ `besoins-regard.mts` fait défiler le **conteneur interne** : la
+coquille est en `h-screen overflow-hidden`, `fullPage: true` ne capture que le
+viewport (piège partagé avec les autres harnais de capture).

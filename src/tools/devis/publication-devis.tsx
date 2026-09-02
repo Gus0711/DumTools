@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Check,
   Copy,
@@ -9,6 +10,7 @@ import {
   FileDown,
   Globe,
   Clock,
+  RotateCcw,
 } from "lucide-react";
 import { Button, Label } from "@/ui";
 import { cn } from "@/lib/cn";
@@ -18,12 +20,14 @@ import {
   majLot,
   prolongerPartageDevis,
   publierDevis,
+  reprendreIdentiteClient,
   revoquerPartageDevis,
 } from "./actions";
 import {
   BASE_URL_DEVIS_PUBLIC,
   DUREE_PARTAGE_DEVIS_DEFAUT,
   dureesPartageDevis,
+  paveReprenable,
   type DevisComplet,
   type LotDevisVue,
 } from "./model";
@@ -48,6 +52,7 @@ import {
 export function BlocPublication({
   entete,
   lots,
+  paveClient,
   enCours,
   agir,
   onVoirLot,
@@ -55,6 +60,8 @@ export function BlocPublication({
   entete: DevisComplet["entete"];
   /** Les blocs, pour la récapitulation « ce que le client voit de chacun ». */
   lots: LotDevisVue[];
+  /** Ce que la fiche client proposerait aujourd'hui (docs/DEVIS.md §24). */
+  paveClient: string;
   enCours: boolean;
   agir: (fn: () => Promise<unknown>) => void;
   /** Sauter au bloc dans le tableau — la récapitulation sert à VÉRIFIER, on
@@ -65,6 +72,12 @@ export function BlocPublication({
   const [copie, setCopie] = useState(false);
   const [confirmeRevocation, setConfirmeRevocation] = useState(false);
   const [destinataire, setDestinataire] = useState(entete.destinataire);
+
+  /* Le pavé s'écarte-t-il de ce que la fiche client donnerait ? C'est ce qui
+     décide si « Reprendre du client » a quelque chose à faire. On compare la
+     saisie EN COURS, pas ce qui est en base : le bouton doit s'allumer dès la
+     première frappe qui éloigne, pas au blur. */
+  const ecarteDuClient = !!paveClient && !paveReprenable(destinataire, paveClient);
 
   const durees = dureesPartageDevis(entete.validiteJours);
   const actif = partageActif(entete);
@@ -110,9 +123,14 @@ export function BlocPublication({
       {/* --- À qui ---------------------------------------------------------- */}
       <div className="border-b border-hairline px-4 py-3">
         <Label htmlFor="destinataire">Destinataire</Label>
+        {/* 6 lignes, pas 4 : depuis que la fiche client pré-remplit ce pavé, il
+            en fait couramment cinq (société, service, adresse, CP ville, « à
+            l'attention de »). À 4, la dernière ligne — celle qui nomme la
+            personne — était HORS DU CHAMP, et il fallait faire défiler pour
+            voir ce qui allait s'imprimer. Vu en regardant, pas en testant. */}
         <textarea
           id="destinataire"
-          rows={3}
+          rows={6}
           value={destinataire}
           disabled={enCours}
           onChange={(e) => setDestinataire(e.target.value)}
@@ -121,12 +139,52 @@ export function BlocPublication({
               agir(() => majEnteteDevis(entete.id, { destinataire }));
             }
           }}
-          placeholder={`${entete.clientNom || "Nom du client"}\nService, adresse\nÀ l'attention de…`}
+          placeholder={`${entete.clientNom || "Nom du client"}\nÀ l'attention de…\nAdresse\nCode postal Ville`}
           className="mt-1 w-full resize-y rounded-md border border-border bg-surface px-2.5 py-1.5 text-sm leading-snug text-fg outline-none focus:border-brand/50"
         />
-        <p className="mt-1 text-xs text-subtle">
-          Tel qu&apos;il s&apos;imprime, une ligne par ligne. Vide : le seul nom du client.
-        </p>
+
+        {/* Le référentiel PROPOSE, il n'impose pas : un pavé retapé à la main
+            (un service de facturation, une TSA) ne se fait jamais écraser tout
+            seul. D'où ce bouton, et lui seul, pour reprendre la fiche client.
+            (docs/DEVIS.md §24) */}
+        <div className="mt-1.5 flex items-start justify-between gap-2">
+          <p className="min-w-0 flex-1 text-xs leading-snug text-subtle">
+            {ecarteDuClient
+              ? "Ce pavé s'écarte de la fiche client."
+              : "Tel qu'il s'imprime, une ligne par ligne. Vide : le seul nom du client."}
+          </p>
+          {paveClient ? (
+            <button
+              type="button"
+              disabled={enCours || !ecarteDuClient}
+              onClick={() =>
+                agir(async () => {
+                  const r = await reprendreIdentiteClient(entete.id);
+                  if (r.ok) setDestinataire(paveClient);
+                  return r;
+                })
+              }
+              title={
+                ecarteDuClient
+                  ? "Réécrire le pavé depuis la fiche du client"
+                  : "Le pavé est déjà celui de la fiche client"
+              }
+              className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-brand transition-colors hover:underline disabled:cursor-default disabled:text-subtle disabled:no-underline"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Reprendre du client
+            </button>
+          ) : (
+            entete.clientId && (
+              <Link
+                href={`/clients/${entete.clientId}`}
+                className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-brand hover:underline"
+                title="La fiche de ce client ne porte ni adresse ni contact"
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Renseigner la fiche client
+              </Link>
+            )
+          )}
+        </div>
       </div>
 
       {/* --- Ce qu'on montre ------------------------------------------------ */}
@@ -153,6 +211,13 @@ export function BlocPublication({
             valeur={entete.montrerOptions}
             disabled={enCours}
             onChange={(v) => agir(() => majEnteteDevis(entete.id, { montrerOptions: v }))}
+          />
+          <Interrupteur
+            libelle="Documentation technique"
+            aide="Les fiches des produits chiffrés, en LIENS en fin de document — rien n'est joint. Un bloc forfaitaire n'en annexe aucune."
+            valeur={entete.montrerDocumentations}
+            disabled={enCours}
+            onChange={(v) => agir(() => majEnteteDevis(entete.id, { montrerDocumentations: v }))}
           />
         </div>
 
