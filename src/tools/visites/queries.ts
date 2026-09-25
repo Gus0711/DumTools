@@ -4,31 +4,19 @@ import type { ClientArtefact } from "@/lib/clients/types";
 import type { AffaireTerrain } from "@/lib/offline/visites";
 import {
   dateISOLocale,
+  normaliserData,
+  reservesOuvertes,
   resumeVisite,
-  TYPE_LABEL,
-  type Reserve,
+  titreAffiche,
   type TypeVisite,
   type Visite,
   type VisiteData,
 } from "./model";
 
-/** Sécurise un `data` JSON venu de la base (anciens enregistrements, champs
- *  manquants) vers un VisiteData complet. */
-export function normaliserData(raw: unknown): VisiteData {
-  const d = (raw ?? {}) as Partial<VisiteData>;
-  return {
-    participants: d.participants ?? "",
-    notes: d.notes ?? "",
-    sections: Array.isArray(d.sections) ? d.sections : [],
-    reserves: Array.isArray(d.reserves) ? d.reserves : [],
-    medias: Array.isArray(d.medias) ? d.medias : [],
-    updatedTs: typeof d.updatedTs === "number" ? d.updatedTs : 0,
-  };
-}
-
-export function titreAffiche(v: { titre: string; type: TypeVisite; date: Date }): string {
-  return v.titre.trim() || `${TYPE_LABEL[v.type]} — ${v.date.toLocaleDateString("fr-FR")}`;
-}
+// Helpers PURS de lecture : ils vivent dans ./model (client-safe) pour que le
+// serveur MCP puisse les partager — ce fichier est « server-only ». Ré-exportés
+// ici : les appelants historiques (jalons, accueil) ne changent pas d'adresse.
+export { normaliserData, titreAffiche };
 
 export interface VisiteResume {
   id: string;
@@ -145,23 +133,6 @@ export async function getVisitePourTerrain(id: string): Promise<Visite | null> {
  * les affaires + leurs réserves encore ouvertes (report inter-visites — le
  * « ne rien oublier » au niveau de l'affaire).
  * ------------------------------------------------------------------------------ */
-
-/** Réserves ouvertes d'un lot de visites : une réserve garde son id d'une visite
- *  à l'autre (report) → l'état le plus récent gagne, on ne garde que les ouvertes.
- *  `origineVisiteId` est posé sur la première visite qui l'a déclarée (badge
- *  « Reportée » côté terrain). */
-function reservesOuvertes(visites: { id: string; data: unknown }[]): Reserve[] {
-  const parTs = visites
-    .map((v) => ({ id: v.id, data: normaliserData(v.data) }))
-    .sort((a, b) => a.data.updatedTs - b.data.updatedTs);
-  const etatFinal = new Map<string, Reserve>();
-  for (const v of parTs) {
-    for (const r of v.data.reserves) {
-      etatFinal.set(r.id, { ...r, origineVisiteId: r.origineVisiteId ?? v.id });
-    }
-  }
-  return [...etatFinal.values()].filter((r) => r.statut === "ouverte");
-}
 
 export async function snapshotAffairesPourTerrain(): Promise<AffaireTerrain[]> {
   const affaires = await prisma.chantier.findMany({

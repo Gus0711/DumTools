@@ -4,8 +4,10 @@
 // Charge d'abord dotenv (DATABASE_URL) AVANT tout import qui touche la BDD :
 // data.mts → ../src/lib/db instancie le pool Prisma à l'évaluation du module.
 import "dotenv/config";
+import "./sans-server-only.mts";
 
 import { AsyncLocalStorage } from "node:async_hooks";
+import { createHash } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -50,6 +52,28 @@ import {
   createWikiPage,
   updateWikiPage,
   deleteWikiPage,
+  listVisites,
+  getVisite,
+  listReservesOuvertes,
+  createVisite,
+  updateVisite,
+  deleteVisite,
+  listDevis,
+  getDevisMcp,
+  searchArticlesDevis,
+  createDevis,
+  updateDevis,
+  deleteDevis,
+  reviseDevis,
+  duplicateDevis,
+  refreshDevisPrix,
+  addDevisLot,
+  updateDevisLot,
+  addDevisLignes,
+  updateDevisLigne,
+  deleteDevisLigne,
+  reprendreBomDevis,
+  createProduit,
   type AuthUser,
   type RowInput,
   brancherActeur,
@@ -107,6 +131,18 @@ Avant d'inventer un nom, chercher le générique correspondant dans le catalogue
 // `nomLocalise` est partagé avec l'interface (src/tools/liste-points/model).
 const ETAT_AFFAIRE = z.enum(["DEVIS", "COMMANDE", "EN_COURS", "LIVRE", "CLOTURE"]);
 const BESOIN_ARMOIRE = z.enum(["INTEGRATION", "NOUVELLE"]);
+const TYPE_VISITE = z.enum(["RELEVE", "SUIVI", "RECEPTION", "MAINTENANCE"]);
+const ETAT_DEVIS = z.enum(["BROUILLON", "EMIS", "ACCEPTE", "REFUSE"]);
+const RENDU_LOT = z.enum(["DETAILLE", "CONDENSE"]);
+
+// --- Devis : la règle de l'IA, et les unités ---------------------------------
+// Répétée dans chaque outil qui ajoute ou cherche un article : une IA lit la
+// description de l'outil qu'elle appelle, pas celle du voisin.
+
+const REGLE_DIVERS = `⚠️ RÈGLE ABSOLUE — UN ARTICLE ABSENT DU MAGASIN NE SE CRÉE PAS. La ligne passe en « Divers » (genre LIBRE : libellé + prix saisis) et la réponse la signale (passeesEnDivers) : L'ANNONCER à l'utilisateur. dumtools_create_produit ne sert QUE si l'utilisateur demande EXPLICITEMENT de créer le produit au magasin — jamais par commodité, jamais pour éviter un Divers.
+Un article se retrouve par son id (produitId) ou par sa RÉFÉRENCE exacte (interne, fabricant ou fournisseur, sans ambiguïté) — JAMAIS par sa désignation. Chercher d'abord avec dumtools_search_articles_devis.`;
+
+const UNITES_DEVIS = `Unités : montants en EUROS HT décimaux (412.5), quantités décimales (2.5), coefficient multiplicateur (1.35 = ×1,35), remises et TVA en POURCENT (5 = 5 %).`;
 const POWER_SUPPLY = z.enum(["none", "integrated", "230V"]);
 
 // Utilisateur courant, porté par requête en mode HTTP (résolu depuis le jeton).
@@ -192,11 +228,11 @@ server.registerTool(
   "dumtools_get_client",
   {
     title: "Fiche client (agrégation)",
-    description: `Fiche d'un client : agrège tout ce qui a été produit pour lui à travers les outils (aujourd'hui : les projets GTB rattachés).
+    description: `Fiche d'un client : agrège tout ce qui a été produit pour lui à travers les outils (projets GTB, documents GED, devis).
 
 Args : id (string) — l'id du client (voir dumtools_list_clients).
 
-Retourne : id, nom, realisations[] (id, titre, numeroWhy, resume « N modules · M E/S », date de modif).`,
+Retourne : id, nom, realisations[] (id, titre, numeroWhy, resume — « N modules · M E/S » pour un projet, « En chiffrage · 12 400,00 € HT » pour un devis —, date de modif).`,
     inputSchema: { id: z.string().min(1).describe("Id du client") },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
@@ -233,7 +269,7 @@ server.registerTool(
 
 Args : id (string) — l'id de l'affaire (voir dumtools_list_affaires).
 
-Retourne : affaire { id, nom, numeroWhy, etat, besoinArmoire, clientId, clientNom, automates[] (projets GTB : id, nom, controller, nbPoints, nbModules, date), documents[] (GED : id, nom, categorie, taille, statutSync, date), notes[] (id, titre, resume, partagee, date — contenu via dumtools_get_note) }.`,
+Retourne : affaire { id, nom, numeroWhy, etat, besoinArmoire, clientId, clientNom, automates[] (projets GTB : id, nom, controller, nbPoints, nbModules, date), documents[] (GED : id, nom, categorie, taille, statutSync, date), notes[] (id, titre, resume, partagee, date — contenu via dumtools_get_note), visites[], devis[] (id, libelle « DT260052 v2 », titre, etat, netHt en €, nbSansPrix, date — détail via dumtools_get_devis) }.`,
     inputSchema: { id: z.string().min(1).describe("Id de l'affaire") },
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   },
@@ -768,6 +804,171 @@ Retourne : { deleted: true } si supprimé.`,
   }),
 );
 
+// ---- VISITES DE CHANTIER (relevé, suivi, réception, maintenance) ----
+// Le passage sur site : une checklist « pour ne rien oublier » (un modèle par
+// type de visite), des RÉSERVES reportées d'une visite à la suivante tant
+// qu'elles ne sont pas levées, des photos et des notes vocales.
+// ⚠️ La saisie vit LOCALEMENT sur le téléphone (îlot offline) jusqu'à la
+// synchro : le MCP ne voit que l'état SYNCHRONISÉ — une visite faite ce matin
+// peut n'être pas encore remontée. Voir docs/VISITES.md.
+
+server.registerTool(
+  "dumtools_list_visites",
+  {
+    title: "Lister les visites de chantier",
+    description: `Liste les visites de chantier SYNCHRONISÉES (celles encore ouvertes sur un téléphone n'y sont pas), de la plus récente à la plus ancienne.
+
+Quatre types, un par étape du cycle : RELEVE (relevé avant chiffrage), SUIVI (suivi de chantier), RECEPTION (réception / levée de réserves), MAINTENANCE (maintenance / SAV).
+
+Args (tous facultatifs) : chantierId OU numeroWhy — limiter à une affaire ; type ; sansAffaire (boolean) — les visites ORPHELINES, non rattachées à une affaire (cas courant du relevé fait avant que l'affaire existe : elles se rattachent avec dumtools_update_visite) ; depuis / jusqua (AAAA-MM-JJ) ; limit (défaut 100).
+
+Retourne pour chacune : id, titre, type + typeLibelle, date, affaire (chantierId, affaireNom, numeroWhy), clientNom, resume (« 12/34 pts · 2 KO · 1 réserve · 5 photos »), reservesOuvertes, auteur, updatedAt. Pour le contenu, enchaîner avec dumtools_get_visite.`,
+    inputSchema: {
+      chantierId: z.string().min(1).optional().describe("Limiter aux visites de cette affaire"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+      type: TYPE_VISITE.optional().describe("Limiter à un type de visite"),
+      sansAffaire: z.boolean().optional().describe("Uniquement les visites non rattachées à une affaire"),
+      depuis: z.string().optional().describe("Date min (AAAA-MM-JJ)"),
+      jusqua: z.string().optional().describe("Date max (AAAA-MM-JJ)"),
+      limit: z.number().int().positive().optional().describe("Nombre max de visites (défaut 100)"),
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async (filtre) => run(async () => {
+    const visites = await listVisites(filtre);
+    return { count: visites.length, visites };
+  }),
+);
+
+server.registerTool(
+  "dumtools_get_visite",
+  {
+    title: "Lire une visite de chantier",
+    description: `Récupère une visite complète : la checklist point par point (statut ok / ko / na / "" non renseigné, note de terrain), les RÉSERVES et les médias.
+
+Args : id (string) — voir dumtools_list_visites.
+
+Retourne : identification (titre, type, date, affaire, client, n° Why), participants, notes générales, stats (total / renseignes / ko / reservesOuvertes / photos / audios), sections[] (titre + items : libelle, aide du guide, statut, note, nb photos/audios), reserves[] (libelle, localisation, gravite, statut, reporteeDe si héritée d'une visite précédente), medias[] (url authentifiée /api/visites/media/…, type, rattachement au point ou à la réserve, recu = binaire arrivé sur le serveur), auteur, url de la fiche.
+
+Les champs vides sont OMIS pour rester lisible : un item sans note ni photo n'expose que son libellé et son statut. Un statut "" veut dire « pas encore renseigné » — sur une réception, c'est une information, pas un vide.`,
+    inputSchema: { id: z.string().min(1).describe("Id de la visite") },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const visite = await getVisite(id);
+    if (!visite) throw new Error(`Visite introuvable pour l'id « ${id} ». Vérifiez l'id via dumtools_list_visites.`);
+    return { visite };
+  }),
+);
+
+server.registerTool(
+  "dumtools_list_reserves",
+  {
+    title: "Réserves ouvertes (reste à lever)",
+    description: `Les RÉSERVES encore OUVERTES, groupées par affaire — le « reste à faire » du terrain, la colonne vertébrale du « ne rien oublier ».
+
+Une réserve garde son identité d'une visite à l'autre : déclarée en réception, elle est reportée dans la visite suivante tant qu'elle n'est pas levée. Cette liste applique cette fusion (l'état le plus récent gagne) — une réserve levée disparaît d'elle-même, il n'y a rien à cocher ici.
+
+Args (facultatifs) : chantierId OU numeroWhy — une seule affaire. Sans argument : TOUTES les affaires qui ont des réserves ouvertes, la plus chargée d'abord (les visites orphelines forment leur propre groupe, chantierId null).
+
+Retourne : groupes { chantierId, affaireNom, clientNom, numeroWhy, reserves[] } ; chaque réserve : libelle, localisation, gravite (haute → faible, dans cet ordre), note, nb photos, visiteId + visiteTitre (la visite où elle a été déclarée).`,
+    inputSchema: {
+      chantierId: z.string().min(1).optional().describe("Limiter à cette affaire"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async (ref) => run(async () => {
+    const affaires = await listReservesOuvertes(ref);
+    const total = affaires.reduce((n, a) => n + a.reserves.length, 0);
+    return { count: total, affaires };
+  }),
+);
+
+server.registerTool(
+  "dumtools_create_visite",
+  {
+    title: "Préparer une visite de chantier",
+    description: `Prépare une visite depuis le bureau : elle est créée avec la CHECKLIST DU MODÈLE de son type (le guide « pour ne rien oublier », le même qu'au terrain) et le REPORT des réserves encore ouvertes de l'affaire.
+
+Elle s'ouvre ensuite sur le téléphone via /outils/visites/terrain?ouvrir={id} (l'îlot l'importe dans son stockage local, la saisie continue hors-ligne).
+
+Affaire OBLIGATOIRE ici : au terrain une visite peut naître sans affaire (le relevé précède souvent le n° Why) et se rattacher au retour, mais depuis le bureau rien ne justifie d'en créer une orpheline.
+
+Args : chantierId? OU numeroWhy? (l'un des deux, requis) ; type (requis : RELEVE | SUIVI | RECEPTION | MAINTENANCE) ; titre? (défaut : « <type> — <date> » à l'affichage) ; date? (AAAA-MM-JJ, défaut aujourd'hui) ; participants? ; notes?.
+
+Retourne : { id, nbItems, nbReservesReportees, url, urlTerrain }.`,
+    inputSchema: {
+      chantierId: z.string().min(1).optional().describe("Id de l'affaire de rattachement"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+      type: TYPE_VISITE.describe("Type de visite (détermine la checklist)"),
+      titre: z.string().optional().describe("Titre de la visite"),
+      date: z.string().optional().describe("Date terrain (AAAA-MM-JJ)"),
+      participants: z.string().optional().describe("Qui était présent"),
+      notes: z.string().optional().describe("Notes générales de la visite"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async (input) => run(async () => {
+    const r = await createVisite(input, currentUserId());
+    return {
+      ...r,
+      url: `/outils/visites/${r.id}`,
+      urlTerrain: `/outils/visites/terrain?ouvrir=${r.id}`,
+    };
+  }),
+);
+
+server.registerTool(
+  "dumtools_update_visite",
+  {
+    title: "Modifier / rattacher une visite",
+    description: `Corrige les métadonnées d'une visite synchronisée : titre, type, date, et surtout RATTACHEMENT à une affaire — le geste du retour de chantier, quand le relevé a été fait avant que l'affaire existe (créer l'affaire avec dumtools_create_affaire, puis rattacher ici). Au rattachement, client et n° Why sont REPRIS DE L'AFFAIRE : elle fait foi.
+
+⚠️ Le CONTENU (checklist, réserves, médias) ne se modifie pas ici : il se saisit au terrain, et l'écraser depuis le bureau perdrait la copie encore ouverte sur le téléphone (fusion « dernier gagne » à la synchro). Pour reprendre une visite, ouvrir /outils/visites/terrain?ouvrir={id}.
+⚠️ De même, si le téléphone détient encore cette visite, sa prochaine synchro peut restaurer SON titre / type / date (le rattachement, lui, est protégé : un envoi sans affaire ne détache jamais).
+
+Args : id (requis) ; titre? ; type? ; date? (AAAA-MM-JJ) ; chantierId? OU numeroWhy?.
+
+Retourne : { id, chantierId, updatedAt }.`,
+    inputSchema: {
+      id: z.string().min(1).describe("Id de la visite"),
+      titre: z.string().optional().describe("Nouveau titre"),
+      type: TYPE_VISITE.optional().describe("Nouveau type"),
+      date: z.string().optional().describe("Nouvelle date terrain (AAAA-MM-JJ)"),
+      chantierId: z.string().min(1).optional().describe("Affaire de rattachement"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id, ...input }) => run(async () => {
+    const r = await updateVisite(id, input);
+    if (!r) throw new Error(`Visite introuvable pour l'id « ${id} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_delete_visite",
+  {
+    title: "Supprimer une visite",
+    description: `Supprime DÉFINITIVEMENT une visite synchronisée, avec ses photos et ses notes vocales sur le serveur. Action irréversible sur une base partagée — à n'utiliser que sur confirmation explicite de l'utilisateur.
+
+⚠️ Une copie peut subsister sur le téléphone qui l'a saisie : sa prochaine synchro la recréerait. Supprimer d'abord le brouillon local si la visite était encore ouverte au terrain.
+
+Args : id (string, requis).
+
+Retourne : { deleted: true } si supprimé.`,
+    inputSchema: { id: z.string().min(1).describe("Id de la visite à supprimer") },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const deleted = await deleteVisite(id);
+    if (!deleted) throw new Error(`Visite introuvable pour l'id « ${id} » (déjà supprimée ?).`);
+    return { id, deleted: true };
+  }),
+);
+
 // ---- WIKI (base de connaissances interne d'entreprise) ----
 // Savoir DURABLE et transverse (procédures, savoir-faire GTB, méthodes), NON
 // rattaché à une affaire. Organisation : rubrique (thème) → pages. Recherche
@@ -935,6 +1136,469 @@ Retourne : { deleted: true } si supprimée.`,
   }),
 );
 
+// ---- DEVIS (moteur de chiffrage : déboursé du Magasin × coefficient = PV) ----
+// Lectures de l'app, écritures par le NOYAU partagé avec l'éditeur
+// (src/tools/devis/ecritures) : aucun chemin de calcul n'est réécrit ici.
+// Voir docs/DEVIS.md §28.
+
+server.registerTool(
+  "dumtools_list_devis",
+  {
+    title: "Lister les devis",
+    description: `Liste les devis, du plus récemment modifié au plus ancien, avec leurs totaux calculés par le moteur de l'app.
+
+Args (tous facultatifs) : etat (BROUILLON|EMIS|ACCEPTE|REFUSE) ; chantierId OU numeroWhy — une affaire ; clientId ; limit (défaut 50).
+
+Retourne : total, devis[] (id, libelle « DT260052 v2 », titre, etat, clientNom, numeroWhy, affaireNom, totalHt, netHt, margeSurFourniture + taux, nbLignes, nbSansPrix, publie, nbConsultations, nbRevisionsUlterieures, auteur, updatedAt, url). Pour le détail : dumtools_get_devis.
+
+${UNITES_DEVIS}`,
+    inputSchema: {
+      etat: ETAT_DEVIS.optional().describe("Limiter à un état"),
+      chantierId: z.string().min(1).optional().describe("Limiter aux devis de cette affaire"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+      clientId: z.string().min(1).optional().describe("Limiter aux devis de ce client"),
+      limit: z.number().int().positive().optional().describe("Nombre max (défaut 50)"),
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async (filtre) => run(async () => listDevis(filtre)),
+);
+
+server.registerTool(
+  "dumtools_get_devis",
+  {
+    title: "Détail d'un devis",
+    description: `Récupère un devis complet : entête (client, affaire, coefficient par défaut, TVA, remise globale, validité, destinataire, contact), ce que le client voit (affichageClient), la publication (lecture seule), les LOTS avec leurs LIGNES, les totaux et les alertes.
+
+Chaque ligne : id, genre (PRODUIT = article du magasin · PRESTATION = référentiel de main d'œuvre/BPU au taux de vente · LIBRE = « Divers » saisi à la main · TEXTE = commentaire), designation, ref, quantite, unite, debourse, coef + origineCoef (ligne|produit|categorie|devis), prixVenteUnitaire, remisePourcent, totalHt, option (hors total), note ; drapeaux sansPrix (article sans prix connu), aChiffrer (Divers à 0 €), prixPerime (le magasin a changé depuis).
+
+Un lot rendu CONDENSE est un forfait : le client ne lit qu'une ligne au sous-total (libelleClient), jamais le détail.
+
+La marge affichée est la « marge sur la FOURNITURE » (la main d'œuvre est au taux de vente, sans coût interne) — ne jamais l'appeler « marge du devis ».
+
+Args : id (string).
+
+${UNITES_DEVIS}`,
+    inputSchema: { id: z.string().min(1).describe("Id du devis") },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const devis = await getDevisMcp(id);
+    if (!devis) throw new Error(`Devis introuvable pour l'id « ${id} ». Vérifiez l'id via dumtools_list_devis.`);
+    return { devis };
+  }),
+);
+
+server.registerTool(
+  "dumtools_search_articles_devis",
+  {
+    title: "Chercher un article ou une prestation (devis)",
+    description: `Cherche dans le MAGASIN (réf. interne, réf. fabricant, désignation, fabricant) et dans les PRESTATIONS (libellé ou n° d'article BPU) — la même recherche que la barre d'ajout de l'éditeur. À APPELER AVANT dumtools_add_devis_lignes.
+
+Args : query (≥ 2 caractères) ; devisId? (calcule le coefficient et le prix de vente qu'appliquerait CE devis) ; limit? (défaut 15, max 50).
+
+Retourne : articles[] (produitId, ref, refFabricant, designation, unite, categorie, debourse + sourcePrix, sansPrix, coef + origineCoef, prixVenteEstime) et prestations[] (prestationId, libelle, unite, prixVente, famille, articleBpu).
+
+Rien trouvé ne veut PAS dire « à créer » : l'article se chiffrera en Divers.
+
+${REGLE_DIVERS}`,
+    inputSchema: {
+      query: z.string().min(2).describe("Référence, désignation ou n° BPU (≥ 2 caractères)"),
+      devisId: z.string().min(1).optional().describe("Devis pour lequel estimer coef et prix de vente"),
+      limit: z.number().int().positive().max(50).optional().describe("Nombre max par famille (défaut 15)"),
+    },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ query, devisId, limit }) => run(async () => searchArticlesDevis(query, { devisId, limit })),
+);
+
+server.registerTool(
+  "dumtools_create_devis",
+  {
+    title: "Créer un devis",
+    description: `Crée un devis en BROUILLON, avec un numéro DT{AA}{NNNN} attribué de façon atomique (une révision n'en consomme pas ; une création, si). Le coefficient par défaut de la maison est COPIÉ, et le destinataire est pré-rempli depuis la fiche client (adresse + contact principal).
+
+Rattachement : chantierId OU numeroWhy d'une affaire EXISTANTE (client et n° Why en sont repris) — le MCP ne crée pas d'affaire. À défaut, clientNom seul (client rattaché au référentiel, créé s'il n'existe pas, comme partout dans l'app).
+
+Args : titre? ; chantierId? ; numeroWhy? ; clientNom?.
+
+Retourne : { id, numero, url, clientNom, numeroWhy, affaireNom, destinatairePreRempli, contact }. Enchaîner avec dumtools_add_devis_lignes.`,
+    inputSchema: {
+      titre: z.string().optional().describe("Titre du devis (ex. « GTB chaufferie — mairie »)"),
+      chantierId: z.string().min(1).optional().describe("Id de l'affaire (existante)"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire (existante)"),
+      clientNom: z.string().min(1).optional().describe("À défaut d'affaire : nom du client"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async (input) => run(async () => createDevis(input, currentUserId())),
+);
+
+server.registerTool(
+  "dumtools_update_devis",
+  {
+    title: "Modifier l'entête d'un devis",
+    description: `Modifie l'entête d'un devis. Seuls les champs fournis changent.
+
+Args : id (requis) ; titre? ; clientNom? (re-rattache au référentiel ; le destinataire suit s'il n'a pas été retapé à la main) ; chantierId? OU numeroWhy? (affaire existante — client et n° Why en sont repris) ; coefDefaut? (1.35) ; tauxTva? (%, 0 = autoliquidation) ; remiseGlobalePourcent? OU remiseGlobaleMontant? (€ HT) — EXCLUSIVES, null pour retirer ; validiteJours? ; destinataire? (pavé imprimé, une ligne par ligne) ; montrerPrixUnitaires? montrerSousTotauxLots? montrerOptions? montrerDocumentations? (ce que voit le client) ; etat? (BROUILLON|EMIS|ACCEPTE|REFUSE).
+
+⚠️ coefDefaut ne rechiffre PAS les lignes existantes (le devis fige) : seules les lignes ajoutées ensuite, ou un dumtools_refresh_devis_prix, l'appliquent.
+⚠️ etat ACCEPTE/REFUSE : seulement quand l'utilisateur rapporte la réponse du client (le fil du devis en garde la trace). EMIS pose la date d'émission une fois pour toutes.
+Le lien public client (/d/…) se publie depuis l'éditeur, pas depuis le MCP.
+
+Retourne : { id, libelle, etat, emisLe, clientNom, affaireNom, destinataire, updatedAt, totaux }.
+
+${UNITES_DEVIS}`,
+    inputSchema: {
+      id: z.string().min(1).describe("Id du devis"),
+      titre: z.string().optional(),
+      clientNom: z.string().min(1).optional().describe("Nom du client"),
+      chantierId: z.string().min(1).optional().describe("Rattacher à cette affaire (existante)"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+      coefDefaut: z.number().positive().max(20).optional().describe("Coefficient par défaut (1.35 = ×1,35)"),
+      tauxTva: z.number().min(0).max(100).optional().describe("TVA en pourcent (20)"),
+      remiseGlobalePourcent: z.number().min(0).max(100).nullable().optional().describe("Remise globale en % (null = retirer)"),
+      remiseGlobaleMontant: z.number().min(0).nullable().optional().describe("Remise globale en € HT (null = retirer)"),
+      validiteJours: z.number().int().min(0).max(3650).optional().describe("Durée de validité de l'offre"),
+      destinataire: z.string().optional().describe("Pavé destinataire imprimé (lignes séparées par \\n)"),
+      etat: ETAT_DEVIS.optional().describe("État du devis"),
+      montrerPrixUnitaires: z.boolean().optional(),
+      montrerSousTotauxLots: z.boolean().optional(),
+      montrerOptions: z.boolean().optional(),
+      montrerDocumentations: z.boolean().optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id, ...input }) => run(async () => {
+    const r = await updateDevis(id, input, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${id} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_add_devis_lot",
+  {
+    title: "Ajouter un lot à un devis",
+    description: `Ajoute un lot (bloc) en fin de devis. Un lot n'est pas un chapitre : c'est un BLOC DU CLIENT.
+  · rendu DETAILLE (défaut) : le client lit chaque ligne ;
+  · rendu CONDENSE (forfait) : le client ne lit qu'UNE ligne — libelleClient — au sous-total du lot ; le détail ne sort pas du serveur.
+
+Args : devisId (requis) ; titre (requis — nom interne) ; rendu? ; libelleClient? (la phrase lue par le client sur un forfait, retours à la ligne permis) ; description? (description non exhaustive imprimée en puces, une ligne = une puce).
+
+Astuce : dumtools_add_devis_lignes accepte aussi lotTitre, qui crée le lot au besoin.
+
+Retourne : { id, devisId }.`,
+    inputSchema: {
+      devisId: z.string().min(1).describe("Id du devis"),
+      titre: z.string().min(1).describe("Titre interne du lot (« Fourniture GTB », « Main d'œuvre »)"),
+      rendu: RENDU_LOT.optional().describe("DETAILLE (défaut) ou CONDENSE (forfait)"),
+      libelleClient: z.string().optional().describe("Désignation lue par le client sur un forfait"),
+      description: z.string().optional().describe("Description en puces (une ligne = une puce)"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async ({ devisId, ...input }) => run(async () => {
+    const r = await addDevisLot(devisId, input, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${devisId} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_update_devis_lot",
+  {
+    title: "Modifier un lot de devis",
+    description: `Modifie un lot : titre, rendu (DETAILLE | CONDENSE = forfait), libelleClient, description. Seuls les champs fournis changent.
+
+⚠️ Passer un lot en CONDENSE CACHE son détail au client (une seule ligne au sous-total) ; le repasser en DETAILLE le DÉVOILE.
+
+Args : lotId (requis — voir dumtools_get_devis → lots[].id) ; titre? ; rendu? ; libelleClient? ; description?.
+
+Retourne : le lot.`,
+    inputSchema: {
+      lotId: z.string().min(1).describe("Id du lot"),
+      titre: z.string().min(1).optional(),
+      rendu: RENDU_LOT.optional(),
+      libelleClient: z.string().optional(),
+      description: z.string().optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ lotId, ...input }) => run(async () => {
+    const r = await updateDevisLot(lotId, input, currentUserId());
+    if (!r) throw new Error(`Lot introuvable pour l'id « ${lotId} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_add_devis_lignes",
+  {
+    title: "Ajouter des lignes à un devis",
+    description: `Ajoute une ou plusieurs lignes à un devis, d'un seul appel. Tout est résolu et validé AVANT d'écrire : une ligne fautive n'en laisse pas d'autres à moitié posées.
+
+${REGLE_DIVERS}
+
+Chaque ligne a un type :
+  · "article"    — produitId OU ref (référence exacte : interne, fabricant ou fournisseur) + designation (TOUJOURS la fournir : c'est le libellé de la ligne Divers si l'article n'est pas au magasin). Trouvé → désignation, déboursé et coefficient viennent du magasin (prixVente/debourse éventuels IGNORÉS, et signalés). Absent, archivé ou ambigu → ligne Divers, avec la raison et les candidats.
+  · "prestation" — prestationId, OU ref = n° d'article BPU (« 5.4.9 »), OU designation = libellé EXACT du référentiel. Absente → Divers (jamais créée).
+  · "divers"     — designation (requis) + prixVente (€ HT unitaire) OU debourse (€, le prix de vente en découle au coef du devis, ou au coef donné). ref? est gardée sur la ligne.
+  · "texte"      — texte : un commentaire intercalé, sans quantité ni prix.
+Communs : quantite? (défaut 1), unite? (Divers), remise? (%), option? (hors total), note? (interne, jamais imprimée), lotId? OU lotTitre? (lot créé s'il n'existe pas).
+Un Divers sans prix est posé à 0 € et signalé « aChiffrer » : demander le prix à l'utilisateur plutôt que d'en inventer un.
+
+Args : devisId (requis) ; lotId? OU lotTitre? (lot par défaut de toutes les lignes) ; lignes (requis).
+
+Retourne : ajoutees, lignes[] (index, id, genre, designation, quantite, prixVenteUnitaire, totalHt, passeeEnDivers?, candidats?, aChiffrer?, sansPrix?, prixIgnore?), passeesEnDivers[], aChiffrer[], sansPrix[], associationsProposees[] (accessoires/variantes que ces articles appellent : à PROPOSER, jamais ajoutés d'office), lotsCrees[], totaux, consignes[] — à suivre.
+
+${UNITES_DEVIS}`,
+    inputSchema: {
+      devisId: z.string().min(1).describe("Id du devis"),
+      lotId: z.string().min(1).optional().describe("Lot par défaut (id)"),
+      lotTitre: z.string().min(1).optional().describe("Ou : lot par défaut, par titre (créé s'il manque)"),
+      lignes: z
+        .array(
+          z.object({
+            type: z.enum(["article", "prestation", "divers", "texte"]).describe("Nature de la ligne"),
+            produitId: z.string().min(1).optional().describe("article : id du produit (dumtools_search_articles_devis)"),
+            prestationId: z.string().min(1).optional().describe("prestation : id de la prestation"),
+            ref: z.string().min(1).optional().describe("article : référence exacte · prestation : n° BPU · divers : réf. citée"),
+            designation: z.string().optional().describe("Libellé — requis pour un Divers, et repli d'un article/prestation introuvable"),
+            texte: z.string().optional().describe("texte : le commentaire"),
+            quantite: z.number().positive().optional().describe("Quantité décimale (défaut 1)"),
+            unite: z.string().optional().describe("Unité d'un Divers (U, h, j, forfait, m…)"),
+            prixVente: z.number().min(0).optional().describe("Divers : prix de vente unitaire en € HT"),
+            debourse: z.number().min(0).optional().describe("Divers : déboursé unitaire en € (prix d'achat)"),
+            coef: z.number().positive().max(20).optional().describe("Divers : coefficient à appliquer au debourse (1.35)"),
+            remise: z.number().min(0).max(100).optional().describe("Remise de ligne en %"),
+            option: z.boolean().optional().describe("Option : chiffrée mais hors total"),
+            note: z.string().optional().describe("Note interne (jamais imprimée)"),
+            lotId: z.string().min(1).optional().describe("Lot de cette ligne (id)"),
+            lotTitre: z.string().min(1).optional().describe("Ou : lot de cette ligne, par titre"),
+          }),
+        )
+        .min(1)
+        .max(200)
+        .describe("Lignes à ajouter, dans l'ordre"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async ({ devisId, ...input }) => run(async () => {
+    const r = await addDevisLignes(devisId, input, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${devisId} ». Vérifiez l'id via dumtools_list_devis.`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_update_devis_ligne",
+  {
+    title: "Modifier une ligne de devis",
+    description: `Modifie une ligne. Seuls les champs fournis changent.
+
+Prix — deux pilotages qui S'EXCLUENT : prixVente (€ HT unitaire, efface le coefficient) OU coef (recalcule le prix depuis le déboursé figé). debourse corrige le prix d'achat (le prix suit le coefficient en place) ; null le retire.
+Autres : designation, unite, quantite (0 permis), remise (%), option (hors total), note (interne), lotId (null = hors lot) OU lotTitre (créé s'il manque).
+Ligne TEXTE : seul "texte" (et le lot) se modifie — et un commentaire mis en forme (titres, listes, images) est refusé, pour ne pas le détruire.
+
+Ne transforme pas une ligne Divers en article : supprimer (dumtools_delete_devis_ligne) puis ajouter (dumtools_add_devis_lignes).
+
+Args : ligneId (requis — dumtools_get_devis → lots[].lignes[].id) + champs.
+
+Retourne : { devisId, ligne, totaux }.
+
+${UNITES_DEVIS}`,
+    inputSchema: {
+      ligneId: z.string().min(1).describe("Id de la ligne"),
+      designation: z.string().min(1).optional(),
+      unite: z.string().optional(),
+      quantite: z.number().min(0).optional().describe("Quantité décimale"),
+      prixVente: z.number().min(0).optional().describe("Prix de vente unitaire € HT (efface le coef)"),
+      coef: z.number().positive().max(20).nullable().optional().describe("Coefficient (1.35) — recalcule le prix"),
+      debourse: z.number().min(0).nullable().optional().describe("Déboursé unitaire € (null = inconnu)"),
+      remise: z.number().min(0).max(100).optional().describe("Remise de ligne en %"),
+      option: z.boolean().optional(),
+      note: z.string().optional().describe("Note interne"),
+      texte: z.string().optional().describe("Ligne TEXTE : nouveau commentaire"),
+      lotId: z.string().min(1).nullable().optional().describe("Déplacer vers ce lot (null = hors lot)"),
+      lotTitre: z.string().min(1).optional().describe("Ou : déplacer vers ce lot, par titre"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ ligneId, ...input }) => run(async () => {
+    const r = await updateDevisLigne(ligneId, input, currentUserId());
+    if (!r) throw new Error(`Ligne introuvable pour l'id « ${ligneId} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_delete_devis_ligne",
+  {
+    title: "Supprimer une ligne de devis",
+    description: `Supprime une ligne d'un devis (et les images d'un commentaire qui ne sont plus citées). Pour une ligne qu'on négocie, préférer option: true (dumtools_update_devis_ligne) : une option se garde, on ne reperd pas son chiffrage.
+
+Args : ligneId (requis).
+
+Retourne : { devisId, deleted: true, totaux }.`,
+    inputSchema: { ligneId: z.string().min(1).describe("Id de la ligne") },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ ligneId }) => run(async () => {
+    const r = await deleteDevisLigne(ligneId, currentUserId());
+    if (!r) throw new Error(`Ligne introuvable pour l'id « ${ligneId} » (déjà supprimée ?).`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_delete_devis",
+  {
+    title: "Supprimer un devis",
+    description: `Supprime DÉFINITIVEMENT un devis (lots, lignes, médias). Action irréversible sur une base partagée — à n'utiliser que sur confirmation explicite de l'utilisateur. Un devis émis ou publié chez le client ne se supprime pas à la légère : une révision (dumtools_revise_devis) garde la trace.
+
+Les révisions ultérieures perdent leur parent mais restent ; le numéro n'est pas réattribué.
+
+Args : id (requis).
+
+Retourne : { deleted: true }.`,
+    inputSchema: { id: z.string().min(1).describe("Id du devis à supprimer") },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const deleted = await deleteDevis(id, currentUserId());
+    if (!deleted) throw new Error(`Devis introuvable pour l'id « ${id} » (déjà supprimé ?).`);
+    return { id, deleted: true };
+  }),
+);
+
+server.registerTool(
+  "dumtools_revise_devis",
+  {
+    title: "Nouvelle révision d'un devis",
+    description: `Crée la révision suivante d'un devis : MÊME numéro (DT260052 v2), chaînée à la précédente, contenu recopié À L'IDENTIQUE (prix figés compris), en BROUILLON. C'est le geste de la négociation — la v1 reste lisible telle qu'envoyée.
+
+≠ dumtools_duplicate_devis (nouveau numéro, sans lien : le devis d'à côté).
+
+Args : id (requis) — le devis à réviser.
+
+Retourne : { id, numero, revision, libelle, url }.`,
+    inputSchema: { id: z.string().min(1).describe("Id du devis à réviser") },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const r = await reviseDevis(id, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${id} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_duplicate_devis",
+  {
+    title: "Dupliquer un devis",
+    description: `Copie un devis vers un NOUVEAU numéro, révision 1, sans lien avec la source : la même chaufferie pour un autre client. Repart en BROUILLON, prix figés tels quels (un rechiffrage est un geste à part : dumtools_refresh_devis_prix). Le fil de discussion n'est pas copié.
+
+≠ dumtools_revise_devis (même numéro, suite d'une négociation).
+
+Args : id (requis) — le devis à copier.
+
+Retourne : { id, numero, url }.`,
+    inputSchema: { id: z.string().min(1).describe("Id du devis à copier") },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async ({ id }) => run(async () => {
+    const r = await duplicateDevis(id, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${id} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_refresh_devis_prix",
+  {
+    title: "Rafraîchir les prix d'un devis",
+    description: `Relit le Magasin pour les lignes ARTICLE : déboursé du jour, cascade du coefficient rejouée (un coefficient forcé à la main sur une ligne est conservé), désignation et référence remises à jour. Les Divers, prestations et commentaires ne bougent pas ; un article sans prix au magasin non plus.
+
+⚠️ Le devis FIGE ses prix : ce rafraîchissement est un geste explicite — à ne lancer que si l'utilisateur le demande (dumtools_get_devis signale les prixPerime). Sur un devis déjà émis, cela change ce que le client a reçu.
+
+Args : devisId (requis) ; ligneIds? (sinon toutes les lignes article).
+
+Retourne : { devisId, misesAJour, totaux }.`,
+    inputSchema: {
+      devisId: z.string().min(1).describe("Id du devis"),
+      ligneIds: z.array(z.string().min(1)).optional().describe("Limiter à ces lignes"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  },
+  async ({ devisId, ligneIds }) => run(async () => {
+    const r = await refreshDevisPrix(devisId, ligneIds, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${devisId} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_reprendre_bom_devis",
+  {
+    title: "Reprendre le besoin matériel d'une affaire",
+    description: `Verse le besoin matériel (BOM) d'une affaire dans un lot du devis : automates et modules des projets GTB, matériel appelé par les points (nomenclature), lignes manuelles. Les quantités sont celles du besoin ; le prix vient du magasin (déboursé × coefficient).
+
+Ce que la BOM ne relie à AUCUN produit (automate, module ou point sans nomenclature) ne crée RIEN au magasin : c'est versé en Divers à 0 €, signalé « passeesEnDivers » — à annoncer, et à chiffrer. Les variantes non tranchées (« choixAFaire ») et le matériel « hors fourniture » ne sont pas versés.
+
+⚠️ La reprise COPIE, elle ne synchronise pas : la rejouer AJOUTE les lignes une seconde fois.
+
+Args : devisId (requis) ; chantierId? OU numeroWhy? (défaut : l'affaire du devis) ; titreLot? (défaut « Fourniture ») ; produitIds? (ne verser que ces articles — voir dumtools_get_affaire / l'écran Matériel) ; trousEnDivers? (défaut : vrai sans sélection, faux avec).
+
+Retourne : { lotId, articlesAjoutes, passeesEnDivers[], choixAFaire[], horsFourniture[], sansPrix[], produitIdsIgnores[], totaux, consignes[] }.`,
+    inputSchema: {
+      devisId: z.string().min(1).describe("Id du devis"),
+      chantierId: z.string().min(1).optional().describe("Affaire dont on reprend le besoin (défaut : celle du devis)"),
+      numeroWhy: z.string().min(1).optional().describe("Ou : numéro Why de l'affaire"),
+      titreLot: z.string().min(1).optional().describe("Titre du lot créé (défaut « Fourniture »)"),
+      produitIds: z.array(z.string().min(1)).optional().describe("Ne verser que ces articles"),
+      trousEnDivers: z.boolean().optional().describe("Verser en Divers ce qui n'a pas de produit relié"),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async ({ devisId, ...input }) => run(async () => {
+    const r = await reprendreBomDevis(devisId, input, currentUserId());
+    if (!r) throw new Error(`Devis introuvable pour l'id « ${devisId} ».`);
+    return r;
+  }),
+);
+
+server.registerTool(
+  "dumtools_create_produit",
+  {
+    title: "Créer un produit au Magasin (demande explicite)",
+    description: `Crée un produit dans le référentiel du Magasin.
+
+⛔ À N'UTILISER QUE SUR DEMANDE EXPLICITE DE L'UTILISATEUR (« crée ce produit au magasin », « ajoute cette référence au magasin »). JAMAIS de sa propre initiative, jamais pour éviter un Divers, jamais pour « compléter » un devis. En l'absence d'une telle demande, un article absent du magasin se chiffre en Divers. demandeExplicite: true atteste que l'utilisateur l'a demandé.
+
+Réservé aux profils Achats et Administrateur. Refusé si la référence interne existe déjà (même archivée) — l'id existant est rendu. Catégorie, fabricant et fournisseur doivent EXISTER (le MCP n'en crée pas ; la liste des existants est donnée en cas d'erreur).
+
+Args : demandeExplicite (true, requis) ; refInterne (requis, unique) ; designation (requis) ; unite? (U|m|kg…) ; refFabricant? ; refFournisseur? ; prixAchat? (€ HT) ; categorie? ; fabricant? ; fournisseur? (noms existants) ; note?.
+
+Retourne : { produitId, refInterne, designation, url, consigne }.`,
+    inputSchema: {
+      demandeExplicite: z.literal(true).describe("true : l'utilisateur a EXPLICITEMENT demandé la création"),
+      refInterne: z.string().min(1).describe("Référence interne (unique)"),
+      designation: z.string().min(1).describe("Désignation"),
+      unite: z.string().optional().describe("Unité (défaut U)"),
+      refFabricant: z.string().optional(),
+      refFournisseur: z.string().optional(),
+      prixAchat: z.number().min(0).optional().describe("Prix d'achat annoncé en € HT"),
+      categorie: z.string().optional().describe("Nom d'une catégorie EXISTANTE"),
+      fabricant: z.string().optional().describe("Nom d'un fabricant EXISTANT"),
+      fournisseur: z.string().optional().describe("Nom d'un fournisseur EXISTANT"),
+      note: z.string().optional(),
+    },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+  },
+  async (input) => run(async () => createProduit(input, currentUserId())),
+);
+
   return server;
 }
 
@@ -950,6 +1614,7 @@ async function runStdio(): Promise<void> {
   const transport = new StdioServerTransport();
   await buildServer().connect(transport);
   console.error(`dumtools-mcp-server démarré (stdio)${attribution()}`);
+  tracerManifeste(nomsOutils());
 }
 
 /** Extrait le jeton d'un en-tête « Authorization: Bearer <jeton> ». */
@@ -958,6 +1623,37 @@ function bearerFrom(header: unknown): string | undefined {
   if (typeof h !== "string") return undefined;
   const m = /^Bearer\s+(.+)$/i.exec(h.trim());
   return m ? m[1].trim() : undefined;
+}
+
+/* --- Manifeste observable -----------------------------------------------------
+ * De quoi VOIR ce que ce processus expose vraiment, sans jeton et sans lire le
+ * code. Ça manquait le jour où un serveur resté en mémoire depuis un mois
+ * servait un manifeste périmé : les données, elles, étaient à jour (elles
+ * viennent de la base), donc tout semblait normal — seule la liste d'outils
+ * était figée, et rien ne le disait.
+ * ------------------------------------------------------------------------------ */
+
+/** Noms des outils réellement enregistrés. Le SDK ne les expose pas
+ *  publiquement : on lit son registre, et on rend `null` plutôt qu'un 0
+ *  trompeur si la propriété changeait de nom dans une version future. */
+function nomsOutils(): string[] | null {
+  const registre = (buildServer() as unknown as { _registeredTools?: Record<string, unknown> })
+    ._registeredTools;
+  return registre ? Object.keys(registre).sort() : null;
+}
+
+/** Empreinte courte du manifeste : deux processus qui l'affichent identique
+ *  exposent les mêmes outils. */
+function empreinteManifeste(noms: string[] | null): string | null {
+  return noms ? createHash("sha256").update(noms.join(",")).digest("hex").slice(0, 8) : null;
+}
+
+/** Trace de démarrage : le manifeste en clair dans le journal du serveur.
+ *  ⚠️ Toujours sur stderr — en stdio, stdout porte le protocole. */
+function tracerManifeste(noms: string[] | null): void {
+  console.error(
+    `  manifeste ${empreinteManifeste(noms) ?? "?"} — ${noms?.length ?? "?"} outils : ${noms?.join(", ") ?? "(registre illisible)"}`,
+  );
 }
 
 /**
@@ -986,7 +1682,20 @@ async function runHttp(): Promise<void> {
   app.use(express.json({ limit: "8mb" }));
   app.use(express.urlencoded({ extended: false }));
 
-  app.get("/health", (_req, res) => res.json({ ok: true, server: "dumtools-mcp-server" }));
+  const manifeste = nomsOutils();
+  const demarreLe = new Date().toISOString();
+  // Les NOMS des outils restent derrière l'authentification (cet endpoint est
+  // joignable depuis internet) ; le compte et l'empreinte suffisent à dire si
+  // un client parle bien à un serveur à jour.
+  app.get("/health", (_req, res) =>
+    res.json({
+      ok: true,
+      server: "dumtools-mcp-server",
+      demarreLe,
+      outils: manifeste?.length ?? null,
+      manifeste: empreinteManifeste(manifeste),
+    }),
+  );
 
   // Flux OAuth pour « Ajouter un connecteur personnalisé » (Claude Desktop /
   // claude.ai) : découverte (.well-known), enregistrement dynamique, /authorize
@@ -1044,6 +1753,7 @@ async function runHttp(): Promise<void> {
     console.error(
       `dumtools-mcp-server démarré (http) sur http://${host}:${port}/mcp — OAuth (connecteur perso) + jeton personnel (Bearer) — URL publique : ${publicUrl}`,
     );
+    tracerManifeste(manifeste);
   });
 }
 

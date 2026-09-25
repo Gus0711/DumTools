@@ -478,3 +478,91 @@ Corrections issues du premier test réel d'Augustin (Android, mode avion) :
   navigateur ; match sans query string (réouverture PWA avec `?source=pwa`).
 - Validé sur device : la **saisie hors-ligne synchronise** bien au retour du
   réseau (couche données OK dès le premier test).
+
+---
+
+## 12. Accès MCP — une IA peut lire (et préparer) les visites (2026-09-08)
+
+Les visites étaient le **seul outil métier absent du serveur MCP** : une IA
+voyait les affaires, les projets GTB, les notes, le wiki — et ignorait
+totalement ce qui s'était passé sur le site. Six outils comblent le trou
+(`mcp/data.mts` + `mcp/server.mts`, table complète dans `mcp/README.md`) :
+
+| Outil | Rôle |
+|---|---|
+| `dumtools_list_visites` | visites synchronisées ; filtres affaire / type / dates / **`sansAffaire`** |
+| `dumtools_get_visite` | la visite complète : checklist point par point, réserves, médias |
+| `dumtools_list_reserves` | **réserves encore ouvertes**, groupées par affaire |
+| `dumtools_create_visite` | prépare une visite (checklist du modèle + report des réserves) |
+| `dumtools_update_visite` | titre / type / date / **rattachement à une affaire** |
+| `dumtools_delete_visite` | supprime la visite et ses médias |
+
+Les visites d'une affaire apparaissent aussi dans `dumtools_get_affaire`, à côté
+des automates, des documents et des notes.
+
+### 12.1 Ce qui a décidé le découpage
+
+- **Le MCP ne voit que ce qui est SYNCHRONISÉ.** La vérité de saisie est locale
+  au téléphone (§2, §4). Une visite faite ce matin peut n'être pas encore
+  remontée : c'est dit dans la description de chaque outil, sans quoi une IA
+  conclurait « il n'y a pas eu de visite ».
+- **Le CONTENU d'une visite ne s'écrit pas depuis le bureau.** La fusion est
+  « dernier gagne » sur le `data` entier (`syncVisite`) : écraser la checklist
+  côté serveur perdrait la copie encore ouverte dans une poche. `update_visite`
+  s'en tient donc aux colonnes de la table — titre, type, date, rattachement —
+  et le rattachement est justement celui que la règle de fusion protège (un
+  envoi « sans affaire » ne détache jamais). Pour reprendre une visite :
+  `/outils/visites/terrain?ouvrir={id}`, comme le bouton « Modifier ».
+- **Les réserves sont l'entrée principale.** C'est la colonne vertébrale du
+  « ne rien oublier » (§6.2) : `list_reserves` applique la fusion inter-visites
+  (une réserve garde son id d'une visite à l'autre, l'état le plus récent gagne)
+  et ne rend que les **ouvertes**. Rien à cocher : une réserve levée disparaît
+  d'elle-même. Sans argument, elle balaie **toutes** les affaires, la plus
+  chargée d'abord — les visites orphelines forment leur propre groupe.
+- **Les champs vides sont OMIS de la réponse.** Une checklist de relevé fait
+  60 points ; un item sans note ni photo n'expose que son libellé et son statut.
+  Un statut `""` reste rendu tel quel : « pas encore renseigné » est une
+  information, surtout en réception.
+- **`create_visite` exige une affaire.** Au terrain une visite naît souvent
+  orpheline (le relevé précède le n° Why) et se rattache au retour ; depuis le
+  bureau, rien ne justifie d'en créer une. Elle est instanciée par
+  `nouvelleVisite()` — **le même modèle de checklist que le terrain**, réserves
+  ouvertes reportées comprises — puis s'ouvre sur le téléphone par
+  `?ouvrir={id}`.
+
+### 12.2 Une seule implémentation de la règle des réserves
+
+`normaliserData`, `titreAffiche` et `reservesOuvertes` ont **quitté
+`queries.ts`** (marqué `server-only`, donc inaccessible au MCP) pour
+`model.ts` ; `queries.ts` les ré-exporte, aucun appelant ne change d'adresse.
+Le report d'une réserve d'une visite à la suivante est une règle métier
+subtile — la recopier dans le MCP l'aurait fait diverger du snapshot terrain le
+jour où l'une des deux serait corrigée.
+
+### 12.3 ⚠️ Le serveur MCP ne démarrait plus
+
+Découvert en branchant ces outils : `mcp/server.mts` **ne démarrait plus du
+tout** (côté client, un simple « Connection closed » — aucun message d'erreur).
+Cause : la couche métier importée par `data.mts` traverse un module marqué
+**`server-only`** (`getCatalogue` → `magasin/documentation`, depuis que les
+fiches constructeur vivent sur les produits du magasin, 2026-08-12), dont
+l'entrée par défaut **lève une exception à l'import** hors rendu serveur Next.
+Parade : `mcp/sans-server-only.mts` (hook de résolution `node:module`) remplace
+ce seul module, importé **en premier** dans `server.mts` et `smoke.mts`. Et non,
+`--conditions=react-server` — la parade habituelle des scripts de `scripts/` —
+ne convient pas : elle donne le build react-server de React, sans
+`useLayoutEffect`, sur lequel `@blocknote/server-util` (markdown des notes)
+s'effondre. Les deux modes cassaient, chacun d'un bout.
+
+### 12.4 Tests
+
+```bash
+npx tsx mcp/smoke.mts        # couche data, vraie base — 34 contrôles pour les visites
+npx tsx mcp/test-client.mts  # protocole MCP réel : handshake, tools/list, appels
+```
+
+Le smoke couvre le cycle complet : création avec checklist du modèle, filtres
+(affaire / type / dates, date mal formée refusée), réserve posée comme le ferait
+la synchro du terrain, **report** dans la visite suivante, **levée** qui éteint
+la réserve, visite orpheline puis rattachement (client et n° Why repris de
+l'affaire), suppression.

@@ -179,3 +179,47 @@ export function dateISOLocale(d = new Date()): string {
   const jour = String(d.getDate()).padStart(2, "0");
   return `${d.getFullYear()}-${mois}-${jour}`;
 }
+
+/* --- Lecture d'une visite stockée ------------------------------------------------
+ * Fonctions PURES (pas de Prisma) partagées par le serveur web — queries.ts les
+ * ré-exporte, rien ne change d'adresse — et par le serveur MCP (mcp/data.mts),
+ * qui ne peut pas importer queries.ts (« server-only »). Une seconde
+ * implémentation de la fusion des réserves finirait par diverger de celle du
+ * snapshot terrain : la règle du report inter-visites n'existe qu'ici.
+ * -------------------------------------------------------------------------------- */
+
+/** Sécurise un `data` JSON venu de la base (anciens enregistrements, champs
+ *  manquants) vers un VisiteData complet. */
+export function normaliserData(raw: unknown): VisiteData {
+  const d = (raw ?? {}) as Partial<VisiteData>;
+  return {
+    participants: d.participants ?? "",
+    notes: d.notes ?? "",
+    sections: Array.isArray(d.sections) ? d.sections : [],
+    reserves: Array.isArray(d.reserves) ? d.reserves : [],
+    medias: Array.isArray(d.medias) ? d.medias : [],
+    updatedTs: typeof d.updatedTs === "number" ? d.updatedTs : 0,
+  };
+}
+
+/** Titre d'affichage : le titre saisi, sinon « <type> — <date> ». */
+export function titreAffiche(v: { titre: string; type: TypeVisite; date: Date }): string {
+  return v.titre.trim() || `${TYPE_LABEL[v.type]} — ${v.date.toLocaleDateString("fr-FR")}`;
+}
+
+/** Réserves ouvertes d'un lot de visites : une réserve garde son id d'une visite
+ *  à l'autre (report) → l'état le plus récent gagne, on ne garde que les ouvertes.
+ *  `origineVisiteId` est posé sur la première visite qui l'a déclarée (badge
+ *  « Reportée » côté terrain). */
+export function reservesOuvertes(visites: { id: string; data: unknown }[]): Reserve[] {
+  const parTs = visites
+    .map((v) => ({ id: v.id, data: normaliserData(v.data) }))
+    .sort((a, b) => a.data.updatedTs - b.data.updatedTs);
+  const etatFinal = new Map<string, Reserve>();
+  for (const v of parTs) {
+    for (const r of v.data.reserves) {
+      etatFinal.set(r.id, { ...r, origineVisiteId: r.origineVisiteId ?? v.id });
+    }
+  }
+  return [...etatFinal.values()].filter((r) => r.statut === "ouverte");
+}

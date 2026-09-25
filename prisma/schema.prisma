@@ -90,6 +90,15 @@ model User {
   associationsProduit     AssociationProduit[]
   /// Référentiel client — les personnes ajoutées chez un client.
   contactsClientCrees     ContactClient[]          @relation("ContactClientCree")
+  /// Maintenance — voir la section « Outil Maintenance » en fin de schéma.
+  sitesClientCrees        SiteClient[]             @relation("SiteClientCree")
+  contratsCrees           ContratMaintenance[]     @relation("ContratCree")
+  contratsModifies        ContratMaintenance[]     @relation("ContratModifie")
+  /// Les interventions qu'elle a FAITES — à ne pas confondre avec celles
+  /// qu'elle a saisies (`interventionsCreees`) : on note souvent pour un autre.
+  interventionsFaites     Intervention[]           @relation("InterventionIntervenant")
+  interventionsCreees     Intervention[]           @relation("InterventionCreee")
+  interventionsModifiees  Intervention[]           @relation("InterventionModifiee")
 }
 
 /// Jeton d'accès MCP émis par le flux OAuth du serveur MCP (« Ajouter un
@@ -117,10 +126,10 @@ model McpToken {
 /// qui a été fait pour lui, à travers tous les outils (voir
 /// src/lib/clients/providers.ts).
 model Client {
-  id            String              @id @default(cuid())
-  nom           String              @unique
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+  id            String               @id @default(cuid())
+  nom           String               @unique
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   chantiers     Chantier[]
   pointsLists   PointsList[]
   affectations  AffectationProjet[]
@@ -131,6 +140,9 @@ model Client {
   contacts      ContactClient[]
   /// Tâches rattachées DIRECTEMENT au client, sans affaire (voir TacheAffaire).
   taches        TacheAffaire[]
+  /// Ses SITES (les endroits qu'on maintient) et ses contrats de maintenance.
+  sites         SiteClient[]
+  contrats      ContratMaintenance[]
   /// Nom EXACT du dossier de ce client sur kDrive, s'il diffère de `nom` (accents,
   /// casse, suffixe juridique…). Null = on utilise `nom` (après normalisation).
   /// Sert à la résolution du chemin kDrive (voir src/lib/kdrive).
@@ -385,7 +397,7 @@ model TacheAffaire {
   contenu  Json?
   /// Verrou optimiste du DOCUMENT SEUL (patron de `LigneDevis.version`) : deux
   /// onglets ouverts sur la même tâche ne doivent pas s'écraser en silence.
-  version  Int       @default(0)
+  version  Int           @default(0)
   /// Position dans sa colonne (drag & drop) : tri croissant, insertion au point
   /// médian des voisins — pas de renumérotation globale à chaque déplacement.
   ordre    Float
@@ -2339,4 +2351,219 @@ model ReglageSociete {
   remarques           String @default("")
 
   updatedAt DateTime @updatedAt
+}
+
+// ---- Outil « Maintenance » ---------------------------------------------------
+// L'étape 7 du cycle (« Exploitation / SAV ») — la seule que DumTools ne
+// couvrait pas. Voir docs/MAINTENANCE.md.
+//
+// Un contrat de maintenance n'est ni un client ni une affaire : il DURE (des
+// années) et il se CONSOMME (un forfait d'heures). Une affaire se livre, un
+// contrat s'épuise — d'où ses modèles à lui.
+
+/// Un SITE du client : le bâtiment, la salle, le poste — l'ENDROIT qu'on
+/// maintient. Il n'existait rien de tel dans le schéma : `Client` porte UNE
+/// adresse (celle du siège, celle des courriers) et `Chantier` est une affaire,
+/// qui se livre et se referme. Or on maintient dix-sept salles communales pour
+/// une seule commune, pendant des années, bien après que les affaires qui les
+/// ont équipées soient closes.
+///
+/// Référentiel qui VIT : on le corrige (un code portail change), on le
+/// désactive (le site sort du parc), on ne le supprime pas — des interventions
+/// le citent.
+model SiteClient {
+  id       String @id @default(cuid())
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  /// « Salle communale de Brancourt », « Collège Jean Macé — chaufferie ».
+  nom          String
+  adresse      String  @default("")
+  codePostal   String  @default("")
+  ville        String  @default("")
+  /// Ce qu'il faut savoir pour y ENTRER : code portail, à qui demander la clé,
+  /// où est le local GTB. La moitié d'un déplacement se perd là.
+  acces        String  @default("")
+  /// Comment on s'y connecte à distance : VPN, TeamViewer, IP publique, 4G.
+  /// C'est ce qu'on cherche au moment où le client appelle.
+  accesDistant String  @default("")
+  note         String  @default("")
+  /// Sorti du parc : retiré des propositions, jamais des interventions passées.
+  /// Même grammaire que `ContactClient.actif` et `Fournisseur.actif`.
+  actif        Boolean @default(true)
+
+  contrats      ContratSite[]
+  interventions Intervention[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation("SiteClientCree", fields: [createdById], references: [id], onDelete: SetNull)
+
+  /// Deux sites du même client ne portent pas le même nom : c'est la clé
+  /// naturelle de résolution (`resoudreSiteId`, patron de `resoudreClientId`).
+  @@unique([clientId, nom])
+  @@index([clientId])
+}
+
+enum EtatContrat {
+  BROUILLON
+  ACTIF
+  SUSPENDU
+  TERMINE
+}
+
+/// Un contrat de maintenance : un client, N sites, un forfait d'heures par an.
+///
+/// ⚠️ Pas de `clientNom` dénormalisé ici, CONTRAIREMENT aux autres outils — et
+/// c'est délibéré. Cette dénormalisation existe là où le client est saisi en
+/// TEXTE LIBRE et peut précéder sa résolution (une visite née hors-ligne, un
+/// devis importé). Un contrat, lui, naît toujours au bureau avec un client
+/// choisi dans la liste : `clientId` est obligatoire. Recopier le nom n'aurait
+/// donc apporté qu'une seconde vérité à resynchroniser — et la liste de
+/// `renommerClient` a déjà oublié deux modèles par le passé.
+model ContratMaintenance {
+  id String @id @default(cuid())
+
+  /// La référence du contrat — la nôtre ou celle du client, celle qu'on cite au
+  /// téléphone.
+  reference String?
+  /// L'affaire WhySoft qui a vendu le contrat, quand il y en a une.
+  numeroWhy String?
+  /// « Maintenance GTB — salles communales », ce qu'on lit dans la liste.
+  intitule  String
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  etat EtatContrat @default(ACTIF)
+
+  /// Date d'EFFET. C'est elle qui donne la date anniversaire : les périodes de
+  /// consommation se déduisent d'elle, année par année, et ne sont jamais
+  /// stockées (voir `periodes()` dans model.ts).
+  debut        DateTime
+  /// Fin de l'engagement. Null = sans terme convenu (reconduction tacite sans
+  /// échéance). Une fin PASSÉE ne termine pas le contrat toute seule : c'est
+  /// `etat` qui le dit, parce qu'un contrat reconduit tacitement continue de
+  /// courir bien après la date écrite dessus.
+  fin          DateTime?
+  /// Reconduction tacite : le contrat repart d'une période sans qu'on signe.
+  tacite       Boolean   @default(true)
+  /// Préavis de dénonciation, en JOURS. 0 = non renseigné (aucune alerte).
+  /// C'est lui qui fait qu'une échéance se prépare trois mois à l'avance.
+  preavisJours Int       @default(0)
+
+  // --- LE FORFAIT, EN MINUTES ------------------------------------------------
+  /// ⚠️ Tout le temps de cet outil est en MINUTES ENTIÈRES, jamais en heures
+  /// décimales : 1 h 10 n'est pas 1,17 h. Un arrondi se déciderait deux fois
+  /// (à la saisie, au total) et les deux compteurs finiraient par diverger.
+  /// Même règle que l'argent en centimes dans le Devis.
+  ///
+  /// Heures de TÉLÉASSISTANCE incluses par période. 0 = aucune heure incluse —
+  /// tout ce qui s'y fait est hors forfait. C'est un cas courant, pas un oubli :
+  /// l'écran écrit « aucune heure incluse », jamais « 0 h restantes ».
+  quotaTeleMin       Int @default(0)
+  /// Heures de PRÉSENTIEL incluses par période. Même règle : beaucoup de
+  /// contrats n'en ont pas.
+  quotaPresentielMin Int @default(0)
+  /// Les deux forfaits NE SE COMPENSENT PAS : une heure de téléassistance
+  /// épargnée ne paie pas un déplacement. Deux compteurs, jamais un total.
+
+  /// Tarif horaire appliqué au HORS FORFAIT, en centimes. 0 = non renseigné :
+  /// l'écran compte alors les heures sans prétendre en connaître le prix
+  /// (règle « ce qu'on ne sait pas chiffrer est DIT », docs/DEVIS.md).
+  tarifHoraireCents Int @default(0)
+
+  notes String @default("")
+
+  sites         ContratSite[]
+  interventions Intervention[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation("ContratCree", fields: [createdById], references: [id], onDelete: SetNull)
+  /// Auteur de la dernière modification humaine (fil d'activité).
+  updatedById String?
+  updatedBy   User?    @relation("ContratModifie", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([etat])
+}
+
+/// Quels sites un contrat couvre. N↔N et non une FK sur le site : un site passe
+/// d'un contrat au suivant quand celui-ci est renouvelé, et les interventions
+/// de l'ancien doivent rester lisibles.
+model ContratSite {
+  contratId String
+  contrat   ContratMaintenance @relation(fields: [contratId], references: [id], onDelete: Cascade)
+  siteId    String
+  site      SiteClient         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@id([contratId, siteId])
+  @@index([siteId])
+}
+
+enum NatureIntervention {
+  TELEASSISTANCE
+  PRESENTIEL
+}
+
+/// Une intervention au titre d'un contrat — le temps passé, et POURQUOI.
+///
+/// ⚠️ Ce qui est « hors forfait » n'est PAS entièrement écrit ici. Deux natures,
+/// comme l'arrêt d'une affaire (`chantiers/arret.ts`) :
+///   · `horsForfait` = une DÉCISION humaine — ce motif n'est pas couvert par le
+///     contrat (une extension, un dégât des eaux). Elle ne consomme aucun quota.
+///   · le DÉPASSEMENT du forfait, lui, est CONSTATÉ : il se calcule en cumulant
+///     les interventions de la période dans l'ordre, et il n'est jamais stocké.
+///     Corriger la durée d'une intervention de janvier redistribue ce qui suit —
+///     c'est correct, et c'est précisément pourquoi on ne le fige pas.
+model Intervention {
+  id String @id @default(cuid())
+
+  contratId String
+  contrat   ContratMaintenance @relation(fields: [contratId], references: [id], onDelete: Cascade)
+  /// Sur quel site. Null = le contrat dans son ensemble (une téléassistance ne
+  /// concerne pas toujours un site précis).
+  siteId    String?
+  site      SiteClient?        @relation(fields: [siteId], references: [id], onDelete: SetNull)
+
+  /// Le JOUR de l'intervention, stocké à MIDI UTC — jamais minuit : tout fuseau
+  /// à l'ouest ramènerait la date à la veille (même piège que `TacheAffaire.echeance`).
+  date     DateTime
+  nature   NatureIntervention @default(TELEASSISTANCE)
+  /// Durée en MINUTES entières.
+  dureeMin Int                @default(0)
+
+  /// LE MOTIF — pourquoi on est intervenu, en une phrase. C'est la colonne
+  /// qu'on relit un an plus tard quand le client conteste sa consommation.
+  motif       String
+  /// Ce qu'on a fait, et ce qu'il reste à faire. Vide la plupart du temps.
+  compteRendu String @default("")
+  /// Qui a appelé, chez le client.
+  demandeur   String @default("")
+
+  /// Qui est intervenu CHEZ NOUS. Null = non renseigné (une intervention
+  /// importée, ou faite à plusieurs).
+  intervenantId String?
+  intervenant   User?   @relation("InterventionIntervenant", fields: [intervenantId], references: [id], onDelete: SetNull)
+
+  /// Décision humaine : ce motif sort du contrat. Voir l'avertissement ci-dessus.
+  horsForfait Boolean   @default(false)
+  /// Refacturée : le jour où c'est parti en facture. Null = reste à facturer.
+  /// « Facturable » se déduit (hors forfait), « facturé » se déclare.
+  factureeLe  DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String?
+  createdBy   User?    @relation("InterventionCreee", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?    @relation("InterventionModifiee", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  /// L'ordre de cumul du forfait : par date, puis par création à date égale.
+  @@index([contratId, date, createdAt])
+  @@index([siteId])
+  @@index([intervenantId])
 }

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Boxes, CircuitBoard, ClipboardCheck, ClipboardList, FileSpreadsheet, FlaskConical, FolderOpen, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
+import { Boxes, CircuitBoard, ClipboardCheck, ClipboardList, FileSpreadsheet, FlaskConical, FolderOpen, LifeBuoy, Library, NotebookPen, Receipt, ScanLine } from "lucide-react";
 
 /* =============================================================================
  * REGISTRE D'OUTILS
@@ -185,6 +185,19 @@ export const TOOLS: Tool[] = [
     signal: "ao",
     // Ni `proprietaire` ni `roles` : promu outil métier et OUVERT À TOUS le
     // 2026-08-12. Voir la note « DROITS » de model.ts pour ce que cela expose.
+  },
+  {
+    id: "maintenance",
+    nom: "Maintenance",
+    description:
+      "Les contrats de maintenance : quels sites, quelles heures de téléassistance et de présentiel incluses, ce qui a été consommé depuis la date anniversaire — et ce qui dépasse, donc se refacture.",
+    icon: LifeBuoy,
+    href: "/perso/gus/maintenance",
+    status: "disponible",
+    // Turquoise COM : le contrat, c'est la LIAISON qui reste une fois l'affaire
+    // livrée — la ligne qu'on garde ouverte avec le client.
+    signal: "com",
+    proprietaire: "gus",
   },
   {
     id: "notes-de-frais",

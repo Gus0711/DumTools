@@ -1857,7 +1857,7 @@ nowrap` sur la mention — elle passe sous le titre, jamais en deux morceaux.
 
 ---
 
-## 25. L'outil sort de ToolGus, et s'ouvre à tous (2026-08-12)
+## 26. L'outil sort de ToolGus, et s'ouvre à tous (2026-08-12)
 
 Deux décisions d'Augustin, prises le même jour, dans cet ordre : **« mets l'outil
 devis en principal, comme affaire, visites de chantier »**, puis — après que la
@@ -1915,3 +1915,110 @@ c'est le reste du défaut.
 L'outil garde le **violet AO** (« ce qu'on émet ») : il est libre dans le rail,
 Notes — qui le porte aussi — étant un outil d'**affaire**, absent de la
 navigation. Même raison que le vert DO repris par le Magasin.
+
+---
+
+## 27. Le BPU — un prix de vente ferme n'est pas un produit (2026-09-08)
+
+Le bordereau de prix unitaires du marché (62 articles « Fourniture et
+installation d'un… », familles Automates / Filaires / GSM ou LORA / LORA /
+Electriques / Divers) est entré dans le référentiel par
+`npx tsx scripts/bpu-import.mts` (essai à blanc par défaut, `--appliquer` pour
+écrire, idempotent — rejouer après une révision du bordereau met les prix à jour
+et dit lesquels ont bougé).
+
+**Ce sont des `Prestation`, pas des `Produit`.** Un article de BPU donne un
+**prix de vente ferme**, jamais un déboursé. Le moteur n'a qu'un chemin de
+calcul — déboursé × coefficient = PV (§2) — et un `Produit` sans déboursé
+tomberait dans `nbSansPrix` (« ce qu'on ne sait pas chiffrer ») avec un PV à
+zéro : exactement l'inverse de la réalité, où le prix est le seul chiffre connu,
+et il est contractuel. Une ligne `PRESTATION` porte `debourseCents: null` et le
+moteur ne la signale PAS comme un trou — c'est écrit dans
+`ajouterLignePrestation` : « Taux de VENTE direct : pas de déboursé, donc pas de
+coefficient. Ce n'est pas un trou de chiffrage. »
+
+**Conséquence assumée** : ces lignes ne nourrissent pas la « marge sur la
+fourniture ». Un devis fait uniquement de BPU n'affiche pas de marge — on ne
+connaît pas le coût du couple matériel + pose, et l'inventer serait pire que de
+ne rien dire. C'est la même règle que la main d'œuvre depuis le premier jour
+(§2), appliquée à un forfait qui embarque du matériel.
+
+Le champ `Prestation.famille` sépare les deux mondes dans les écrans (les 6
+lignes de main d'œuvre au taux horaire gardent leurs familles Bureau d'études /
+Atelier / Terrain), et `ordre` encode le numéro d'article — `5.4.20` → `50420` —
+de sorte que le référentiel se lit dans l'ordre du bordereau, main d'œuvre en
+tête (ordres 1 à 6).
+
+⚠️ **Le numéro d'article vit dans `note`** (« BPU 5.4.9 »), pas dans le libellé :
+le libellé est ce que le CLIENT lit sur le devis (`designation` en est la copie),
+et y coller un numéro d'article changerait le document. La barre d'ajout de
+l'éditeur cherche donc AUSSI dans `note` et affiche le numéro en `.ref` — sans
+ça, 62 articles se retrouvent derrière un plafond de 6 résultats et seule la
+formulation exacte les retrouve, alors qu'un bordereau se cite par son numéro.
+Pour qu'il s'imprime, il suffit de le préfixer au libellé dans le référentiel.
+
+## 28. Le Devis entre au MCP — et un article absent n'y est jamais créé (2026-09-15)
+
+Une IA branchée sur DumTools voyait les affaires, les projets, les notes, les
+visites… et aucun devis. Seize outils y sont entrés (`dumtools_*devis*` et
+`dumtools_create_produit`, détaillés dans `mcp/README.md`). Trois décisions.
+
+**1. Un noyau d'écritures, deux portes.** Une server action ne s'appelle pas
+hors de Next (`auth()`, `revalidatePath`), et le patron historique du MCP —
+réimplémenter dans `mcp/data.mts` les requêtes « triviales » — ne vaut pas pour
+le devis : numérotation atomique, cascade du coefficient, destinataire qui suit
+le client, événements du fil, recopie des médias en révision. Deux copies de ça
+divergeraient le jour où l'une est corrigée. D'où `src/tools/devis/ecritures.ts`
+: le métier des écritures partagées, sans session ni écran ; `actions.ts` n'en
+est plus qu'une enveloppe (session + rafraîchissement des pages). Même mouvement
+pour la création de produit (`src/tools/magasin/ecritures.ts`), qui garde sa
+garde de rôle DANS le noyau. ⚠️ **Règle qui en découle** : une règle métier posée
+dans une action plutôt que dans le noyau est contournée par le MCP sans que rien
+ne le signale.
+
+**2. Un article absent du Magasin se chiffre en Divers — il n'est jamais créé**
+(demande d'Augustin). La règle est appliquée côté serveur, pas confiée à la
+bonne volonté de l'IA (`addDevisLignes`, `mcp/data.mts`) :
+
+- un article se retrouve par son **id** ou sa **référence exacte** — interne,
+  puis fabricant, puis fournisseur, et seulement si elle ne désigne qu'UN article
+  actif —, **jamais par sa désignation** : choisir le mauvais article en silence
+  est pire qu'un Divers annoncé ;
+- introuvable, archivé ou ambigu → ligne `LIBRE` ; la référence citée reste en
+  `refInterne` (l'éditeur l'affiche, le client ne la voit jamais), la raison va
+  en note, les candidats sont rendus. Même règle pour une prestation (id, n°
+  d'article BPU ou libellé exact) ;
+- la réponse **liste** `passeesEnDivers` et `aChiffrer`, et ses `consignes`
+  demandent de l'annoncer. ⚠️ Un Divers à 0 € n'était signalé NULLE PART —
+  `nbSansPrix` ne compte que les articles : le MCP le compte lui-même
+  (`nbDiversAChiffrer`) ;
+- `dumtools_create_produit` n'existe que pour la demande explicite :
+  `demandeExplicite: true` exigé par le SCHÉMA, profil Achats/Admin, catégorie,
+  fabricant et fournisseur EXISTANTS (le chemin d'import de l'app les crée au
+  vol ; le MCP, non), référence déjà prise → refus avec l'id existant ;
+- la reprise de BOM suit la même règle : ce qui n'a pas de produit relié part en
+  Divers à chiffrer ; les variantes non tranchées ne sont pas versées.
+
+`ajouterLigneLibre` a gagné le chiffrage au **déboursé** (devis fournisseur d'un
+article hors magasin) : même chemin déboursé × coefficient qu'un article, la
+ligne entre donc dans la marge sur la fourniture.
+
+**3. Le MCP parle en euros.** L'app compte en centimes et en millièmes ; une IA
+qui manipule « 1350 » pour ×1,35 finit par chiffrer mille fois trop cher.
+Conversion à la frontière, et un coefficient supérieur à 20 est refusé (un
+« 135 » est un pourcentage mal compris). Tout est **résolu et validé avant
+d'écrire** : une ligne fautive n'en laisse pas sept posées derrière elle.
+
+Hors MCP, volontairement : la **publication** du lien client (`/d/…`), qui fait
+sortir le devis. Les écritures sans utilisateur identifié sont refusées (un devis
+est signé de son auteur), et `dumtools_create_devis` ne crée pas d'affaire —
+l'éditeur en crée une sur un n° Why inconnu, mais une IA qui se trompe de numéro
+fabriquerait une affaire fantôme.
+
+Tests : `npx tsx mcp/devis-smoke.mts` (70 contrôles, vraie base : témoins
+négatifs sur produits, prestations, catégories, fabricants et fournisseurs ;
+compteur fictif 2099 pour ne consommer aucun vrai numéro DT ; ménage même en cas
+d'échec) et `npx tsx mcp/test-client.mts` (protocole). ⚠️ Aucun script ne
+traverse les server actions (elles exigent une session) : leur passage en
+enveloppes n'est vérifié que par tsc et le lint — **à regarder dans l'éditeur**
+après reconstruction de la prod.

@@ -32,6 +32,9 @@ partagée** — voir l'avertissement plus bas.
 # Test de la couche data (hors protocole)
 npx tsx mcp/smoke.mts
 
+# Outil Devis : règle du Divers, témoins négatifs, compteur fictif 2099
+npx tsx mcp/devis-smoke.mts
+
 # Test du serveur via le protocole MCP réel (spawn + handshake + appels)
 npx tsx mcp/test-client.mts
 
@@ -144,8 +147,25 @@ Script prêt : `./mcp/serve-http.sh`. **Démarrage automatique** : `npm run dev`
 et `scripts/serve-prod.sh` le lancent tous les deux (et l'arrêtent avec eux) ;
 s'il tourne déjà sur le port, le script s'efface sans erreur.
 
-Vérifier depuis le poste distant (navigateur) : `http://<IP>:8787/health` doit
-renvoyer `{"ok":true,...}`. Sinon, pare-feu : `sudo ufw allow 8787/tcp`.
+Vérifier depuis le poste distant (navigateur) : `http://<IP>:8787/health`
+(ou `https://dumtoolsmcp.datagtb.com/health` à travers le tunnel) renvoie
+
+```json
+{"ok":true,"server":"dumtools-mcp-server","demarreLe":"…","outils":39,"manifeste":"2e1ba148"}
+```
+
+Sinon, pare-feu : `sudo ufw allow 8787/tcp`.
+
+⚠️ **`outils` / `manifeste` disent ce que CE processus expose vraiment** — c'est
+la première chose à regarder quand un client ne voit pas un outil qu'on vient
+d'ajouter. Le piège vécu : un serveur resté en mémoire depuis un mois servait un
+manifeste périmé, mais ses **données** étaient à jour (elles viennent de la
+base) — donc tout semblait normal, et « la connexion est vivante » ne prouvait
+rien. La liste des outils est négociée **une fois** par session cliente : après
+un redémarrage il faut **déconnecter/reconnecter le connecteur** (ou ouvrir une
+nouvelle conversation) pour la renégocier. Les noms complets sont tracés au
+démarrage dans le journal du serveur (jamais sur `/health`, joignable depuis
+internet).
 
 ### 2. Côté Windows — `claude_desktop_config.json`
 
@@ -190,7 +210,7 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 | `dumtools_list_projects` | liste des projets GTB (résumés) |
 | `dumtools_get_project` | projet complet (rows, points affectés, modules, réseaux) |
 | `dumtools_list_affaires` | tableau de bord des affaires (Chantier, 1 par n° Why) |
-| `dumtools_get_affaire` | fiche affaire : automates + documents + notes rattachés, état, besoin armoire |
+| `dumtools_get_affaire` | fiche affaire : automates + documents + notes + visites rattachés, état, besoin armoire |
 | `dumtools_list_clients` | référentiel client + nb de réalisations |
 | `dumtools_get_client` | fiche client agrégée (projets GTB + documents rattachés) |
 | `dumtools_list_catalog` | catalogue de points + modèles de saisie |
@@ -198,6 +218,16 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 | `dumtools_recommend_controller` | recommandation d'automate (depuis un projet ou un besoin saisi) |
 | `dumtools_list_notes` | notes d'affaire (résumés, filtrables par affaire) |
 | `dumtools_get_note` | note complète, contenu rendu en **markdown** |
+| `dumtools_list_visites` | visites de chantier (filtres : affaire, type, dates, `sansAffaire`) |
+| `dumtools_get_visite` | visite complète : checklist point par point, réserves, médias |
+| `dumtools_list_reserves` | **réserves encore ouvertes**, groupées par affaire (le reste à lever) |
+| `dumtools_list_wiki_rubriques` | rubriques du wiki + nombre de pages |
+| `dumtools_list_wiki_pages` | pages du wiki (toutes ou d'une rubrique) |
+| `dumtools_get_wiki_page` | page complète, contenu rendu en **markdown** |
+| `dumtools_search_wiki` | recherche plein-texte + facette de tags |
+| `dumtools_list_devis` | devis avec totaux calculés (filtres : état, affaire, client) |
+| `dumtools_get_devis` | devis complet : entête, lots, lignes, totaux, alertes (sans prix, Divers à chiffrer, prix périmés) |
+| `dumtools_search_articles_devis` | articles du Magasin + prestations, avec le prix de vente qu'appliquerait un devis |
 
 **Écriture**
 
@@ -218,6 +248,24 @@ personne** qui utilise ce poste. Redémarrer Claude Desktop complètement.
 | `dumtools_update_note` | remplace titre/contenu (markdown), anti-collision par version | — |
 | `dumtools_share_note` | active/révoque le lien public `/n/[jeton]` d'une note | idempotent |
 | `dumtools_delete_note` | supprime une note (+ médias sur disque) | destructif |
+| `dumtools_create_visite` | prépare une visite (checklist du modèle + report des réserves ouvertes) | — |
+| `dumtools_update_visite` | métadonnées d'une visite : titre, type, date, **rattachement à une affaire** | idempotent |
+| `dumtools_delete_visite` | supprime une visite (+ photos/vocaux sur disque) | destructif |
+| `dumtools_create_wiki_page` | crée une page de wiki dans une rubrique (markdown initial) | — |
+| `dumtools_update_wiki_page` | remplace titre/contenu/tags, anti-collision par version | — |
+| `dumtools_delete_wiki_page` | supprime une page de wiki (+ médias sur disque) | destructif |
+| `dumtools_create_devis` | crée un devis (n° DT atomique) rattaché à une affaire **existante** ou à un client | — |
+| `dumtools_update_devis` | entête : titre, client/affaire, coef, TVA, remise globale, validité, état, destinataire, affichage client | idempotent |
+| `dumtools_add_devis_lot` / `dumtools_update_devis_lot` | lot détaillé ou forfait (`CONDENSE`), phrase client, description | — / idempotent |
+| `dumtools_add_devis_lignes` | ajoute des lignes (article / prestation / divers / texte) — **règle du Divers** | — |
+| `dumtools_update_devis_ligne` | quantité, prix de vente OU coef, déboursé, remise, option, note, lot | idempotent |
+| `dumtools_delete_devis_ligne` | supprime une ligne | destructif |
+| `dumtools_revise_devis` | nouvelle révision (même numéro, v2) | — |
+| `dumtools_duplicate_devis` | copie vers un nouveau numéro | — |
+| `dumtools_refresh_devis_prix` | relit les déboursés du magasin (geste explicite) | idempotent |
+| `dumtools_reprendre_bom_devis` | verse le besoin matériel d'une affaire dans un lot | — |
+| `dumtools_delete_devis` | supprime un devis | destructif |
+| `dumtools_create_produit` | crée un produit au Magasin — **demande explicite + Achats/Admin seulement** | — |
 
 `update_project_rows` attend la liste **complète** des lignes : appeler d'abord
 `get_project`, conserver l'`id` des lignes existantes (préserve leur affectation et
@@ -232,6 +280,45 @@ contenu et échoue proprement en cas d'édition concurrente (relire puis
 réappliquer). Le partage public s'appuie sur `APP_URL` (défaut
 `https://dumtools.datagtb.com`) pour construire l'URL.
 
+**Visites de chantier** — le passage sur site : une checklist « pour ne rien
+oublier » (un modèle par type : relevé / suivi / réception / maintenance), des
+**réserves** reportées d'une visite à la suivante tant qu'elles ne sont pas
+levées, des photos et des notes vocales. Deux choses à savoir :
+
+- ⚠️ **le MCP ne voit que l'état SYNCHRONISÉ.** La saisie vit localement sur le
+  téléphone (îlot offline, IndexedDB) : une visite faite ce matin peut n'être
+  pas encore remontée.
+- ⚠️ **le CONTENU d'une visite ne s'écrit pas depuis le MCP** — seulement ses
+  métadonnées (`update_visite`). L'écraser depuis le bureau perdrait la copie
+  encore ouverte sur le téléphone (fusion « dernier gagne » de `syncVisite`).
+  Pour reprendre une visite : `/outils/visites/terrain?ouvrir={id}`.
+
+`list_reserves` applique la fusion inter-visites (l'état le plus récent gagne) :
+une réserve levée disparaît d'elle-même, il n'y a rien à cocher. `create_visite`
+exige une affaire — au terrain une visite peut naître orpheline (le relevé
+précède souvent le n° Why) et se rattacher au retour avec `update_visite`, mais
+depuis le bureau rien ne justifie d'en créer une.
+
+**Devis** — le moteur de chiffrage (déboursé du Magasin × coefficient = prix de
+vente, [`docs/DEVIS.md`](../docs/DEVIS.md) §28). Quatre choses à savoir :
+
+- ⚠️ **un article absent du Magasin ne se crée PAS.** `add_devis_lignes` le
+  pose en ligne **Divers** (genre `LIBRE`) et le dit (`passeesEnDivers`,
+  `aChiffrer`, `consignes`). Un article se retrouve par son id ou sa référence
+  EXACTE (interne, fabricant ou fournisseur, sans ambiguïté) — jamais par sa
+  désignation. `create_produit` n'existe que pour une demande explicite de
+  l'utilisateur : `demandeExplicite: true` imposé par le schéma, profil
+  Achats/Admin, catégorie/fabricant/fournisseur existants.
+- **le MCP parle en euros** (décimaux), quantités décimales, coefficient
+  multiplicateur (`1.35`), remises et TVA en pourcent ; l'app compte en
+  centimes et millièmes, la conversion se fait dans `data.mts`.
+- **les écritures passent par le noyau de l'app** (`src/tools/devis/ecritures.ts`,
+  `src/tools/magasin/ecritures.ts`) — les mêmes fonctions que l'éditeur, sans
+  session ni rafraîchissement d'écran. Elles exigent un utilisateur identifié
+  (un devis est signé de son auteur).
+- **hors MCP** : la publication du lien client `/d/…` (elle fait sortir le
+  devis) ; et `create_devis` ne crée pas d'affaire.
+
 ## ⚠️ Base partagée / prod
 
 Les outils d'écriture modifient la base réelle, **visible immédiatement par tous
@@ -243,8 +330,22 @@ exposer ce transport sans authentification.
 - `server.mts` — serveur MCP + enregistrement des outils (schémas Zod, annotations).
 - `data.mts` — couche données : réutilise le singleton Prisma (`../src/lib/db`) et
   les modules de domaine purs (`derivation`, `affectation-auto`, `reco-automate`,
-  `catalogue-queries`). Ne réutilise **pas** `queries.ts`/`actions.ts`/`providers.ts`
-  (marqués `server-only` / dépendants de Next/Auth.js) — les requêtes triviales y
-  sont réimplémentées en rappelant les mêmes helpers purs.
+  `catalogue-queries`). N'appelle **jamais** les `actions.ts` (Auth.js +
+  `revalidatePath`, inutilisables hors Next). Historiquement les requêtes
+  triviales y étaient réimplémentées ; **depuis le Devis, on réutilise le code
+  de l'app** : ses `queries.ts` (lectures) et ses **noyaux d'écritures**
+  (`src/tools/devis/ecritures.ts`, `src/tools/magasin/ecritures.ts`) que les
+  actions enveloppent aussi — une numérotation, une cascade de coefficient ou
+  une garde de rôle recopiée ici finirait par diverger de l'éditeur.
+- `sans-server-only.mts` — neutralise le paquet **`server-only`** pour ce
+  processus. ⚠️ Sans lui le serveur **ne démarre plus du tout** (« Connection
+  closed » côté client, sans autre message) : la couche métier de l'app en
+  traverse un — `getCatalogue` → `magasin/documentation` depuis que les fiches
+  constructeur vivent sur les produits — et son entrée par défaut lève une
+  exception à l'import hors rendu serveur Next. Et non, `--conditions=react-server`
+  (la parade des scripts de `scripts/`) ne convient pas ici : elle donne le build
+  react-server de React, sans `useLayoutEffect`, sur lequel
+  `@blocknote/server-util` (markdown des notes) s'effondre. À importer **en
+  premier** dans tout point d'entrée du MCP.
 - `smoke.mts`, `test-client.mts` — tests de fumée (dev).
 - `evals/dumtools.xml` — jeu d'évaluations.

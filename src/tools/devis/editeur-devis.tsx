@@ -1772,6 +1772,10 @@ function RangeeSaisie({
   const jeton = useRef(0);
   const [actif, setActif] = useState(0);
 
+  // La `note` entre dans la recherche : elle porte le numéro d'article du BPU
+  // (« BPU 5.4.9 »), et un bordereau se cite par son numéro autant que par son
+  // libellé — sans ça, 62 articles sont derrière un plafond de 6 résultats et
+  // seule la formulation exacte les retrouve.
   const prestationsFiltrees = useMemo(() => {
     const f = q.trim().toLowerCase();
     if (!f) return [];
@@ -1779,7 +1783,9 @@ function RangeeSaisie({
       .filter(
         (p) =>
           p.actif &&
-          (p.libelle.toLowerCase().includes(f) || p.famille.toLowerCase().includes(f)),
+          (p.libelle.toLowerCase().includes(f) ||
+            p.famille.toLowerCase().includes(f) ||
+            p.note.toLowerCase().includes(f)),
       )
       .slice(0, 6);
   }, [prestations, q]);
@@ -1976,6 +1982,9 @@ function RangeeSaisie({
                   )}
                 >
                   <Wrench className="h-4 w-4 shrink-0 text-io-ao" />
+                  {p.note.startsWith("BPU ") && (
+                    <span className="ref shrink-0 text-xs text-subtle">{p.note.slice(4)}</span>
+                  )}
                   <span className="flex-1 truncate text-fg">{p.libelle}</span>
                   <span className="hidden text-xs text-subtle sm:inline">{p.famille}</span>
                   <span className="font-semibold text-fg">

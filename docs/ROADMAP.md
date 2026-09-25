@@ -29,7 +29,7 @@
 | 4 | **Programmation** | **Générer GFX** (squelette), GED Documents (backup `.gfx` sur l'affaire, miroir kDrive) | valider l'ouverture du squelette dans EC-gfxProgram ; import GFX/PDF piloté par la base matériel | [`A_FAIRE-base-materiel.md`](A_FAIRE-base-materiel.md) |
 | 5 | **Mise en service** | onglet Mise en service + rapport imprimable + **mode terrain offline (socle codé)** | **validation sur device** (HTTPS, Android, iPhone) — voir P0 | [`A_FAIRE-mise-en-service-offline.md`](A_FAIRE-mise-en-service-offline.md) |
 | 6 | **Mise à disposition supervision** | **rien — le trou complet du cycle** | dossier de livraison d'affaire, export des points pour la supervision, PV de réception signé | §4 ci-dessous (nouveau) |
-| 7 | **Exploitation / SAV** | rien | Visites — type `MAINTENANCE`, **réserves persistantes** inter-visites | [`VISITES.md`](VISITES.md) |
+| 7 | **Exploitation / SAV** | **Maintenance** (2026-09-11) : contrats, sites, forfaits d'heures télé/présentiel consommés par période annuelle, hors forfait refacturable · Visites — type `MAINTENANCE`, réserves persistantes | contrats dans la fiche client/affaire, obligations déduites, MCP, reprise en devis | [`MAINTENANCE.md`](MAINTENANCE.md) · [`VISITES.md`](VISITES.md) |
 
 Lecture : les étapes **bureau** (2, 4) sont bien couvertes — c'est l'historique de
 DumTools. Les étapes **terrain** (1, 5, 7) sont le chantier en cours (offline).
@@ -201,7 +201,7 @@ jalons **dérivés automatiquement** — pas de saisie manuelle, même esprit qu
 | Programmé | `.gfx` ou fichier du dossier « Prog » déposé en GED ✅ |
 | Mis en service | points testés / total, cumulé sur tous les automates ✅ |
 | Livré | *repli* : ≥ 1 visite `RECEPTION` ✅ — + dossier de livraison (P2.1) à terme |
-| SAV | compteur de **réserves ouvertes** (toutes visites) + passages `MAINTENANCE` ✅ |
+| SAV | compteur de **réserves ouvertes** (toutes visites) + passages `MAINTENANCE` ✅ · forfaits de maintenance consommés / dépassés (2026-09-11) |
 
 L'enum `EtatAffaire` (Devis/Commande/En cours/Livrée/Clôturée) reste le
 **workflow commercial** ; la frise est l'**avancement technique**. Deux axes
